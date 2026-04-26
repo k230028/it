@@ -7,3 +7,4 @@ it_database
 everything-claude-code/
 .worktrees/
 .playwright-mcp/
+.agents/skills/gstack
