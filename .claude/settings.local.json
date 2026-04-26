@@ -140,7 +140,17 @@
       "Bash(awk -F'\"' '{sum+=$2} END {print \"Total tests:\", sum}')",
       "Bash(awk '{s+=$1} END{print s \" tests total\"}')",
       "Bash(grep -E \"\\(pages|components\\)$\")",
-      "mcp__plugin_everything-claude-code_playwright__browser_navigate"
+      "mcp__plugin_everything-claude-code_playwright__browser_navigate",
+      "Bash(grep -rn \"py-10 px-4\\\\|p-8 \\\\|p-8$\\\\|p-8\\\\\"\" app/pages --include=\"*.vue\")",
+      "Bash(grep -rn \"style=.*#[0-9a-fA-F]\\\\{3,6\\\\}\" app/pages/approval/index.vue app/pages/audit/index.vue app/pages/info/index.vue app/pages/budget/work.vue)",
+      "Bash(xargs -I{} basename {})",
+      "Bash(TableCard)",
+      "Bash(AppDialogFooter)",
+      "Bash(AppDialogHeader\")",
+      "Bash(curl *)",
+      "Bash(python3 -c \"import sys; content = sys.stdin.read\\(\\); body_start = content.find\\('<body'\\); print\\(content[body_start:body_start+3000] if body_start >= 0 else 'No body found'\\)\")",
+      "Bash(findstr /i \"사용자 관리 TAAABB font-bold mb-6 PageHeader\")",
+      "Bash(./setup)"
     ]
   },
   "enabledPlugins": {
