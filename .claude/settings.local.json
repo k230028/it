@@ -150,7 +150,11 @@
       "Bash(curl *)",
       "Bash(python3 -c \"import sys; content = sys.stdin.read\\(\\); body_start = content.find\\('<body'\\); print\\(content[body_start:body_start+3000] if body_start >= 0 else 'No body found'\\)\")",
       "Bash(findstr /i \"사용자 관리 TAAABB font-bold mb-6 PageHeader\")",
-      "Bash(./setup)"
+      "Bash(./setup)",
+      "Bash(start *)",
+      "Bash(python3 -c ' *)",
+      "Bash(python3 -c \"import sys; data=sys.stdin.buffer.read\\(\\).decode\\('utf-8','replace'\\); idx=data.find\\('color-scheme'\\); print\\(data[max\\(0,idx-50\\):idx+100] if idx>=0 else 'NOT FOUND'\\)\")",
+      "Bash(grep -v \"^\\\\s*//\")"
     ]
   },
   "enabledPlugins": {
