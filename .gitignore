@@ -8,3 +8,4 @@ everything-claude-code/
 .worktrees/
 .playwright-mcp/
 .agents/skills/gstack
+.bkit
