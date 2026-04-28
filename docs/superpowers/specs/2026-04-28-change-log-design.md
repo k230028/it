@@ -1,62 +1,199 @@
-# 변경 로그(Audit Log) 시스템 설계
+# 변경 로그(Audit Log) 시스템 — 상세 설계 문서
 
 - **작성일**: 2026-04-28
+- **버전**: v2.0 (22자리 순환 시퀀스 + BGDOCM/BRDOCM/BRIVGM 추가)
 - **대상 프로젝트**: IT Portal (com.kdb.it)
-- **작성자**: 설계 세션 기반 자동 생성
+- **참조 계획서**: `docs/superpowers/plans/2026-04-28-change-log.md`
+
+---
+
+## Context Anchor
+
+| 항목 | 내용 |
+|------|------|
+| **WHY** | 19+3=22개 업무 테이블의 CUD 이력을 감사 목적으로 자동 보관 |
+| **WHO** | 시스템 관리자·감사팀 (3,000명 임직원의 데이터 변경 추적) |
+| **RISK** | 로그 INSERT 실패 시 업무 트랜잭션 롤백 → 데이터 정합성 보장이 최우선 |
+| **SUCCESS** | 22개 대상 테이블 CUD 이벤트 발생 시 동일 트랜잭션 내 로그 INSERT 100% 보장 |
+| **SCOPE** | 백엔드(Spring Boot 4) 전용. 로그 조회 UI / 비동기 전환은 제외 |
 
 ---
 
 ## 1. 목표
 
-사용자의 CUD(Create / Update / Delete) 요청을 받는 업무 테이블에 대해 변경 이력을 로그 테이블(`_L` 접미사)에 자동으로 기록한다. Read(조회)는 기록하지 않는다.
+사용자의 CUD(Create / Update / Delete) 요청을 받는 **22개** 업무 테이블에 대해 변경 이력을 로그 테이블(`_L` 접미사)에 자동으로 기록한다.
+
+- Read(조회)는 기록하지 않는다.
+- `LOG_SNO`는 `{로그테이블명_Postfix}_{22자리_0패딩_시퀀스}` 형식의 **VARCHAR2(32)** 복합 문자열 PK를 사용한다.
+- 시퀀스는 **CYCLE**(순환) 설정으로 22자리 최대값 도달 후 자동 재시작한다.
 
 ---
 
 ## 2. 범위
 
-### 로그 대상 테이블
+### 2.1 로그 대상 테이블 (22개)
 
-| 원본 테이블 | 로그 테이블 | 도메인 |
-|------------|------------|--------|
-| TAAABB_BPROJM  | TAAABB_BPROJML  | 정보화사업 |
-| TAAABB_BITEMM  | TAAABB_BITEMML  | 프로젝트 품목 |
-| TAAABB_BCOSTM  | TAAABB_BCOSTML  | 전산관리비 |
-| TAAABB_BTERMM  | TAAABB_BTERML   | 단말기 |
-| TAAABB_BPLANM  | TAAABB_BPLANML  | IT부문계획 |
-| TAAABB_BPROJA  | TAAABB_BPROJAL  | 계획-사업 연결 |
-| TAAABB_BBUGTM  | TAAABB_BBUGTML  | 예산편성률 |
-| TAAABB_BASCTM  | TAAABB_BASCTL   | 협의회 심의과제 |
-| TAAABB_BCHKLC  | TAAABB_BCHKLCL  | 타당성 검토항목 |
-| TAAABB_BCMMTM  | TAAABB_BCMMTML  | 평가위원 |
-| TAAABB_BEVALM  | TAAABB_BEVALML  | 평가의견 |
-| TAAABB_BPERFM  | TAAABB_BPERFML  | 성과지표 |
-| TAAABB_BPOVWM  | TAAABB_BPOVWML  | 사업개요 |
-| TAAABB_BPQNAM  | TAAABB_BPQNAML  | 사전질의응답 |
-| TAAABB_BRSLTM  | TAAABB_BRSTML   | 결과서 |
-| TAAABB_BSCHDM  | TAAABB_BSCHDML  | 일정 |
-| TAAABB_CUSERI  | TAAABB_CUSERIL  | 사용자 정보 |
-| TAAABB_CCODEM  | TAAABB_CCODEML  | 공통코드 |
-| TAAABB_CAPPLM  | TAAABB_CAPPLML  | 신청서 마스터 |
+#### 기존 19개
 
-총 19개 원본 테이블 → 19개 로그 테이블
+| 원본 테이블 | 로그 테이블 | LOG_SNO Prefix | 도메인 |
+|------------|------------|----------------|--------|
+| TAAABB_BPROJM  | TAAABB_BPROJML  | `BPROJML_` | 정보화사업 |
+| TAAABB_BITEMM  | TAAABB_BITEMML  | `BITEMML_` | 프로젝트 품목 |
+| TAAABB_BCOSTM  | TAAABB_BCOSTML  | `BCOSTML_` | 전산관리비 |
+| TAAABB_BTERMM  | TAAABB_BTERML   | `BTERML_`  | 단말기 |
+| TAAABB_BPLANM  | TAAABB_BPLANML  | `BPLANML_` | IT부문계획 |
+| TAAABB_BPROJA  | TAAABB_BPROJAL  | `BPROJAL_` | 계획-사업 연결 |
+| TAAABB_BBUGTM  | TAAABB_BBUGTML  | `BBUGTML_` | 예산편성률 |
+| TAAABB_BASCTM  | TAAABB_BASCTL   | `BASCTL_`  | 협의회 심의과제 |
+| TAAABB_BCHKLC  | TAAABB_BCHKLCL  | `BCHKLCL_` | 타당성 검토항목 |
+| TAAABB_BCMMTM  | TAAABB_BCMMTML  | `BCMMTML_` | 평가위원 |
+| TAAABB_BEVALM  | TAAABB_BEVALML  | `BEVALML_` | 평가의견 |
+| TAAABB_BPERFM  | TAAABB_BPERFML  | `BPERFML_` | 성과지표 |
+| TAAABB_BPOVWM  | TAAABB_BPOVWML  | `BPOVWML_` | 사업개요 |
+| TAAABB_BPQNAM  | TAAABB_BPQNAML  | `BPQNAML_` | 사전질의응답 |
+| TAAABB_BRSLTM  | TAAABB_BRSTML   | `BRSTML_`  | 결과서 |
+| TAAABB_BSCHDM  | TAAABB_BSCHDML  | `BSCHDML_` | 일정 |
+| TAAABB_CUSERI  | TAAABB_CUSERIL  | `CUSERIL_` | 사용자 정보 |
+| TAAABB_CCODEM  | TAAABB_CCODEML  | `CCODEML_` | 공통코드 |
+| TAAABB_CAPPLM  | TAAABB_CAPPLML  | `CAPPLML_` | 신청서 마스터 |
 
-### 제외 테이블
+#### 신규 추가 3개
+
+| 원본 테이블 | 로그 테이블 | LOG_SNO Prefix | 도메인 |
+|------------|------------|----------------|--------|
+| TAAABB_BGDOCM  | TAAABB_BGDOCML  | `BGDOCML_` | 예산 문서 마스터 |
+| TAAABB_BRDOCM  | TAAABB_BRDOCML  | `BRDOCML_` | 심의 문서 마스터 |
+| TAAABB_BRIVGM  | TAAABB_BRIVGML  | `BRIVGML_` | 심의 조사 마스터 |
+
+### 2.2 제외 테이블
 
 - `TAAABB_CLOGNH` — 로그인 이력 (로그 테이블 자체를 로깅하지 않음)
-- `TAAABB_CRTOKM` — 갱신토큰 (보안 토큰, 로그 불필요)
+- `TAAABB_CRTOKM` — 갱신토큰 (보안 토큰)
 - `TAAABB_CAPPLA` — 신청서-원본 연결 (중간 테이블)
-- `TAAABB_CDECIM` — 결재선 (결재 시스템 내부 관리)
-- `TAAABB_CFILEM` — 첨부파일 (파일 스토리지 메타만 관리, 별도 이력 불필요)
-- `TAAABB_CAUTHI` — 자격등급 (코드성 데이터, 변경 빈도 낮음)
-- `TAAABB_CROLEI` — 역할 매핑 (RBAC 내부 관리)
-- `TAAABB_CORGNI` — 조직 정보 (외부 HR 시스템 동기화 데이터)
-- `TAAABB_BGDOCM`, `TAAABB_BRDOCM`, `TAAABB_BRIVGM` — 문서류 (필요 시 추후 추가)
+- `TAAABB_CDECIM` — 결재선 (결재 시스템 내부)
+- `TAAABB_CFILEM` — 첨부파일 메타
+- `TAAABB_CAUTHI` — 자격등급
+- `TAAABB_CROLEI` — 역할 매핑 (RBAC)
+- `TAAABB_CORGNI` — 조직 정보 (외부 HR 동기화)
 
 ---
 
-## 3. 아키텍처
+---
 
-### 3.1 전체 흐름
+## 3. LOG_SNO 설계 — 22자리 순환 복합 문자열 PK
+
+### 3.1 형식
+
+```
+{로그테이블명_Postfix}_{22자리_0패딩_시퀀스값}
+```
+
+| 로그 테이블 | 예시 LOG_SNO |
+|------------|-------------|
+| TAAABB_BPROJML | `BPROJML_0000000000000000000001` |
+| TAAABB_BGDOCML | `BGDOCML_0000000000000000000001` |
+| TAAABB_BRIVGML | `BRIVGML_0000000000000000000001` |
+
+- **컬럼 타입**: `VARCHAR2(32)` (최장 Postfix 7자리 + `_` + 22자리 = 30자 이내 충분)
+- **Postfix**: `TAAABB_` prefix를 제외한 로그 테이블명 (예: `TAAABB_BPROJML` → `BPROJML`)
+
+### 3.2 Oracle 시퀀스 정의
+
+```sql
+CREATE SEQUENCE S_{Postfix}
+  MINVALUE 1
+  MAXVALUE 9999999999999999999999   -- 22자리 최대값
+  START WITH 1
+  INCREMENT BY 1
+  NOCACHE                            -- 순환 경계 gap 방지
+  CYCLE;                             -- 최대값 도달 후 MINVALUE(1)부터 재시작
+```
+
+> **CYCLE 주의**: 동일한 숫자가 재사용되므로 LOG_SNO는 FK 참조 대상으로 사용하지 않는다.
+
+### 3.3 JPA — Custom IdentifierGenerator
+
+`LOG_SNO`가 VARCHAR2 복합 문자열이므로 Hibernate 기본 `@SequenceGenerator`는 사용 불가. 커스텀 `IdentifierGenerator`를 구현한다.
+
+#### AuditLogIdGenerator.java
+
+```java
+package com.kdb.it.domain.audit.id;
+
+import jakarta.persistence.Table;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.id.IdentifierGenerator;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+/**
+ * 로그 테이블 PK 생성기.
+ * Oracle S_{Postfix}.NEXTVAL을 조회하여 "{Postfix}_{22자리_0패딩}" VARCHAR2 값을 반환한다.
+ */
+public class AuditLogIdGenerator implements IdentifierGenerator {
+
+    private static final int SEQ_PAD_LENGTH = 22;
+
+    @Override
+    public Object generate(SharedSessionContractImplementor session, Object object) {
+        String postfix = resolvePostfix(object);
+        long nextVal = fetchNextVal(session, "S_" + postfix);
+        return postfix + "_" + String.format("%0" + SEQ_PAD_LENGTH + "d", nextVal);
+    }
+
+    private String resolvePostfix(Object object) {
+        Table ann = object.getClass().getAnnotation(Table.class);
+        if (ann == null) throw new IllegalStateException("@Table 누락: " + object.getClass().getName());
+        String tbl = ann.name().toUpperCase();
+        int idx = tbl.indexOf('_');
+        return idx >= 0 ? tbl.substring(idx + 1) : tbl;
+    }
+
+    private long fetchNextVal(SharedSessionContractImplementor session, String seqName) {
+        try {
+            Connection conn = session.getJdbcConnectionAccess().obtainConnection();
+            try (Statement st = conn.createStatement();
+                 ResultSet rs = st.executeQuery("SELECT " + seqName + ".NEXTVAL FROM DUAL")) {
+                if (rs.next()) return rs.getLong(1);
+                throw new IllegalStateException("NEXTVAL 조회 실패: " + seqName);
+            } finally {
+                session.getJdbcConnectionAccess().releaseConnection(conn);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("시퀀스 조회 오류: " + seqName, e);
+        }
+    }
+}
+```
+
+#### BaseLogEntity — @Id를 공통 클래스로 이동
+
+```java
+@MappedSuperclass
+public abstract class BaseLogEntity {
+
+    /** 복합 문자열 PK: {Postfix}_{22자리_시퀀스} */
+    @Id
+    @GeneratedValue(generator = "auditLogIdGenerator")
+    @GenericGenerator(name = "auditLogIdGenerator", type = AuditLogIdGenerator.class)
+    @Column(name = "LOG_SNO", length = 32, nullable = false, updatable = false)
+    private String logSno;
+
+    @Column(name = "CHG_TP",   length = 1,  nullable = false) private String        chgTp;
+    @Column(name = "CHG_DTM",               nullable = false) private LocalDateTime  chgDtm;
+    @Column(name = "CHG_USID", length = 14)                   private String        chgUsid;
+    // BaseEntity 공통 컬럼 스냅샷 (DEL_YN, GUID, FST_ENR_DTM, LST_CHG_DTM 등)
+}
+```
+
+각 로그 엔티티에서 `@Id` / `@GeneratedValue` / `@SequenceGenerator` 블록을 **제거**하고 `BaseLogEntity.logSno`를 상속한다.
+
+---
+
+## 4. 아키텍처
+
+### 4.1 전체 흐름
 
 ```
 사용자 API 요청 (POST / PUT / DELETE)
@@ -64,32 +201,38 @@
   → JPA Hibernate flush
   → @PostPersist 또는 @PostUpdate 이벤트
   → ChangeLogEntityListener 실행
-       ├── @LogTarget 어노테이션 없음 → 스킵
+       ├── @LogTarget 없음 → 스킵
        └── @LogTarget 있음
              ├── CHG_TP 결정
-             │     신규 저장(@PostPersist) → 'C'
-             │     DEL_YN = 'Y'(@PostUpdate) → 'D'
-             │     그 외(@PostUpdate)         → 'U'
-             ├── CHG_DTM = 현재 시각
-             ├── CHG_USID = SecurityContext 사번
-             └── 원본 엔티티 필드 복사 → 로그 엔티티 INSERT
+             │     @PostPersist             → 'C'
+             │     @PostUpdate, DEL_YN='Y'  → 'D'
+             │     @PostUpdate, 그 외       → 'U'
+             ├── AuditLogPersister.persist() 호출
+             │     ├── AuditLogIdGenerator → S_{Postfix}.NEXTVAL → LOG_SNO 생성
+             │     ├── CHG_DTM = LocalDateTime.now()
+             │     ├── CHG_USID = SecurityContext 사번
+             │     └── 원본 엔티티 @Column(name) 리플렉션 복사 → 로그 엔티티 INSERT
+             └── entityManager.persist(logEntity)
   → 업무 트랜잭션 커밋 (로그 포함, 동일 트랜잭션)
 ```
 
-> **트랜잭션 정책**: 로그 INSERT 실패 시 업무 트랜잭션도 함께 롤백한다.
-> 데이터 정합성을 최우선으로 한다.
+> **트랜잭션 정책**: 로그 INSERT 실패 → 업무 트랜잭션 함께 롤백 (데이터 정합성 최우선)
 
-### 3.2 Soft Delete 처리
+### 4.2 Soft Delete 처리
 
-이 프로젝트는 물리 삭제 없이 `DEL_YN = 'Y'`로 논리 삭제한다.
-삭제도 실제로는 UPDATE이므로 `@PostUpdate`에서 `DEL_YN` 값으로 C/U/D를 구분한다.
-`@PostRemove`는 사용하지 않는다.
+물리 삭제 없이 `DEL_YN = 'Y'`로 논리 삭제. `@PostUpdate`에서 `DEL_YN` 값으로 C/U/D를 구분한다. `@PostRemove`는 사용하지 않는다.
+
+| 이벤트 | DEL_YN | CHG_TP |
+|--------|--------|--------|
+| @PostPersist | — | `C` |
+| @PostUpdate | `null` or `N` | `U` |
+| @PostUpdate | `Y` | `D` |
 
 ---
 
-## 4. 컴포넌트 설계
+## 5. 컴포넌트 설계
 
-### 4.1 @LogTarget 어노테이션
+### 5.1 @LogTarget 어노테이션
 
 ```java
 package com.kdb.it.domain.audit.annotation;
@@ -102,34 +245,43 @@ public @interface LogTarget {
 }
 ```
 
-### 4.2 BaseLogEntity
+### 5.2 BaseLogEntity
 
 ```java
 package com.kdb.it.domain.audit.entity;
 
 @MappedSuperclass
 @Getter
+@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public abstract class BaseLogEntity {
 
-    // LOG_SNO는 각 하위 클래스에서 @SequenceGenerator와 함께 선언
+    /** 복합 문자열 PK: {Postfix}_{22자리_0패딩_시퀀스} — AuditLogIdGenerator가 생성 */
+    @Id
+    @GeneratedValue(generator = "auditLogIdGenerator")
+    @GenericGenerator(name = "auditLogIdGenerator", type = AuditLogIdGenerator.class)
+    @Column(name = "LOG_SNO", length = 32, nullable = false, updatable = false)
+    private String logSno;
 
-    /** 변경유형: 'C'=생성, 'U'=수정, 'D'=삭제 */
-    @Column(name = "CHG_TP", length = 1, nullable = false)
-    private String chgTp;
+    @Column(name = "CHG_TP",   length = 1,  nullable = false) private String        chgTp;
+    @Column(name = "CHG_DTM",               nullable = false) private LocalDateTime  chgDtm;
+    @Column(name = "CHG_USID", length = 14)                   private String        chgUsid;
 
-    /** 변경일시 */
-    @Column(name = "CHG_DTM", nullable = false)
-    private LocalDateTime chgDtm;
-
-    /** 변경자 사번 */
-    @Column(name = "CHG_USID", length = 14)
-    private String chgUsid;
+    // BaseEntity 공통 컬럼 스냅샷
+    @Column(name = "DEL_YN",       length = 1)    private String        delYn;
+    @Column(name = "GUID",         length = 38)   private String        guid;
+    @Column(name = "GUID_PRG_SNO")                private Integer       guidPrgSno;
+    @Column(name = "FST_ENR_DTM")                 private LocalDateTime fstEnrDtm;
+    @Column(name = "FST_ENR_USID", length = 14)   private String        fstEnrUsid;
+    @Column(name = "LST_CHG_DTM")                 private LocalDateTime lstChgDtm;
+    @Column(name = "LST_CHG_USID", length = 14)   private String        lstChgUsid;
 }
 ```
 
-### 4.3 ChangeLogEntityListener
+> 각 로그 엔티티에서 `@Id` / `@GeneratedValue` / `@SequenceGenerator` 블록 제거 — `BaseLogEntity.logSno` 상속.
+
+### 5.3 ChangeLogEntityListener
 
 ```java
 package com.kdb.it.domain.audit.listener;
@@ -163,7 +315,7 @@ public class ChangeLogEntityListener {
 
 > **리플렉션 복사**: 원본 엔티티와 로그 엔티티의 `@Column(name=...)` 값이 일치하는 필드를 매핑한다.
 
-### 4.4 BaseEntity 변경
+### 5.4 BaseEntity 변경
 
 ```java
 // 기존
@@ -173,7 +325,7 @@ public class ChangeLogEntityListener {
 @EntityListeners({AuditingEntityListener.class, ChangeLogEntityListener.class})
 ```
 
-### 4.5 업무 엔티티 변경 예시
+### 5.5 업무 엔티티 변경 예시
 
 ```java
 @LogTarget(entity = BprojmL.class)   // 추가
@@ -182,135 +334,269 @@ public class ChangeLogEntityListener {
 public class Bprojm extends BaseEntity { ... }
 ```
 
-### 4.6 로그 엔티티 예시 (BprojmL)
+### 5.6 로그 엔티티 예시 (BprojmL)
 
 ```java
 @Entity
 @Table(name = "TAAABB_BPROJML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@SuperBuilder
 public class BprojmL extends BaseLogEntity {
+    // logSno: BaseLogEntity에서 상속 — 여기 @Id 선언 없음
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "GEN_BPROJML")
-    @SequenceGenerator(name = "GEN_BPROJML", sequenceName = "S_BPROJML", allocationSize = 1)
-    @Column(name = "LOG_SNO")
-    private Long logSno;
-
-    // 원본 TAAABB_BPROJM 컬럼 전체 (nullable, PK/FK 제약 없음)
-    @Column(name = "PRJ_MNG_NO", length = 32) private String prjMngNo;
-    @Column(name = "PRJ_SNO") private Integer prjSno;
-    // ... 나머지 컬럼
+    @Column(name = "PRJ_MNG_NO", length = 32) private String  prjMngNo;
+    @Column(name = "PRJ_SNO")                 private Integer prjSno;
+    // ... 원본 TAAABB_BPROJM 컬럼 전체 (nullable, PK/FK 제약 없음)
 }
 ```
 
+### 5.7 신규 로그 엔티티 (BgdocmL / BrdocmL / BrivgmL)
+
+#### BgdocmL.java — TAAABB_BGDOCML (가이드 문서 로그)
+
+```java
+@Entity
+@Table(name = "TAAABB_BGDOCML")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@SuperBuilder
+public class BgdocmL extends BaseLogEntity {
+
+    @Column(name = "DOC_MNG_NO", length = 32)  private String docMngNo;
+    @Column(name = "DOC_NM",     length = 200)  private String docNm;
+    @Lob
+    @Column(name = "DOC_CONE")                  private byte[] docCone;
+}
+```
+
+#### BrdocmL.java — TAAABB_BRDOCML (요구사항 정의서 로그, 원본 복합 PK)
+
+```java
+@Entity
+@Table(name = "TAAABB_BRDOCML")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@SuperBuilder
+public class BrdocmL extends BaseLogEntity {
+
+    @Column(name = "DOC_MNG_NO", length = 32)              private String     docMngNo;
+    @Column(name = "DOC_VRS",    precision = 4, scale = 2) private BigDecimal docVrs;
+    @Column(name = "REQ_NM",     length = 200)             private String     reqNm;
+    @Lob
+    @Column(name = "REQ_CONE")                             private byte[]     reqCone;
+    @Column(name = "REQ_DTT",    length = 32)              private String     reqDtt;
+    @Column(name = "BZ_DTT",     length = 32)              private String     bzDtt;
+    @Column(name = "FSG_TLM")                              private LocalDate  fsgTlm;
+}
+```
+
+> 원본 `TAAABB_BRDOCM`의 복합 PK(`DOC_MNG_NO` + `DOC_VRS`)는 로그 테이블에서 일반 컬럼으로 취급. 로그 PK는 `LOG_SNO`만 사용.
+
+#### BrivgmL.java — TAAABB_BRIVGML (문서 검토의견 로그, 원본 UUID PK)
+
+```java
+@Entity
+@Table(name = "TAAABB_BRIVGML")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@SuperBuilder
+public class BrivgmL extends BaseLogEntity {
+
+    @Column(name = "IVG_SNO",    length = 32)              private String     ivgSno;
+    @Column(name = "DOC_MNG_NO", length = 32)              private String     docMngNo;
+    @Column(name = "DOC_VRS",    precision = 5, scale = 2) private BigDecimal docVrs;
+    @Column(name = "IVG_TP",     length = 1)               private String     ivgTp;
+    @Lob
+    @Column(name = "IVG_CONE")                             private String     ivgCone;
+    @Column(name = "MARK_ID",    length = 64)              private String     markId;
+    @Column(name = "QTD_CONE",   length = 4000)            private String     qtdCone;
+    @Column(name = "RSLV_YN",    length = 1)               private String     rslvYn;
+}
+```
+
+> 원본 `TAAABB_BRIVGM`의 `IVG_SNO`는 `@PrePersist` UUID PK이지만, 로그 테이블에서는 일반 컬럼으로 저장.
+
 ---
 
-## 5. DDL
+## 6. DDL
 
-### 5.1 시퀀스 명명 규칙
+### 6.1 시퀀스 명명 규칙
 
 ```
-S_{로그테이블명}  (TAAABB_ prefix 제외)
+S_{로그테이블명_Postfix}   (TAAABB_ prefix 제외)
 
 예: TAAABB_BPROJML → S_BPROJML
+    TAAABB_BGDOCML → S_BGDOCML
     TAAABB_CUSERIL → S_CUSERIL
 ```
 
-### 5.2 DDL 패턴
+### 6.2 시퀀스 DDL (22개 — 22자리 CYCLE)
 
 ```sql
--- 시퀀스 (테이블당 1개)
-CREATE SEQUENCE S_BPROJML  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-CREATE SEQUENCE S_BITEMML  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-CREATE SEQUENCE S_BCOSTML  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-CREATE SEQUENCE S_BTERML   START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-CREATE SEQUENCE S_BPLANML  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-CREATE SEQUENCE S_BPROJAL  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-CREATE SEQUENCE S_BBUGTML  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-CREATE SEQUENCE S_BASCTL   START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-CREATE SEQUENCE S_BCHKLCL  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-CREATE SEQUENCE S_BCMMTML  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-CREATE SEQUENCE S_BEVALML  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-CREATE SEQUENCE S_BPERFML  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-CREATE SEQUENCE S_BPOVWML  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-CREATE SEQUENCE S_BPQNAML  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-CREATE SEQUENCE S_BRSTML   START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-CREATE SEQUENCE S_BSCHDML  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-CREATE SEQUENCE S_CUSERIL  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-CREATE SEQUENCE S_CCODEML  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-CREATE SEQUENCE S_CAPPLML  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+-- ============================================================
+-- 변경 로그(Audit Log) 시퀀스 DDL
+-- MAXVALUE: 9999999999999999999999 (22자리)
+-- CYCLE: 최대값 도달 후 MINVALUE(1)부터 재시작
+-- NOCACHE: 순환 경계 gap 방지
+-- ============================================================
 
--- 로그 테이블 예시 (BPROJML)
-CREATE TABLE TAAABB_BPROJML (
-  LOG_SNO      NUMBER         NOT NULL,
-  CHG_TP       VARCHAR2(1)    NOT NULL,
-  CHG_DTM      TIMESTAMP      NOT NULL,
-  CHG_USID     VARCHAR2(14),
-  -- BaseEntity 공통 컬럼
-  DEL_YN       VARCHAR2(4),
-  GUID         VARCHAR2(152),
-  GUID_PRG_SNO NUMBER,
-  FST_ENR_DTM  TIMESTAMP,
-  FST_ENR_USID VARCHAR2(56),
-  LST_CHG_DTM  TIMESTAMP,
-  LST_CHG_USID VARCHAR2(56),
-  -- 업무 컬럼 (모두 nullable)
-  PRJ_MNG_NO   VARCHAR2(32),
-  PRJ_SNO      NUMBER,
-  PRJ_NM       VARCHAR2(200),
-  -- ... 원본 테이블 컬럼 전체
-  CONSTRAINT PK_BPROJML PRIMARY KEY (LOG_SNO)
-);
+-- 기존 19개
+CREATE SEQUENCE S_BPROJML MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_BITEMML MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_BCOSTML MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_BTERML  MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_BPLANML MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_BPROJAL MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_BBUGTML MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_BASCTL  MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_BCHKLCL MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_BCMMTML MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_BEVALML MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_BPERFML MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_BPOVWML MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_BPQNAML MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_BRSTML  MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_BSCHDML MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_CUSERIL MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_CCODEML MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_CAPPLML MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+
+-- 신규 3개
+CREATE SEQUENCE S_BGDOCML MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_BRDOCML MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
+CREATE SEQUENCE S_BRIVGML MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 1 INCREMENT BY 1 NOCACHE CYCLE;
 ```
+
+### 6.3 로그 테이블 DDL 패턴 (LOG_SNO: VARCHAR2(32))
+
+```sql
+-- CTAS 패턴 (기존 19개 동일 방식 적용)
+-- LOG_SNO를 VARCHAR2(32)로 선언 (기존 NUMBER에서 변경)
+CREATE TABLE TAAABB_BPROJML AS
+  SELECT CAST(NULL AS VARCHAR2(32))  AS LOG_SNO,
+         CAST(NULL AS VARCHAR2(1))   AS CHG_TP,
+         CAST(NULL AS TIMESTAMP(6))  AS CHG_DTM,
+         CAST(NULL AS VARCHAR2(14))  AS CHG_USID,
+         t.*
+  FROM TAAABB_BPROJM t WHERE 1 = 0;
+
+ALTER TABLE TAAABB_BPROJML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TAAABB_BPROJML MODIFY (PRJ_MNG_NO NULL, PRJ_SNO NULL);
+ALTER TABLE TAAABB_BPROJML ADD CONSTRAINT PK_BPROJML PRIMARY KEY (LOG_SNO);
+
+-- 신규 테이블 예시 (BGDOCML)
+CREATE TABLE TAAABB_BGDOCML AS
+  SELECT CAST(NULL AS VARCHAR2(32))  AS LOG_SNO,
+         CAST(NULL AS VARCHAR2(1))   AS CHG_TP,
+         CAST(NULL AS TIMESTAMP(6))  AS CHG_DTM,
+         CAST(NULL AS VARCHAR2(14))  AS CHG_USID,
+         t.*
+  FROM TAAABB_BGDOCM t WHERE 1 = 0;
+
+ALTER TABLE TAAABB_BGDOCML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TAAABB_BGDOCML MODIFY (DOC_MNG_NO NULL);
+ALTER TABLE TAAABB_BGDOCML ADD CONSTRAINT PK_BGDOCML PRIMARY KEY (LOG_SNO);
+
+-- BRDOCML (원본 복합 PK: DOC_MNG_NO + DOC_VRS)
+CREATE TABLE TAAABB_BRDOCML AS
+  SELECT CAST(NULL AS VARCHAR2(32))  AS LOG_SNO,
+         CAST(NULL AS VARCHAR2(1))   AS CHG_TP,
+         CAST(NULL AS TIMESTAMP(6))  AS CHG_DTM,
+         CAST(NULL AS VARCHAR2(14))  AS CHG_USID,
+         t.*
+  FROM TAAABB_BRDOCM t WHERE 1 = 0;
+
+ALTER TABLE TAAABB_BRDOCML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TAAABB_BRDOCML MODIFY (DOC_MNG_NO NULL, DOC_VRS NULL);
+ALTER TABLE TAAABB_BRDOCML ADD CONSTRAINT PK_BRDOCML PRIMARY KEY (LOG_SNO);
+
+-- BRIVGML (원본 UUID PK: IVG_SNO)
+CREATE TABLE TAAABB_BRIVGML AS
+  SELECT CAST(NULL AS VARCHAR2(32))  AS LOG_SNO,
+         CAST(NULL AS VARCHAR2(1))   AS CHG_TP,
+         CAST(NULL AS TIMESTAMP(6))  AS CHG_DTM,
+         CAST(NULL AS VARCHAR2(14))  AS CHG_USID,
+         t.*
+  FROM TAAABB_BRIVGM t WHERE 1 = 0;
+
+ALTER TABLE TAAABB_BRIVGML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TAAABB_BRIVGML MODIFY (IVG_SNO NULL);
+ALTER TABLE TAAABB_BRIVGML ADD CONSTRAINT PK_BRIVGML PRIMARY KEY (LOG_SNO);
+```
+
+> **PK 컬럼 확인 완료** (백엔드 엔티티 파일 기준):
+> - BGDOCM: `DOC_MNG_NO` VARCHAR2(32) 단일 PK
+> - BRDOCM: `DOC_MNG_NO` VARCHAR2(32) + `DOC_VRS` NUMBER(4,2) 복합 PK
+> - BRIVGM: `IVG_SNO` VARCHAR2(32) 단일 PK (UUID @PrePersist 생성)
 
 ---
 
-## 6. 디렉토리 구조
+## 7. 디렉토리 구조
 
 ```
 src/main/java/com/kdb/it/domain/audit/
 ├── annotation/
 │   └── LogTarget.java
+├── id/
+│   └── AuditLogIdGenerator.java     ← 신규 (22자리 순환 PK 생성)
 ├── listener/
+│   ├── ApplicationContextHolder.java
+│   ├── AuditLogPersister.java
 │   └── ChangeLogEntityListener.java
-├── entity/
-│   ├── BaseLogEntity.java
-│   ├── BprojmL.java
-│   ├── BitemmL.java
-│   ├── BcostmL.java
-│   ├── BtermmL.java
-│   ├── BplanmL.java
-│   ├── BprojaL.java
-│   ├── BbugtmL.java
-│   ├── BasctmL.java
-│   ├── BchklcL.java
-│   ├── BcmmtmL.java
-│   ├── BevalmL.java
-│   ├── BperfmL.java
-│   ├── BpovwmL.java
-│   ├── BpqnamL.java
-│   ├── BrsltmL.java
-│   ├── BschdmL.java
-│   ├── CuserIL.java
-│   ├── CcodemL.java
-│   └── CapplmL.java
-└── repository/                ← 로그 조회 API 필요 시 추가 (선택)
+└── entity/
+    ├── BaseLogEntity.java            ← logSno(VARCHAR2) 포함, @Id 공통화
+    ├── BprojmL.java ~ CapplmL.java  (기존 19개, @Id 블록 제거)
+    ├── BgdocmL.java                  ← 신규
+    ├── BrdocmL.java                  ← 신규
+    └── BrivgmL.java                  ← 신규
+
+src/main/resources/sql/
+└── audit_log_ddl.sql                 (22개 시퀀스 + 22개 로그 테이블)
 ```
 
 ---
 
-## 7. 기존 파일 변경 목록
+## 8. 기존 파일 변경 목록
 
 | 파일 | 변경 내용 |
 |------|---------|
-| `BaseEntity.java` | `@EntityListeners`에 `ChangeLogEntityListener.class` 추가 (1줄) |
-| 대상 엔티티 19개 | `@LogTarget(entity = XxxL.class)` 어노테이션 추가 (각 1줄) |
+| `BaseEntity.java` | `@EntityListeners`에 `ChangeLogEntityListener.class` 추가 |
+| `BaseLogEntity.java` | `logSno`를 `Long` → `String(VARCHAR2)` 로 변경, `@GenericGenerator` 적용 |
+| 기존 로그 엔티티 19개 | `@Id` / `@GeneratedValue` / `@SequenceGenerator` 블록 제거 |
+| 기존 업무 엔티티 19개 | `@LogTarget(entity = XxxL.class)` 추가 |
+| BGDOCM 업무 엔티티 | `@LogTarget(entity = BgdocmL.class)` 추가 (신규) |
+| BRDOCM 업무 엔티티 | `@LogTarget(entity = BrdocmL.class)` 추가 (신규) |
+| BRIVGM 업무 엔티티 | `@LogTarget(entity = BrivgmL.class)` 추가 (신규) |
 
 ---
 
-## 8. 미결 사항 / 제외 범위
+## 9. 기존 v1 대비 변경 요약
 
-- 로그 조회 API (관리자 화면): 설계 범위 제외, 필요 시 별도 설계
-- `BGDOCM`, `BRDOCM`, `BRIVGM` 문서 테이블: 현재 제외, 필요 시 추가
-- 비동기 처리 전환: 현재 동기(동일 트랜잭션), 성능 이슈 발생 시 AFTER_COMMIT 이벤트 방식으로 전환 검토
+| 항목 | v1 (최초 설계) | v2 (이 문서) |
+|------|--------------|-------------|
+| LOG_SNO 타입 | `NUMBER` | `VARCHAR2(32)` |
+| LOG_SNO 형식 | 단순 숫자 | `{Postfix}_{22자리_0패딩}` |
+| 시퀀스 CYCLE | `NOCYCLE` | `CYCLE` |
+| 시퀀스 MAXVALUE | 기본(무제한) | `9999999999999999999999` (22자리) |
+| JPA ID 생성 방식 | `@SequenceGenerator` | `AuditLogIdGenerator` (커스텀) |
+| @Id 위치 | 각 로그 엔티티 | `BaseLogEntity` (공통) |
+| 로그 대상 수 | 19개 | **22개** |
+| 신규 시퀀스 | — | S_BGDOCML, S_BRDOCML, S_BRIVGML |
+| 신규 로그 엔티티 | — | BgdocmL, BrdocmL, BrivgmL |
+
+---
+
+## 10. 미결 사항
+
+| 항목 | 내용 | 우선순위 |
+|------|------|---------|
+| BgdocmL 엔티티 정의 | DOC_MNG_NO·DOC_NM·DOC_CONE(@Lob byte[]) — §5.7 완료 | ✅ 완료 |
+| BrdocmL 엔티티 정의 | DOC_MNG_NO·DOC_VRS·REQ_NM·REQ_CONE 등 — §5.7 완료 (복합 PK → 일반 컬럼) | ✅ 완료 |
+| BrivgmL 엔티티 정의 | IVG_SNO·DOC_MNG_NO·IVG_CONE(@Lob String) 등 — §5.7 완료 (UUID PK → 일반 컬럼) | ✅ 완료 |
+| 로그 조회 API | 관리자 감사 화면, 별도 설계 | 선택 |
+| 비동기 전환 | 성능 이슈 시 AFTER_COMMIT 이벤트 방식 검토 | 선택 |

@@ -157,7 +157,11 @@
       "Bash(grep -v \"^\\\\s*//\")",
       "PowerShell(cd C:\\\\it\\\\it_frontend; npx nuxt typecheck 2>&1 | Where-Object { $_ -match \"TiptapToolbar|html2canvas|error TS\" })",
       "PowerShell(cd C:\\\\it\\\\it_frontend; npx nuxt typecheck 2>&1 | Where-Object { $_ -match \"TiptapToolbar|screenshotCanvas|error TS\" })",
-      "PowerShell(cd C:\\\\it\\\\it_frontend; npx nuxt typecheck 2>&1 | Where-Object { $_ -match \"TiptapToolbar|error TS\" })"
+      "PowerShell(cd C:\\\\it\\\\it_frontend; npx nuxt typecheck 2>&1 | Where-Object { $_ -match \"TiptapToolbar|error TS\" })",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(jar tf *)",
+      "Bash(jar xf *)",
+      "Skill(fp)"
     ]
   },
   "enabledPlugins": {
