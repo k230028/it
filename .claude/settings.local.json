@@ -154,7 +154,10 @@
       "Bash(start *)",
       "Bash(python3 -c ' *)",
       "Bash(python3 -c \"import sys; data=sys.stdin.buffer.read\\(\\).decode\\('utf-8','replace'\\); idx=data.find\\('color-scheme'\\); print\\(data[max\\(0,idx-50\\):idx+100] if idx>=0 else 'NOT FOUND'\\)\")",
-      "Bash(grep -v \"^\\\\s*//\")"
+      "Bash(grep -v \"^\\\\s*//\")",
+      "PowerShell(cd C:\\\\it\\\\it_frontend; npx nuxt typecheck 2>&1 | Where-Object { $_ -match \"TiptapToolbar|html2canvas|error TS\" })",
+      "PowerShell(cd C:\\\\it\\\\it_frontend; npx nuxt typecheck 2>&1 | Where-Object { $_ -match \"TiptapToolbar|screenshotCanvas|error TS\" })",
+      "PowerShell(cd C:\\\\it\\\\it_frontend; npx nuxt typecheck 2>&1 | Where-Object { $_ -match \"TiptapToolbar|error TS\" })"
     ]
   },
   "enabledPlugins": {
