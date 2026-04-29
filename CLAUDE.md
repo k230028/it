@@ -90,6 +90,25 @@ Key routing rules:
 - test-frontend: cd it_frontend && npx vitest run
 - test-backend: cd it_backend && ./gradlew test
 
+## 6. 공통 코드 컨벤션 보강
+
+### 6.1 주석 기준
+- 모든 신규 주석은 한글로 작성하며, 코드가 이미 명확한 단순 대입에는 주석을 추가하지 않습니다.
+- 파일 헤더 주석은 해당 파일의 역할, 주요 흐름, 연동 대상 API 또는 테이블을 설명합니다.
+- public API, service 메서드, composable 반환 함수에는 입력값과 실패 조건을 함께 기록합니다.
+- TODO/FIXME는 반드시 후속 조치가 가능한 문장으로 남기고, 장기 과제는 루트 `TASK.md`에도 등록합니다.
+
+### 6.2 인증/보안 기준
+- 프론트엔드는 JWT를 직접 저장하지 않습니다. Access Token과 Refresh Token은 백엔드가 발급하는 httpOnly 쿠키로만 전달합니다.
+- 인증 API 호출은 `credentials: 'include'`를 유지합니다.
+- Access Token 기본 유효시간은 15분이며, 쿠키 Max-Age와 `jwt.access-token-validity`가 어긋나지 않도록 관리합니다.
+- 관리자 권한은 프론트 라우트 가드와 백엔드 `SecurityConfig`/`@PreAuthorize`를 함께 적용합니다.
+
+### 6.3 문서 최신화 기준
+- `README.md`는 신규 개발자가 흐름을 파악하는 개발 노트로 유지합니다.
+- `CLAUDE.md`는 실제 코드에서 확인된 규칙만 기록합니다.
+- `TASK.md`는 미구현, 기술 부채, 보안/성능/테스트 보강 과제를 한곳에서 관리합니다.
+
 ## 하네스: IT Portal 에이전트 팀
 
 **목표:** 백엔드(Spring Boot 4) + 프론트(Nuxt 4) + 보안(RBAC) + QA를 에이전트 팀으로 분담하여 end-to-end 구현

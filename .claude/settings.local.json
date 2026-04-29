@@ -162,7 +162,13 @@
       "Bash(jar tf *)",
       "Bash(jar xf *)",
       "Skill(fp)",
-      "Bash(echo \"Copied: $?\")"
+      "Bash(echo \"Copied: $?\")",
+      "Bash(grep -E \"\\\\.ts$\")",
+      "Bash(awk '{print $NF}')",
+      "Bash(./gradlew compileTestJava --no-daemon)",
+      "Bash(./gradlew cleanTest test --tests \"com.kdb.it.domain.budget.cost.service.CostServiceTest\" --tests \"com.kdb.it.domain.budget.work.service.BudgetWorkServiceTest\" --tests \"com.kdb.it.domain.budget.project.service.ProjectServiceTest\" --no-daemon)",
+      "Bash(npm list *)",
+      "Bash(npx vite-node *)"
     ]
   },
   "enabledPlugins": {
