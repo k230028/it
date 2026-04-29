@@ -161,7 +161,8 @@
       "WebFetch(domain:www.npmjs.com)",
       "Bash(jar tf *)",
       "Bash(jar xf *)",
-      "Skill(fp)"
+      "Skill(fp)",
+      "Bash(echo \"Copied: $?\")"
     ]
   },
   "enabledPlugins": {
