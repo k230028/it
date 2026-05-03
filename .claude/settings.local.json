@@ -168,7 +168,10 @@
       "Bash(./gradlew compileTestJava --no-daemon)",
       "Bash(./gradlew cleanTest test --tests \"com.kdb.it.domain.budget.cost.service.CostServiceTest\" --tests \"com.kdb.it.domain.budget.work.service.BudgetWorkServiceTest\" --tests \"com.kdb.it.domain.budget.project.service.ProjectServiceTest\" --no-daemon)",
       "Bash(npm list *)",
-      "Bash(npx vite-node *)"
+      "Bash(npx vite-node *)",
+      "PowerShell(cd C:\\\\it\\\\it_frontend && npx nuxt typecheck 2>&1 | Where-Object { $_ -match \"admin/\" } | Select-Object -First 30)",
+      "PowerShell(cd C:\\\\it\\\\it_frontend && \\(npx nuxt typecheck 2>&1\\) | Where-Object { $_ -notmatch \"node_modules\" } | Select-Object -First 50 | Out-String)",
+      "PowerShell(cd C:\\\\it\\\\it_frontend && \\(npx nuxt typecheck 2>&1\\) | Where-Object { $_ -match \"admin/\" } | Out-String)"
     ]
   },
   "enabledPlugins": {
