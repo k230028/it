@@ -182,7 +182,13 @@
       "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\it\\\\it_backend\\\\libs\")",
       "PowerShell(New-Item *)",
       "Bash(dir \"C:\\\\it\\\\it_backend\\\\src\\\\main\\\\webapp\" /b)",
-      "Bash(./gradlew compileJava compileTestJava -x test)"
+      "Bash(./gradlew compileJava compileTestJava -x test)",
+      "Bash(xargs -I{} jar tf {})",
+      "Bash(javap -classpath /tmp/sb4check C:/Users/gonna/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-tomcat/4.0.5/de470a149dd8e9871cf8b918541303dfce6553b8/spring-boot-tomcat-4.0.5.jar)",
+      "Bash(javap org/springframework/boot/web/server/ConfigurableWebServerFactory)",
+      "Bash(javap org/springframework/boot/tomcat/servlet/TomcatServletWebServerFactory)",
+      "Bash(javap -p org/springframework/boot/tomcat/servlet/TomcatServletWebServerFactory)",
+      "Bash(javap org/springframework/boot/web/server/servlet/ConfigurableServletWebServerFactory)"
     ]
   },
   "enabledPlugins": {
