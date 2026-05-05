@@ -24,7 +24,7 @@ it/
 
 | 토픽 | SoT |
 |------|-----|
-| 백엔드 기술 스택 / API 설계 / 엔티티 / 인증 정책 | `it_backend/CLAUDE.md` |
+| 백엔드 기술 스택 / API 설계 / 엔티티 / 인증 정책 / 운영 비밀값 기준 | `it_backend/CLAUDE.md` |
 | 프론트엔드 기술 스택 / 컴포넌트 / 라우팅 / 클라이언트 인증 책임 | `it_frontend/CLAUDE.md` |
 | 데이터 모델 (테이블 매핑) | `it_backend/docs/guides/data-model.md` |
 | 컴포넌트 가이드 (StyledDataTable 등) | `it_frontend/docs/guides/` |
@@ -50,6 +50,7 @@ it/
 - 인증 API 호출은 `credentials: 'include'`.
 - Access Token 15분 / Refresh Token 7일 (백엔드 SoT).
 - 관리자 권한은 프론트 라우트 가드 + 백엔드 `SecurityConfig`/`@PreAuthorize` 이중 적용.
+- DB 비밀번호, JWT 시크릿, 외부 API 키는 운영 배포 시 환경변수 또는 비공개 프로파일에서 주입합니다.
 - 상세 정책은 `it_backend/CLAUDE.md` 인증 섹션을 SoT로 따릅니다.
 
 ### 4.3 문서 관리

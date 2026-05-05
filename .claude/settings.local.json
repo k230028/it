@@ -189,7 +189,13 @@
       "Bash(javap org/springframework/boot/tomcat/servlet/TomcatServletWebServerFactory)",
       "Bash(javap -p org/springframework/boot/tomcat/servlet/TomcatServletWebServerFactory)",
       "Bash(javap org/springframework/boot/web/server/servlet/ConfigurableServletWebServerFactory)",
-      "Skill(bkit:pdca)"
+      "Skill(bkit:pdca)",
+      "Skill(bkit:bkit)",
+      "Bash(grep -E \"FAILED|PASSED|org\\\\\\\\.junit|AssertionError|Error|Exception\")",
+      "Bash(./gradlew jacocoTestReport)",
+      "Bash(grep -v \"//\")",
+      "Bash(powershell -Command ' *)",
+      "Bash(powershell *)"
     ]
   },
   "enabledPlugins": {

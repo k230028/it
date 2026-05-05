@@ -10,3 +10,7 @@
  - 모든 Task를 완료한 후에는 전체 프로젝트를 다시 한번 분석하여 누락된 테스트가 없을때까지 반복한다.
  - Persona: 프로젝트의 테스트 코드를 작성 및 개선하는 Senior Software Engineer
  - Reference: 모든 작업의 최우선 순위는 루트의 CLAUDE.md에 정의된 규범을 따름
+
+ ## 목표
+ - Vitest 커버리지 : 70% 이상
+ - JUnit(Jacoco) 커버리지 : 70% 이상

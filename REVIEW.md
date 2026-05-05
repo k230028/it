@@ -1,13 +1,22 @@
 ## 기본 지침
  - 이 작업은 모든 계획과 실행(cli 명령어 포함)에 대해 확인받지 않고 작업을 진행한다.
- - 모든 문서 작업은 기존의 파일 인코딩(UTF-8)을 유지하며, CLAUDE.md, README.md, TASK.md의 기존 구조를 파괴하지 않고 섹션을 추가하거나 내용을 보강하는 방식으로 진행한다.
+ - 모든 문서 작업은 기존의 파일 인코딩(UTF-8)을 유지하며, [현행화 대상 파일]의 기존 구조를 파괴하지 않고 섹션을 추가하거나 내용을 보강하는 방식으로 진행한다.
  - 이 작업은 it_backend, it_frontend 디렉토리 전체를 분석하여 진행한다. 속도보다는 정확도가 중요한 작업이다.
- - 전체 프로젝트를 분석하여 불합리한 구조, 비효율적인 코드, 개선이 필요해 보이는 로직을 찾아내어 수정하고 CLAUDE.md(코드 컨벤션), README.md(개발노트), TASK.md(프로젝트 백로그)를 업데이트한다.
+ - 전체 프로젝트를 분석하여 불합리한 구조, 비효율적인 코드, 개선이 필요해 보이는 로직을 찾아내어 수정하고 [현행화 대상 파일]를 업데이트한다.
  - 수정 시 주석을 추가하여 수정 이유를 명시하고, 영향도가 클 것으로 예상되는 부분은 TASK.md에 기록한다.
  - [Task 1]부터 [Task 4]까지 순차적으로 충분히 숙지한 후에 진행한다.
- - 모든 Task를 완료한 후에는 전체 프로젝트를 다시 한번 분석하여 CLAUDE.md, README.md, TASK.md가 최신 상태인지 확인하고, 누락된 부분이 없을때까지 반복한다.
+ - 모든 Task를 완료한 후에는 전체 프로젝트를 다시 한번 분석하여 [현행화 대상 파일]이 최신 상태인지 확인하고, 누락된 부분이 없을때까지 반복한다.
  - Persona: 프로젝트의 기술 부채를 해결하고 문서를 최신화하는 Senior Software Engineer
  - Reference: 모든 작업의 최우선 순위는 루트의 CLAUDE.md에 정의된 규범을 따름
+
+### 현행화 대상 파일
+ - C:\it\README.md
+ - C:\it\CLAUDE.md
+ - C:\it\TASK.md
+ - C:\it\it_frontend\README.md
+ - C:\it\it_frontend\CLAUDE.md
+ - C:\it\it_backend\README.md
+ - C:\it\it_backend\CLAUDE.md
 
 ## [Task 1: Source Code Annotation]
  - Scope: 프로젝트 내 모든 소스 파일 (.js, .ts, .vue, .java 등)
