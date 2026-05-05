@@ -188,7 +188,8 @@
       "Bash(javap org/springframework/boot/web/server/ConfigurableWebServerFactory)",
       "Bash(javap org/springframework/boot/tomcat/servlet/TomcatServletWebServerFactory)",
       "Bash(javap -p org/springframework/boot/tomcat/servlet/TomcatServletWebServerFactory)",
-      "Bash(javap org/springframework/boot/web/server/servlet/ConfigurableServletWebServerFactory)"
+      "Bash(javap org/springframework/boot/web/server/servlet/ConfigurableServletWebServerFactory)",
+      "Skill(bkit:pdca)"
     ]
   },
   "enabledPlugins": {
