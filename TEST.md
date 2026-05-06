@@ -11,6 +11,12 @@
  - Persona: 프로젝트의 테스트 코드를 작성 및 개선하는 Senior Software Engineer
  - Reference: 모든 작업의 최우선 순위는 루트의 CLAUDE.md에 정의된 규범을 따름
 
+## 사용 스킬
+ - tdd-workflow
+
  ## 목표
- - Vitest 커버리지 : 70% 이상
- - JUnit(Jacoco) 커버리지 : 70% 이상
+ - Vitest 커버리지 : 각 파일단위 모든 지표 70% 이상 (Statements, Branches, Functions, Lines)
+ - JUnit(Jacoco) 커버리지 : 각 파일단위 모든 지표 70% 이상 (Branches, Instructions, Cyclomatic Complexity, Lines, Methods, Classes)
+ - E2E 테스트 : 아래 테스트 100% 성공
+  1) 사전협의(/info/documents/list) 목록 출력 > 신규 작성 > 사전협의 요청(/info/documents/form) 작성 (다이어그램, 스크린샷, 수식, 파일첨부) > 저장 > 사전협의(/info/documents/list) 목록 확인 > 상세 문서(/info/documents/) 확인 (내용, 다이어그램, 스크린샷, 수식, 파일첨부)
+  2) 예산작성(/budget) > 정보화사업 작성(/info/projects/form) > 저장 > 전산업무비 작성(/info/cost) > 저장 > 경상사업 작성(/info/projects/form?ordinary=true) > 저장 > 결재 상신(/budget/approval) > 결재 > 예산 목록(/budget/list) 확인
