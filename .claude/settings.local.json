@@ -199,7 +199,9 @@
       "Bash(npm audit *)",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(k, v.get\\('severity'\\), v.get\\('url',''\\)\\) for k,v in d.get\\('vulnerabilities',{}\\).items\\(\\)]\")",
       "PowerShell(Get-ChildItem \"C:\\\\it\\\\it_backend\\\\build\\\\reports\\\\jacoco\" -Recurse | Select-Object FullName, Name | Where-Object { $_.Name -match '\\\\.\\(csv|json|txt\\)$' })",
-      "PowerShell(Get-ChildItem *)"
+      "PowerShell(Get-ChildItem *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\it\\\\it_frontend\\\\app\\\\pages\\\\info\" -Recurse -File)",
+      "Bash(Select-Object FullName)"
     ]
   },
   "enabledPlugins": {

@@ -29,13 +29,21 @@ it/
 | 데이터 모델 (테이블 매핑) | `it_backend/docs/guides/data-model.md` |
 | 컴포넌트 가이드 (StyledDataTable 등) | `it_frontend/docs/guides/` |
 
-## 3. 개발 환경
+## 3.1 개발 환경
 
 | 서비스 | URL | 시작 명령 |
 |--------|-----|----------|
-| 프론트엔드 | http://localhost:3000 | `cd it_frontend && npm run dev` |
-| 백엔드 API | http://localhost:8080 | `cd it_backend && ./gradlew bootRun` |
-| Swagger UI | http://localhost:8080/swagger-ui/index.html | (백엔드 기동 후) |
+| 프론트엔드 | http://localhost:13000 | `cd it_frontend && npm run dev` |
+| 백엔드 API | http://localhost:18080 | `cd it_backend && ./gradlew bootRun` |
+| Swagger UI | http://localhost:18080/swagger-ui/index.html | (백엔드 기동 후) |
+
+## 3.2 운영 환경
+
+| 서비스     | URL                        | 시작 명령 |
+|------------|----------------------------|-----------|
+| WebTobe    | https://it.kdb.co.kr:20443 |-----------|
+| 프론트엔드 | (CSR)                      | `cd it_frontend && npm run generate` |
+| 백엔드 API | http://localhost:18080     | `cd it_backend && java -jar ooo.war` |
 
 ## 4. 공통 운영 규약 (모든 하위 프로젝트 적용)
 
