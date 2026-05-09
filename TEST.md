@@ -25,9 +25,7 @@
   4) Lines > 70%
   5) Methods > 70%
   6) Classes > 70%
- - E2E 테스트 : 아래 시나리오 100% 성공 (+ 누락 시나리오 발굴·추가)
-  1) 사전협의(/info/documents/list) 목록 출력 > 신규 작성 > 사전협의 요청(/info/documents/form) 작성 (다이어그램, 스크린샷, 수식, 파일첨부) > 저장 > 사전협의(/info/documents/list) 목록 확인 > 상세 문서(/info/documents/) 확인 (내용, 다이어그램, 스크린샷, 수식, 파일첨부)
-  2) 예산작성(/budget) > 정보화사업 작성(/info/projects/form) > 저장 > 전산업무비 작성(/info/cost) > 저장 > 경상사업 작성(/info/projects/form?ordinary=true) > 저장 > 결재 상신(/budget/approval) > 결재 > 예산 목록(/budget/list) 확인
+ - E2E 테스트 : 기존 시나리오 100% 성공 (+ 누락 시나리오 발굴·추가)
 
 ---
 
@@ -94,16 +92,121 @@ Task 1 갭 파일 목록을 기준으로 기존 파일의 커버리지 갭을 �
 ## [Task 4: E2E Test]
 
 ### 에이전트 (병렬 실행)
-기존 시나리오의 완성도를 높이고, 누락 시나리오를 발굴하여 spec으로 추가한다.
+기존 시나리오(it\it_frontend\tests\e2e)의 완성도를 높이고, 누락 시나리오를 발굴하여 it\it_frontend\tests\e2e Playwright 코드로 추가한다.
 
-| 에이전트 | 담당 |
-|---------|------|
-| `e2e-runner` | 기존 2개 시나리오 완성도 확인·개선 + 미정의 시나리오 갭 탐지 → Playwright spec 작성/보강 |
-| `qa-lead` | `/qa` 스킬로 실제 브라우저 기반 동작 검증 (http://localhost:13000) → 성공/실패 + 개선 포인트 리포트 |
+| 에이전트         | 담당                                                                      |
+| ------------ | ----------------------------------------------------------------------- |
+| `e2e-runner` | 기존 시나리오 완성도 확인·개선 + 미정의 시나리오 갭 탐지 → Playwright spec 작성/보강               |
+| `qa-lead`    | `/qa` 스킬로 실제 브라우저 기반 동작 검증 (http://localhost:3000) → 성공/실패 + 개선 포인트 리포트 |
 
 ### 통합 (순차 실행)
  - `e2e-runner` 신규 시나리오 + `qa-lead` 리포트 교차 검토
  - `qa-lead` 실패 항목은 수정 후 재실행
+
+### 신규 스캐폴드 (e2e-runner가 구현 채움)
+
+| 파일 | 시나리오 | 비고 |
+|------|---------|------|
+| `tests/e2e/budget.spec.ts` | 예산작성 → 경상사업 → 결재 상신 플로우 | 설계 시나리오 2번 |
+| `tests/e2e/documents.spec.ts` | 사전협의 신규 작성 → 저장 → 목록/상세 확인 | 설계 시나리오 1번 |
+| `tests/e2e/access-control.spec.ts` | 비관리자 `/admin/**` 접근 시 `/` 리다이렉트 | ROLE 접근 제어 |
+| `tests/e2e/file-upload.spec.ts` | 첨부파일 업로드·다운로드 플로우 | page.route() mock 허용 |
+
+#### budget.spec.ts 스캐폴드
+
+```typescript
+// [스캐폴드] tests/e2e/budget.spec.ts
+// e2e-runner가 아래 describe/test 구조를 유지하며 실제 셀렉터·단언을 채운다.
+import { test, expect } from '@playwright/test';
+import { mockApi, mockCommonApis, setLoggedIn } from './helpers/mockApi';
+
+test.describe('예산 작성 플로우', () => {
+    test.beforeEach(async ({ page }) => {
+        await setLoggedIn(page);
+        await mockCommonApis(page);
+        // TODO: e2e-runner — 예산 관련 API mock 추가
+    });
+
+    test('경상사업 예산 작성 후 결재 상신이 완료된다', async ({ page }) => {
+        // TODO: e2e-runner — 구현
+    });
+});
+```
+
+#### documents.spec.ts 스캐폴드
+
+```typescript
+// [스캐폴드] tests/e2e/documents.spec.ts
+import { test, expect } from '@playwright/test';
+import { mockApi, mockCommonApis, setLoggedIn } from './helpers/mockApi';
+
+test.describe('사전협의 문서 작성 플로우', () => {
+    test.beforeEach(async ({ page }) => {
+        await setLoggedIn(page);
+        await mockCommonApis(page);
+        // TODO: e2e-runner — 문서 관련 API mock 추가
+    });
+
+    test('사전협의 신규 작성 후 목록에 표시된다', async ({ page }) => {
+        // TODO: e2e-runner — 구현
+    });
+
+    test('작성한 사전협의 상세 내용을 확인할 수 있다', async ({ page }) => {
+        // TODO: e2e-runner — 구현
+    });
+});
+```
+
+#### access-control.spec.ts 스캐폴드
+
+```typescript
+// [스캐폴드] tests/e2e/access-control.spec.ts
+import { test, expect } from '@playwright/test';
+import { setLoggedIn } from './helpers/mockApi';
+
+test.describe('권한 접근 제어', () => {
+    test('비관리자가 /admin 접근 시 메인으로 리다이렉트된다', async ({ page }) => {
+        await setLoggedIn(page, {
+            eno: 'E002', empNm: '일반사용자',
+            athIds: ['ITPZZ001'], bbrC: 'D001', temC: 'T001'
+        });
+        await page.goto('/admin');
+        // TODO: e2e-runner — 리다이렉트 확인 (toHaveURL 등)
+    });
+
+    test('관리자는 /admin에 정상 접근한다', async ({ page }) => {
+        await setLoggedIn(page, {
+            eno: 'E000', empNm: '관리자',
+            athIds: ['ITPAD001'], bbrC: 'D001', temC: 'T001'
+        });
+        await page.goto('/admin');
+        // TODO: e2e-runner — 관리자 페이지 렌더링 확인
+    });
+});
+```
+
+#### file-upload.spec.ts 스캐폴드
+
+```typescript
+// [스캐폴드] tests/e2e/file-upload.spec.ts
+import { test, expect } from '@playwright/test';
+import { mockCommonApis, setLoggedIn } from './helpers/mockApi';
+
+test.describe('파일 업로드·다운로드', () => {
+    test.beforeEach(async ({ page }) => {
+        await setLoggedIn(page);
+        await mockCommonApis(page);
+    });
+
+    test('파일을 업로드하면 목록에 표시된다', async ({ page }) => {
+        // TODO: e2e-runner — page.route()로 업로드 API mock 후 구현
+    });
+
+    test('업로드된 파일을 다운로드할 수 있다', async ({ page }) => {
+        // TODO: e2e-runner — download 이벤트 대기 후 확인
+    });
+});
+```
 
 ### 발굴 대상 누락 시나리오 (예시)
  - 로그인 / 로그아웃 / 토큰 만료 흐름
@@ -113,7 +216,7 @@ Task 1 갭 파일 목록을 기준으로 기존 파일의 커버리지 갭을 �
 
 ### 참조 스킬
  - `/qa` — `qa-lead`가 브라우저 자동화 검증 시 실행
- - E2E 서버: http://localhost:13000 (프론트) + http://localhost:18080 (API)
+ - E2E 서버: http://localhost:3000 (프론트) + http://localhost:8080 (API)
 
 ### 규칙
  - Mock API 없이 실제 서버 대상으로 실행한다. (두 서버 모두 기동 상태 전제)
