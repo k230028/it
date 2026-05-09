@@ -253,7 +253,7 @@ Task 4 완료 후 `e2e-runner` 단독 실행.
 ### 실행 명령
 
 ```bash
-cd it_frontend && npx ts-node tests/e2e/generate-report.ts
+cd it_frontend && npm run generate-report
 ```
 
 ### 규칙
@@ -282,7 +282,7 @@ cd it_frontend && npm run test:e2e
 # → 실패 spec 목록 추출
 
 # HTML 보고서 생성
-cd it_frontend && npx ts-node tests/e2e/generate-report.ts
+cd it_frontend && npm run generate-report
 # → C:\it\docs\test\test-report-YYYY-MM-DD.html 생성
 ```
 
