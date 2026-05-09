@@ -1,18 +1,12 @@
 ## 기본 지침
- - 이 작업은 새로운 테스트 코드를 작성하고, 기존 테스트 코드를 개선하는 작업이다. 
+ - 이 작업은 새로운 테스트 코드를 작성하고, 기존 테스트 코드를 개선하는 작업이다.
  - 이 작업은 속도보다는 정확도가 중요한 작업이다.
  - 모든 계획과 실행(cli 명령어 포함)에 대해 확인받지 않고 작업을 진행한다.
  - 모든 문서 작업은 기존의 파일 인코딩(UTF-8)을 유지한다.
  - 전체 프로젝트, CLAUDE.md(코드 컨벤션), README.md(개발노트)를 충분히 숙지하여 테스트 코드를 작성한다.
- - 수정 시 주석을 추가하여 수정 이유를 명시한다.
- - 모든 Task를 완료한 후에는 전체 프로젝트를 다시 한번 분석하여 누락된 테스트가 없을때까지 반복한다.
+ - **비즈니스 로직(코드 자체)은 절대 수정하지 않는다.**
  - Persona: 프로젝트의 테스트 코드를 작성 및 개선하는 Senior Software Engineer
- - Reference: 모든 작업의 최우선 순위는 루트의 CLAUDE.md에 정의된 규범을 따름
-
-## 사용 스킬
- - tdd-workflow
- - e2e-testing
- - springboot-tdd
+ - Reference: 최우선 순위는 루트 CLAUDE.md → it_backend/CLAUDE.md → it_frontend/CLAUDE.md
 
 ## 대상 디렉토리
  - 백엔드 : it_backend/
@@ -31,6 +25,132 @@
   4) Lines > 70%
   5) Methods > 70%
   6) Classes > 70%
- - E2E 테스트 : 아래 테스트 100% 성공
+ - E2E 테스트 : 아래 시나리오 100% 성공 (+ 누락 시나리오 발굴·추가)
   1) 사전협의(/info/documents/list) 목록 출력 > 신규 작성 > 사전협의 요청(/info/documents/form) 작성 (다이어그램, 스크린샷, 수식, 파일첨부) > 저장 > 사전협의(/info/documents/list) 목록 확인 > 상세 문서(/info/documents/) 확인 (내용, 다이어그램, 스크린샷, 수식, 파일첨부)
   2) 예산작성(/budget) > 정보화사업 작성(/info/projects/form) > 저장 > 전산업무비 작성(/info/cost) > 저장 > 경상사업 작성(/info/projects/form?ordinary=true) > 저장 > 결재 상신(/budget/approval) > 결재 > 예산 목록(/budget/list) 확인
+
+---
+
+## [Task 1: Coverage Gap Analysis]
+
+### 에이전트 (병렬 실행)
+다음 3개 에이전트를 병렬 서브에이전트로 실행하여 갭 파일 목록을 생성한다.
+
+| 에이전트 | 담당 범위 | 출력 |
+|---------|---------|------|
+| `java-reviewer` | `it_backend` 전체 `.java` | 클래스별 Jacoco 기준 70% 미달 파일 목록 |
+| `typescript-reviewer` | `it_frontend` 전체 `.ts`·`.vue` | 파일별 Vitest 기준 70% 미달 파일 목록 |
+| `code-analyzer` | 전체 소스 | 테스트 없는 service·composable + 분기 미커버 코드 경로 탐지 |
+
+### 통합 (순차 실행)
+ - 3개 결과 병합 → `[BE 갭 파일 목록]` / `[FE 갭 파일 목록]` 두 목록으로 분류
+ - Task 2·3 실행 전 인라인 메모로 전달
+
+### 규칙
+ - 실제 커버리지 리포트가 없는 경우 소스·테스트 파일 교차 분석으로 추정한다.
+ - 우선순위: 커버리지 0%인 파일 > 50% 미만 > 70% 미만 순으로 정렬.
+
+---
+
+## [Task 2: Unit Test 보강]
+
+### 에이전트 (병렬 실행)
+Task 1 갭 파일 목록을 기준으로 기존 파일의 커버리지 갭을 채운다.
+
+| 에이전트 | 담당 | 참조 스킬 |
+|---------|------|---------|
+| `tdd-guide` (BE) | BE 갭 파일 → JUnit 5 / Mockito 테스트 작성 | `/springboot-tdd` |
+| `tdd-guide` (FE) | FE 갭 파일 → Vitest 테스트 작성 | — |
+
+### 규칙
+ - `it_frontend/CLAUDE.md §4.10` Mock 규칙 준수
+   - Nuxt `$fetch` → `vi.stubGlobal('$fetch', mockFetch)`
+   - `process.client` → `Object.assign(process, { client: true })`
+   - Nuxt auto-import(`#app`, `#imports`)는 Vitest 미지원 → `ref`, `computed`, `defineStore` 등 명시적 import
+ - `it_backend/CLAUDE.md §5.5` 트랜잭션·JPA Dirty Checking 패턴 이해 후 테스트 작성
+ - AAA(Arrange-Act-Assert) 패턴 필수. 성공·실패·엣지 케이스 3종 이상.
+ - 테스트 파일 위치
+   - FE: `it_frontend/tests/unit/{composables,stores,utils,middleware}/*.test.ts`
+   - BE: `it_backend/src/test/java/com/kdb/it/**/*Test.java`
+
+---
+
+## [Task 3: 신규 도메인 테스트]
+
+### 에이전트 (병렬 실행)
+테스트 파일 자체가 없는 도메인을 발굴하여 신규 테스트를 작성한다.
+
+| 에이전트 | 담당 |
+|---------|------|
+| `java-reviewer` | 테스트 없는 서비스·컨트롤러 발굴 → 신규 JUnit 테스트 작성 |
+| `typescript-reviewer` | 테스트 없는 composable·페이지 발굴 → 신규 Vitest 테스트 작성 |
+
+### 규칙
+ - Task 2와 동일한 Mock 규칙·AAA 패턴 적용.
+ - 컨트롤러 테스트: `@WebMvcTest` + `MockMvc` 패턴. 서비스 테스트: `@ExtendWith(MockitoExtension.class)`.
+
+---
+
+## [Task 4: E2E Test]
+
+### 에이전트 (병렬 실행)
+기존 시나리오의 완성도를 높이고, 누락 시나리오를 발굴하여 spec으로 추가한다.
+
+| 에이전트 | 담당 |
+|---------|------|
+| `e2e-runner` | 기존 2개 시나리오 완성도 확인·개선 + 미정의 시나리오 갭 탐지 → Playwright spec 작성/보강 |
+| `qa-lead` | `/qa` 스킬로 실제 브라우저 기반 동작 검증 (http://localhost:13000) → 성공/실패 + 개선 포인트 리포트 |
+
+### 통합 (순차 실행)
+ - `e2e-runner` 신규 시나리오 + `qa-lead` 리포트 교차 검토
+ - `qa-lead` 실패 항목은 수정 후 재실행
+
+### 발굴 대상 누락 시나리오 (예시)
+ - 로그인 / 로그아웃 / 토큰 만료 흐름
+ - 관리자 페이지 접근 제어 (비관리자 차단 확인)
+ - 파일 업로드·다운로드 플로우
+ - 권한별 메뉴 노출 차이 (ROLE.ADMIN vs ROLE.USER vs ROLE.DEPT_MANAGER)
+
+### 참조 스킬
+ - `/qa` — `qa-lead`가 브라우저 자동화 검증 시 실행
+ - E2E 서버: http://localhost:13000 (프론트) + http://localhost:18080 (API)
+
+### 규칙
+ - Mock API 없이 실제 서버 대상으로 실행한다. (두 서버 모두 기동 상태 전제)
+ - Playwright `page.route()`를 이용한 API mock은 단위 E2E 테스트에서만 허용.
+
+---
+
+## [검증: Verification Loop]
+
+### 1단계 — 실질 측정 (Bash)
+
+```bash
+# 백엔드 커버리지 측정
+cd it_backend && ./gradlew test jacocoTestReport
+# → build/reports/jacoco/test/html/index.html 파싱, 70% 미달 파일 목록 추출
+
+# 프론트엔드 커버리지 측정
+cd it_frontend && npm run test:coverage
+# → coverage/index.html 파싱, 70% 미달 파일 목록 추출
+
+# E2E 실행
+cd it_frontend && npm run test:e2e
+# → 실패 spec 목록 추출
+```
+
+### 2단계 — 코드리뷰
+
+ - `qa-lead` — 70% 미달 파일 테스트 코드 검토, 누락 케이스·Mock 오류 지적
+
+### 반복 조건
+
+| 종료 조건 | 기준 |
+|-----------|------|
+| 전체 BE 파일 Jacoco 6개 지표 | 각 70% 이상 |
+| 전체 FE 파일 Vitest 4개 지표 | 각 70% 이상 |
+| E2E 시나리오 | 100% 성공 |
+
+미달 파일 존재 시 → Task 2 또는 Task 3 해당 에이전트만 재실행 → 검증 반복.  
+E2E 실패 시 → Task 4 `e2e-runner` 재실행 → 검증 반복.  
+**모든 조건 충족 시 종료.**
