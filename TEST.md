@@ -11,6 +11,8 @@
 
 ## 사용 스킬
  - tdd-workflow
+ - e2e-testing
+ - springboot-tdd
 
 ## 대상 디렉토리
  - 백엔드 : it_backend/

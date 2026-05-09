@@ -1,11 +1,11 @@
 ---
 [ 프로젝트 메인 가이드 ]
-본 파일은 IT Portal의 진입점입니다. 공통 운영 규약과 각 하위 프로젝트(`it_backend`, `it_frontend`)의 CLAUDE.md 포인터를 정의합니다.
+본 파일은 IT Project Portal의 진입점입니다. 공통 운영 규약과 각 하위 프로젝트(`it_backend`, `it_frontend`)의 CLAUDE.md 포인터를 정의합니다.
 AI 어시스턴트는 코드 생성 시 모든 주석을 한글로 작성합니다.
 ---
 
 ## 1. 프로젝트 개요
-- 명칭: IT Portal (IT 정보화 포탈)
+- 명칭 : IT Project Portal (IT 정보화 포탈)
 - 주요 기능: 정보화 예산, 사업, 인력 관리
 - 사용자: 약 3,000명의 사내 임직원
 
@@ -33,8 +33,8 @@ it/
 
 | 서비스 | URL | 시작 명령 |
 |--------|-----|----------|
-| 프론트엔드 | http://localhost:13000 | `cd it_frontend && npm run dev` |
-| 백엔드 API | http://localhost:18080 | `cd it_backend && ./gradlew bootRun` |
+| 프론트엔드 | http://localhost:13000 | `cd it_frontend && npm run dev`        |
+| 백엔드 API | http://localhost:18080 | `cd it_backend && ./gradlew bootRun`   |
 | Swagger UI | http://localhost:18080/swagger-ui/index.html | (백엔드 기동 후) |
 
 ## 3.2 운영 환경
@@ -75,7 +75,7 @@ it/
 - (현재 진행 피처는 `/pdca status`로 조회 — CLAUDE.md에 박지 않음)
 
 ### 5.2 QA 워크플로우
-두 서버를 모두 기동한 뒤 `/qa`로 브라우저 기반 테스트를 수행합니다.
+두 서버를 모두 기동한 뒤 `/gstack qa`로 브라우저 기반 테스트를 수행합니다.
 - 테스트 대상: http://localhost:3000
 - API 서버: http://localhost:8080
 - 핵심 시나리오: 로그인, 프로젝트 조회/생성, 결재 처리
@@ -90,8 +90,7 @@ it/
 | `/health` | 코드 품질 점검 |
 | `/checkpoint` | 작업 중간 저장 및 복원 |
 
-### 5.4 IT Portal 에이전트 팀
-새 기능 개발, API/UI 구현, RBAC 설계·검증, QA 실행 요청 시 `it-portal` 스킬을 사용합니다.
+### 5.4 Agent Team (에이전트 팀)
 
 | 에이전트 | 역할 |
 |---------|------|

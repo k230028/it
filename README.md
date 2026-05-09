@@ -210,6 +210,9 @@ cd it_frontend && npx vitest run
 
 # 백엔드 테스트
 cd it_backend && ./gradlew test
+cd it_backend && .\gradlew test jacocoTestReport
+
+
 ```
 
 ---
