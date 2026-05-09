@@ -224,6 +224,46 @@ test.describe('파일 업로드·다운로드', () => {
 
 ---
 
+## [Task 5: HTML 결과 보고서]
+
+### 에이전트 (순차 실행)
+
+Task 4 완료 후 `e2e-runner` 단독 실행.
+
+| 에이전트 | 담당 |
+|---------|------|
+| `e2e-runner` | `it_frontend/tests/e2e/generate-report.ts` 작성 및 실행 → HTML 보고서 생성 |
+
+### 입력 소스
+
+| 소스 | 경로 |
+|------|------|
+| Playwright JSON | `it_frontend/test-results/results.json` |
+| Vitest JSON | `it_frontend/coverage/coverage-summary.json` |
+| Jacoco XML | `it_backend/build/reports/jacoco/test/jacocoTestReport.xml` |
+
+소스 파일이 없으면 해당 섹션을 "데이터 없음"으로 표시하고 종료하지 않는다.
+
+### 출력
+
+- 경로: `C:\it\docs\test\test-report-YYYY-MM-DD.html`
+- 형식: 단일 HTML (외부 CDN 없이 인라인 CSS)
+- 내용: 종합 Pass/Fail 대시보드 + FE 커버리지 테이블 + BE 커버리지 테이블 + E2E 결과 테이블
+
+### 실행 명령
+
+```bash
+cd it_frontend && npx ts-node tests/e2e/generate-report.ts
+```
+
+### 규칙
+
+- 70% 미달 파일/클래스: 빨간 행 강조, 상단 정렬
+- `docs/test/` 디렉토리 없으면 자동 생성
+- `generate-report.ts`는 `.spec.ts`가 아니므로 Playwright testDir 수집에서 자동 제외됨
+
+---
+
 ## [검증: Verification Loop]
 
 ### 1단계 — 실질 측정 (Bash)
@@ -240,6 +280,10 @@ cd it_frontend && npm run test:coverage
 # E2E 실행
 cd it_frontend && npm run test:e2e
 # → 실패 spec 목록 추출
+
+# HTML 보고서 생성
+cd it_frontend && npx ts-node tests/e2e/generate-report.ts
+# → C:\it\docs\test\test-report-YYYY-MM-DD.html 생성
 ```
 
 ### 2단계 — 코드리뷰
