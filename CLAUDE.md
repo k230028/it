@@ -72,12 +72,11 @@ it/
 - 새 피처 시작: `/pdca plan {피처명}`
 - 상태 확인: `/pdca status`
 - 다음 단계 확인: `/pdca next`
-- (현재 진행 피처는 `/pdca status`로 조회 — CLAUDE.md에 박지 않음)
 
 ### 5.2 QA 워크플로우
 두 서버를 모두 기동한 뒤 `/gstack qa`로 브라우저 기반 테스트를 수행합니다.
-- 테스트 대상: http://localhost:3000
-- API 서버: http://localhost:8080
+- 테스트 대상: http://localhost:13000
+- API 서버: http://localhost:18080
 - 핵심 시나리오: 로그인, 프로젝트 조회/생성, 결재 처리
 
 ### 5.3 주요 스킬
@@ -89,15 +88,6 @@ it/
 | `/ship` | PR 생성 및 배포 |
 | `/health` | 코드 품질 점검 |
 | `/checkpoint` | 작업 중간 저장 및 복원 |
-
-### 5.4 Agent Team (에이전트 팀)
-
-| 에이전트 | 역할 |
-|---------|------|
-| `.claude/agents/backend-dev.md` | Spring Boot API |
-| `.claude/agents/frontend-dev.md` | Nuxt 4 UI |
-| `.claude/agents/security-rbac.md` | RBAC 설계·검증 |
-| `.claude/agents/qa-reviewer.md` | QA + 코드리뷰 |
 
 ## 6. Health Stack
 

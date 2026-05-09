@@ -2,7 +2,7 @@
 
 ## 1. 시스템 개요
 
-IT Portal (IT 정보화 포탈)은 정보화 예산, 사업, 인력을 관리하는 내부 업무 시스템입니다.
+IT Project Portal (IT 정보화 포탈)은 정보화 예산, 사업, 인력을 관리하는 내부 업무 시스템입니다.
 
 - **사용자:** 약 3,000명의 사내 임직원
 - **프론트엔드:** Nuxt 4 + PrimeVue + Tailwind CSS
@@ -16,15 +16,14 @@ IT Portal (IT 정보화 포탈)은 정보화 예산, 사업, 인력을 관리하
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  gstack      — 브라우저 QA·리뷰·배포 슬래시 명령어      │
-│  bkit PDCA   — 피처 단위 계획→실행→검증 워크플로우       │
-│  ECC         — 스프링부트·Nuxt 패턴 스킬 라이브러리      │
-│  Superpowers — 계획·디버깅·TDD 메타 워크플로우 스킬     │
+│  gstack      — 브라우저 QA·리뷰·배포 슬래시 명령어          │
+│  bkit PDCA   — 피처 단위 계획→실행→검증 워크플로우          │
+│  ECC         — 스프링부트·Nuxt 패턴 스킬 라이브러리         │
+│  Superpowers — 계획·디버깅·TDD 메타 워크플로우 스킬         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
-
 ## 3. gstack — 브라우저 기반 운영 명령어
 
 gstack은 **슬래시 명령어 형태의 전문가 팀**입니다. 두 서버가 모두 기동된 상태에서 사용합니다.
@@ -34,7 +33,6 @@ gstack은 **슬래시 명령어 형태의 전문가 팀**입니다. 두 서버�
 cd it_backend  && ./gradlew bootRun
 cd it_frontend && npm run dev
 ```
-
 ### 3.1 핵심 명령어
 
 | 명령어 | 용도 | 사용 시점 |
@@ -45,15 +43,11 @@ cd it_frontend && npm run dev
 | `/ship` | PR 생성 및 배포 | 배포 준비 완료 시 |
 | `/health` | 코드 품질 전반 점검 | 주기적 품질 관리 |
 | `/checkpoint` | 작업 상태 저장·복원 | 긴 작업 중간 저장 |
-
 ### 3.2 핵심 테스트 시나리오 (`/qa`)
 
-- 로그인 → 프로젝트 조회/생성 → 결재 처리
-- 테스트 대상: `http://localhost:3000`
-- API 서버: `http://localhost:8080`
+- 테스트 결과 파일 위치: `it\.gstack\qa-reports`
 
 ---
-
 ## 4. bkit PDCA — 피처 단위 구조화 개발
 
 bkit은 **PDCA 방법론 기반 피처 개발 워크플로우**입니다. 계획→설계→실행→검증→아카이브 순으로 진행합니다.
@@ -81,13 +75,6 @@ plan → design → do → analysis → archive
 | 설계서 | `docs/02-design/features/{feature}.design.md` |
 | 보고서 | `docs/04-report/{feature}.report.md` |
 | 상태 파일 | `.bkit/state/pdca-status.json` |
-
-### 4.4 현재 활성 피처
-
-| 피처 | 단계 | 비고 |
-|------|------|------|
-| `rbac` | design | RBAC 설계 진행 중 |
-| `entity` | do | 엔티티 구현 진행 중 |
 
 ---
 
@@ -141,14 +128,51 @@ Superpowers는 **개발 방법론 수준의 워크플로우 스킬**입니다 (v
 
 ## 7. IT Portal 에이전트 팀
 
-풀스택 기능 개발 시 `it-portal` 스킬이 4개 에이전트를 오케스트레이션합니다.
+에이전트는 `~/.claude/agents/`에 설치된 ECC 전문가 에이전트입니다.  
+Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에이전트로 직접 호출합니다.
 
-| 에이전트 | 파일 | 역할 |
-|---------|------|------|
-| `backend-dev` | `.claude/agents/backend-dev.md` | Spring Boot API 구현 |
-| `frontend-dev` | `.claude/agents/frontend-dev.md` | Nuxt 4 UI 구현 |
-| `security-rbac` | `.claude/agents/security-rbac.md` | RBAC 설계·검증 |
-| `qa-reviewer` | `.claude/agents/qa-reviewer.md` | QA + 코드리뷰 |
+### 7.1 백엔드 (Spring Boot 4 · Java 25 · Oracle · JPA/QueryDSL)
+
+| 에이전트 | 주요 역할 | 사용 시점 |
+|---------|---------|---------|
+| `java-reviewer` | 레이어드 아키텍처·JPA 패턴·트랜잭션·동시성 리뷰 | Controller/Service/Repository 수정 후 |
+| `java-build-resolver` | Gradle 빌드·컴파일·의존성 에러 수정 | `./gradlew build` 실패 시 |
+| `database-reviewer` | JPA 엔티티·QueryDSL 쿼리·N+1·인덱스 설계 리뷰 | 쿼리·스키마 변경 시 |
+| `security-reviewer` | JWT·Spring Security·RBAC·OWASP Top 10 취약점 스캔 | 인증/인가 코드 변경 전 커밋 |
+
+### 7.2 프론트엔드 (Nuxt 4 · TypeScript · Vue 3 · PrimeVue · Pinia)
+
+| 에이전트 | 주요 역할 | 사용 시점 |
+|---------|---------|---------|
+| `typescript-reviewer` | 타입 안전성·`useApiFetch`·`$apiFetch` 패턴·Composable 구조 리뷰 | `.vue`·`.ts` 수정 후 |
+| `e2e-runner` | Playwright 기반 E2E 시나리오 생성·실행·유지 | 화면 기능 구현 완료 후 |
+| `build-error-resolver` | TypeScript·Nuxt 빌드 오류 수정 | `npx nuxt typecheck` 실패 시 |
+
+### 7.3 품질 · 보안
+
+| 에이전트 | 주요 역할 | 사용 시점 |
+|---------|---------|---------|
+| `code-reviewer` | 풀스택 코드 품질·가독성·패턴 리뷰 | 모든 코드 변경 후 (자동 활성화) |
+| `silent-failure-hunter` | 에러 삼킴·빈 catch·누락된 에러 전파 탐지 | 서비스·컨트롤러 신규 작성 시 |
+| `pr-test-analyzer` | PR 테스트 커버리지·행동 커버리지 평가 | PR 생성 전 |
+| `tdd-guide` | 테스트 먼저 작성(RED→GREEN→IMPROVE) 워크플로우 강제 | 새 기능·버그픽스 착수 시 |
+
+### 7.4 계획 · 설계
+
+| 에이전트 | 주요 역할 | 사용 시점 |
+|---------|---------|---------|
+| `planner` | 구현 청사진·파일·인터페이스·빌드 순서 설계 | 복잡한 기능 착수 전 |
+| `code-architect` | 기존 패턴 분석 기반 기능 아키텍처 설계 | 신규 도메인 추가 시 |
+| `architect` | 시스템 확장성·기술 결정 분석 | 아키텍처 변경 검토 시 |
+| `performance-optimizer` | 쿼리·번들·렌더링 병목 분석·최적화 | 성능 이슈 발생 시 |
+
+### 7.5 문서 · 유지보수
+
+| 에이전트 | 주요 역할 | 사용 시점 |
+|---------|---------|---------|
+| `doc-updater` | CLAUDE.md·README·가이드 문서 동기화 | 코드 구조 변경 후 |
+| `refactor-cleaner` | 미사용 코드·중복·dead import 정리 | 주기적 코드 정비 시 |
+| `code-simplifier` | 최근 변경 코드 간결화·일관성 개선 | 기능 구현 완료 직후 |
 
 ---
 
@@ -156,17 +180,22 @@ Superpowers는 **개발 방법론 수준의 워크플로우 스킬**입니다 (v
 
 ### 8.1 새 기능 개발 (풀스택)
 
+**필수 단계** — 매 기능마다 실행:
 ```
 1. /brainstorm {기능 아이디어}       ← Superpowers: 기능 구체화
 2. /pdca plan {기능 요구사항}        ← bkit: 계획 수립
-3. /springboot-patterns             ← ECC: 백엔드 패턴 참조
-4. /nuxt4-patterns                  ← ECC: 프론트 패턴 참조
-5. /pdca next                       ← bkit: 구현 단계 진입
-6. /tdd-workflow                    ← ECC: TDD로 구현
-7. /verification-before-completion  ← Superpowers: 완료 전 검증
-8. /qa                              ← gstack: 브라우저 테스트
-9. /review                          ← gstack: 코드 리뷰
-10. /ship                           ← gstack: PR 배포
+3. /pdca next                       ← bkit: 구현 단계 진입
+4. /verification-before-completion  ← Superpowers: 완료 전 검증
+5. /qa                              ← gstack: 브라우저 테스트
+6. /review                          ← gstack: 코드 리뷰
+7. /ship                            ← gstack: PR 배포
+```
+
+**선택 단계** — 필요한 경우에만 실행:
+```
+/springboot-patterns    ← 신규 도메인 착수 시 Spring Boot 컨벤션 확인
+/nuxt4-patterns         ← 신규 도메인 착수 시 Nuxt 4 컨벤션 확인
+/tdd-workflow           ← TDD를 엄격히 강제하고 싶을 때 (평소엔 "테스트도 작성해줘"로 충분)
 ```
 
 ### 8.2 버그 수정
@@ -268,6 +297,15 @@ cd it_backend && .\gradlew test jacocoTestReport
 - 인증 주석 중 Authorization 헤더/localStorage 중심으로 남아 있던 설명을 httpOnly 쿠키 방식에 맞게 수정했습니다.
 - Access Token 쿠키 만료 시간을 JWT 설정의 15분과 맞추고, `CookieUtilTest`로 회귀 검증을 추가했습니다.
 - 루트 `TASK.md`가 없어 신규 백로그 파일을 생성했습니다.
+
+### 11.6 2026-05-09 정비 메모
+
+- REVIEW.md 전면 실행: java-reviewer·typescript-reviewer·silent-failure-hunter·security-reviewer·refactor-cleaner·database-reviewer 총 6개 에이전트 병렬 분석.
+- **주석 정비**: Java 30개 파일·TypeScript/Vue 40개 파일 오류 주석 교정·누락 JavaDoc/TSDoc 추가, 에러 삼킴 30개 위치에 TODO/FIXME 한글 주석 삽입.
+- **보안 이슈 발굴**: `application.properties` 비밀값 기본값 하드코딩(Critical), SHA-256 무염 비밀번호 해시(High), RBAC 미적용 컨트롤러 다수(High), 파일 업로드 확장자 미검증(High), Brute-force 보호 없음(High) — `it_backend/CLAUDE.md §5.6`에 반영, `TASK.md`에 등록.
+- **DB/JPA 이슈**: `BudgetWorkService` N+1 3건, `CAPPLA`/`BITEMM` 인덱스 미확인, `Bprojm.update()` 35+ 파라미터, `ProjectRepositoryImpl`/`CostRepositoryImpl` 전체 컬럼 SELECT 등 — `TASK.md`에 등록.
+- **프론트엔드 리팩토링**: `ApplicationViewerDialog` 빈 쉘, `formatDateTime` 3벌 불일치 구현, `alert()` UX 불일치 등 — `TASK.md`에 등록.
+- `it_backend/README.md`·`it_frontend/README.md` 전면 재작성 (설계 결정 이유, API 맵, 보안 흐름, 환경 설정 포함).
 
 ### 11.5 2026-05-06 정비 메모
 
