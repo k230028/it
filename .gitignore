@@ -9,3 +9,4 @@ everything-claude-code/
 .playwright-mcp/
 .agents/skills/gstack
 .bkit
+.claude
