@@ -16,11 +16,61 @@ IT Project Portal (IT 정보화 포탈)은 정보화 예산, 사업, 인력을 �
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  gstack      — 브라우저 QA·리뷰·배포 슬래시 명령어          │
-│  bkit PDCA   — 피처 단위 계획→실행→검증 워크플로우          │
-│  ECC         — 스프링부트·Nuxt 패턴 스킬 라이브러리         │
-│  Superpowers — 계획·디버깅·TDD 메타 워크플로우 스킬         │
+│  gstack      — 브라우저 QA·리뷰·배포 슬래시 명령어      │
+│  bkit PDCA   — 피처 단위 계획→실행→검증 워크플로우      │
+│  ECC         — 스프링부트·Nuxt 패턴 스킬 라이브러리     │
+│  Superpowers — 계획·디버깅·TDD 메타 워크플로우 스킬     │
 └─────────────────────────────────────────────────────────┘
+```
+
+### 2.1 올바른 프롬프트 지침 가이드
+
+[간단한 기능]은 프롬프트에서 대화하듯이 진행하면 됩니다.
+```
+ex1)
+> /info/cost 편집모드에서 작성 중 [취소]를 눌렀을 때 [취소 확인] 다이얼로그에서 버튼을 아래와 같이 바꿔줘
+ - 기존 : [계속 편집] (파란색) [확인] (파란색)
+ - 변경 : [아니오] (파란색) [예] (빨간색)
+   
+ex2)
+> 사이드바 메뉴 [정보기술부문 계획]과 그 하위 메뉴에 components/icons/IconCrown.vue 왕관 아이콘 적용해주고, 관리자 권한(ITPAD001) 보유자만 메뉴가 보이고 접속 가능하도록 해줘 (상단 메뉴 관리자처럼)
+
+ex3) 
+> [전산업무비 목록] 편집모드에서 PrevYearCostPickerDialog.vue [전년도 전산업무비 불러오기] 시 아래의 로직이 추가되도록 해줘
+ - 최초지급일 : +1년
+ - 결재현황 : null
+   
+ex4)
+> [예산 현황] /budget/status 전산업무비 탭에서 [증감] 컬럼은 증가한 경우 +증가액 (붉은색), -감소액 (파란색)으로 표기해줘
+```
+
+[복잡한 기능]은 별도 md 파일로 요구사항(prd)를 작성하여 지시하고, 항상 문서화 및 TDD(테스트 주도 개발)에 대해 강조합니다. 문서화와 TDD는 별도 REVIEW.md, TEST.md를 통해 주기적으로 현행화하지만 적시에 반영하는게 가장 정확하고 효율적입니다.
+
+> [!note] 주의사항
+> 서로 관련이 없는 많은 기능을 하나의 md 파일에 정의해서 한번에 계획 및 설계서를 작성하는 것은 아직 권고하지 않습니다. 
+
+ ```
+> /pdca plan C:\it\TASK.md 이행계획 작성해줘. 이행 후 C:\it\TASK.md 현행화 계획을 포함하고, 동일한 문제가 재발하지 않도록 코딩 컨벤션 등에 반영하여 앞으로 유의해야 할 부분이 있다면 각 프로젝트 폴더 readme.md, claude.md에 반영해줘. TDD 방법론도 적용해줘.
+
+1. /pdca plan {기능 요구사항}         ← bkit: 계획 수립
+2. /pdca next                       ← bkit: 구현 단계 진입
+3. /verification-before-completion  ← Superpowers: 완료 전 검증
+4. /qa                              ← gstack: 브라우저 테스트 
+5. /review                          ← gstack: 코드 리뷰
+6. /ship                            ← gstack: PR 배포
+ ```
+
+[요구사항 구체화] 요구사항이 구체화되지 않았거나 조언이 필요한 경우 /brainstorming으로 시작하는게 좋습니다.
+```
+> /brainstorming C:\it\TEST.md 활동이 더 agents, team, rule, skill을 종합적으로 활용해서 효과적으로 동작할 수 있도록 개선할 여지가 있는지 확인해줘
+
+1. /brainstorming {기능 아이디어}     ← Superpowers: 기능 구체화
+2. /pdca plan {기능 요구사항}         ← bkit: 계획 수립
+3. /pdca next                       ← bkit: 구현 단계 진입
+4. /verification-before-completion  ← Superpowers: 완료 전 검증
+5. /qa                              ← gstack: 브라우저 테스트 
+6. /review                          ← gstack: 코드 리뷰
+7. /ship                            ← gstack: PR 배포
 ```
 
 ---
@@ -115,14 +165,14 @@ ECC는 **프레임워크별 Best Practice 스킬 모음**입니다 (v1.10.0). IT
 
 Superpowers는 **개발 방법론 수준의 워크플로우 스킬**입니다 (v5.0.7). 특정 작업 전 AI의 접근 방식 자체를 정의합니다.
 
-| 스킬 | 용도 | 사용 시점 |
-|------|------|-----------|
-| `/brainstorm` | 아이디어 구체화·탐색 | 기능 구상 단계 |
-| `/write-plan` | 구조화된 구현 계획 작성 | 복잡한 기능 착수 전 |
-| `/execute-plan` | 작성된 계획 단계별 실행 | 계획 수립 후 |
-| `/systematic-debugging` | 체계적 디버깅 워크플로우 | 원인 불명 버그 |
-| `/test-driven-development` | TDD 강제 워크플로우 | 새 기능·버그픽스 |
-| `/verification-before-completion` | 완료 전 최종 검증 | PR 생성 직전 |
+| 스킬                                | 용도            | 사용 시점       |
+| --------------------------------- | ------------- | ----------- |
+| `/brainstorming`                  | 아이디어 구체화·탐색   | 기능 구상 단계    |
+| `/write-plan`                     | 구조화된 구현 계획 작성 | 복잡한 기능 착수 전 |
+| `/execute-plan`                   | 작성된 계획 단계별 실행 | 계획 수립 후     |
+| `/systematic-debugging`           | 체계적 디버깅 워크플로우 | 원인 불명 버그    |
+| `/test-driven-development`        | TDD 강제 워크플로우  | 새 기능·버그픽스   |
+| `/verification-before-completion` | 완료 전 최종 검증    | PR 생성 직전    |
 
 ---
 
@@ -182,8 +232,8 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 
 **필수 단계** — 매 기능마다 실행:
 ```
-1. /brainstorm {기능 아이디어}       ← Superpowers: 기능 구체화
-2. /pdca plan {기능 요구사항}        ← bkit: 계획 수립
+1. /brainstorming {기능 아이디어}     ← Superpowers: 기능 구체화
+2. /pdca plan {기능 요구사항}         ← bkit: 계획 수립
 3. /pdca next                       ← bkit: 구현 단계 진입
 4. /verification-before-completion  ← Superpowers: 완료 전 검증
 5. /qa                              ← gstack: 브라우저 테스트
@@ -254,9 +304,88 @@ cd it_backend && .\gradlew test jacocoTestReport
 
 ---
 
-## 11. 개발 노트: 현재 코드베이스 구조
+## 11. 메타 용어
 
-### 11.1 백엔드 모듈 관계
+테이블 컬럼명 지정 시 반드시 아래의 용어 조합으로 설계하고, 용어간 조합은 `underbar(_)`로 조합합니다.
+예) 보안예산 : SECT_BG 등
+
+| 용어   | 의미   |
+| ---- | ---- |
+| ASG  | 배정   |
+| ASCT | 협의회  |
+| XCD  | 전결   |
+| EDRT | 전결권  |
+| SECT | 보안   |
+| PRT  | 보호   |
+| INT  | 정보   |
+| BG   | 예산   |
+| ORN  | 경상   |
+| DUP  | 편성   |
+| CTE  | 위원회  |
+| PUL  | 추진   |
+| RQM  | 소요   |
+| TASK | 과업   |
+| DBR  | 심의   |
+| CDPS | 품의   |
+| BID  | 입찰   |
+| CTT  | 계약   |
+| CSTA | 대금   |
+| DFR  | 지급   |
+| FST  | 완료   |
+| OTC  | 성과   |
+| MNG  | 관리   |
+| GRP  | 그룹   |
+| SW   | SW   |
+| HW   | HW   |
+| HRE  | 임차료  |
+| MTN  | 유지보수 |
+| SEVS | 용역   |
+| TUZ  | 이용   |
+| PUE  | 구매   |
+| DVC  | 개발비  |
+| TRNG | 연수   |
+| CIR  | 회선   |
+| USEF | 사용료  |
+| BICE | 담당   |
+| MAU  | 매뉴얼  |
+| TEM  | 팀    |
+| HIS  | 이력   |
+| LGN  | 로그인  |
+| FLUR | 실패   |
+| RSN  | 사유   |
+| IP   | IP   |
+| ADDR | 주소   |
+| DTM  | 일시   |
+| USR  | 사용자  |
+| AGT  | 에이전트 |
+| RNW  | 갱신   |
+| TOK  | 토큰   |
+| END  | 종료   |
+| PLN  | 계획   |
+| TCHN | 기술   |
+| PRTY | 타당성  |
+| IVG  | 검토   |
+| CNRC | 회의   |
+| RPR  | 보고   |
+| REDT | 보고서  |
+| DSD  | 일정   |
+| OPNN | 의견   |
+| MEB  | 구성원  |
+| TMN  | 단말   |
+| USG  | 용도   |
+| TUZ  | 이용   |
+| MANR | 방법   |
+| KD   | 종류   |
+| INFM | 알림   |
+| RMS  | 수신   |
+| TME  | 송신   |
+| MSG  | 메시지  |
+| CNCD | 관련   |
+
+---
+## 12. 개발 노트: 현재 코드베이스 구조
+
+### 12.1 백엔드 모듈 관계
 
 백엔드는 Spring Boot 4 기반 레이어드 구조입니다. `controller → service → repository → Oracle DB` 흐름을 유지하며, 복잡한 조회는 QueryDSL `RepositoryCustom`/`RepositoryImpl` 패턴으로 분리합니다.
 
@@ -270,7 +399,7 @@ cd it_backend && .\gradlew test jacocoTestReport
 | `domain/log` | 감사 로그 | JPA 엔티티 리스너 기반 변경 로그 인프라 |
 | `infra/file`, `infra/ai` | 파일, Gemini 연동 | 업무 도메인과 분리된 외부 연동 계층 |
 
-### 11.2 프론트엔드 모듈 관계
+### 12.2 프론트엔드 모듈 관계
 
 프론트엔드는 Nuxt 4의 `app/` 소스 루트를 사용합니다. 페이지는 업무 메뉴 구조를 따르고, 반복 API 호출은 `composables/`, 전역 인증/검토 상태는 `stores/`에서 관리합니다.
 
@@ -283,7 +412,7 @@ cd it_backend && .\gradlew test jacocoTestReport
 | `app/types` | 공유 타입 | 인증/RBAC, 예산작업, 협의회, 사전협의 타입 |
 | `app/utils` | 순수 유틸 | 금액/상태 표시, Excel/HWPX/PDF 생성 보조 |
 
-### 11.3 핵심 설계 결정
+### 12.3 핵심 설계 결정
 
 - 인증은 httpOnly 쿠키 방식입니다. 프론트엔드가 JWT 문자열을 직접 다루지 않고, 브라우저가 쿠키를 자동 전송합니다.
 - Access Token의 기본 유효시간은 15분입니다. 백엔드 JWT 설정과 쿠키 Max-Age를 같은 시간으로 유지해야 합니다.
@@ -291,23 +420,30 @@ cd it_backend && .\gradlew test jacocoTestReport
 - `StyledDataTable`은 PrimeVue DataTable 스타일 차이를 흡수하는 표준 래퍼입니다. 신규 목록 화면은 이 컴포넌트를 우선 사용합니다.
 - 사전협의 검토 세션은 일부 UI 상태가 아직 메모리/모의 데이터에 의존합니다. 서버 영속화와 프로젝트별 검토자 조회는 `TASK.md`의 후속 과제로 관리합니다.
 
-### 11.4 2026-04-29 정비 메모
+### 12.4 2026-04-29 정비 메모
 
 - 실제 소스 기준으로 백엔드 194개, 프론트엔드 앱 146개 내외의 Java/TypeScript/Vue 파일을 점검했습니다.
 - 인증 주석 중 Authorization 헤더/localStorage 중심으로 남아 있던 설명을 httpOnly 쿠키 방식에 맞게 수정했습니다.
 - Access Token 쿠키 만료 시간을 JWT 설정의 15분과 맞추고, `CookieUtilTest`로 회귀 검증을 추가했습니다.
 - 루트 `TASK.md`가 없어 신규 백로그 파일을 생성했습니다.
 
-### 11.6 2026-05-09 정비 메모
+### 12.6 2026-05-09 정비 메모
 
 - REVIEW.md 전면 실행: java-reviewer·typescript-reviewer·silent-failure-hunter·security-reviewer·refactor-cleaner·database-reviewer 총 6개 에이전트 병렬 분석.
 - **주석 정비**: Java 30개 파일·TypeScript/Vue 40개 파일 오류 주석 교정·누락 JavaDoc/TSDoc 추가, 에러 삼킴 30개 위치에 TODO/FIXME 한글 주석 삽입.
 - **보안 이슈 발굴**: `application.properties` 비밀값 기본값 하드코딩(Critical), SHA-256 무염 비밀번호 해시(High), RBAC 미적용 컨트롤러 다수(High), 파일 업로드 확장자 미검증(High), Brute-force 보호 없음(High) — `it_backend/CLAUDE.md §5.6`에 반영, `TASK.md`에 등록.
-- **DB/JPA 이슈**: `BudgetWorkService` N+1 3건, `CAPPLA`/`BITEMM` 인덱스 미확인, `Bprojm.update()` 35+ 파라미터, `ProjectRepositoryImpl`/`CostRepositoryImpl` 전체 컬럼 SELECT 등 — `TASK.md`에 등록.
+- **DB/JPA 이슈**: `BudgetWorkService` N+1 3건, `Bprojm.update()` 35+ 파라미터, `ProjectRepositoryImpl`/`CostRepositoryImpl` 전체 컬럼 SELECT 등 — `TASK.md`에 등록. `CAPPLA`/`BITEMM` 인덱스는 2026-05-10 마이그레이션으로 추가됨.
 - **프론트엔드 리팩토링**: `ApplicationViewerDialog` 빈 쉘, `formatDateTime` 3벌 불일치 구현, `alert()` UX 불일치 등 — `TASK.md`에 등록.
 - `it_backend/README.md`·`it_frontend/README.md` 전면 재작성 (설계 결정 이유, API 맵, 보안 흐름, 환경 설정 포함).
 
-### 11.5 2026-05-06 정비 메모
+### 12.7 2026-05-10 정비 메모
+
+- 실제 실행 설정 기준으로 로컬 개발 URL을 프론트엔드 `http://localhost:3000`, 백엔드 `http://localhost:8080`로 정정했습니다.
+- `EnvironmentValidator`는 `spring.datasource.password`, `jwt.secret`의 해석 결과가 빈값일 때만 기동을 차단합니다. 현재 `application.properties`에는 `DB_PASSWORD`, `JWT_SECRET` 기본값이 남아 있어 기본값 제거 과제를 `TASK.md`에 다시 열어두었습니다.
+- `FileOwnershipChecker`, `FileValidator`, `LoginAttemptService`, `GeminiController` 관리자 제한은 코드에 반영된 상태로 확인했습니다.
+- 프론트엔드 `ReviewVersionHistory.vue`의 로컬 `formatDateTime`은 버전 이력 전용 축약 포맷으로 주석을 명확히 했고, 전체 화면 표준 포맷은 `utils/common.ts` 사용 규칙을 유지합니다.
+
+### 12.5 2026-05-06 정비 메모
 
 - 실제 운영 소스 기준으로 Java 199개, TypeScript 61개, Vue 113개를 다시 스캔했습니다.
 - 백엔드 인증 설정 문서의 JWT 키명을 실제 `application.properties`의 `jwt.access-token-validity`, `jwt.refresh-token-validity`와 맞췄습니다.

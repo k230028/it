@@ -206,7 +206,21 @@
       "Skill(investigate)",
       "Skill(review)",
       "Skill(qa)",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "PowerShell(Get-ChildItem \"C:\\\\it\\\\it_backend\\\\build\\\\test-results\" -Recurse | Where-Object { $_.Name -match \"FileService\" } | Select-Object FullName)",
+      "PowerShell(Get-ChildItem \"C:\\\\it\\\\it_backend\\\\build\\\\test-results\" -Recurse | Select-Object FullName | Where-Object { $_.FullName -match \"FileService\" })",
+      "PowerShell(ls \"C:\\\\it\\\\it_backend\\\\build\\\\test-results\\\\test\" | Select-Object Name | Where-Object { $_.Name -match \"file|File\" })",
+      "Bash(./gradlew compileJava compileTestJava)",
+      "Bash(awk -F'\"' '{sum+=$2} END {print sum \" total tests\"}')",
+      "Bash(awk '{s+=$1} END {print s \" total, failures:\", f}')",
+      "Bash(awk '{s+=$1} END {print s \" failures\"}')",
+      "Bash(awk '{s+=$1} END {print s \" total\"}')",
+      "Bash(npm i *)",
+      "Bash(npx ts-node *)",
+      "Skill(bkit:dynamic)",
+      "Bash(xargs -I {} basename {})",
+      "Bash(./gradlew compileTestJava --tests \"*ReviewerControllerTest*\" -q)",
+      "Bash(./gradlew compileTestJava -q)"
     ]
   },
   "enabledPlugins": {

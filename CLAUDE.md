@@ -33,9 +33,9 @@ it/
 
 | 서비스 | URL | 시작 명령 |
 |--------|-----|----------|
-| 프론트엔드 | http://localhost:13000 | `cd it_frontend && npm run dev`        |
-| 백엔드 API | http://localhost:18080 | `cd it_backend && ./gradlew bootRun`   |
-| Swagger UI | http://localhost:18080/swagger-ui/index.html | (백엔드 기동 후) |
+| 프론트엔드 | http://localhost:3000 | `cd it_frontend && npm run dev`        |
+| 백엔드 API | http://localhost:8080 | `cd it_backend && ./gradlew bootRun`   |
+| Swagger UI | http://localhost:8080/swagger-ui/index.html | (백엔드 기동 후) |
 
 ## 3.2 운영 환경
 
@@ -43,7 +43,7 @@ it/
 |------------|----------------------------|-----------|
 | WebTobe    | https://it.kdb.co.kr:20443 |-----------|
 | 프론트엔드 | (CSR)                      | `cd it_frontend && npm run generate` |
-| 백엔드 API | http://localhost:18080     | `cd it_backend && java -jar ooo.war` |
+| 백엔드 API | http://localhost:8080      | `cd it_backend && java -jar ooo.war` |
 
 ## 4. 공통 운영 규약 (모든 하위 프로젝트 적용)
 
@@ -75,8 +75,8 @@ it/
 
 ### 5.2 QA 워크플로우
 두 서버를 모두 기동한 뒤 `/gstack qa`로 브라우저 기반 테스트를 수행합니다.
-- 테스트 대상: http://localhost:13000
-- API 서버: http://localhost:18080
+- 테스트 대상: http://localhost:3000
+- API 서버: http://localhost:8080
 - 핵심 시나리오: 로그인, 프로젝트 조회/생성, 결재 처리
 
 ### 5.3 주요 스킬
