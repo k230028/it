@@ -22,12 +22,12 @@ it/
 
 각 영역의 단일 진실 공급원(Single Source of Truth):
 
-| 토픽 | SoT |
-|------|-----|
-| 백엔드 기술 스택 / API 설계 / 엔티티 / 인증 정책 / 운영 비밀값 기준 | `it_backend/CLAUDE.md` |
-| 프론트엔드 기술 스택 / 컴포넌트 / 라우팅 / 클라이언트 인증 책임 | `it_frontend/CLAUDE.md` |
-| 데이터 모델 (테이블 매핑) | `it_backend/docs/guides/data-model.md` |
-| 컴포넌트 가이드 (StyledDataTable 등) | `it_frontend/docs/guides/` |
+| 토픽                                           | SoT                                    |
+| -------------------------------------------- | -------------------------------------- |
+| 백엔드 기술 스택 / API 설계 / 엔티티 / 인증 정책 / 운영 비밀값 기준 | `it_backend/CLAUDE.md`                 |
+| 프론트엔드 기술 스택 / 컴포넌트 / 라우팅 / 클라이언트 인증 책임       | `it_frontend/CLAUDE.md`                |
+| 데이터 모델 (테이블 매핑)                              | `it_backend/docs/guides/data-model.md` |
+| 컴포넌트 가이드 (StyledDataTable 등)                 | `it_frontend/docs/guides/`             |
 
 ## 3.1 개발 환경
 
