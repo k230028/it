@@ -28,6 +28,7 @@ it/
 | 프론트엔드 기술 스택 / 컴포넌트 / 라우팅 / 클라이언트 인증 책임       | `it_frontend/CLAUDE.md`                |
 | 데이터 모델 (테이블 매핑)                              | `it_backend/docs/guides/data-model.md` |
 | 컴포넌트 가이드 (StyledDataTable 등)                 | `it_frontend/docs/guides/`             |
+| 공통 게시판 도메인 규칙                               | `it_backend/CLAUDE.md`, `it_frontend/CLAUDE.md` |
 
 ## 3.1 개발 환경
 
@@ -36,6 +37,13 @@ it/
 | 프론트엔드 | http://localhost:3000 | `cd it_frontend && npm run dev`        |
 | 백엔드 API | http://localhost:8080 | `cd it_backend && ./gradlew bootRun`   |
 | Swagger UI | http://localhost:8080/swagger-ui/index.html | (백엔드 기동 후) |
+| Oracle DB | 127.0.0.1:1521/XEPDB1 | `.\it_database\connect-db.ps1` |
+
+### 3.1.1 로컬 Oracle DB 접속
+- DB 확인이 필요하면 루트에서 `.\it_database\connect-db.ps1` 또는 `.\it_database\connect-db.bat`를 실행합니다.
+- 기본 접속 정보는 Spring Boot 개발 설정과 동일합니다: `ITPAPP@127.0.0.1:1521/XEPDB1`.
+- 스크립트는 `sqlplus`를 우선 사용하고, 없으면 SQLcl의 `sql` 명령을 사용합니다.
+- 접속 정보 변경이 필요하면 `-HostName`, `-Port`, `-ServiceName`, `-Username`, `-Password`, `-Client` 인자로 오버라이드합니다.
 
 ## 3.2 운영 환경
 
@@ -58,6 +66,7 @@ it/
 - 인증 API 호출은 `credentials: 'include'`.
 - Access Token 15분 / Refresh Token 7일 (백엔드 SoT).
 - 관리자 권한은 프론트 라우트 가드 + 백엔드 `SecurityConfig`/`@PreAuthorize` 이중 적용.
+- 프론트의 `it-portal-user` 쿠키와 라우트 가드는 UX 보호용입니다. 서버 권한 판단은 반드시 JWT 클레임 기반 `@PreAuthorize` 또는 서비스 계층 권한 검증에서 수행합니다.
 - DB 비밀번호, JWT 시크릿, 외부 API 키는 운영 배포 시 환경변수 또는 비공개 프로파일에서 주입합니다.
 - 상세 정책은 `it_backend/CLAUDE.md` 인증 섹션을 SoT로 따릅니다.
 

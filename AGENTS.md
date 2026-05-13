@@ -13,7 +13,8 @@ AI 어시스턴트는 코드 생성 시 이 지침을 준수하며, 모든 주�
 ```
 it
 ├── it_frontend 프론트엔드
-└── it_backend  백엔드
+├── it_backend  백엔드
+└── it_database DB 스크립트/마이그레이션
 ```
 
 ## 3. 기술 스택 (Tech Stack)
@@ -27,6 +28,7 @@ it
 | 프론트엔드 | http://localhost:3000 |
 | 백엔드 API | http://localhost:8080 |
 | Swagger UI | http://localhost:8080/swagger-ui/index.html |
+| Oracle DB | 127.0.0.1:1521/XEPDB1 |
 
 ### 4.2 서버 시작
 ```bash
@@ -36,6 +38,20 @@ it
 # 프론트엔드 (it_frontend 디렉토리)
 npm run dev
 ```
+
+### 4.3 로컬 DB 접속
+```powershell
+# 루트 디렉토리에서 실행
+.\it_database\connect-db.ps1
+
+# cmd.exe 환경에서는 배치 래퍼 사용 가능
+.\it_database\connect-db.bat
+```
+
+- 기본 계정: `ITPAPP`
+- 기본 서비스: `127.0.0.1:1521/XEPDB1`
+- DB 확인이 필요할 때는 위 스크립트로 접속합니다.
+- 접속 클라이언트는 `sqlplus`를 우선 사용하고, 없으면 SQLcl의 `sql` 명령을 사용합니다.
 
 ## 5. AI 하네스 가이드
 

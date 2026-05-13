@@ -320,6 +320,7 @@ META.md 참고
 | `common/system` | 인증, JWT, 로그인 이력 | httpOnly 쿠키 기반 Access/Refresh Token, `JwtAuthenticationFilter`에서 쿠키 우선 인증 |
 | `common/iam` | 사용자, 조직, 자격등급 | `CuserI`, `CorgnI`, `CauthI`, `CroleI` 중심의 RBAC 기반 데이터 |
 | `common/approval` | 전자결재 | 신청서 마스터와 원본 업무 객체 연결, 결재 완료 이벤트 발행 |
+| `common/board` | 공통 게시판 | 게시판 메타, 게시물, 댓글, 답변글, 권한/부서 제한 정책 |
 | `domain/budget` | 정보화 예산/사업 | project, cost, plan, work, status, document 하위 도메인으로 분리 |
 | `domain/council` | 정보화실무협의회 | 심의과제, 평가위원, 타당성, 결과서, 일정 관리 |
 | `domain/log` | 감사 로그 | JPA 엔티티 리스너 기반 변경 로그 인프라 |
@@ -333,7 +334,7 @@ META.md 참고
 |------|------|-----------|
 | `app/pages` | 라우트 화면 | admin, info, budget, approval, audit 등 업무 메뉴별 화면 |
 | `app/components` | UI 조립 단위 | PrimeVue 기반 공통 테이블, 결재/사전협의/협의회 컴포넌트 |
-| `app/composables` | API 및 화면 로직 | `useApiFetch`는 GET 조회, `$apiFetch`는 변경 요청에 사용 |
+| `app/composables` | API 및 화면 로직 | `useApiFetch`는 GET 조회, `$apiFetch`는 변경 요청에 사용. 게시판은 `useBoard*` 계열 사용 |
 | `app/stores` | 전역 상태 | 인증 상태와 사전협의 세션 상태 관리 |
 | `app/types` | 공유 타입 | 인증/RBAC, 예산작업, 협의회, 사전협의 타입 |
 | `app/utils` | 순수 유틸 | 금액/상태 표시, Excel/HWPX/PDF 생성 보조 |
@@ -345,6 +346,15 @@ META.md 참고
 - 관리자 접근 제어는 프론트 라우트 가드와 백엔드 URL/메서드 권한 검사를 함께 사용합니다.
 - `StyledDataTable`은 PrimeVue DataTable 스타일 차이를 흡수하는 표준 래퍼입니다. 신규 목록 화면은 이 컴포넌트를 우선 사용합니다.
 - 사전협의 검토 세션은 일부 UI 상태가 아직 메모리/모의 데이터에 의존합니다. 서버 영속화와 프로젝트별 검토자 조회는 `TASK.md`의 후속 과제로 관리합니다.
+- 공통 게시판은 `/board/**` 사용자 화면과 `/admin/boards` 관리자 화면으로 구성됩니다. 프론트 메뉴 필터는 UX 보조이며, 최종 권한은 백엔드 게시판 서비스에서 검증합니다.
+
+### 12.8 2026-05-14 정비 메모
+
+- 공통 게시판(`common/board`, `/board`, `/admin/boards`)을 루트/하위 README와 CLAUDE에 반영했습니다.
+- 로그인 Brute-force 보호 설명을 실제 구현에 맞게 수정했습니다. 현재는 인메모리 카운터가 아니라 `TAAABB_CLOGNH` 로그인 실패 이력을 집계합니다.
+- 프론트엔드 실제 구조를 컴포넌트 66개, composable 45개, 페이지 52개, 미들웨어 4개 기준으로 갱신했습니다.
+- `useDeptFilter`는 실제 파일이 없어 규칙에서 현황/백로그 과제로 조정했습니다.
+- Java/TypeScript 일부 주석 불일치와 누락을 보강하고, 전수 보강·lint 복구·게시판 확장 과제는 `TASK.md`에 유지했습니다.
 
 ### 12.4 2026-04-29 정비 메모
 

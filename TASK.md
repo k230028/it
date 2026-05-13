@@ -1,11 +1,11 @@
 # IT Portal 백로그
 
-> 기준일: 2026-05-10
+> 기준일: 2026-05-14
 > 목적: `REVIEW.md` 정비 과정에서 확인한 기술 부채, 미구현 항목, 후속 검증 과제를 추적합니다.
 
 ## 진행 중
 
-> 최종 업데이트: 2026-05-10
+> 최종 업데이트: 2026-05-14
 
 ### 보안
 
@@ -20,6 +20,8 @@
 | [Open] | Medium   | `Authorization: Bearer` 헤더 폴백 운영 활성화 여부 결정 후 `it_backend/CLAUDE.md`에 명시                                                 | 현재 운영에서도 동작 — XSS 탈취 토큰 헤더 전송 경로 오픈              |
 | [Open] | Medium   | X-Forwarded-For 신뢰 프록시 목록 제한 — Nginx 등에서 헤더 덮어쓰기 설정 적용                                                                  | `AuthController.getClientIp()`가 헤더 무조건 신뢰        |
 | [Open] | Medium   | `$apiFetch` 401 갱신 후 원요청 재시도 결과가 호출자에게 반환되는지 E2E로 검증                                                                    | `plugins/auth.ts` refresh 재시도 흐름 브라우저 회귀 필요      |
+| [Open] | Medium   | `it-portal-user` 쿠키 변조 시 프론트 관리자 가드가 일시적으로 관리자 화면을 노출하지 않는지 E2E 검증                                             | 프론트 쿠키는 UX 상태이며 최종 권한은 백엔드가 판단해야 함 |
+| [Open] | Medium   | SSO 운영 설정 검증 강화 — `app.sso.allow-direct-eno=false`, `app.frontend-url` 실제 값, 프록시 헤더 덮어쓰기 점검                                 | `SsoController`, `AuthController.getClientIp()` 운영 안전장치 |
 
 ### 사전협의
 
@@ -46,6 +48,8 @@
 | [Open] | Medium | HWPX 내보내기 이미지 누락 진단 강화 | `useHwpxExport.ts` 이미지 fetch 실패 시 null 반환 |
 | [Open] | Medium | Gemini 파일 첨부 실패 로그 보강 | `GeminiService.java` 파일 읽기 실패 시 skip만 반환 |
 | [Open] | Medium | 감사로그 `delYn` 리플렉션 실패 시 경고 로그 및 변경유형 판정 검증 | `ChangeLogEntityListener.java` 실패 시 `U`로 폴백 |
+| [Open] | Medium | Java 파일 헤더 주석 전수 보강 | 다수 Java 파일이 `package`로 바로 시작하며 파일 역할/흐름/연동 테이블 헤더가 없음 |
+| [Open] | Medium | `AdminDto` 잔여 DTO JavaDoc 보강 | 자격등급/사용자/조직/역할/로그인 이력/토큰/첨부파일/통계 DTO는 기본 설명만 존재 |
 
 ### DB / JPA 최적화
 
@@ -65,6 +69,8 @@
 | [Open] | Medium | `ProjectService.enrichProjectListBatch()` 사업별 비목 요약 N+1 제거 — BITEMM을 사업 키 묶음으로 일괄 조회 | `ProjectService.java L662, L684, L783` |
 | [Open] | Medium | `ApplicationService.getPendingCount()` full entity 조회 후 `.size()` → `count` 쿼리 전환 | `ApplicationService.java L535`, `ProjectRepositoryImpl.java L140`, `CostRepositoryImpl.java L163` |
 | [Open] | Medium | `FeasibilityService.replacePerformances()` JPQL DELETE 후 flush 없이 persist → `flush()` 명시 또는 Spring Data `deleteAll` 통일 | `FeasibilityService.java L225` |
+| [Open] | Medium | 협의회 일정/평가 사용자명 조회 N+1 제거 | `ScheduleService`, `EvaluationService`에서 사번별 `findByEno()` 반복 |
+| [Open] | Medium | 협의회 위원/상태 조회 배치화 검토 | `CommitteeService`, `CouncilService` 반복 조회 후보 |
 
 ### 프론트엔드 리팩토링
 
@@ -76,12 +82,15 @@
 | [Open] | Medium | `useProjectOptions.ts` 인라인 전환 검토 — `yearOptions` 배열만 반환하는 단순 composable                                                 | `pages/info/projects/form.vue` 1곳에서만 사용 |
 | [Open] | Low | `ReviewVersionHistory.vue` 로컬 `formatDateTime()` 유지 여부 검토 — 축약 표시가 의도라면 함수명을 도메인 전용으로 변경 | `components/review/ReviewVersionHistory.vue` |
 | [Open] | Medium | `info/index.vue` 정적 KPI/공지/일정 데이터를 실제 API 또는 운영 데이터 소스로 전환 | 파일 헤더가 정적 데이터/향후 API 연결 예정임을 명시 |
+| [Open] | High | 프론트 ESLint 오류 정리 — dead import, 미사용 변수, type-only import, 템플릿 파싱 오류 우선 처리 | 2026-05-14 `npm run lint` 기준 62 errors / 137 warnings. `EvalSummaryPanel.vue`, `result/[id].vue`, cost 컴포넌트 등 |
+| [Open] | Medium | 공통 `useDeptFilter` composable 구현 또는 규칙 폐기 결정 | 기존 CLAUDE 규칙과 달리 `app/composables/useDeptFilter.ts`가 없음 |
+| [Open] | Medium | Tiptap 표 도구 계약 문서화 및 주석 보강 | `useTiptapTableTools.ts`, `TiptapTableFloatingToolbar.vue`가 복잡도 대비 계약 설명 부족 |
 
 ### 백엔드 리팩토링
 
 | 상태 | 우선순위 | 과제 | 근거 |
 |------|----------|------|------|
-| [Open] | Medium | `stream().collect(Collectors.toList())` → `.toList()` 전환 (현재 44곳) | Java 25 환경, 가독성·불변성 향상 |
+| [Open] | Medium | `stream().collect(Collectors.toList())` → `.toList()` 전환 | Java 25 환경, 가독성·불변성 향상. `common/board` 포함 다수 잔존 |
 | [Open] | Medium | 문서/내보내기 회귀 테스트 범위 확대 (HWPX/PDF/Excel) | `utils/hwpx.ts` HTML 파싱·이미지 패키징·XML 생성 통합 담당 |
 | [Open] | Medium | `domain/log` 감사로그 리스너 통합 테스트 보강 | JaCoCo 제외 대상이나 업무 감사 추적에 중요 |
 | [Open] | Low | `AuditLogEvent.java` → Java record 전환 | Java 25 환경, 3개 필드 + getter 구성 |
@@ -91,6 +100,10 @@
 
 | 상태 | 일자 | 영역 | 조치 |
 |------|------|------|------|
+| [Done] | 2026-05-14 | 문서 | 공통 게시판(`common/board`, `/board`, `/admin/boards`)을 루트/백엔드/프론트 README·CLAUDE에 반영 |
+| [Done] | 2026-05-14 | 문서 | 로그인 Brute-force 보호 설명을 DB 로그인 이력(`TAAABB_CLOGNH`) 집계 방식으로 정정 |
+| [Done] | 2026-05-14 | 주석 | `AdminDto`, `BoardPostRepositoryImpl`, `Cblbcm`, 일부 프론트 파일 헤더/계약 주석 보강 |
+| [Done] | 2026-05-14 | 문서 | `useDeptFilter` 미구현 상태를 프론트 CLAUDE/README에 반영하고 후속 과제로 이동 |
 | [Done] | 2026-05-10 | 사전협의 | `stores/review.ts` `defaultReviewers` 하드코딩 제거 → `ReviewerService`/`ReviewerController`/`ReviewerDto` TDD 구현 + API 조회 연동 |
 | [Done] | 2026-05-10 | 프론트엔드 | `formatDateTime` 3개 중복 구현 → `utils/common.ts` 단일 구현으로 통합 |
 | [Done] | 2026-05-10 | 프론트엔드 | `components/approval/ApplicationViewerDialog.vue` 빈 쉘 삭제 |
@@ -99,7 +112,7 @@
 | [Done] | 2026-05-10 | DB/JPA | `BITEMM(PRJ_MNG_NO)` 인덱스 추가 마이그레이션 확인 (`V20260510_002__add_bitemm_prj_mng_no_index.sql`) |
 | [Done] | 2026-05-09 | 보안 | `EnvironmentValidator` — `spring.datasource.password`, `jwt.secret` 빈값 fast-fail 검증 추가 (단, 개발 기본값 제거는 미완료) |
 | [Done] | 2026-05-09 | 보안 | `FileOwnershipChecker` 소유권 검증 → `FileController` 적용, `GeminiController` `@PreAuthorize("hasRole('ADMIN')")` 추가 |
-| [Done] | 2026-05-09 | 보안 | `LoginAttemptService` — 인메모리 5회/10분 Brute-force 차단, `AuthService.login()` 연동 |
+| [Done] | 2026-05-09 | 보안 | `LoginAttemptService` — `TAAABB_CLOGNH` 로그인 실패 이력 기반 5회/10분 Brute-force 차단, `AuthService.login()` 연동 |
 | [Done] | 2026-05-09 | 보안 | `FileValidator` — 허용 확장자 화이트리스트 검증, `FileService.uploadFileInternal()` 연동 |
 | [Done] | 2026-05-09 | 에러처리 | `SsoController.complete()` catch → `log.error()` 추가 |
 | [Done] | 2026-05-09 | 에러처리 | `FileService.java` IOException → `CustomGeneralException(msg, e)` cause 전달 |
@@ -131,3 +144,5 @@
 - [ ] 게시물 목록 서버사이드 페이지네이션 — 백엔드 `Page<T>` 응답 + 전체 건수 반환 (현재 클라이언트 페이징 size=1000)
 - [ ] `board/index.vue` + `AppSidebar.vue` 공통 권한 필터 추출 (현재 `inqAthC` 로직 중복)
 - [ ] 게시판 단위 테스트 확대 — `BoardMetaService`, `BoardPostService` 커버리지 80%+
+- [ ] 게시판 첨부파일 UI/API 연결 — 현재 게시물 타입에 `flApgYn`, `flNbr`만 있고 파일 업로드 흐름은 미연동
+- [ ] 게시판 권한 코드(`inqAthC`, `enrAthC`)가 `ROLE.ADMIN` 외 역할을 정확히 매핑하는지 프론트/백엔드 통합 테스트 추가
