@@ -75,6 +75,15 @@ it/
 - `CLAUDE.md` — 실제 코드에서 확인된 규칙만 기록 (휘발성/카운트 정보 금지)
 - `TASK.md` — 미구현, 기술 부채, 보안/성능/테스트 보강 과제
 
+### 4.4 데이터베이스 마이그레이션 (Flyway)
+- **경로**: `it_database/migrations/`
+- **네이밍 규칙**: `V{YYYYMMDD_NNN}__{설명}.sql`
+  - 예: `V20260516_001__CreateCcodemTable.sql`, `V20260516_002__AddBudgetIndexes.sql`
+  - 첫 8자리 날짜 + 일련번호 3자리로 자동 버전 관리 (Flyway).
+  - 설명은 CamelCase, 기능/테이블/변경 의도 명확히.
+- **내용**: DDL (테이블/인덱스/시퀀스) + DML (초기화/데이터 마이그레이션).
+- **주의**: 각 스크립트는 멱등성(idempotent) 유지 — 재실행 시에도 안전해야 함. Flyway는 성공한 스크립트 목록을 추적하므로 수정 금지.
+
 ## 5. AI 하네스 가이드
 
 ### 5.1 bkit PDCA

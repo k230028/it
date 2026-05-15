@@ -1,0 +1,8 @@
+## FRONTEND
+
+#### F-C-01 -- cost/terminal/[id].vue: 삭제 실패 시 사용자 피드백 없음
+
+- **위치**: `it_frontend/app/pages/info/cost/terminal/[id].vue:36`
+- **심각도**: CRITICAL
+- **이슈**: 비용 삭제 API 실패 시 console.error 만 실행.
+- **수정 권고**: `// FIXME: [F-C-01] catch 블록에 toast.add({ severity: "error", summary: "삭제 실패" }) 추가 필수.`

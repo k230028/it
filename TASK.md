@@ -1,27 +1,34 @@
 # IT Portal 백로그
 
-> 기준일: 2026-05-14
+> 기준일: 2026-05-16
 > 목적: `REVIEW.md` 정비 과정에서 확인한 기술 부채, 미구현 항목, 후속 검증 과제를 추적합니다.
 
 ## 진행 중
 
-> 최종 업데이트: 2026-05-14
+> 최종 업데이트: 2026-05-16
 
 ### 보안
 
-| 상태     | 우선순위     | 과제                                                                                                                      | 근거                                               |
-| ------ | -------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| [Open] | Critical | `application.properties` 비밀값 기본값(`DB_PASSWORD`, `JWT_SECRET`) 제거 — 현재 기본값 때문에 환경변수 미설정 시에도 `EnvironmentValidator`를 통과함 | `spring.datasource.password=${DB_PASSWORD:kdb1234!!}`, `jwt.secret=${JWT_SECRET:...}` |
-| [Done] | High     | `FileController`·`GeminiController` 등 `@PreAuthorize` 미적용 컨트롤러에 소유권 검증 또는 권한 어노테이션 추가                                   | `FileOwnershipChecker` 적용, `GeminiController` ADMIN 전용 |
-| [Done] | High     | 로그인 Brute-force 보호 — 연속 실패 횟수 임계값(예: 5회/10분) + 계정 잠금 또는 지연 응답 적용                                                        | `LoginAttemptService` 구현, `AuthService.login()` 연동    |
-| [Done] | High     | 파일 업로드 확장자 화이트리스트 검증 추가 (`FileService.uploadFileInternal()`)                                                            | `FileValidator` 구현, `FileService` 연동                  |
-| [Open] | Medium   | 운영 프로파일에서 `app.cookie.secure=true`, `cors.allowed-origins` 실제 오리진 강제 설정 및 구동 시 검증                                       | 기본값이 각각 `false`, `localhost`이므로 환경변수 미설정 시 보안 취약 |
-| [Open] | Medium   | `gemini.api.key` 운영 필수 여부 결정 후 `EnvironmentValidator` 검증 대상에 포함 또는 Gemini 기능 비활성 정책 명시                              | 현재 `EnvironmentValidator`는 `spring.datasource.password`, `jwt.secret`만 검사 |
-| [Open] | Medium   | `Authorization: Bearer` 헤더 폴백 운영 활성화 여부 결정 후 `it_backend/CLAUDE.md`에 명시                                                 | 현재 운영에서도 동작 — XSS 탈취 토큰 헤더 전송 경로 오픈              |
-| [Open] | Medium   | X-Forwarded-For 신뢰 프록시 목록 제한 — Nginx 등에서 헤더 덮어쓰기 설정 적용                                                                  | `AuthController.getClientIp()`가 헤더 무조건 신뢰        |
-| [Open] | Medium   | `$apiFetch` 401 갱신 후 원요청 재시도 결과가 호출자에게 반환되는지 E2E로 검증                                                                    | `plugins/auth.ts` refresh 재시도 흐름 브라우저 회귀 필요      |
-| [Open] | Medium   | `it-portal-user` 쿠키 변조 시 프론트 관리자 가드가 일시적으로 관리자 화면을 노출하지 않는지 E2E 검증                                             | 프론트 쿠키는 UX 상태이며 최종 권한은 백엔드가 판단해야 함 |
-| [Open] | Medium   | SSO 운영 설정 검증 강화 — `app.sso.allow-direct-eno=false`, `app.frontend-url` 실제 값, 프록시 헤더 덮어쓰기 점검                                 | `SsoController`, `AuthController.getClientIp()` 운영 안전장치 |
+| 상태     | 우선순위     | 과제                                                                                                                                            | 근거                                                                                    |
+| ------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| [Open] | Critical | `application.properties` 비밀값 기본값(`DB_PASSWORD`, `JWT_SECRET`) 제거 — 현재 기본값 때문에 환경변수 미설정 시에도 `EnvironmentValidator`를 통과함                        | `spring.datasource.password=${DB_PASSWORD:kdb1234!!}`, `jwt.secret=${JWT_SECRET:...}` |
+| [Done] | High     | `FileController`·`GeminiController` 등 `@PreAuthorize` 미적용 컨트롤러에 소유권 검증 또는 권한 어노테이션 추가                                                         | `FileOwnershipChecker` 적용, `GeminiController` ADMIN 전용                                |
+| [Done] | High     | 로그인 Brute-force 보호 — 연속 실패 횟수 임계값(예: 5회/10분) + 계정 잠금 또는 지연 응답 적용                                                                              | `LoginAttemptService` 구현, `AuthService.login()` 연동                                    |
+| [Done] | High     | 파일 업로드 확장자 화이트리스트 검증 추가 (`FileService.uploadFileInternal()`)                                                                                  | `FileValidator` 구현, `FileService` 연동                                                  |
+| [Open] | Medium   | 운영 프로파일에서 `app.cookie.secure=true`, `cors.allowed-origins` 실제 오리진 강제 설정 및 구동 시 검증                                                             | 기본값이 각각 `false`, `localhost`이므로 환경변수 미설정 시 보안 취약                                      |
+| [Open] | Medium   | `gemini.api.key` 운영 필수 여부 결정 후 `EnvironmentValidator` 검증 대상에 포함 또는 Gemini 기능 비활성 정책 명시                                                        | 현재 `EnvironmentValidator`는 `spring.datasource.password`, `jwt.secret`만 검사             |
+| [Open] | Medium   | `Authorization: Bearer` 헤더 폴백 운영 활성화 여부 결정 후 `it_backend/CLAUDE.md`에 명시                                                                       | 현재 운영에서도 동작 — XSS 탈취 토큰 헤더 전송 경로 오픈                                                   |
+| [Open] | Medium   | X-Forwarded-For 신뢰 프록시 목록 제한 — Nginx 등에서 헤더 덮어쓰기 설정 적용                                                                                        | `AuthController.getClientIp()`가 헤더 무조건 신뢰                                             |
+| [Open] | Medium   | `$apiFetch` 401 갱신 후 원요청 재시도 결과가 호출자에게 반환되는지 E2E로 검증                                                                                          | `plugins/auth.ts` refresh 재시도 흐름 브라우저 회귀 필요                                           |
+| [Open] | Medium   | `it-portal-user` 쿠키 변조 시 프론트 관리자 가드가 일시적으로 관리자 화면을 노출하지 않는지 E2E 검증                                                                            | 프론트 쿠키는 UX 상태이며 최종 권한은 백엔드가 판단해야 함                                                    |
+| [Open] | Medium   | SSO 운영 설정 검증 강화 — `app.sso.allow-direct-eno=false`, `app.frontend-url` 실제 값, 프록시 헤더 덮어쓰기 점검                                                   | `SsoController`, `AuthController.getClientIp()` 운영 안전장치                               |
+| [Open] | High     | Refresh Token Rotation 도입 — `/api/auth/refresh` 호출 시 Access Token뿐 아니라 Refresh Token도 신규 발급·DB 교체                                             | `AuthService.java:206-236` 현재 Access만 재발급, 탈취 시 7일간 유효                                |
+| [Open] | Medium   | Access Token Blocklist 도입 검토 — 로그아웃 시 잔존 토큰(최대 15분) 무효화 필요 여부 결정                                                                              | `AuthService.logout()` Stateless 한계, 고보안 시나리오용                                        |
+| [Open] | Medium   | `SecurityConfig.CorsConfiguration#allowedHeaders` `List.of("*")` → 실제 사용 헤더(Content-Type, Authorization 등) 명시 화이트리스트                          | `SecurityConfig.java:200` 운영 헤더 제한 미적용                                                |
+| [Open] | Medium   | `UserDto.DetailResponse`의 휴대폰/내선/이메일 노출 권한 검증 — `UserController` 본인 또는 ADMIN 한정 응답 처리 확인                                                      | `UserDto.java`, `UserController.java:72`                                              |
+| [Open] | High     | `CodeController.createCcodem()`/`updateCcodem()` `@Valid` 추가 — Bean Validation이 컨트롤러 진입 시 동작하도록 일관성 확보                                        | `CodeController.java:68,81`                                                           |
+| [Open] | High     | 리소스 미존재 시 HTTP 404 반환을 위한 전용 `NotFoundException` 도입 + `GlobalExceptionHandler` 매핑                                                             | `UserController.java:72`, `GuideDocService.java:65,129,154` — 현재 400 반환               |
+| [Open] | Medium   | 사번(`eno`) PII INFO 로그 정책 정립 — DEBUG 강등 또는 마스킹 처리                                                                                              | `CouncilService.java:94`, 기타 로그인 이력 출력 위치 전수 검토                                       |
 
 ### 사전협의
 
@@ -34,22 +41,28 @@
 
 ### 에러 처리 (주석 FIXME 등록 완료 — 코드 수정 후속)
 
-| 상태 | 우선순위 | 과제 | 근거 |
-|------|----------|------|------|
-| [Done] | High | `SsoController.complete()` catch 블록에 `log.error()` 추가 | SSO 인증 실패 원인 추적 불가 — FIXME 주석 존재 |
-| [Done] | High | `FileService.java:318,325` IOException → `CustomGeneralException(msg, e)` — cause 전달 | 스택 트레이스 손실 — FIXME 주석 존재 |
-| [Done] | High | `ApplicationService.updateApprovalLineInDetail()` private `@Transactional` 제거·`ApprovalLineDelegate` 위임 메서드 추출 | Spring AOP 무효 — FIXME 주석 존재 |
-| [Done] | High | `ApplicationService.java:207` 결재선 업데이트 실패 처리 방침 결정 (`warn`만 vs 예외 재발생) | @Transactional 컨텍스트에서 롤백 없이 커밋됨 |
-| [Open] | Medium | 프론트엔드 `alert()` → PrimeVue `toast` 교체: `approval/list.vue:204` | UX 불일치 — TODO 주석 존재 |
-| [Open] | Medium | 프론트엔드 toast 알림 누락 다발 보완 (`useCostListPage`, `projects/form.vue`, `budget/report.vue`, `terminal/[id].vue` 등) | catch 블록 사용자 피드백 없음 — TODO 주석 존재 |
-| [Open] | High | 사전협의 자동 저장 실패 사용자 알림 및 재시도 정책 보강 | `pages/info/documents/[id]/review.vue` 자동 저장 catch가 실패를 삼킴 |
-| [Open] | Medium | 사전협의 버전/코멘트/검토자 API 실패 표시 보강 | `stores/review.ts`, `pages/info/documents/[id]/index.vue` 실패 시 빈 상태 폴백 |
-| [Open] | Medium | 전산업무비 일괄 업로드 실패 행/원인 로깅 및 결과 상세화 | `useCostListPage.ts` 행별 catch에서 실패 수만 증가 |
-| [Open] | Medium | HWPX 내보내기 이미지 누락 진단 강화 | `useHwpxExport.ts` 이미지 fetch 실패 시 null 반환 |
-| [Open] | Medium | Gemini 파일 첨부 실패 로그 보강 | `GeminiService.java` 파일 읽기 실패 시 skip만 반환 |
-| [Open] | Medium | 감사로그 `delYn` 리플렉션 실패 시 경고 로그 및 변경유형 판정 검증 | `ChangeLogEntityListener.java` 실패 시 `U`로 폴백 |
-| [Open] | Medium | Java 파일 헤더 주석 전수 보강 | 다수 Java 파일이 `package`로 바로 시작하며 파일 역할/흐름/연동 테이블 헤더가 없음 |
-| [Open] | Medium | `AdminDto` 잔여 DTO JavaDoc 보강 | 자격등급/사용자/조직/역할/로그인 이력/토큰/첨부파일/통계 DTO는 기본 설명만 존재 |
+| 상태     | 우선순위     | 과제                                                                                                                                                                                                  | 근거                                                                               |
+| ------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| [Done] | High     | `SsoController.complete()` catch 블록에 `log.error()` 추가                                                                                                                                               | SSO 인증 실패 원인 추적 불가 — FIXME 주석 존재                                                 |
+| [Done] | High     | `FileService.java:318,325` IOException → `CustomGeneralException(msg, e)` — cause 전달                                                                                                                | 스택 트레이스 손실 — FIXME 주석 존재                                                         |
+| [Done] | High     | `ApplicationService.updateApprovalLineInDetail()` private `@Transactional` 제거·`ApprovalLineDelegate` 위임 메서드 추출                                                                                      | Spring AOP 무효 — FIXME 주석 존재                                                      |
+| [Done] | High     | `ApplicationService.java:207` 결재선 업데이트 실패 처리 방침 결정 (`warn`만 vs 예외 재발생)                                                                                                                              | @Transactional 컨텍스트에서 롤백 없이 커밋됨                                                  |
+| [Open] | Medium   | 프론트엔드 `alert()` → PrimeVue `toast` 교체: `approval/list.vue:204`                                                                                                                                      | UX 불일치 — TODO 주석 존재                                                              |
+| [Open] | Medium   | 프론트엔드 toast 알림 누락 다발 보완 (`useCostListPage`, `projects/form.vue`, `budget/report.vue`, `terminal/[id].vue` 등)                                                                                        | catch 블록 사용자 피드백 없음 — TODO 주석 존재                                                 |
+| [Open] | High     | 사전협의 자동 저장 실패 사용자 알림 및 재시도 정책 보강                                                                                                                                                                    | `pages/info/documents/[id]/review.vue` 자동 저장 catch가 실패를 삼킴                       |
+| [Open] | Medium   | 사전협의 버전/코멘트/검토자 API 실패 표시 보강                                                                                                                                                                        | `stores/review.ts`, `pages/info/documents/[id]/index.vue` 실패 시 빈 상태 폴백           |
+| [Open] | Medium   | 전산업무비 일괄 업로드 실패 행/원인 로깅 및 결과 상세화                                                                                                                                                                    | `useCostListPage.ts` 행별 catch에서 실패 수만 증가                                         |
+| [Open] | Medium   | HWPX 내보내기 이미지 누락 진단 강화                                                                                                                                                                              | `useHwpxExport.ts` 이미지 fetch 실패 시 null 반환                                        |
+| [Open] | Medium   | Gemini 파일 첨부 실패 로그 보강                                                                                                                                                                               | `GeminiService.java` 파일 읽기 실패 시 skip만 반환                                         |
+| [Open] | Medium   | 감사로그 `delYn` 리플렉션 실패 시 경고 로그 및 변경유형 판정 검증                                                                                                                                                           | `ChangeLogEntityListener.java` 실패 시 `U`로 폴백                                      |
+| [Open] | Medium   | Java 파일 헤더 주석 전수 보강                                                                                                                                                                                 | 다수 Java 파일이 `package`로 바로 시작하며 파일 역할/흐름/연동 테이블 헤더가 없음                            |
+| [Open] | Medium   | `AdminDto` 잔여 DTO JavaDoc 보강                                                                                                                                                                        | 자격등급/사용자/조직/역할/로그인 이력/토큰/첨부파일/통계 DTO는 기본 설명만 존재                                  |
+| [Open] | Critical | `ApplicationService.getApplicationsByIds()`·`ProjectService.findByIds()`·`CostService.findByIds()` — `IllegalArgumentException` catch 후 `null` 반환 + `Objects::nonNull` 필터 패턴 제거. 실패 항목 수가 호출자에게 가려짐 | `ApplicationService.java:440`, `ProjectService.java:564`, `CostService.java:351` |
+| [Open] | High     | `ChangeLogEntityListener.beforeAnyOperation()` `catch (Exception e)` — 감사로그 영속화 실패 시 스택 트레이스 + 알람 필요                                                                                                | `ChangeLogEntityListener.java:75` 현재 `log.warn`만                                 |
+| [Open] | High     | `GeminiService` `RestClient`에 `connectTimeout`/`readTimeout` 설정 — Gemini API 응답 지연 시 스레드 풀 고갈 가능                                                                                                    | `GeminiService.java:98` 타임아웃 미지정                                                 |
+| [Open] | High     | `PlanService.applyExistingPlanSnapshot()` 빈 `catch (JsonProcessingException) {}` — 스냅샷 파싱 실패 시 카운트 0 폴백으로 잘못된 예산 보고서 산출                                                                             | `PlanService.java:108`                                                           |
+| [Open] | High     | `useTiptapImageInsertion.ts` 임시 blob URL 미해제 — 이미지 업로드 실패 catch 경로 + 성공 경로 모두 `URL.revokeObjectURL()` 보장                                                                                            | `useTiptapImageInsertion.ts:60,111,135` 메모리 누수 위험                                |
+| [Open] | Medium   | `usePdfReport.ts` 한글 폰트 로드 실패 시 Roboto 폴백 — 한글 문자 깨짐 가능, 사용자 경고 토스트 추가                                                                                                                              | `usePdfReport.ts:174` 무경고 폴백                                                     |
 
 ### DB / JPA 최적화
 
@@ -100,6 +113,9 @@
 
 | 상태 | 일자 | 영역 | 조치 |
 |------|------|------|------|
+| [Done] | 2026-05-16 | 주석 | java-reviewer / typescript-reviewer / silent-failure-hunter 탐지 후 comment-analyzer로 48개 파일에 한글 주석/FIXME 마커 적용 (`TaskNotes/review_task1_applied.md`) |
+| [Done] | 2026-05-16 | 문서 | 루트/it_backend/it_frontend README·CLAUDE.md 현행화 — 모노레포 구조, 캐시 전략(@Cacheable codesByCid·budgetPeriod), @Valid 일관성, 감사로그 BaseLogEntity 패턴, 이벤트 리스너 선택 기준, 프론트 에러 처리/Pinia 에러 전파 규칙 추가 |
+| [Done] | 2026-05-16 | 보안 | security-reviewer 10개 보안 규칙 감사 — 신규 Critical/High 항목(BCrypt 전환, Refresh Token Rotation, CORS allowedHeaders 화이트리스트 등) TASK.md 등록 |
 | [Done] | 2026-05-14 | 문서 | 공통 게시판(`common/board`, `/board`, `/admin/boards`)을 루트/백엔드/프론트 README·CLAUDE에 반영 |
 | [Done] | 2026-05-14 | 문서 | 로그인 Brute-force 보호 설명을 DB 로그인 이력(`TAAABB_CLOGNH`) 집계 방식으로 정정 |
 | [Done] | 2026-05-14 | 주석 | `AdminDto`, `BoardPostRepositoryImpl`, `Cblbcm`, 일부 프론트 파일 헤더/계약 주석 보강 |
