@@ -170,6 +170,26 @@
 | [Done] | 2026-05-06 | 문서 | JWT 설정 키명과 CORS 개발 Origin 문서를 실제 설정값 기준으로 갱신 |
 | [Done] | 2026-05-06 | 주석 | 사전협의 코멘트 작성자 팀명/첨부파일 TODO를 백엔드 DTO와 프론트 매퍼에 명시 |
 
+## PRD_20260517 Tiptap 변수 입력 후속 과제
+
+- [ ] PRD_20260517 follow-up: 다음 페이지에 Tiptap 변수 prop 적용
+      - app/pages/info/documents/[id]/index.vue
+      - app/pages/info/plan/form.vue
+      - app/pages/info/documents/form.vue
+      - app/pages/board/** 상세
+      - app/pages/guide/** 상세
+- [ ] PRD_20260517 follow-up: E2E 시나리오 2/3/5 자동화 (사업별 / 실DB 갱신 / HWPX 내보내기)
+- [ ] PRD_20260517 follow-up: Tiptap 변수 카테고리 매핑 (IT_BUDGET 일반관리비 포함 여부) 운영 데이터 검증
+- [ ] PRD_20260517 follow-up: VariableNodeView 스크립트 - 작성 직후 resolveTokens 호출 (현재 LOADING 상태 표시)
+
+### 수동 검증 체크리스트 (병합 후 확인)
+
+- [ ] info/plan에서 변수 칩 정상 표시
+- [ ] 다크모드 색상 대비 충분
+- [ ] 키보드만으로 변수 삽입 가능
+- [ ] NodeView aria-label 부여 확인 (DevTools)
+- [ ] 모바일 뷰포트(768px 이하) 팝업 위치 정상
+
 ## 공통 게시판 후속 과제
 
 - [ ] `Bgdocm.docCone` BLOB → CLOB 마이그레이션 (게시판 도입 후 일관성 회복)
