@@ -111,7 +111,7 @@ it/
 
 | 명령 | 디렉토리 | 용도 |
 |------|---------|------|
-| `npx nuxt typecheck` | `it_frontend` | 타입 체크 |
-| `npx eslint .` | `it_frontend` | 린트 |
-| `npx vitest run` | `it_frontend` | 프론트 단위 테스트 |
+| `npm run typecheck` | `it_frontend` | 타입 체크 |
+| `npm run lint` | `it_frontend` | 린트 |
+| `npm test` | `it_frontend` | 프론트 단위 테스트 |
 | `./gradlew test` | `it_backend` | 백엔드 테스트 |

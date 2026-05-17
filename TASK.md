@@ -1,11 +1,11 @@
 # IT Portal 백로그
 
-> 기준일: 2026-05-16
+> 기준일: 2026-05-17
 > 목적: `REVIEW.md` 정비 과정에서 확인한 기술 부채, 미구현 항목, 후속 검증 과제를 추적합니다.
 
 ## 진행 중
 
-> 최종 업데이트: 2026-05-16
+> 최종 업데이트: 2026-05-17
 
 ### 보안
 
@@ -25,9 +25,15 @@
 | [Open] | High     | Refresh Token Rotation 도입 — `/api/auth/refresh` 호출 시 Access Token뿐 아니라 Refresh Token도 신규 발급·DB 교체                                             | `AuthService.java:206-236` 현재 Access만 재발급, 탈취 시 7일간 유효                                |
 | [Open] | Medium   | Access Token Blocklist 도입 검토 — 로그아웃 시 잔존 토큰(최대 15분) 무효화 필요 여부 결정                                                                              | `AuthService.logout()` Stateless 한계, 고보안 시나리오용                                        |
 | [Open] | Medium   | `SecurityConfig.CorsConfiguration#allowedHeaders` `List.of("*")` → 실제 사용 헤더(Content-Type, Authorization 등) 명시 화이트리스트                          | `SecurityConfig.java:200` 운영 헤더 제한 미적용                                                |
+| [Open] | Medium   | `SecurityConfig` 관리자 URL 패턴 `/api/plan/**`을 실제 `PlanController` 경로 `/api/plans/**`와 일치하도록 정비 | 현재는 클래스 레벨 `@PreAuthorize`가 보호하지만 이중 보호 문서/코드가 불일치 |
 | [Open] | Medium   | `UserDto.DetailResponse`의 휴대폰/내선/이메일 노출 권한 검증 — `UserController` 본인 또는 ADMIN 한정 응답 처리 확인                                                      | `UserDto.java`, `UserController.java:72`                                              |
 | [Open] | High     | `CodeController.createCcodem()`/`updateCcodem()` `@Valid` 추가 — Bean Validation이 컨트롤러 진입 시 동작하도록 일관성 확보                                        | `CodeController.java:68,81`                                                           |
+| [Open] | High     | `FileController` 다운로드/미리보기/단건조회/목록조회에 파일 읽기 권한 검증 적용 | `downloadFile()`/`previewFile()`이 `FileOwnershipChecker.checkReadAccess()` 없이 `fileService.downloadFile()` 직접 호출 |
+| [Open] | High     | `FileController.updateFileMeta()`와 `deleteFilesByOrc()`에 소유권 또는 관리자/도메인 권한 검증 추가 | 인증 사용자라면 임의 `flMngNo` 또는 `orcDtt+orcPkVl`로 메타 수정/일괄 삭제 호출 가능 |
+| [Open] | Medium   | Gemini 요청 DTO 검증 추가 — `@NotBlank`, `@Size`, 첨부 개수 제한 적용 | `GeminiDto.Request`, `GeminiService.generate()` |
+| [Open] | Medium   | Gemini 첨부 파일 실제 크기 제한 구현 | DTO 주석의 파일당 20MB 제한과 달리 `Files.readAllBytes(filePath)` 전 크기 검사 코드 없음 |
 | [Open] | High     | 리소스 미존재 시 HTTP 404 반환을 위한 전용 `NotFoundException` 도입 + `GlobalExceptionHandler` 매핑                                                             | `UserController.java:72`, `GuideDocService.java:65,129,154` — 현재 400 반환               |
+| [Open] | High     | `ResponseStatusException` 전용 핸들러 추가 — 서비스에서 던진 404/500 상태가 `RuntimeException` 포괄 핸들러에 의해 400으로 바뀌지 않도록 분리 | `GlobalExceptionHandler.java`, `PlanService.java` |
 | [Open] | Medium   | 사번(`eno`) PII INFO 로그 정책 정립 — DEBUG 강등 또는 마스킹 처리                                                                                              | `CouncilService.java:94`, 기타 로그인 이력 출력 위치 전수 검토                                       |
 
 ### 사전협의
@@ -63,6 +69,8 @@
 | [Open] | High     | `PlanService.applyExistingPlanSnapshot()` 빈 `catch (JsonProcessingException) {}` — 스냅샷 파싱 실패 시 카운트 0 폴백으로 잘못된 예산 보고서 산출                                                                             | `PlanService.java:108`                                                           |
 | [Open] | High     | `useTiptapImageInsertion.ts` 임시 blob URL 미해제 — 이미지 업로드 실패 catch 경로 + 성공 경로 모두 `URL.revokeObjectURL()` 보장                                                                                            | `useTiptapImageInsertion.ts:60,111,135` 메모리 누수 위험                                |
 | [Open] | Medium   | `usePdfReport.ts` 한글 폰트 로드 실패 시 Roboto 폴백 — 한글 문자 깨짐 가능, 사용자 경고 토스트 추가                                                                                                                              | `usePdfReport.ts:174` 무경고 폴백                                                     |
+| [Open] | Medium   | Excalidraw/HWPX/Tiptap 실패 경로 사용자 알림 보강 — 내보내기 실패, 장면 복원 실패, 이미지 누락을 빈 결과와 구분 | `ExcalidrawWrapper.vue`, `ExcalidrawNodeView.vue`, `useHwpxExport.ts`, `hwpx-images.ts`, `useTiptapTableTools.ts` |
+| [Open] | Medium   | 손상된 `it-portal-user` 쿠키와 구버전 `localStorage.user` 파싱 실패 시 warn 로그 및 정리 정책 추가 | `stores/auth.ts` |
 
 ### DB / JPA 최적화
 
@@ -84,6 +92,11 @@
 | [Open] | Medium | `FeasibilityService.replacePerformances()` JPQL DELETE 후 flush 없이 persist → `flush()` 명시 또는 Spring Data `deleteAll` 통일 | `FeasibilityService.java L225` |
 | [Open] | Medium | 협의회 일정/평가 사용자명 조회 N+1 제거 | `ScheduleService`, `EvaluationService`에서 사번별 `findByEno()` 반복 |
 | [Open] | Medium | 협의회 위원/상태 조회 배치화 검토 | `CommitteeService`, `CouncilService` 반복 조회 후보 |
+| [Open] | High | 결재 대기/대시보드 쿼리 인덱스 보강 검토 | `ApplicationRepository`가 `CDECIM.DCD_ENO`, `DCD_DT`, `CAPPLM.APF_STS`, `RQS_DT` 기준 조회. 후보: `CDECIM(DCD_ENO, DCD_DT, DCD_MNG_NO)`, `CAPPLM(APF_STS, RQS_DT DESC)` |
+| [Open] | High | 요구사항 정의서 대시보드 `BRDOCM`/`BRIVGM` 보조 인덱스 검토 | `ServiceRequestDocRepository`가 `FST_ENR_USID`, `DEL_YN`, `FST_ENR_DTM`, `DOC_MNG_NO`, `FSG_YN` 조건 반복 사용 |
+| [Open] | Medium | 협의회 목록 `BASCTM`/`BCMMTM` 역방향 조회 인덱스 검토 | 후보: `BASCTM(PRJ_MNG_NO, PRJ_SNO, DEL_YN)`, `BCMMTM(ENO, DEL_YN, ASCT_ID)` |
+| [Open] | Medium | `ReviewCommentService` 검토의견 작성자명 조회 N+1 제거 | 댓글 목록 행마다 `userRepository.findById()` 호출. 사번 일괄 조회 또는 조인 프로젝션 검토 |
+| [Open] | Medium | `CouncilRepository.findWithDetails()` Native Query `Object[]` 전용 DTO/projection 전환 우선 처리 | 16개 컬럼 순서와 서비스 캐스팅이 강하게 결합되어 오매핑 위험 |
 
 ### 프론트엔드 리팩토링
 
@@ -96,8 +109,15 @@
 | [Open] | Low | `ReviewVersionHistory.vue` 로컬 `formatDateTime()` 유지 여부 검토 — 축약 표시가 의도라면 함수명을 도메인 전용으로 변경 | `components/review/ReviewVersionHistory.vue` |
 | [Open] | Medium | `info/index.vue` 정적 KPI/공지/일정 데이터를 실제 API 또는 운영 데이터 소스로 전환 | 파일 헤더가 정적 데이터/향후 API 연결 예정임을 명시 |
 | [Open] | High | 프론트 ESLint 오류 정리 — dead import, 미사용 변수, type-only import, 템플릿 파싱 오류 우선 처리 | 2026-05-14 `npm run lint` 기준 62 errors / 137 warnings. `EvalSummaryPanel.vue`, `result/[id].vue`, cost 컴포넌트 등 |
+| [Open] | High | 협의회 평가 요약 템플릿 닫힘 구조 정리 | `EvalSummaryPanel.vue` `vue/no-parsing-error`, `x-invalid-end-tag` 발생 |
+| [Open] | High | 협의회 결과 페이지 단일 template root 복구 | `pages/info/council-request/result/[id].vue`의 `EmployeeSearchDialog`가 루트 밖에 남아 `vue/no-multiple-template-root` 발생 |
+| [Open] | Medium | `budget/list.vue` 탭 제거 후 잔여 dead code 정리 | 미사용 import/filter/pageSize/download 함수 다수 |
+| [Open] | Medium | cost 컴포넌트 type-only import 및 미사용 환율 함수 정리 | `TerminalFormDialog.vue`, `CostFormTableSection.vue`, `TerminalTableSection.vue` lint 유형 |
+| [Open] | Low | `ResultForm.vue` emit/type 선언 단순화 | `ResultData` 미사용, `'saved' | 'confirmed'` 단일 시그니처로 축약 가능 |
+| [Open] | Low | `useTableColumnResize.ts` 숫자 파싱/배열 초기화 스타일 정리 | `Number.parseInt/parseFloat`, `Array.from` 등 일관 스타일 후보 |
 | [Open] | Medium | 공통 `useDeptFilter` composable 구현 또는 규칙 폐기 결정 | 기존 CLAUDE 규칙과 달리 `app/composables/useDeptFilter.ts`가 없음 |
 | [Open] | Medium | Tiptap 표 도구 계약 문서화 및 주석 보강 | `useTiptapTableTools.ts`, `TiptapTableFloatingToolbar.vue`가 복잡도 대비 계약 설명 부족 |
+| [Open] | High | `pages/info/plan/[id].vue` 타입체크 실패 수정 — ExcelJS 컬럼 타입과 TiptapEditor `model-value` string 폴백 정리 | `npm run typecheck` 실패: `ws.columns`, `planData.*Cone` `string \| undefined` |
 
 ### 백엔드 리팩토링
 
@@ -106,13 +126,17 @@
 | [Open] | Medium | `stream().collect(Collectors.toList())` → `.toList()` 전환 | Java 25 환경, 가독성·불변성 향상. `common/board` 포함 다수 잔존 |
 | [Open] | Medium | 문서/내보내기 회귀 테스트 범위 확대 (HWPX/PDF/Excel) | `utils/hwpx.ts` HTML 파싱·이미지 패키징·XML 생성 통합 담당 |
 | [Open] | Medium | `domain/log` 감사로그 리스너 통합 테스트 보강 | JaCoCo 제외 대상이나 업무 감사 추적에 중요 |
+| [Open] | High | 백엔드 테스트 대량 `NoClassDefFoundError`/`ClassNotFoundException` 원인 분석 | 2026-05-17 `./gradlew test` 기준 compileJava 통과 후 194 tests 중 155 failed, Spring context/Mockito 초기화 단계에서 실패 |
 | [Open] | Low | `AuditLogEvent.java` → Java record 전환 | Java 25 환경, 3개 필드 + getter 구성 |
 | [Open] | Low | `BbugtmRepositoryImpl.sumCostDupBg`/`sumAssetDupBg` 공통 private 메서드 추출 | JOIN + WHERE + GROUP BY 동일 패턴, 집계 기준 컬럼만 다름 |
+| [Open] | Low | `ApplicationContextHolder.publishEvent()`/`AuditLogEvent` 잔여 이벤트 기반 감사로그 주석 정리 | 현재 감사로그는 `ChangeLogEntityListener`가 `AuditLogPersister.persist()` 직접 호출 |
 
 ## 완료
 
 | 상태 | 일자 | 영역 | 조치 |
 |------|------|------|------|
+| [Done] | 2026-05-17 | 주석 | REVIEW.md Task 1 재실행 — Java/TypeScript 주석 불일치 교정, Excalidraw/HWPX/Tiptap/Auth 실패 경로 TODO/FIXME 추가, `Bcmmtm.cnfmYn` 컬럼 comment 보강 |
+| [Done] | 2026-05-17 | 문서 | 루트/백엔드/프론트 README·CLAUDE 현행화 — 테스트 수, Nuxt 버전, 실제 API 경로(`/api/cost`, `/api/plans`), Gemini 관리자 권한, 감사로그 저장 시점 정정 |
 | [Done] | 2026-05-16 | 주석 | java-reviewer / typescript-reviewer / silent-failure-hunter 탐지 후 comment-analyzer로 48개 파일에 한글 주석/FIXME 마커 적용 (`TaskNotes/review_task1_applied.md`) |
 | [Done] | 2026-05-16 | 문서 | 루트/it_backend/it_frontend README·CLAUDE.md 현행화 — 모노레포 구조, 캐시 전략(@Cacheable codesByCid·budgetPeriod), @Valid 일관성, 감사로그 BaseLogEntity 패턴, 이벤트 리스너 선택 기준, 프론트 에러 처리/Pinia 에러 전파 규칙 추가 |
 | [Done] | 2026-05-16 | 보안 | security-reviewer 10개 보안 규칙 감사 — 신규 Critical/High 항목(BCrypt 전환, Refresh Token Rotation, CORS allowedHeaders 화이트리스트 등) TASK.md 등록 |

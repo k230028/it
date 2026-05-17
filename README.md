@@ -27,7 +27,7 @@ it/
 │   │   ├── components/   ← 재사용 컴포넌트 (67개)
 │   │   ├── composables/  ← 비즈니스 로직 (45개)
 │   │   ├── stores/       ← Pinia 상태관리 (인증/사전협의)
-│   │   └── types/        ← TypeScript 타입 정의 (5개)
+│   │   └── types/        ← TypeScript 타입 정의 (6개)
 │   └── tests/            ← Vitest + Playwright 테스트
 │
 ├── it_backend/           ← Spring Boot 4 REST API 서버
@@ -40,7 +40,7 @@ it/
 │   │       ├── domain/   ← 비즈니스 도메인 (예산, 협의회, 문서)
 │   │       ├── infra/    ← 외부 연동 (파일, Gemini AI)
 │   │       └── exception/ ← 전역 예외 처리
-│   ├── src/test/java/    ← JUnit 5 + Mockito 테스트 (50개 파일)
+│   ├── src/test/java/    ← JUnit 5 + Mockito 테스트 (69개 파일)
 │   └── build.gradle      ← Gradle 빌드 스크립트
 │
 ├── it_database/          ← Oracle DB 마이그레이션 & 초기화
@@ -104,10 +104,10 @@ cd it_database
 
 ```bash
 # 프론트엔드 타입 체크
-cd it_frontend && npx nuxt typecheck
+cd it_frontend && npm run typecheck
 
 # 프론트엔드 린트
-cd it_frontend && npx eslint .
+cd it_frontend && npm run lint
 
 # 백엔드 빌드
 cd it_backend && ./gradlew build
@@ -153,13 +153,13 @@ cd it_backend && ./gradlew test
 
 ```bash
 # 프론트엔드 타입 체크
-cd it_frontend && npx nuxt typecheck
+cd it_frontend && npm run typecheck
 
 # 프론트엔드 린트
-cd it_frontend && npx eslint .
+cd it_frontend && npm run lint
 
 # 프론트엔드 단위 테스트
-cd it_frontend && npx vitest run
+cd it_frontend && npm test
 
 # 백엔드 테스트
 cd it_backend && ./gradlew test
@@ -453,7 +453,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 | **전산업무비** | `budget/cost` | 비용 항목, 단말기, 복합키 (`costYy` + `costSn`) |
 | **요구사항·검토** | `budget/document` | 가이드 문서, 요구사항 정의서, 검토의견 |
 | **정보기술부문 계획** | `budget/plan` | 계획 CRUD, JSON 스냅샷 |
-| **협의회** | `council` | 신청, 타당성검토, 위원선정, 일정, 평가, 결과 (23 엔드포인트) |
+| **협의회** | `council` | 신청, 타당성검토, 위원선정, 일정, 평가, 결과 (34개 매핑) |
 | **감사로그** | `domain/log` | 자동 변경 로그 (23개 도메인 추적) |
 | **파일·AI** | `infra/` | 첨부파일, Gemini API |
 
@@ -601,7 +601,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 
 - 실제 실행 설정 기준으로 로컬 개발 URL을 프론트엔드 `http://localhost:3000`, 백엔드 `http://localhost:8080`로 정정했습니다.
 - `EnvironmentValidator`는 `spring.datasource.password`, `jwt.secret`의 해석 결과가 빈값일 때만 기동을 차단합니다. 현재 `application.properties`에는 `DB_PASSWORD`, `JWT_SECRET` 기본값이 남아 있어 기본값 제거 과제를 `TASK.md`에 다시 열어두었습니다.
-- `FileOwnershipChecker`, `FileValidator`, `LoginAttemptService`, `GeminiController` 관리자 제한은 코드에 반영된 상태로 확인했습니다.
+- `FileValidator`, `LoginAttemptService`, `GeminiController` 관리자 제한은 코드에 반영된 상태로 확인했습니다. `FileOwnershipChecker`는 단건 삭제에는 적용되어 있으나 다운로드·미리보기·조회·메타수정·원본 기준 일괄삭제 경로는 후속 검증 과제로 남아 있습니다.
 - 프론트엔드 `ReviewVersionHistory.vue`의 로컬 `formatDateTime`은 버전 이력 전용 축약 포맷으로 주석을 명확히 했고, 전체 화면 표준 포맷은 `utils/common.ts` 사용 규칙을 유지합니다.
 
 ### 12.5 2026-05-06 정비 메모
