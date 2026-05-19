@@ -344,11 +344,12 @@ export function useNotifications() {
 ### 6.4 에러 처리
 - `it_frontend/CLAUDE.md §4.2.1`에 따라 `useToast`로 사용자 메시지 표시. `console.error` 단독 사용 금지.
 
-## 7. 마이그레이션 (`it_database/migrations/V20260519_007__CreateCinfmmTable.sql`)
+## 7. 마이그레이션 (`it_database/migrations/V20260520_001__CreateCinfmmTable.sql`) — ✅ 완료
 
-- DDL: 테이블 / PK / 시퀀스 / 2개 인덱스
-- DML: `TAAABB_CCODEM`에 `CINF_TP`, `CEAI_SD_TP` 코드값 시드 (멱등 `MERGE`)
-- 멱등성: Oracle XE 21c용 PL/SQL `EXCEPTION` 가드 (ORA-00955, ORA-01430 swallow)
+- DDL: 테이블 + PK + 인덱스 1개 (`IX_CINFMM_RCV`) + 시퀀스 (`SEQ_CINFMM`)
+- DML: `TAAABB_CCODEM`에 `CINF_TP` 5건, `CEAI_SD_TP` 4건 시드 INSERT
+- 멱등성: Flyway가 성공한 스크립트 재실행을 자동 차단하므로 별도 PL/SQL `EXCEPTION` 가드 미사용 (기존 마이그레이션 패턴과 일치)
+- 스키마 prefix `ITPAPP.`, 테이블스페이스 `USERS`, 코멘트 한글 (기존 컨벤션 준수)
 
 ## 8. 실행 순서(Task Order) — 작은 단위 커밋 권장
 
@@ -410,3 +411,44 @@ export function useNotifications() {
 - EAI 외부 어댑터 실 구현 (EMAIL/SMS/알림톡)
 - 사용자명 멘션 + 멘션 자동완성 UX
 - 알림 보존 기간 정책 + 아카이브 배치
+- 수정 시 멘션 차이만 발송 (추가된 사번에만 발송, 제거된 사번은 무시) — Phase 1은 단순화로 수정 본문의 모든 멘션을 신규 간주
+
+## 12. 부록 — 사전 코드 다이브 노트 (2026-05-20)
+
+### 12.1 결재 도메인 정리
+| 항목 | 결과 |
+|---|---|
+| 신청서 등록 메서드 | `ApplicationService.submit()` L122-187 |
+| 결재 처리 메서드 | `ApplicationService.approve()` L217-309 |
+| 결재선 조회 | `ApproverRepository.findByDcdMngNoOrderByDcdSqnAsc(apfMngNo)` |
+| 다음 결재자 식별 | `approvers.stream().filter(a -> a.getDcdTp() == null).findFirst()` |
+| 기존 이벤트 | `ApprovalCompletedEvent(String apfMngNo, String newStatus)` — record. `approve()` L307에서 발행 중 |
+| 기존 리스너 패턴 | `CouncilApprovalEventListener` — `@EventListener` + `@Transactional`(동기). 알림은 다르게 `@TransactionalEventListener(AFTER_COMMIT)` |
+| 기안자 자동 승인 분기 | `submit()` L179-184. 1차 결재자가 기안자와 동일하면 자동 승인 + `approvalLineDelegate.doUpdate()` 호출 |
+
+### 12.2 게시판 도메인 정리
+| 항목 | 결과 |
+|---|---|
+| 게시물 본문 컬럼 | `Cblbcm.NAC_CONE` VC4000 HTML, sanitize 필수 |
+| 댓글 본문 컬럼 | `Ccmmtm.CMMT_CONE` VC4000 HTML, sanitize 필수 |
+| 작성자 식별 | `BaseEntity.FST_ENR_USID` (자동 채워짐). 서비스 레이어에서는 `CustomUserDetails user.getEno()`로 즉시 사용 가능 |
+| 게시물 채번 | `String.format("NAC-%d-%04d", year, postRepository.getNextSequenceValue())` |
+| 댓글 채번 | `generateCmmtId()` (BoardCommentService 내부 헬퍼) |
+| HTML sanitize | `HtmlSanitizer.sanitize(rawHtml)` — 모든 service create/update에서 저장 직전 호출 |
+
+### 12.3 채번 인프라
+- 전 도메인 공통 패턴: `@Query("SELECT SEQ_<TABLE>.NEXTVAL FROM DUAL", nativeQuery = true) Long getNextVal()`
+- 알림 적용: `CinfmmRepository.getNextVal()` + `String.format("INF-%d-%08d", year, seq)`
+- 시퀀스 DDL: `CREATE SEQUENCE SEQ_CINFMM START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE`
+
+### 12.4 프론트엔드 사전 다이브
+- `AppHeader.vue` L251-255 = 종 아이콘 placeholder (빨간 점만 있음) — `<NotificationBell/>`로 교체.
+- `ReviewCommentPopover.vue` = 수동 Teleport+위치 계산 패턴. **우리 케이스는 anchor가 명확하므로 PrimeVue `<Popover>` 컴포넌트 직접 사용 권장** (더 짧고 표준적).
+- `CouncilStatusBadge.vue`, `AppSidebar.vue` = 뱃지 사용 사례. 우리는 단순히 `<span class="absolute...">` overlay + 카운트 텍스트로 충분.
+- API 호출: GET은 `useApiFetch<T>` (반응형), POST/PUT/DELETE는 `$apiFetch` (`it_frontend/CLAUDE.md §4.2`). 인증 쿠키 자동 전송.
+
+### 12.5 채택 정정 사항 (PLAN 본문에 반영 완료)
+1. PK 채번 형식: `INF_YYYY{seq}` → **`INF-{YYYY}-{seq:08d}`** (결재 `APF-` 패턴과 일관)
+2. §5.1·§5.2 통합 지점: 정확한 클래스명·메서드·줄번호·기존 이벤트(`ApprovalCompletedEvent`) 재활용 명시
+3. 멘션 파싱: `authorEno` 파라미터를 받아 자기 멘션 제외 내장
+4. §10 결재 도메인 미확인 위험 항목 해소 처리
