@@ -29,6 +29,7 @@ it/
 | 데이터 모델 (테이블 매핑)                              | `it_backend/docs/guides/data-model.md` |
 | 컴포넌트 가이드 (StyledDataTable 등)                 | `it_frontend/docs/guides/`             |
 | 공통 게시판 도메인 규칙                               | `it_backend/CLAUDE.md`, `it_frontend/CLAUDE.md` |
+| 엔티티, 컬럼명 명명 규칙(메타)                        | `it_backend/CLAUDE.md`, `it_frontend/CLAUDE.md` |
 
 ## 3.1 개발 환경
 
@@ -74,6 +75,8 @@ it/
 - `README.md` — 신규 개발자가 흐름을 파악하는 개발 노트
 - `CLAUDE.md` — 실제 코드에서 확인된 규칙만 기록 (휘발성/카운트 정보 금지)
 - `TASK.md` — 미구현, 기술 부채, 보안/성능/테스트 보강 과제
+- `META.md` - 메타 용어사전 (컬럼명, 엔티티명 명명규칙)
+- `DOMAIN.md` - 메타 도메인사전 (컬럼타입, 엔티티타입)
 
 ### 4.4 데이터베이스 마이그레이션 (Flyway)
 - **경로**: `it_database/migrations/`

@@ -54,7 +54,7 @@
 | 공간      | STI    | 내용    | 내용SDO    | SDO_GEOMETRY |      |     |
 | 근거      | FDTN   | 내용    | 내용VC4000 | VARCHAR2     | 4000 |     |
 | 내용      | CONE   | 내용    | 내용VC300  | VARCHAR2     | 300  |     |
-| 내용      | CONE   | 내용    | 내용VC4000  | VARCHAR2     | 4000  |     |
+| 내용      | CONE   | 내용    | 내용VC4000 | VARCHAR2     | 4000 |     |
 | 명세      | SFS    | 내용    | 내용VC4000 | VARCHAR2     | 4000 |     |
 | 목적      | PPO    | 내용    | 내용VC300  | VARCHAR2     | 300  |     |
 | 비고      | RMK    | 내용    | 내용VC300  | VARCHAR2     | 300  |     |
