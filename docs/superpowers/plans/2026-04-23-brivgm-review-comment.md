@@ -1,8 +1,8 @@
-# TAAABB_BRIVGM 검토의견 테이블 신설 및 프론트엔드 연동 Implementation Plan
+﻿# TPRMPP_BRIVGM 검토의견 테이블 신설 및 프론트엔드 연동 Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** TAAABB_BRIVGM 검토의견 테이블을 DB에 신설하고, Spring Boot REST API를 통해 Nuxt 4 프론트엔드의 메모리 전용 코멘트 상태를 DB 기반으로 전환한다.
+**Goal:** TPRMPP_BRIVGM 검토의견 테이블을 DB에 신설하고, Spring Boot REST API를 통해 Nuxt 4 프론트엔드의 메모리 전용 코멘트 상태를 DB 기반으로 전환한다.
 
 **Architecture:** 백엔드에 Brivgm 엔티티·리포지토리·서비스·컨트롤러를 추가한다. 프론트엔드에 `useReviewCommentApi` composable을 신설하고, `stores/review.ts`의 코멘트 CRUD 액션을 API 호출로 교체한다. 기존 `ReviewSession` 상태 구조와 `ReviewComment` 타입은 유지한다.
 
@@ -59,7 +59,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
-@Table(name = "TAAABB_BRIVGM")
+@Table(name = "TPRMPP_BRIVGM")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Brivgm extends BaseEntity {
@@ -133,7 +133,7 @@ Expected: `BUILD SUCCESSFUL`
 
 ```bash
 git add it_backend/src/main/java/com/kdb/it/domain/budget/document/entity/Brivgm.java
-git commit -m "feat: Brivgm 검토의견 엔티티 추가 (TAAABB_BRIVGM)"
+git commit -m "feat: Brivgm 검토의견 엔티티 추가 (TPRMPP_BRIVGM)"
 ```
 
 ---

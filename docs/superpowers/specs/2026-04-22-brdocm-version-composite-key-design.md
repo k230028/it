@@ -1,14 +1,14 @@
-# TAAABB_BRDOCM 문서버전(DOC_VRS) 복합키 도입 설계
+﻿# TPRMPP_BRDOCM 문서버전(DOC_VRS) 복합키 도입 설계
 
 **날짜:** 2026-04-22  
-**대상 테이블:** `TAAABB_BRDOCM`  
+**대상 테이블:** `TPRMPP_BRDOCM`  
 **범위:** 백엔드(Entity/Repository/Service/Controller/DTO) + 프론트엔드(composable/pages)
 
 ---
 
 ## 1. 배경
 
-`TAAABB_BRDOCM` 테이블에 `DOC_VRS NUMBER(4,2) NOT NULL` 컬럼이 추가되고, 기존 단일 PK `DOC_MNG_NO`와 함께 `(DOC_MNG_NO, DOC_VRS)` 복합키로 변경되었다. 문서버전은 `0.01`부터 시작한다.
+`TPRMPP_BRDOCM` 테이블에 `DOC_VRS NUMBER(4,2) NOT NULL` 컬럼이 추가되고, 기존 단일 PK `DOC_MNG_NO`와 함께 `(DOC_MNG_NO, DOC_VRS)` 복합키로 변경되었다. 문서버전은 `0.01`부터 시작한다.
 
 ---
 
@@ -79,10 +79,10 @@ public interface ServiceRequestDocRepository extends JpaRepository<Brdocm, Brdoc
 
     // 목록 페이지용: 각 docMngNo의 최신 버전만 (Native Query)
     @Query(value = """
-        SELECT * FROM TAAABB_BRDOCM d
+        SELECT * FROM TPRMPP_BRDOCM d
         WHERE d.DEL_YN = 'N'
           AND d.DOC_VRS = (
-              SELECT MAX(d2.DOC_VRS) FROM TAAABB_BRDOCM d2
+              SELECT MAX(d2.DOC_VRS) FROM TPRMPP_BRDOCM d2
               WHERE d2.DOC_MNG_NO = d.DOC_MNG_NO AND d2.DEL_YN = 'N'
           )
         ORDER BY d.FST_ENR_DTM DESC

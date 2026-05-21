@@ -1,4 +1,4 @@
-# Phase 2 — _SNO 컬럼 타입 표준화 (`02-sno`)
+﻿# Phase 2 — _SNO 컬럼 타입 표준화 (`02-sno`)
 
 > 마일스톤: M02-SNO-MIGRATION · 상태: Planned · 작성일: 2026-05-21  
 > 원본 설계문서: `docs/superpowers/plans/2026-05-21-sno-column-type-migration.md`
@@ -21,7 +21,7 @@
 | P-2 | **HIGH** | `BperfmId.java` 수정 누락 | Phase 2 Task 3에서 `Bperfm.dtpSno: String → Integer` 변경 시, `BperfmId.dtpSno`도 `Integer`로 변경 필수. 동일 패턴 |
 | P-3 | **HIGH** | `CorgnI.update()` 파라미터 누락 | Phase 2 Task 4에서 `CorgnI.itmSqnSno: String → Integer` 변경 시, `update(String itmSqnSno, ...)` 메서드 시그니처도 `Integer`로 변경 필요. 해당 서비스 호출부 동시 수정 필요 |
 | P-4 | LOW | `BtermmL.java` 경로 오류 | 설계문서 파일 목록에 `domain/budget/cost/entity/BtermmL.java`로 표기됐으나 실제 경로는 `domain/log/entity/BtermmL.java` |
-| P-5 | **HIGH** | Phase 3 SQL CDECIM → CBLBML | 설계문서의 23번째 테이블이 `TAAABB_CDECIM`으로 잘못 기재됨. 실제로는 `TAAABB_CBLBML`(게시판 메타 로그). 시퀀스명도 `SEQ_CDECIM` → `SEQ_CBLBML`로 수정 필요 |
+| P-5 | **HIGH** | Phase 3 SQL CDECIM → CBLBML | 설계문서의 23번째 테이블이 `TPRMPP_CDECIM`으로 잘못 기재됨. 실제로는 `TPRMPP_CBLBML`(게시판 메타 로그). 시퀀스명도 `SEQ_CDECIM` → `SEQ_CBLBML`로 수정 필요 |
 
 ## 3. 아키텍처 결정
 
@@ -42,20 +42,20 @@ Phase 1 착수 전 모든 사전 확인을 DB에서 실행하고 결과를 기�
 -- [사전-1] LOG_SNO 숫자 추출 중복 확인 (각 테이블별로 실행)
 -- 0건이어야 Phase 3 진행 가능; 1건 이상이면 담당자 협의 후 결정
 SELECT TO_NUMBER(REGEXP_REPLACE(LOG_SNO, '[^0-9]', '')) AS NUM_VAL, COUNT(*)
-FROM ITPAPP.TAAABB_BPROJL
+FROM ITPAPP.TPRMPP_BPROJL
 GROUP BY TO_NUMBER(REGEXP_REPLACE(LOG_SNO, '[^0-9]', ''))
 HAVING COUNT(*) > 1;
 -- (동일 쿼리를 23개 테이블에 반복)
 
 -- [사전-2] APF_REL_SNO 접두사 실제 패턴 확인
 SELECT DISTINCT SUBSTR(APF_REL_SNO, 1, 5), COUNT(*)
-FROM ITPAPP.TAAABB_CAPPLA
+FROM ITPAPP.TPRMPP_CAPPLA
 GROUP BY SUBSTR(APF_REL_SNO, 1, 5);
 -- 기대: 'APPL-' 단일 패턴 (현재 코드 String.format("APPL-%028d", seq))
 
 -- [사전-3] ITM_SQN_SNO 비숫자 데이터 확인
 SELECT DISTINCT ITM_SQN_SNO
-FROM ITPAPP.TAAABB_CORGNI
+FROM ITPAPP.TPRMPP_CORGNI
 WHERE ITM_SQN_SNO IS NOT NULL
   AND REGEXP_LIKE(ITM_SQN_SNO, '[^0-9]');
 -- 기대: 0건. 있으면 Task 4 중단, 담당자 협의
@@ -63,7 +63,7 @@ WHERE ITM_SQN_SNO IS NOT NULL
 -- [사전-4] IVG_SNO FK 참조 없음 확인
 SELECT TABLE_NAME, COLUMN_NAME FROM ALL_TAB_COLUMNS
 WHERE OWNER='ITPAPP' AND COLUMN_NAME = 'IVG_SNO'
-  AND TABLE_NAME NOT IN ('TAAABB_BRIVGM','TAAABB_BRIVGL');
+  AND TABLE_NAME NOT IN ('TPRMPP_BRIVGM','TPRMPP_BRIVGL');
 -- 기대: 0건
 ```
 

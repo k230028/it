@@ -1,4 +1,4 @@
-# 변경 로그(Audit Log) 시스템 — 상세 설계 문서
+﻿# 변경 로그(Audit Log) 시스템 — 상세 설계 문서
 
 - **작성일**: 2026-04-28
 - **버전**: v2.0 (22자리 순환 시퀀스 + BGDOCM/BRDOCM/BRIVGM 추가)
@@ -37,44 +37,44 @@
 
 | 원본 테이블 | 로그 테이블 | LOG_SNO Prefix | 도메인 |
 |------------|------------|----------------|--------|
-| TAAABB_BPROJM  | TAAABB_BPROJML  | `BPROJML_` | 정보화사업 |
-| TAAABB_BITEMM  | TAAABB_BITEMML  | `BITEMML_` | 프로젝트 품목 |
-| TAAABB_BCOSTM  | TAAABB_BCOSTML  | `BCOSTML_` | 전산관리비 |
-| TAAABB_BTERMM  | TAAABB_BTERML   | `BTERML_`  | 단말기 |
-| TAAABB_BPLANM  | TAAABB_BPLANML  | `BPLANML_` | IT부문계획 |
-| TAAABB_BPROJA  | TAAABB_BPROJAL  | `BPROJAL_` | 계획-사업 연결 |
-| TAAABB_BBUGTM  | TAAABB_BBUGTML  | `BBUGTML_` | 예산편성률 |
-| TAAABB_BASCTM  | TAAABB_BASCTL   | `BASCTL_`  | 협의회 심의과제 |
-| TAAABB_BCHKLC  | TAAABB_BCHKLCL  | `BCHKLCL_` | 타당성 검토항목 |
-| TAAABB_BCMMTM  | TAAABB_BCMMTML  | `BCMMTML_` | 평가위원 |
-| TAAABB_BEVALM  | TAAABB_BEVALML  | `BEVALML_` | 평가의견 |
-| TAAABB_BPERFM  | TAAABB_BPERFML  | `BPERFML_` | 성과지표 |
-| TAAABB_BPOVWM  | TAAABB_BPOVWML  | `BPOVWML_` | 사업개요 |
-| TAAABB_BPQNAM  | TAAABB_BPQNAML  | `BPQNAML_` | 사전질의응답 |
-| TAAABB_BRSLTM  | TAAABB_BRSTML   | `BRSTML_`  | 결과서 |
-| TAAABB_BSCHDM  | TAAABB_BSCHDML  | `BSCHDML_` | 일정 |
-| TAAABB_CUSERI  | TAAABB_CUSERIL  | `CUSERIL_` | 사용자 정보 |
-| TAAABB_CCODEM  | TAAABB_CCODEML  | `CCODEML_` | 공통코드 |
-| TAAABB_CAPPLM  | TAAABB_CAPPLML  | `CAPPLML_` | 신청서 마스터 |
+| TPRMPP_BPROJM  | TPRMPP_BPROJML  | `BPROJML_` | 정보화사업 |
+| TPRMPP_BITEMM  | TPRMPP_BITEMML  | `BITEMML_` | 프로젝트 품목 |
+| TPRMPP_BCOSTM  | TPRMPP_BCOSTML  | `BCOSTML_` | 전산관리비 |
+| TPRMPP_BTERMM  | TPRMPP_BTERML   | `BTERML_`  | 단말기 |
+| TPRMPP_BPLANM  | TPRMPP_BPLANML  | `BPLANML_` | IT부문계획 |
+| TPRMPP_BPROJA  | TPRMPP_BPROJAL  | `BPROJAL_` | 계획-사업 연결 |
+| TPRMPP_BBUGTM  | TPRMPP_BBUGTML  | `BBUGTML_` | 예산편성률 |
+| TPRMPP_BASCTM  | TPRMPP_BASCTL   | `BASCTL_`  | 협의회 심의과제 |
+| TPRMPP_BCHKLC  | TPRMPP_BCHKLCL  | `BCHKLCL_` | 타당성 검토항목 |
+| TPRMPP_BCMMTM  | TPRMPP_BCMMTML  | `BCMMTML_` | 평가위원 |
+| TPRMPP_BEVALM  | TPRMPP_BEVALML  | `BEVALML_` | 평가의견 |
+| TPRMPP_BPERFM  | TPRMPP_BPERFML  | `BPERFML_` | 성과지표 |
+| TPRMPP_BPOVWM  | TPRMPP_BPOVWML  | `BPOVWML_` | 사업개요 |
+| TPRMPP_BPQNAM  | TPRMPP_BPQNAML  | `BPQNAML_` | 사전질의응답 |
+| TPRMPP_BRSLTM  | TPRMPP_BRSTML   | `BRSTML_`  | 결과서 |
+| TPRMPP_BSCHDM  | TPRMPP_BSCHDML  | `BSCHDML_` | 일정 |
+| TPRMPP_CUSERI  | TPRMPP_CUSERIL  | `CUSERIL_` | 사용자 정보 |
+| TPRMPP_CCODEM  | TPRMPP_CCODEML  | `CCODEML_` | 공통코드 |
+| TPRMPP_CAPPLM  | TPRMPP_CAPPLML  | `CAPPLML_` | 신청서 마스터 |
 
 #### 신규 추가 3개
 
 | 원본 테이블 | 로그 테이블 | LOG_SNO Prefix | 도메인 |
 |------------|------------|----------------|--------|
-| TAAABB_BGDOCM  | TAAABB_BGDOCML  | `BGDOCML_` | 예산 문서 마스터 |
-| TAAABB_BRDOCM  | TAAABB_BRDOCML  | `BRDOCML_` | 심의 문서 마스터 |
-| TAAABB_BRIVGM  | TAAABB_BRIVGML  | `BRIVGML_` | 심의 조사 마스터 |
+| TPRMPP_BGDOCM  | TPRMPP_BGDOCML  | `BGDOCML_` | 예산 문서 마스터 |
+| TPRMPP_BRDOCM  | TPRMPP_BRDOCML  | `BRDOCML_` | 심의 문서 마스터 |
+| TPRMPP_BRIVGM  | TPRMPP_BRIVGML  | `BRIVGML_` | 심의 조사 마스터 |
 
 ### 2.2 제외 테이블
 
-- `TAAABB_CLOGNH` — 로그인 이력 (로그 테이블 자체를 로깅하지 않음)
-- `TAAABB_CRTOKM` — 갱신토큰 (보안 토큰)
-- `TAAABB_CAPPLA` — 신청서-원본 연결 (중간 테이블)
-- `TAAABB_CDECIM` — 결재선 (결재 시스템 내부)
-- `TAAABB_CFILEM` — 첨부파일 메타
-- `TAAABB_CAUTHI` — 자격등급
-- `TAAABB_CROLEI` — 역할 매핑 (RBAC)
-- `TAAABB_CORGNI` — 조직 정보 (외부 HR 동기화)
+- `TPRMPP_CLOGNH` — 로그인 이력 (로그 테이블 자체를 로깅하지 않음)
+- `TPRMPP_CRTOKM` — 갱신토큰 (보안 토큰)
+- `TPRMPP_CAPPLA` — 신청서-원본 연결 (중간 테이블)
+- `TPRMPP_CDECIM` — 결재선 (결재 시스템 내부)
+- `TPRMPP_CFILEM` — 첨부파일 메타
+- `TPRMPP_CAUTHI` — 자격등급
+- `TPRMPP_CROLEI` — 역할 매핑 (RBAC)
+- `TPRMPP_CORGNI` — 조직 정보 (외부 HR 동기화)
 
 ---
 
@@ -90,12 +90,12 @@
 
 | 로그 테이블 | 예시 LOG_SNO |
 |------------|-------------|
-| TAAABB_BPROJML | `BPROJML_0000000000000000000001` |
-| TAAABB_BGDOCML | `BGDOCML_0000000000000000000001` |
-| TAAABB_BRIVGML | `BRIVGML_0000000000000000000001` |
+| TPRMPP_BPROJML | `BPROJML_0000000000000000000001` |
+| TPRMPP_BGDOCML | `BGDOCML_0000000000000000000001` |
+| TPRMPP_BRIVGML | `BRIVGML_0000000000000000000001` |
 
 - **컬럼 타입**: `VARCHAR2(32)` (최장 Postfix 7자리 + `_` + 22자리 = 30자 이내 충분)
-- **Postfix**: `TAAABB_` prefix를 제외한 로그 테이블명 (예: `TAAABB_BPROJML` → `BPROJML`)
+- **Postfix**: `TPRMPP_` prefix를 제외한 로그 테이블명 (예: `TPRMPP_BPROJML` → `BPROJML`)
 
 ### 3.2 Oracle 시퀀스 정의
 
@@ -330,7 +330,7 @@ public class ChangeLogEntityListener {
 ```java
 @LogTarget(entity = BprojmL.class)   // 추가
 @Entity
-@Table(name = "TAAABB_BPROJM")
+@Table(name = "TPRMPP_BPROJM")
 public class Bprojm extends BaseEntity { ... }
 ```
 
@@ -338,7 +338,7 @@ public class Bprojm extends BaseEntity { ... }
 
 ```java
 @Entity
-@Table(name = "TAAABB_BPROJML")
+@Table(name = "TPRMPP_BPROJML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -348,17 +348,17 @@ public class BprojmL extends BaseLogEntity {
 
     @Column(name = "PRJ_MNG_NO", length = 32) private String  prjMngNo;
     @Column(name = "PRJ_SNO")                 private Integer prjSno;
-    // ... 원본 TAAABB_BPROJM 컬럼 전체 (nullable, PK/FK 제약 없음)
+    // ... 원본 TPRMPP_BPROJM 컬럼 전체 (nullable, PK/FK 제약 없음)
 }
 ```
 
 ### 5.7 신규 로그 엔티티 (BgdocmL / BrdocmL / BrivgmL)
 
-#### BgdocmL.java — TAAABB_BGDOCML (가이드 문서 로그)
+#### BgdocmL.java — TPRMPP_BGDOCML (가이드 문서 로그)
 
 ```java
 @Entity
-@Table(name = "TAAABB_BGDOCML")
+@Table(name = "TPRMPP_BGDOCML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -372,11 +372,11 @@ public class BgdocmL extends BaseLogEntity {
 }
 ```
 
-#### BrdocmL.java — TAAABB_BRDOCML (요구사항 정의서 로그, 원본 복합 PK)
+#### BrdocmL.java — TPRMPP_BRDOCML (요구사항 정의서 로그, 원본 복합 PK)
 
 ```java
 @Entity
-@Table(name = "TAAABB_BRDOCML")
+@Table(name = "TPRMPP_BRDOCML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -394,13 +394,13 @@ public class BrdocmL extends BaseLogEntity {
 }
 ```
 
-> 원본 `TAAABB_BRDOCM`의 복합 PK(`DOC_MNG_NO` + `DOC_VRS`)는 로그 테이블에서 일반 컬럼으로 취급. 로그 PK는 `LOG_SNO`만 사용.
+> 원본 `TPRMPP_BRDOCM`의 복합 PK(`DOC_MNG_NO` + `DOC_VRS`)는 로그 테이블에서 일반 컬럼으로 취급. 로그 PK는 `LOG_SNO`만 사용.
 
-#### BrivgmL.java — TAAABB_BRIVGML (문서 검토의견 로그, 원본 UUID PK)
+#### BrivgmL.java — TPRMPP_BRIVGML (문서 검토의견 로그, 원본 UUID PK)
 
 ```java
 @Entity
-@Table(name = "TAAABB_BRIVGML")
+@Table(name = "TPRMPP_BRIVGML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -419,7 +419,7 @@ public class BrivgmL extends BaseLogEntity {
 }
 ```
 
-> 원본 `TAAABB_BRIVGM`의 `IVG_SNO`는 `@PrePersist` UUID PK이지만, 로그 테이블에서는 일반 컬럼으로 저장.
+> 원본 `TPRMPP_BRIVGM`의 `IVG_SNO`는 `@PrePersist` UUID PK이지만, 로그 테이블에서는 일반 컬럼으로 저장.
 
 ---
 
@@ -428,11 +428,11 @@ public class BrivgmL extends BaseLogEntity {
 ### 6.1 시퀀스 명명 규칙
 
 ```
-S_{로그테이블명_Postfix}   (TAAABB_ prefix 제외)
+S_{로그테이블명_Postfix}   (TPRMPP_ prefix 제외)
 
-예: TAAABB_BPROJML → S_BPROJML
-    TAAABB_BGDOCML → S_BGDOCML
-    TAAABB_CUSERIL → S_CUSERIL
+예: TPRMPP_BPROJML → S_BPROJML
+    TPRMPP_BGDOCML → S_BGDOCML
+    TPRMPP_CUSERIL → S_CUSERIL
 ```
 
 ### 6.2 시퀀스 DDL (22개 — 22자리 CYCLE)
@@ -477,56 +477,56 @@ CREATE SEQUENCE S_BRIVGML MINVALUE 1 MAXVALUE 9999999999999999999999 START WITH 
 ```sql
 -- CTAS 패턴 (기존 19개 동일 방식 적용)
 -- LOG_SNO를 VARCHAR2(32)로 선언 (기존 NUMBER에서 변경)
-CREATE TABLE TAAABB_BPROJML AS
+CREATE TABLE TPRMPP_BPROJML AS
   SELECT CAST(NULL AS VARCHAR2(32))  AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))   AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6))  AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14))  AS CHG_USID,
          t.*
-  FROM TAAABB_BPROJM t WHERE 1 = 0;
+  FROM TPRMPP_BPROJM t WHERE 1 = 0;
 
-ALTER TABLE TAAABB_BPROJML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BPROJML MODIFY (PRJ_MNG_NO NULL, PRJ_SNO NULL);
-ALTER TABLE TAAABB_BPROJML ADD CONSTRAINT PK_BPROJML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BPROJML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BPROJML MODIFY (PRJ_MNG_NO NULL, PRJ_SNO NULL);
+ALTER TABLE TPRMPP_BPROJML ADD CONSTRAINT PK_BPROJML PRIMARY KEY (LOG_SNO);
 
 -- 신규 테이블 예시 (BGDOCML)
-CREATE TABLE TAAABB_BGDOCML AS
+CREATE TABLE TPRMPP_BGDOCML AS
   SELECT CAST(NULL AS VARCHAR2(32))  AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))   AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6))  AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14))  AS CHG_USID,
          t.*
-  FROM TAAABB_BGDOCM t WHERE 1 = 0;
+  FROM TPRMPP_BGDOCM t WHERE 1 = 0;
 
-ALTER TABLE TAAABB_BGDOCML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BGDOCML MODIFY (DOC_MNG_NO NULL);
-ALTER TABLE TAAABB_BGDOCML ADD CONSTRAINT PK_BGDOCML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BGDOCML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BGDOCML MODIFY (DOC_MNG_NO NULL);
+ALTER TABLE TPRMPP_BGDOCML ADD CONSTRAINT PK_BGDOCML PRIMARY KEY (LOG_SNO);
 
 -- BRDOCML (원본 복합 PK: DOC_MNG_NO + DOC_VRS)
-CREATE TABLE TAAABB_BRDOCML AS
+CREATE TABLE TPRMPP_BRDOCML AS
   SELECT CAST(NULL AS VARCHAR2(32))  AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))   AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6))  AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14))  AS CHG_USID,
          t.*
-  FROM TAAABB_BRDOCM t WHERE 1 = 0;
+  FROM TPRMPP_BRDOCM t WHERE 1 = 0;
 
-ALTER TABLE TAAABB_BRDOCML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BRDOCML MODIFY (DOC_MNG_NO NULL, DOC_VRS NULL);
-ALTER TABLE TAAABB_BRDOCML ADD CONSTRAINT PK_BRDOCML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BRDOCML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BRDOCML MODIFY (DOC_MNG_NO NULL, DOC_VRS NULL);
+ALTER TABLE TPRMPP_BRDOCML ADD CONSTRAINT PK_BRDOCML PRIMARY KEY (LOG_SNO);
 
 -- BRIVGML (원본 UUID PK: IVG_SNO)
-CREATE TABLE TAAABB_BRIVGML AS
+CREATE TABLE TPRMPP_BRIVGML AS
   SELECT CAST(NULL AS VARCHAR2(32))  AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))   AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6))  AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14))  AS CHG_USID,
          t.*
-  FROM TAAABB_BRIVGM t WHERE 1 = 0;
+  FROM TPRMPP_BRIVGM t WHERE 1 = 0;
 
-ALTER TABLE TAAABB_BRIVGML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BRIVGML MODIFY (IVG_SNO NULL);
-ALTER TABLE TAAABB_BRIVGML ADD CONSTRAINT PK_BRIVGML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BRIVGML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BRIVGML MODIFY (IVG_SNO NULL);
+ALTER TABLE TPRMPP_BRIVGML ADD CONSTRAINT PK_BRIVGML PRIMARY KEY (LOG_SNO);
 ```
 
 > **PK 컬럼 확인 완료** (백엔드 엔티티 파일 기준):

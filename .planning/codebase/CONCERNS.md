@@ -1,4 +1,4 @@
-# Codebase Concerns
+﻿# Codebase Concerns
 
 **Analysis Date:** 2026-05-19
 
@@ -284,7 +284,7 @@
 - Scaling path: Optional Redis-backed access-token blocklist for high-security flows.
 
 **Login Brute-force counter DB-backed:**
-- Current capacity: `LoginAttemptService` queries `TAAABB_CLOGNH` via `countByEnoAndLgnTpAndLgnDtmAfter()`. Survives restart.
+- Current capacity: `LoginAttemptService` queries `TPRMPP_CLOGNH` via `countByEnoAndLgnTpAndLgnDtmAfter()`. Survives restart.
 - Limit: No per-IP or per-device limit. Heavy login traffic hits DB on every attempt.
 - Scaling path: Add Redis sliding-window for IP plus existing DB layer for `eno`.
 

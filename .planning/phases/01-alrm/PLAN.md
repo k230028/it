@@ -1,9 +1,9 @@
-# Phase 1 — 알림 인프라 + UI (`01-alrm`)
+﻿# Phase 1 — 알림 인프라 + UI (`01-alrm`)
 
 > 마일스톤: M01-NOTIFICATION · 상태: Planned · 작성일: 2026-05-19
 
 ## 1. 페이즈 목표
-알림 마스터 테이블 `TAAABB_CINFMM`, 백엔드 알림 API, 결재·게시판 트리거 통합, AppHeader 뱃지/드롭다운 UI를 본 운영 코드에 추가한다. 외부 EAI 시스템 실연동은 본 페이즈 범위 외이며, 어댑터 인터페이스와 Stub 구현만 둔다.
+알림 마스터 테이블 `TPRMPP_CINFMM`, 백엔드 알림 API, 결재·게시판 트리거 통합, AppHeader 뱃지/드롭다운 UI를 본 운영 코드에 추가한다. 외부 EAI 시스템 실연동은 본 페이즈 범위 외이며, 어댑터 인터페이스와 Stub 구현만 둔다.
 
 ## 2. 접근(Approach) 결정 사항
 
@@ -18,7 +18,7 @@
 
 ## 3. 데이터 모델
 
-### 3.1 `TAAABB_CINFMM` 컬럼 정의
+### 3.1 `TPRMPP_CINFMM` 컬럼 정의
 
 | 컬럼 | 타입 | NULL | 기본값 | 코멘트 |
 |---|---|---|---|---|
@@ -50,7 +50,7 @@
 ### 3.3 시퀀스
 - `SEQ_CINFMM` START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE
 
-### 3.4 공통코드 시드 (`TAAABB_CCODEM`)
+### 3.4 공통코드 시드 (`TPRMPP_CCODEM`)
 - `CINF_TP` (알림종류구분)
   - `APPROVAL_REQUEST` 결재요청
   - `APPROVAL_RESULT`  결재결과
@@ -69,7 +69,7 @@
 ```
 common/notification/
 ├── entity/
-│   └── Cinfmm.java                 ← TAAABB_CINFMM 매핑
+│   └── Cinfmm.java                 ← TPRMPP_CINFMM 매핑
 ├── repository/
 │   ├── CinfmmRepository.java       ← JpaRepository<Cinfmm, String>
 │   ├── CinfmmRepositoryCustom.java
@@ -92,7 +92,7 @@ common/notification/
 ### 4.2 엔티티 골격 (`Cinfmm.java`)
 ```java
 @Entity
-@Table(name = "TAAABB_CINFMM", comment = "알림 마스터")
+@Table(name = "TPRMPP_CINFMM", comment = "알림 마스터")
 @Getter @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -204,7 +204,7 @@ public class NotificationEventListener {
 ### 5.1 결재요청 알림 (`com.kdb.it.common.approval.service.ApplicationService`)
 
 #### 5.1.1 데이터 모델 확정
-- 결재선 엔티티: `Cdecim` (`TAAABB_CDECIM`), 복합키 `(DCD_MNG_NO, DCD_SQN)`. `DCD_MNG_NO = APF_MNG_NO` 동일 값.
+- 결재선 엔티티: `Cdecim` (`TPRMPP_CDECIM`), 복합키 `(DCD_MNG_NO, DCD_SQN)`. `DCD_MNG_NO = APF_MNG_NO` 동일 값.
 - 핵심 컬럼:
   - `DCD_ENO` VARCHAR2(10) — 결재자 사번 (※ 알림 `RCV_USID`는 VC14, 실제 사번 값 길이는 짧아 호환 OK)
   - `DCD_TP` VARCHAR2(32) — `null=미결재`, `"결재"=처리됨`
@@ -242,8 +242,8 @@ public class NotificationEventListener {
 ### 5.2 멘션 알림 (`com.kdb.it.common.board.service.*`)
 
 #### 5.2.1 데이터 모델 확정
-- `Cblbcm` (`TAAABB_CBLBCM`) — 게시물. 본문: `NAC_CONE` VARCHAR2(4000), HTML, sanitize 필수. 작성자: `FST_ENR_USID`(BaseEntity).
-- `Ccmmtm` (`TAAABB_CCMMTM`) — 댓글. 본문: `CMMT_CONE` VARCHAR2(4000), HTML, sanitize 필수. 작성자: `FST_ENR_USID`.
+- `Cblbcm` (`TPRMPP_CBLBCM`) — 게시물. 본문: `NAC_CONE` VARCHAR2(4000), HTML, sanitize 필수. 작성자: `FST_ENR_USID`(BaseEntity).
+- `Ccmmtm` (`TPRMPP_CCMMTM`) — 댓글. 본문: `CMMT_CONE` VARCHAR2(4000), HTML, sanitize 필수. 작성자: `FST_ENR_USID`.
 - 모든 service 메서드는 `CustomUserDetails user` 파라미터를 받아 작성자 사번을 `user.getEno()`로 식별 가능.
 
 #### 5.2.2 멘션 파싱 유틸 (`common/notification/util/MentionExtractor.java`)
@@ -347,7 +347,7 @@ export function useNotifications() {
 ## 7. 마이그레이션 (`it_database/migrations/V20260520_001__CreateCinfmmTable.sql`) — ✅ 완료
 
 - DDL: 테이블 + PK + 인덱스 1개 (`IX_CINFMM_RCV`) + 시퀀스 (`SEQ_CINFMM`)
-- DML: `TAAABB_CCODEM`에 `CINF_TP` 5건, `CEAI_SD_TP` 4건 시드 INSERT
+- DML: `TPRMPP_CCODEM`에 `CINF_TP` 5건, `CEAI_SD_TP` 4건 시드 INSERT
 - 멱등성: Flyway가 성공한 스크립트 재실행을 자동 차단하므로 별도 PL/SQL `EXCEPTION` 가드 미사용 (기존 마이그레이션 패턴과 일치)
 - 스키마 prefix `ITPAPP.`, 테이블스페이스 `USERS`, 코멘트 한글 (기존 컨벤션 준수)
 

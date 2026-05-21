@@ -1,4 +1,4 @@
-# IT Project Portal — 모노레포 개발 가이드
+﻿# IT Project Portal — 모노레포 개발 가이드
 
 ## 1. 프로젝트 개요
 
@@ -582,7 +582,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 ### 12.8 2026-05-14 정비 메모
 
 - 공통 게시판(`common/board`, `/board`, `/admin/boards`)을 루트/하위 README와 CLAUDE에 반영했습니다.
-- 로그인 Brute-force 보호 설명을 실제 구현에 맞게 수정했습니다. 현재는 인메모리 카운터가 아니라 `TAAABB_CLOGNH` 로그인 실패 이력을 집계합니다.
+- 로그인 Brute-force 보호 설명을 실제 구현에 맞게 수정했습니다. 현재는 인메모리 카운터가 아니라 `TPRMPP_CLOGNH` 로그인 실패 이력을 집계합니다.
 - 프론트엔드 실제 구조를 컴포넌트 66개, composable 45개, 페이지 52개, 미들웨어 4개 기준으로 갱신했습니다.
 - `useDeptFilter`는 실제 파일이 없어 규칙에서 현황/백로그 과제로 조정했습니다.
 - Java/TypeScript 일부 주석 불일치와 누락을 보강하고, 전수 보강·lint 복구·게시판 확장 과제는 `TASK.md`에 유지했습니다.

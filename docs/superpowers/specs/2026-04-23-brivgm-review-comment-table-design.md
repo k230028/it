@@ -1,8 +1,8 @@
-# TAAABB_BRIVGM 검토의견 테이블 설계
+﻿# TPRMPP_BRIVGM 검토의견 테이블 설계
 
 - **작성일:** 2026-04-23
 - **대상 화면:** `/info/documents/{id}/review`
-- **관련 테이블:** TAAABB_BRDOCM (문서), 공통 첨부파일 테이블
+- **관련 테이블:** TPRMPP_BRDOCM (문서), 공통 첨부파일 테이블
 
 ---
 
@@ -14,13 +14,13 @@
 
 ## 2. 테이블 정의
 
-### 테이블명: `TAAABB_BRIVGM` (검토의견)
+### 테이블명: `TPRMPP_BRIVGM` (검토의견)
 
 | 화면 표기명 | 표준용어(Comment) | 컬럼명 | 타입 | 비고 |
 |---|---|---|---|---|
 | 검토의견일련번호 | 검토의견일련번호 | IVG_SNO | VARCHAR2(32) | 기본키 |
-| 문서관리번호 | 문서관리번호 | DOC_MNG_NO | VARCHAR2(32) | FK → TAAABB_BRDOCM |
-| 문서버전 | 문서버전 | DOC_VRS | NUMBER(5,2) | FK → TAAABB_BRDOCM |
+| 문서관리번호 | 문서관리번호 | DOC_MNG_NO | VARCHAR2(32) | FK → TPRMPP_BRDOCM |
+| 문서버전 | 문서버전 | DOC_VRS | NUMBER(5,2) | FK → TPRMPP_BRDOCM |
 | 의견유형 | 의견유형 | IVG_TP | VARCHAR2(1) | `I`=인라인, `G`=전반 |
 | 검토내용 | 검토내용 | IVG_CONE | CLOB | 코멘트 본문 |
 | 마크ID | 마크ID | MARK_ID | VARCHAR2(64) | 인라인 전용, nullable |
@@ -47,7 +47,7 @@
 
 ### 3.2 문서 버전 포함
 
-`TAAABB_BRDOCM`의 복합키(`DOC_MNG_NO + DOC_VRS`)를 모두 저장한다.
+`TPRMPP_BRDOCM`의 복합키(`DOC_MNG_NO + DOC_VRS`)를 모두 저장한다.
 
 - 버전별 코멘트 이력 조회 가능 (`DOC_MNG_NO = 'DOC-2026-0010' AND DOC_VRS = 1.01`)
 - 문서가 새 버전으로 갱신되어도 이전 버전의 코멘트는 유지
@@ -96,4 +96,4 @@
 
 ## 6. 참고
 
-- 연관 문서 테이블: `TAAABB_BRDOCM` (요구사항 정의서, 복합키: `DOC_MNG_NO + DOC_VRS`)
+- 연관 문서 테이블: `TPRMPP_BRDOCM` (요구사항 정의서, 복합키: `DOC_MNG_NO + DOC_VRS`)

@@ -1,4 +1,4 @@
-# Change Log (Audit Log) 시스템 구현 계획
+﻿# Change Log (Audit Log) 시스템 구현 계획
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -42,7 +42,7 @@
 -- 실행 대상: Oracle 21c XE (ITPAPP@XEPDB1)
 -- ============================================================
 
--- [1] 시퀀스 (테이블당 1개, 명명 규칙: S_{로그테이블명 without TAAABB_})
+-- [1] 시퀀스 (테이블당 1개, 명명 규칙: S_{로그테이블명 without TPRMPP_})
 CREATE SEQUENCE S_BPROJML  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 CREATE SEQUENCE S_BITEMML  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 CREATE SEQUENCE S_BCOSTML  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
@@ -68,254 +68,254 @@ CREATE SEQUENCE S_CAPPLML  START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 -- 실행 후 [3] ALTER로 NOT NULL 및 PK를 설정한다
 
 -- BPROJML
-CREATE TABLE TAAABB_BPROJML AS
+CREATE TABLE TPRMPP_BPROJML AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_BPROJM t WHERE 1 = 0;
+  FROM TPRMPP_BPROJM t WHERE 1 = 0;
 
 -- BITEMML
-CREATE TABLE TAAABB_BITEMML AS
+CREATE TABLE TPRMPP_BITEMML AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_BITEMM t WHERE 1 = 0;
+  FROM TPRMPP_BITEMM t WHERE 1 = 0;
 
 -- BCOSTML
-CREATE TABLE TAAABB_BCOSTML AS
+CREATE TABLE TPRMPP_BCOSTML AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_BCOSTM t WHERE 1 = 0;
+  FROM TPRMPP_BCOSTM t WHERE 1 = 0;
 
 -- BTERML
-CREATE TABLE TAAABB_BTERML AS
+CREATE TABLE TPRMPP_BTERML AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_BTERMM t WHERE 1 = 0;
+  FROM TPRMPP_BTERMM t WHERE 1 = 0;
 
 -- BPLANML
-CREATE TABLE TAAABB_BPLANML AS
+CREATE TABLE TPRMPP_BPLANML AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_BPLANM t WHERE 1 = 0;
+  FROM TPRMPP_BPLANM t WHERE 1 = 0;
 
 -- BPROJAL
-CREATE TABLE TAAABB_BPROJAL AS
+CREATE TABLE TPRMPP_BPROJAL AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_BPROJA t WHERE 1 = 0;
+  FROM TPRMPP_BPROJA t WHERE 1 = 0;
 
 -- BBUGTML
-CREATE TABLE TAAABB_BBUGTML AS
+CREATE TABLE TPRMPP_BBUGTML AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_BBUGTM t WHERE 1 = 0;
+  FROM TPRMPP_BBUGTM t WHERE 1 = 0;
 
 -- BASCTL
-CREATE TABLE TAAABB_BASCTL AS
+CREATE TABLE TPRMPP_BASCTL AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_BASCTM t WHERE 1 = 0;
+  FROM TPRMPP_BASCTM t WHERE 1 = 0;
 
 -- BCHKLCL
-CREATE TABLE TAAABB_BCHKLCL AS
+CREATE TABLE TPRMPP_BCHKLCL AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_BCHKLC t WHERE 1 = 0;
+  FROM TPRMPP_BCHKLC t WHERE 1 = 0;
 
 -- BCMMTML
-CREATE TABLE TAAABB_BCMMTML AS
+CREATE TABLE TPRMPP_BCMMTML AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_BCMMTM t WHERE 1 = 0;
+  FROM TPRMPP_BCMMTM t WHERE 1 = 0;
 
 -- BEVALML
-CREATE TABLE TAAABB_BEVALML AS
+CREATE TABLE TPRMPP_BEVALML AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_BEVALM t WHERE 1 = 0;
+  FROM TPRMPP_BEVALM t WHERE 1 = 0;
 
 -- BPERFML
-CREATE TABLE TAAABB_BPERFML AS
+CREATE TABLE TPRMPP_BPERFML AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_BPERFM t WHERE 1 = 0;
+  FROM TPRMPP_BPERFM t WHERE 1 = 0;
 
 -- BPOVWML
-CREATE TABLE TAAABB_BPOVWML AS
+CREATE TABLE TPRMPP_BPOVWML AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_BPOVWM t WHERE 1 = 0;
+  FROM TPRMPP_BPOVWM t WHERE 1 = 0;
 
 -- BPQNAML
-CREATE TABLE TAAABB_BPQNAML AS
+CREATE TABLE TPRMPP_BPQNAML AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_BPQNAM t WHERE 1 = 0;
+  FROM TPRMPP_BPQNAM t WHERE 1 = 0;
 
 -- BRSTML
-CREATE TABLE TAAABB_BRSTML AS
+CREATE TABLE TPRMPP_BRSTML AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_BRSLTM t WHERE 1 = 0;
+  FROM TPRMPP_BRSLTM t WHERE 1 = 0;
 
 -- BSCHDML
-CREATE TABLE TAAABB_BSCHDML AS
+CREATE TABLE TPRMPP_BSCHDML AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_BSCHDM t WHERE 1 = 0;
+  FROM TPRMPP_BSCHDM t WHERE 1 = 0;
 
 -- CUSERIL
-CREATE TABLE TAAABB_CUSERIL AS
+CREATE TABLE TPRMPP_CUSERIL AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_CUSERI t WHERE 1 = 0;
+  FROM TPRMPP_CUSERI t WHERE 1 = 0;
 
 -- CCODEML
-CREATE TABLE TAAABB_CCODEML AS
+CREATE TABLE TPRMPP_CCODEML AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_CCODEM t WHERE 1 = 0;
+  FROM TPRMPP_CCODEM t WHERE 1 = 0;
 
 -- CAPPLML
-CREATE TABLE TAAABB_CAPPLML AS
+CREATE TABLE TPRMPP_CAPPLML AS
   SELECT CAST(NULL AS NUMBER)       AS LOG_SNO,
          CAST(NULL AS VARCHAR2(1))  AS CHG_TP,
          CAST(NULL AS TIMESTAMP(6)) AS CHG_DTM,
          CAST(NULL AS VARCHAR2(14)) AS CHG_USID,
          t.*
-  FROM TAAABB_CAPPLM t WHERE 1 = 0;
+  FROM TPRMPP_CAPPLM t WHERE 1 = 0;
 
 -- [3] NOT NULL 설정 및 원본 PK 컬럼 nullable 처리 후 PK 추가
 -- (CTAS는 원본 NOT NULL 제약을 복사하므로 원본 PK 컬럼을 NULL 허용으로 변경)
 
-ALTER TABLE TAAABB_BPROJML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BPROJML MODIFY (PRJ_MNG_NO NULL, PRJ_SNO NULL);
-ALTER TABLE TAAABB_BPROJML ADD CONSTRAINT PK_BPROJML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BPROJML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BPROJML MODIFY (PRJ_MNG_NO NULL, PRJ_SNO NULL);
+ALTER TABLE TPRMPP_BPROJML ADD CONSTRAINT PK_BPROJML PRIMARY KEY (LOG_SNO);
 
-ALTER TABLE TAAABB_BITEMML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BITEMML MODIFY (GCL_MNG_NO NULL, GCL_SNO NULL);
-ALTER TABLE TAAABB_BITEMML ADD CONSTRAINT PK_BITEMML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BITEMML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BITEMML MODIFY (GCL_MNG_NO NULL, GCL_SNO NULL);
+ALTER TABLE TPRMPP_BITEMML ADD CONSTRAINT PK_BITEMML PRIMARY KEY (LOG_SNO);
 
-ALTER TABLE TAAABB_BCOSTML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BCOSTML MODIFY (IT_MNGC_NO NULL, IT_MNGC_SNO NULL);
-ALTER TABLE TAAABB_BCOSTML ADD CONSTRAINT PK_BCOSTML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BCOSTML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BCOSTML MODIFY (IT_MNGC_NO NULL, IT_MNGC_SNO NULL);
+ALTER TABLE TPRMPP_BCOSTML ADD CONSTRAINT PK_BCOSTML PRIMARY KEY (LOG_SNO);
 
-ALTER TABLE TAAABB_BTERML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BTERML MODIFY (TMN_MNG_NO NULL, TMN_SNO NULL);
-ALTER TABLE TAAABB_BTERML ADD CONSTRAINT PK_BTERML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BTERML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BTERML MODIFY (TMN_MNG_NO NULL, TMN_SNO NULL);
+ALTER TABLE TPRMPP_BTERML ADD CONSTRAINT PK_BTERML PRIMARY KEY (LOG_SNO);
 
-ALTER TABLE TAAABB_BPLANML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BPLANML MODIFY (PLN_MNG_NO NULL);
-ALTER TABLE TAAABB_BPLANML ADD CONSTRAINT PK_BPLANML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BPLANML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BPLANML MODIFY (PLN_MNG_NO NULL);
+ALTER TABLE TPRMPP_BPLANML ADD CONSTRAINT PK_BPLANML PRIMARY KEY (LOG_SNO);
 
-ALTER TABLE TAAABB_BPROJAL MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BPROJAL MODIFY (PRJ_MNG_NO NULL, BZ_MNG_NO NULL);
-ALTER TABLE TAAABB_BPROJAL ADD CONSTRAINT PK_BPROJAL PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BPROJAL MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BPROJAL MODIFY (PRJ_MNG_NO NULL, BZ_MNG_NO NULL);
+ALTER TABLE TPRMPP_BPROJAL ADD CONSTRAINT PK_BPROJAL PRIMARY KEY (LOG_SNO);
 
-ALTER TABLE TAAABB_BBUGTML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BBUGTML MODIFY (BG_MNG_NO NULL, BG_SNO NULL);
-ALTER TABLE TAAABB_BBUGTML ADD CONSTRAINT PK_BBUGTML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BBUGTML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BBUGTML MODIFY (BG_MNG_NO NULL, BG_SNO NULL);
+ALTER TABLE TPRMPP_BBUGTML ADD CONSTRAINT PK_BBUGTML PRIMARY KEY (LOG_SNO);
 
-ALTER TABLE TAAABB_BASCTL MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BASCTL MODIFY (ASCT_ID NULL, ASCT_STS NULL);
-ALTER TABLE TAAABB_BASCTL ADD CONSTRAINT PK_BASCTL PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BASCTL MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BASCTL MODIFY (ASCT_ID NULL, ASCT_STS NULL);
+ALTER TABLE TPRMPP_BASCTL ADD CONSTRAINT PK_BASCTL PRIMARY KEY (LOG_SNO);
 
-ALTER TABLE TAAABB_BCHKLCL MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BCHKLCL MODIFY (ASCT_ID NULL, CKG_ITM_C NULL);
-ALTER TABLE TAAABB_BCHKLCL ADD CONSTRAINT PK_BCHKLCL PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BCHKLCL MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BCHKLCL MODIFY (ASCT_ID NULL, CKG_ITM_C NULL);
+ALTER TABLE TPRMPP_BCHKLCL ADD CONSTRAINT PK_BCHKLCL PRIMARY KEY (LOG_SNO);
 
-ALTER TABLE TAAABB_BCMMTML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BCMMTML MODIFY (ASCT_ID NULL, ENO NULL, VLR_TP NULL);
-ALTER TABLE TAAABB_BCMMTML ADD CONSTRAINT PK_BCMMTML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BCMMTML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BCMMTML MODIFY (ASCT_ID NULL, ENO NULL, VLR_TP NULL);
+ALTER TABLE TPRMPP_BCMMTML ADD CONSTRAINT PK_BCMMTML PRIMARY KEY (LOG_SNO);
 
-ALTER TABLE TAAABB_BEVALML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BEVALML MODIFY (ASCT_ID NULL, ENO NULL, CKG_ITM_C NULL);
-ALTER TABLE TAAABB_BEVALML ADD CONSTRAINT PK_BEVALML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BEVALML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BEVALML MODIFY (ASCT_ID NULL, ENO NULL, CKG_ITM_C NULL);
+ALTER TABLE TPRMPP_BEVALML ADD CONSTRAINT PK_BEVALML PRIMARY KEY (LOG_SNO);
 
-ALTER TABLE TAAABB_BPERFML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BPERFML MODIFY (ASCT_ID NULL, DTP_SNO NULL);
-ALTER TABLE TAAABB_BPERFML ADD CONSTRAINT PK_BPERFML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BPERFML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BPERFML MODIFY (ASCT_ID NULL, DTP_SNO NULL);
+ALTER TABLE TPRMPP_BPERFML ADD CONSTRAINT PK_BPERFML PRIMARY KEY (LOG_SNO);
 
-ALTER TABLE TAAABB_BPOVWML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BPOVWML MODIFY (ASCT_ID NULL);
-ALTER TABLE TAAABB_BPOVWML ADD CONSTRAINT PK_BPOVWML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BPOVWML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BPOVWML MODIFY (ASCT_ID NULL);
+ALTER TABLE TPRMPP_BPOVWML ADD CONSTRAINT PK_BPOVWML PRIMARY KEY (LOG_SNO);
 
-ALTER TABLE TAAABB_BPQNAML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BPQNAML MODIFY (QTN_ID NULL);
-ALTER TABLE TAAABB_BPQNAML ADD CONSTRAINT PK_BPQNAML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BPQNAML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BPQNAML MODIFY (QTN_ID NULL);
+ALTER TABLE TPRMPP_BPQNAML ADD CONSTRAINT PK_BPQNAML PRIMARY KEY (LOG_SNO);
 
-ALTER TABLE TAAABB_BRSTML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BRSTML MODIFY (ASCT_ID NULL);
-ALTER TABLE TAAABB_BRSTML ADD CONSTRAINT PK_BRSTML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BRSTML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BRSTML MODIFY (ASCT_ID NULL);
+ALTER TABLE TPRMPP_BRSTML ADD CONSTRAINT PK_BRSTML PRIMARY KEY (LOG_SNO);
 
-ALTER TABLE TAAABB_BSCHDML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_BSCHDML MODIFY (ASCT_ID NULL, ENO NULL, DSD_DT NULL, DSD_TM NULL);
-ALTER TABLE TAAABB_BSCHDML ADD CONSTRAINT PK_BSCHDML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_BSCHDML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_BSCHDML MODIFY (ASCT_ID NULL, ENO NULL, DSD_DT NULL, DSD_TM NULL);
+ALTER TABLE TPRMPP_BSCHDML ADD CONSTRAINT PK_BSCHDML PRIMARY KEY (LOG_SNO);
 
-ALTER TABLE TAAABB_CUSERIL MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_CUSERIL MODIFY (ENO NULL);
-ALTER TABLE TAAABB_CUSERIL ADD CONSTRAINT PK_CUSERIL PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_CUSERIL MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_CUSERIL MODIFY (ENO NULL);
+ALTER TABLE TPRMPP_CUSERIL ADD CONSTRAINT PK_CUSERIL PRIMARY KEY (LOG_SNO);
 
-ALTER TABLE TAAABB_CCODEML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_CCODEML MODIFY (C_ID NULL, STT_DT NULL);
-ALTER TABLE TAAABB_CCODEML ADD CONSTRAINT PK_CCODEML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_CCODEML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_CCODEML MODIFY (C_ID NULL, STT_DT NULL);
+ALTER TABLE TPRMPP_CCODEML ADD CONSTRAINT PK_CCODEML PRIMARY KEY (LOG_SNO);
 
-ALTER TABLE TAAABB_CAPPLML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
-ALTER TABLE TAAABB_CAPPLML MODIFY (APF_MNG_NO NULL);
-ALTER TABLE TAAABB_CAPPLML ADD CONSTRAINT PK_CAPPLML PRIMARY KEY (LOG_SNO);
+ALTER TABLE TPRMPP_CAPPLML MODIFY (LOG_SNO NOT NULL, CHG_TP NOT NULL, CHG_DTM NOT NULL);
+ALTER TABLE TPRMPP_CAPPLML MODIFY (APF_MNG_NO NULL);
+ALTER TABLE TPRMPP_CAPPLML ADD CONSTRAINT PK_CAPPLML PRIMARY KEY (LOG_SNO);
 ```
 
 - [ ] **Step 2: SQL Developer 또는 sqlplus로 DDL 실행**
@@ -331,7 +331,7 @@ sqlplus ITPAPP/[비밀번호]@localhost:1521/XEPDB1 @src/main/resources/sql/audi
 
 ```sql
 SELECT table_name FROM user_tables
-WHERE table_name LIKE 'TAAABB_%L%'
+WHERE table_name LIKE 'TPRMPP_%L%'
 ORDER BY table_name;
 -- 19개 로그 테이블 조회됨 확인
 ```
@@ -490,7 +490,7 @@ class ChangeLogEntityListenerTest {
     // 테스트용 소스 엔티티 (@LogTarget 있음)
     @LogTarget(entity = SampleLogEntity.class)
     @Entity
-    @Table(name = "TAAABB_SAMPLE")
+    @Table(name = "TPRMPP_SAMPLE")
     @Getter
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     @AllArgsConstructor
@@ -502,7 +502,7 @@ class ChangeLogEntityListenerTest {
 
     // @LogTarget 없는 엔티티
     @Entity
-    @Table(name = "TAAABB_NO_LOG")
+    @Table(name = "TPRMPP_NO_LOG")
     @Getter
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
     @SuperBuilder
@@ -830,7 +830,7 @@ git commit -m "feat: add ChangeLogEntityListener, AuditLogPersister, Application
 - Create: `...domain/audit/entity/BbugtmL.java`
 - Create: `...domain/audit/entity/BasctmL.java`
 
-- [ ] **Step 1: BprojmL.java 작성** (TAAABB_BPROJML — 정보화사업)
+- [ ] **Step 1: BprojmL.java 작성** (TPRMPP_BPROJML — 정보화사업)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -842,7 +842,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "TAAABB_BPROJML")
+@Table(name = "TPRMPP_BPROJML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -894,7 +894,7 @@ public class BprojmL extends BaseLogEntity {
 }
 ```
 
-- [ ] **Step 2: BitemmL.java 작성** (TAAABB_BITEMML — 프로젝트 품목)
+- [ ] **Step 2: BitemmL.java 작성** (TPRMPP_BITEMML — 프로젝트 품목)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -906,7 +906,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "TAAABB_BITEMML")
+@Table(name = "TPRMPP_BITEMML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -939,7 +939,7 @@ public class BitemmL extends BaseLogEntity {
 }
 ```
 
-- [ ] **Step 3: BcostmL.java 작성** (TAAABB_BCOSTML — 전산관리비)
+- [ ] **Step 3: BcostmL.java 작성** (TPRMPP_BCOSTML — 전산관리비)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -951,7 +951,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "TAAABB_BCOSTML")
+@Table(name = "TPRMPP_BCOSTML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -988,7 +988,7 @@ public class BcostmL extends BaseLogEntity {
 }
 ```
 
-- [ ] **Step 4: BtermmL.java 작성** (TAAABB_BTERML — 단말기)
+- [ ] **Step 4: BtermmL.java 작성** (TPRMPP_BTERML — 단말기)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -1000,7 +1000,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "TAAABB_BTERML")
+@Table(name = "TPRMPP_BTERML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -1034,7 +1034,7 @@ public class BtermmL extends BaseLogEntity {
 }
 ```
 
-- [ ] **Step 5: BplanmL.java 작성** (TAAABB_BPLANML — IT부문계획)
+- [ ] **Step 5: BplanmL.java 작성** (TPRMPP_BPLANML — IT부문계획)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -1045,7 +1045,7 @@ import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "TAAABB_BPLANML")
+@Table(name = "TPRMPP_BPLANML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -1069,7 +1069,7 @@ public class BplanmL extends BaseLogEntity {
 }
 ```
 
-- [ ] **Step 6: BprojaL.java 작성** (TAAABB_BPROJAL — 계획-사업 연결)
+- [ ] **Step 6: BprojaL.java 작성** (TPRMPP_BPROJAL — 계획-사업 연결)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -1079,7 +1079,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "TAAABB_BPROJAL")
+@Table(name = "TPRMPP_BPROJAL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -1097,7 +1097,7 @@ public class BprojaL extends BaseLogEntity {
 }
 ```
 
-- [ ] **Step 7: BbugtmL.java 작성** (TAAABB_BBUGTML — 예산편성률)
+- [ ] **Step 7: BbugtmL.java 작성** (TPRMPP_BBUGTML — 예산편성률)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -1108,7 +1108,7 @@ import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "TAAABB_BBUGTML")
+@Table(name = "TPRMPP_BBUGTML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -1133,7 +1133,7 @@ public class BbugtmL extends BaseLogEntity {
 }
 ```
 
-- [ ] **Step 8: BasctmL.java 작성** (TAAABB_BASCTL — 협의회 심의과제)
+- [ ] **Step 8: BasctmL.java 작성** (TPRMPP_BASCTL — 협의회 심의과제)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -1144,7 +1144,7 @@ import lombok.experimental.SuperBuilder;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "TAAABB_BASCTL")
+@Table(name = "TPRMPP_BASCTL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -1197,7 +1197,7 @@ git commit -m "feat: add audit log entities for budget domain (BprojmL~BasctmL)"
 - Create: `...domain/audit/entity/BrsltmL.java`
 - Create: `...domain/audit/entity/BschdmL.java`
 
-- [ ] **Step 1: BchklcL.java 작성** (TAAABB_BCHKLCL — 타당성 검토항목)
+- [ ] **Step 1: BchklcL.java 작성** (TPRMPP_BCHKLCL — 타당성 검토항목)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -1207,7 +1207,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "TAAABB_BCHKLCL")
+@Table(name = "TPRMPP_BCHKLCL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -1227,7 +1227,7 @@ public class BchklcL extends BaseLogEntity {
 }
 ```
 
-- [ ] **Step 2: BcmmtmL.java 작성** (TAAABB_BCMMTML — 평가위원)
+- [ ] **Step 2: BcmmtmL.java 작성** (TPRMPP_BCMMTML — 평가위원)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -1237,7 +1237,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "TAAABB_BCMMTML")
+@Table(name = "TPRMPP_BCMMTML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -1256,7 +1256,7 @@ public class BcmmtmL extends BaseLogEntity {
 }
 ```
 
-- [ ] **Step 3: BevalmL.java 작성** (TAAABB_BEVALML — 평가의견)
+- [ ] **Step 3: BevalmL.java 작성** (TPRMPP_BEVALML — 평가의견)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -1266,7 +1266,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "TAAABB_BEVALML")
+@Table(name = "TPRMPP_BEVALML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -1287,7 +1287,7 @@ public class BevalmL extends BaseLogEntity {
 }
 ```
 
-- [ ] **Step 4: BperfmL.java 작성** (TAAABB_BPERFML — 성과지표)
+- [ ] **Step 4: BperfmL.java 작성** (TPRMPP_BPERFML — 성과지표)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -1298,7 +1298,7 @@ import lombok.experimental.SuperBuilder;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "TAAABB_BPERFML")
+@Table(name = "TPRMPP_BPERFML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -1325,7 +1325,7 @@ public class BperfmL extends BaseLogEntity {
 }
 ```
 
-- [ ] **Step 5: BpovwmL.java 작성** (TAAABB_BPOVWML — 사업개요)
+- [ ] **Step 5: BpovwmL.java 작성** (TPRMPP_BPOVWML — 사업개요)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -1335,7 +1335,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "TAAABB_BPOVWML")
+@Table(name = "TPRMPP_BPOVWML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -1363,7 +1363,7 @@ public class BpovwmL extends BaseLogEntity {
 }
 ```
 
-- [ ] **Step 6: BpqnamL.java 작성** (TAAABB_BPQNAML — 사전질의응답)
+- [ ] **Step 6: BpqnamL.java 작성** (TPRMPP_BPQNAML — 사전질의응답)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -1373,7 +1373,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "TAAABB_BPQNAML")
+@Table(name = "TPRMPP_BPQNAML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -1396,7 +1396,7 @@ public class BpqnamL extends BaseLogEntity {
 }
 ```
 
-- [ ] **Step 7: BrsltmL.java 작성** (TAAABB_BRSTML — 결과서)
+- [ ] **Step 7: BrsltmL.java 작성** (TPRMPP_BRSTML — 결과서)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -1406,7 +1406,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "TAAABB_BRSTML")
+@Table(name = "TPRMPP_BRSTML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -1426,7 +1426,7 @@ public class BrsltmL extends BaseLogEntity {
 }
 ```
 
-- [ ] **Step 8: BschdmL.java 작성** (TAAABB_BSCHDML — 일정)
+- [ ] **Step 8: BschdmL.java 작성** (TPRMPP_BSCHDML — 일정)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -1437,7 +1437,7 @@ import lombok.experimental.SuperBuilder;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "TAAABB_BSCHDML")
+@Table(name = "TPRMPP_BSCHDML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -1480,7 +1480,7 @@ git commit -m "feat: add audit log entities for council domain (BchklcL~BschdmL)
 - Create: `...domain/audit/entity/CcodemL.java`
 - Create: `...domain/audit/entity/CapplmL.java`
 
-- [ ] **Step 1: CuserIL.java 작성** (TAAABB_CUSERIL — 사용자 정보)
+- [ ] **Step 1: CuserIL.java 작성** (TPRMPP_CUSERIL — 사용자 정보)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -1490,7 +1490,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "TAAABB_CUSERIL")
+@Table(name = "TPRMPP_CUSERIL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -1521,7 +1521,7 @@ public class CuserIL extends BaseLogEntity {
 }
 ```
 
-- [ ] **Step 2: CcodemL.java 작성** (TAAABB_CCODEML — 공통코드)
+- [ ] **Step 2: CcodemL.java 작성** (TPRMPP_CCODEML — 공통코드)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -1532,7 +1532,7 @@ import lombok.experimental.SuperBuilder;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "TAAABB_CCODEML")
+@Table(name = "TPRMPP_CCODEML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -1557,7 +1557,7 @@ public class CcodemL extends BaseLogEntity {
 }
 ```
 
-- [ ] **Step 3: CapplmL.java 작성** (TAAABB_CAPPLML — 신청서 마스터)
+- [ ] **Step 3: CapplmL.java 작성** (TPRMPP_CAPPLML — 신청서 마스터)
 
 ```java
 package com.kdb.it.domain.audit.entity;
@@ -1568,7 +1568,7 @@ import lombok.experimental.SuperBuilder;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "TAAABB_CAPPLML")
+@Table(name = "TPRMPP_CAPPLML")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -1749,7 +1749,7 @@ curl -s -X POST http://localhost:8080/api/projects \
 ```sql
 -- BPROJML에 CHG_TP='C' 로그 1건 생성 확인
 SELECT LOG_SNO, CHG_TP, CHG_DTM, CHG_USID, PRJ_MNG_NO
-FROM TAAABB_BPROJML
+FROM TPRMPP_BPROJML
 ORDER BY LOG_SNO DESC
 FETCH FIRST 3 ROWS ONLY;
 ```

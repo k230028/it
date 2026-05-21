@@ -1,4 +1,4 @@
-# Roadmap — 알림(Notification) 마일스톤
+﻿# Roadmap — 알림(Notification) 마일스톤
 
 ## 개요
 - 마일스톤: **알림 기능 추가**
@@ -7,7 +7,7 @@
 - 단일 페이즈 마일스톤(MVP 범위).
 
 ## Phase 1 — 알림 인프라 + UI (`01-alrm`)
-- **Goal**: 알림 마스터 테이블(`TAAABB_CINFMM`), 백엔드 API, AppHeader 뱃지·드롭다운, 결재요청·멘션 트리거를 본 운영 코드에 통합한다.
+- **Goal**: 알림 마스터 테이블(`TPRMPP_CINFMM`), 백엔드 API, AppHeader 뱃지·드롭다운, 결재요청·멘션 트리거를 본 운영 코드에 통합한다.
 - **Depends on**: (없음)
 - **Status**: Planned
 - **상세**: [`phases/01-alrm/PLAN.md`](phases/01-alrm/PLAN.md)

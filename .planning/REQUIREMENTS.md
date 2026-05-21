@@ -1,7 +1,7 @@
-# Requirements — 알림(Notification) 기능
+﻿# Requirements — 알림(Notification) 기능
 
 ## R1. 알림 마스터 테이블 신규 생성
-- **R1.1** `TAAABB_CINFMM` 테이블을 신설한다. 명명은 META.md 기준 `C(공통) + INFM(알림) + M(마스터)`을 따른다.
+- **R1.1** `TPRMPP_CINFMM` 테이블을 신설한다. 명명은 META.md 기준 `C(공통) + INFM(알림) + M(마스터)`을 따른다.
 - **R1.2** 모든 컬럼명/타입/길이는 META.md(용어사전)와 DOMAIN.md(도메인사전)를 기반으로 한다.
 - **R1.3** 다음 컬럼은 **사용자 요구로 반드시 포함**한다.
   - `EAI_SD_TP_C` VARCHAR2(3) — EAI발송구분코드

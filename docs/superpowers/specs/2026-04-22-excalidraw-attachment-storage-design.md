@@ -1,4 +1,4 @@
-# Excalidraw 장면 외부 저장 + LZ-String 압축 설계
+﻿# Excalidraw 장면 외부 저장 + LZ-String 압축 설계
 
 **날짜:** 2026-04-22  
 **대상:** DOC-2026-0003 등 문서 컨텐츠 내 Excalidraw 다이어그램 저장 최적화
@@ -7,7 +7,7 @@
 
 ## 배경 및 문제
 
-현재 Excalidraw 다이어그램은 TipTap HTML 전체를 `TAAABB_BRDOCM.REQ_CONE` BLOB에 인라인으로 저장한다.
+현재 Excalidraw 다이어그램은 TipTap HTML 전체를 `TPRMPP_BRDOCM.REQ_CONE` BLOB에 인라인으로 저장한다.
 
 **현재 저장 구조 (다이어그램 1개당):**
 ```html

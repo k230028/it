@@ -1,8 +1,8 @@
-# BRDOCM 문서버전 복합키 구현 계획서
+﻿# BRDOCM 문서버전 복합키 구현 계획서
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** `TAAABB_BRDOCM` 테이블에 `DOC_VRS(NUMBER 4,2)` 컬럼을 추가하고, `(DOC_MNG_NO, DOC_VRS)` 복합키 기반으로 버전 관리 기능을 전 레이어에 구현한다.
+**Goal:** `TPRMPP_BRDOCM` 테이블에 `DOC_VRS(NUMBER 4,2)` 컬럼을 추가하고, `(DOC_MNG_NO, DOC_VRS)` 복합키 기반으로 버전 관리 기능을 전 레이어에 구현한다.
 
 **Architecture:** `@IdClass(BrdocmId)` 복합키 패턴(기존 `CdecimId` 패턴과 동일), Spring Data JPA 파생 쿼리 + Native Oracle 쿼리로 버전 조회, Nuxt 4 `useApiFetch`/`$apiFetch` 패턴 유지.
 
@@ -102,7 +102,7 @@ cat it_backend/src/main/java/.../entity/Brdocm.java
 ```java
 @IdClass(BrdocmId.class)
 @Entity
-@Table(name = "TAAABB_BRDOCM")
+@Table(name = "TPRMPP_BRDOCM")
 // ... 기존 어노테이션 유지
 public class Brdocm extends BaseEntity {
 ```
@@ -308,10 +308,10 @@ List<Brdocm> findAllByDocMngNoAndDelYn(String docMngNo, String delYn);
 
 ```java
 @Query(value = """
-    SELECT * FROM TAAABB_BRDOCM d
+    SELECT * FROM TPRMPP_BRDOCM d
     WHERE d.DEL_YN = 'N'
       AND d.DOC_VRS = (
-          SELECT MAX(d2.DOC_VRS) FROM TAAABB_BRDOCM d2
+          SELECT MAX(d2.DOC_VRS) FROM TPRMPP_BRDOCM d2
           WHERE d2.DOC_MNG_NO = d.DOC_MNG_NO AND d2.DEL_YN = 'N'
       )
     ORDER BY d.FST_ENR_DTM DESC

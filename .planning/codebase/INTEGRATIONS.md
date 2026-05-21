@@ -1,4 +1,4 @@
-# External Integrations
+﻿# External Integrations
 
 **Analysis Date:** 2026-05-19
 
@@ -88,7 +88,7 @@
 - Token TTL: Access 15 min (`jwt.access-token-validity=900000`), Refresh 7 days (`jwt.refresh-token-validity=604800000`)
 - Signing key: `jwt.secret=${JWT_SECRET:...}` (env-overridable; default placeholder must not ship to prod)
 - Password hashing: KDB-standard SHA-256 + Base64 with fixed salt (`it_backend/src/main/java/com/kdb/it/common/util/CustomPasswordEncoder.java`) — chosen for legacy SSO compatibility per `it_backend/CLAUDE.md` §5.6
-- Brute-force protection: `it_backend/src/main/java/com/kdb/it/common/iam/service/LoginAttemptService.java` — 5 failures / 10-minute lockout, sourced from `TAAABB_CLOGNH` history (DB-backed, survives restart)
+- Brute-force protection: `it_backend/src/main/java/com/kdb/it/common/iam/service/LoginAttemptService.java` — 5 failures / 10-minute lockout, sourced from `TPRMPP_CLOGNH` history (DB-backed, survives restart)
 - RBAC model: `CauthI` (qualification grades) × `CroleI` (role mapping)
   - `ITPAD001` = system admin (`ROLE_ADMIN`)
   - `ITPZZ001` = general user
@@ -126,7 +126,7 @@
   - `logging.level.org.hibernate.type.descriptor.sql.BasicBinder=WARN`
 - Dev profile (`application-dev.properties`) elevates Hibernate SQL binding to `TRACE`
 - Audit logging: `it_backend/src/main/java/com/kdb/it/domain/log/` + `ChangeLogEntityListener` → `AuditLogPersister` writes to `*L` (log) tables on JPA `@PrePersist`/`@PreUpdate`
-- Login history: `TAAABB_CLOGNH` via `LoginHistoryRepository`; controller `LoginHistoryController`
+- Login history: `TPRMPP_CLOGNH` via `LoginHistoryRepository`; controller `LoginHistoryController`
 
 **Frontend Logging:**
 - No frontend error tracker (no Sentry/Bugsnag in `it_frontend/package.json`)

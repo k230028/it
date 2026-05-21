@@ -1,4 +1,4 @@
-# Coding Conventions
+﻿# Coding Conventions
 
 **Analysis Date:** 2026-05-19
 
@@ -27,11 +27,11 @@ Per `CLAUDE.md` §4.1 (한글 주석 원칙):
 ### Database / Entity / Column (SoT: `META.md` + `DOMAIN.md`)
 
 **Table naming (`it_backend/CLAUDE.md` §5.2):**
-- Pattern: `TAAABB_{1자리 구분값}{4자리 도메인}{1자리 용도}`
+- Pattern: `TPRMPP_{1자리 구분값}{4자리 도메인}{1자리 용도}`
 - 1자리 구분값: `C` (공통), `B` (비즈니스)
 - 4자리 도메인: domain-specific (e.g., `BLBC`, `USER`, `PROJ`)
 - 1자리 용도: `M` (마스터), `L` (로그), `H` (이력), `I` (인덱스/매핑 — observed)
-- Examples: `TAAABB_CBLBMM` (공통 게시판 메타), `TAAABB_BPROJM` (비즈니스 사업 마스터), `TAAABB_CLOGNH` (공통 로그인 이력).
+- Examples: `TPRMPP_CBLBMM` (공통 게시판 메타), `TPRMPP_BPROJM` (비즈니스 사업 마스터), `TPRMPP_CLOGNH` (공통 로그인 이력).
 
 **Column naming:**
 - All columns MUST resolve to a `DOMAIN.md` term (예: 금액 → `*_AMT`, 일자 → `*_DT`, 여부 → `*_YN`, 명칭 → `*_NM`, GUID → `GUID`, 사용자ID → `*_USID`).
@@ -45,7 +45,7 @@ Per `CLAUDE.md` §4.1 (한글 주석 원칙):
 - Methods / fields / parameters / locals: `camelCase`.
 - Constants (`static final`): `SCREAMING_SNAKE_CASE` (e.g., `CookieUtil.ACCESS_TOKEN_COOKIE`).
 - Packages: lowercase reverse domain — root `com.kdb.it.*`.
-- Entity classes follow the table physical name in PascalCase: table `TAAABB_CUSERI` → entity `CuserI`; table `TAAABB_BPROJM` → entity `Bprojm`; log entities suffixed `L` (e.g., `BprojmL`, `CcodemL`).
+- Entity classes follow the table physical name in PascalCase: table `TPRMPP_CUSERI` → entity `CuserI`; table `TPRMPP_BPROJM` → entity `Bprojm`; log entities suffixed `L` (e.g., `BprojmL`, `CcodemL`).
 - DTO classes group related shapes via nested static classes — file `AuthDto.java` contains `AuthDto.LoginRequest`, `AuthDto.LoginResponse`, `AuthDto.SignupRequest` (`it_backend/CLAUDE.md` §5.3).
 
 ### TypeScript / Vue (Frontend)

@@ -1,4 +1,4 @@
-# 사전협의·전자결재 사이드바 및 Home 대시보드 Implementation Plan
+﻿# 사전협의·전자결재 사이드바 및 Home 대시보드 Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -128,8 +128,8 @@ import org.springframework.data.repository.query.Param;
     /** 부서 기준 전체 미삭제 문서 수 (DOC_MNG_NO 기준 distinct) */
     @Query(value = """
         SELECT COUNT(DISTINCT b.DOC_MNG_NO)
-        FROM TAAABB_BRDOCM b
-        JOIN TAAABB_CUSERI u ON b.FST_ENR_USID = u.ENO
+        FROM TPRMPP_BRDOCM b
+        JOIN TPRMPP_CUSERI u ON b.FST_ENR_USID = u.ENO
         WHERE b.DEL_YN = 'N'
           AND u.BBR_C = :bbrC
         """, nativeQuery = true)
@@ -138,9 +138,9 @@ import org.springframework.data.repository.query.Param;
     /** 부서 기준 미해결 검토의견이 존재하는 문서 수 (검토 진행 중) */
     @Query(value = """
         SELECT COUNT(DISTINCT b.DOC_MNG_NO)
-        FROM TAAABB_BRDOCM b
-        JOIN TAAABB_CUSERI u ON b.FST_ENR_USID = u.ENO
-        JOIN TAAABB_BRIVGM r ON b.DOC_MNG_NO = r.DOC_MNG_NO
+        FROM TPRMPP_BRDOCM b
+        JOIN TPRMPP_CUSERI u ON b.FST_ENR_USID = u.ENO
+        JOIN TPRMPP_BRIVGM r ON b.DOC_MNG_NO = r.DOC_MNG_NO
         WHERE b.DEL_YN = 'N'
           AND u.BBR_C = :bbrC
           AND r.RSLV_YN = 'N'
@@ -151,16 +151,16 @@ import org.springframework.data.repository.query.Param;
     /** 부서 기준 협의 완료 문서 수 (검토의견 존재 AND 모두 해결) */
     @Query(value = """
         SELECT COUNT(DISTINCT b.DOC_MNG_NO)
-        FROM TAAABB_BRDOCM b
-        JOIN TAAABB_CUSERI u ON b.FST_ENR_USID = u.ENO
+        FROM TPRMPP_BRDOCM b
+        JOIN TPRMPP_CUSERI u ON b.FST_ENR_USID = u.ENO
         WHERE b.DEL_YN = 'N'
           AND u.BBR_C = :bbrC
           AND EXISTS (
-              SELECT 1 FROM TAAABB_BRIVGM r
+              SELECT 1 FROM TPRMPP_BRIVGM r
               WHERE r.DOC_MNG_NO = b.DOC_MNG_NO AND r.DEL_YN = 'N'
           )
           AND NOT EXISTS (
-              SELECT 1 FROM TAAABB_BRIVGM r
+              SELECT 1 FROM TPRMPP_BRIVGM r
               WHERE r.DOC_MNG_NO = b.DOC_MNG_NO AND r.DEL_YN = 'N' AND r.RSLV_YN = 'N'
           )
         """, nativeQuery = true)
@@ -169,8 +169,8 @@ import org.springframework.data.repository.query.Param;
     /** 부서 기준 완료기한 초과 문서 수 */
     @Query(value = """
         SELECT COUNT(DISTINCT b.DOC_MNG_NO)
-        FROM TAAABB_BRDOCM b
-        JOIN TAAABB_CUSERI u ON b.FST_ENR_USID = u.ENO
+        FROM TPRMPP_BRDOCM b
+        JOIN TPRMPP_CUSERI u ON b.FST_ENR_USID = u.ENO
         WHERE b.DEL_YN = 'N'
           AND u.BBR_C = :bbrC
           AND b.FSG_TLM < TRUNC(SYSDATE)
@@ -184,8 +184,8 @@ import org.springframework.data.repository.query.Param;
     @Query(value = """
         SELECT TO_CHAR(b.FST_ENR_DTM, 'YYYY-MM') AS MONTH,
                COUNT(DISTINCT b.DOC_MNG_NO) AS CNT
-        FROM TAAABB_BRDOCM b
-        JOIN TAAABB_CUSERI u ON b.FST_ENR_USID = u.ENO
+        FROM TPRMPP_BRDOCM b
+        JOIN TPRMPP_CUSERI u ON b.FST_ENR_USID = u.ENO
         WHERE b.DEL_YN = 'N'
           AND u.BBR_C = :bbrC
           AND b.FST_ENR_DTM >= ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -5)
@@ -202,9 +202,9 @@ import org.springframework.data.repository.query.Param;
         SELECT DISTINCT b.DOC_MNG_NO, b.REQ_NM, u.USR_NM,
                TO_CHAR(b.FST_ENR_DTM, 'YYYY-MM-DD') AS CREATED_AT,
                b.FSG_TLM
-        FROM TAAABB_BRDOCM b
-        JOIN TAAABB_CUSERI u ON b.FST_ENR_USID = u.ENO
-        JOIN TAAABB_BRIVGM r ON b.DOC_MNG_NO = r.DOC_MNG_NO
+        FROM TPRMPP_BRDOCM b
+        JOIN TPRMPP_CUSERI u ON b.FST_ENR_USID = u.ENO
+        JOIN TPRMPP_BRIVGM r ON b.DOC_MNG_NO = r.DOC_MNG_NO
         WHERE b.DEL_YN = 'N'
           AND u.BBR_C = :bbrC
           AND r.RSLV_YN = 'N'
@@ -228,7 +228,7 @@ import org.springframework.data.repository.query.Param;
      * <p>로그인 사용자의 부서코드(bbrC) 기준으로 KPI, 월별 추이,
      * 검토 중인 요청 목록을 집계하여 반환합니다.</p>
      *
-     * @param bbrC 부서코드 (TAAABB_CUSERI.BBR_C)
+     * @param bbrC 부서코드 (TPRMPP_CUSERI.BBR_C)
      * @return 대시보드 집계 응답 DTO
      */
     @Transactional(readOnly = true)
@@ -450,8 +450,8 @@ import org.springframework.data.repository.query.Param;
     /** 본인에게 온 결재 대기 건수 (APF_STS='결재중' AND 본인 결재선 미처리) */
     @Query(value = """
         SELECT COUNT(*)
-        FROM TAAABB_CAPPLM a
-        JOIN TAAABB_CDECIM d ON a.APF_MNG_NO = d.APF_MNG_NO
+        FROM TPRMPP_CAPPLM a
+        JOIN TPRMPP_CDECIM d ON a.APF_MNG_NO = d.APF_MNG_NO
         WHERE a.APF_STS = '결재중'
           AND d.DCD_ENO = :eno
           AND d.DCD_DT IS NULL
@@ -461,7 +461,7 @@ import org.springframework.data.repository.query.Param;
     /** 내가 기안한 진행 중 건수 */
     @Query(value = """
         SELECT COUNT(*)
-        FROM TAAABB_CAPPLM a
+        FROM TPRMPP_CAPPLM a
         WHERE a.APF_STS = '결재중'
           AND a.RQS_ENO = :eno
         """, nativeQuery = true)
@@ -470,8 +470,8 @@ import org.springframework.data.repository.query.Param;
     /** 이번달 부서 완료 건수 */
     @Query(value = """
         SELECT COUNT(*)
-        FROM TAAABB_CAPPLM a
-        JOIN TAAABB_CUSERI u ON a.RQS_ENO = u.ENO
+        FROM TPRMPP_CAPPLM a
+        JOIN TPRMPP_CUSERI u ON a.RQS_ENO = u.ENO
         WHERE a.APF_STS = '결재완료'
           AND u.BBR_C = :bbrC
           AND a.RQS_DT >= TRUNC(SYSDATE, 'MM')
@@ -481,7 +481,7 @@ import org.springframework.data.repository.query.Param;
     /** 내 반려 건수 */
     @Query(value = """
         SELECT COUNT(*)
-        FROM TAAABB_CAPPLM a
+        FROM TPRMPP_CAPPLM a
         WHERE a.APF_STS = '반려'
           AND a.RQS_ENO = :eno
         """, nativeQuery = true)
@@ -494,8 +494,8 @@ import org.springframework.data.repository.query.Param;
     @Query(value = """
         SELECT TO_CHAR(a.RQS_DT, 'YYYY-MM') AS MONTH,
                COUNT(*) AS CNT
-        FROM TAAABB_CAPPLM a
-        JOIN TAAABB_CUSERI u ON a.RQS_ENO = u.ENO
+        FROM TPRMPP_CAPPLM a
+        JOIN TPRMPP_CUSERI u ON a.RQS_ENO = u.ENO
         WHERE u.BBR_C = :bbrC
           AND a.RQS_DT >= ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -5)
         GROUP BY TO_CHAR(a.RQS_DT, 'YYYY-MM')
@@ -510,9 +510,9 @@ import org.springframework.data.repository.query.Param;
     @Query(value = """
         SELECT a.APF_MNG_NO, a.APF_NM, u.USR_NM,
                TO_CHAR(a.RQS_DT, 'YYYY-MM-DD') AS RQS_DT_STR
-        FROM TAAABB_CAPPLM a
-        JOIN TAAABB_CUSERI u ON a.RQS_ENO = u.ENO
-        JOIN TAAABB_CDECIM d ON a.APF_MNG_NO = d.APF_MNG_NO
+        FROM TPRMPP_CAPPLM a
+        JOIN TPRMPP_CUSERI u ON a.RQS_ENO = u.ENO
+        JOIN TPRMPP_CDECIM d ON a.APF_MNG_NO = d.APF_MNG_NO
         WHERE a.APF_STS = '결재중'
           AND d.DCD_ENO = :eno
           AND d.DCD_DT IS NULL
@@ -534,7 +534,7 @@ import org.springframework.data.repository.query.Param;
      *
      * <p>bbrC 기준 부서 통계와 eno 기준 본인 결재 대기 목록을 반환합니다.</p>
      *
-     * @param bbrC 부서코드 (TAAABB_CUSERI.BBR_C)
+     * @param bbrC 부서코드 (TPRMPP_CUSERI.BBR_C)
      * @param eno  사원번호 (본인 결재 대기 필터)
      * @return 대시보드 집계 응답 DTO
      */

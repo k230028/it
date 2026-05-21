@@ -1,4 +1,4 @@
-# 공통 게시판 설계 스펙
+﻿# 공통 게시판 설계 스펙
 
 - **작성일**: 2026-05-10
 - **상태**: Draft (사용자 검토 대기 — v4: LV→LEV 정합)
@@ -13,9 +13,9 @@
 프로젝트 전반에서 재사용 가능한 **공통 게시판** 기능을 설계·구현한다. 1차 도입 대상은 **공지사항**과 **자료실**이며, 추후 동일한 인프라 위에서 FAQ·Q&A 등 추가 게시판이 운영자 화면에서 동적으로 생성될 수 있어야 한다.
 
 ### 1.2 1차 스코프 (In Scope)
-- 게시판 메타 관리 (`TAAABB_CBLBMM`) + 운영자용 관리 화면
-- 게시물 CRUD + 답변글(트리) + Soft Delete (`TAAABB_CBLBCM`)
-- 댓글 + 대댓글(무제한 트리) (`TAAABB_CCMMTM`)
+- 게시판 메타 관리 (`TPRMPP_CBLBMM`) + 운영자용 관리 화면
+- 게시물 CRUD + 답변글(트리) + Soft Delete (`TPRMPP_CBLBCM`)
+- 댓글 + 대댓글(무제한 트리) (`TPRMPP_CCMMTM`)
 - 공통 첨부파일 시스템(`Cfilem`) 연동
 - Tiptap 리치 에디터 + 서버측 `HtmlSanitizer` 적용
 - 게시판 단위/게시물 단위 가시성·작성 권한 이중 제어
@@ -49,7 +49,7 @@
 | # | 항목 | 결정 |
 |---|---|---|
 | 1 | 답변글 트리 표현 | **그룹+순서+레벨 3컬럼** (`NAC_GRP_NO`/`NAC_GRP_SQN`/`NAC_GRP_LEV`) + `HRK_NAC_MNG_NO` 보존 |
-| 2 | 게시판 정책 분기 | **`TAAABB_CBLBMM` 메타 테이블 신설** + 운영자 관리화면 |
+| 2 | 게시판 정책 분기 | **`TPRMPP_CBLBMM` 메타 테이블 신설** + 운영자 관리화면 |
 | 3 | 본문 컬럼 타입 | **CLOB / `String`** (`Brivgm` 패턴) |
 | 4 | 부서·역할 가시성 | **이중 제어** — 메타 권한 + 게시물 `BBR_C` |
 | 5 | 첨부파일 ORC_DTT | **단일값 `"공통게시판"`** |
@@ -64,24 +64,24 @@
 #### 3.1.1 테이블·엔티티
 | 항목 | 값 |
 |---|---|
-| 게시판 메타 테이블 | `TAAABB_CBLBMM` |
+| 게시판 메타 테이블 | `TPRMPP_CBLBMM` |
 | 게시판 메타 엔티티 | `Cblbmm` (`com.kdb.it.common.board.entity`) |
-| 게시판 본문 테이블 | `TAAABB_CBLBCM` |
+| 게시판 본문 테이블 | `TPRMPP_CBLBCM` |
 | 게시판 본문 엔티티 | `Cblbcm` |
-| 게시판 본문 변경 로그 테이블 | `TAAABB_CBLBCL` |
+| 게시판 본문 변경 로그 테이블 | `TPRMPP_CBLBCL` |
 | 게시판 본문 변경 로그 엔티티 | `CblbcmL` |
-| 게시판 메타 변경 로그 테이블 | `TAAABB_CBLBML` |
+| 게시판 메타 변경 로그 테이블 | `TPRMPP_CBLBML` |
 | 게시판 메타 변경 로그 엔티티 | `CblbmmL` |
-| 게시판 댓글 테이블 | `TAAABB_CCMMTM` |
+| 게시판 댓글 테이블 | `TPRMPP_CCMMTM` |
 | 게시판 댓글 엔티티 | `Ccmmtm` |
-| 게시판 댓글 변경 로그 테이블 | `TAAABB_CCMMTL` |
+| 게시판 댓글 변경 로그 테이블 | `TPRMPP_CCMMTL` |
 | 게시판 댓글 변경 로그 엔티티 | `CcmmtmL` |
 
 #### 3.1.2 도메인 prefix 분리
 - **메타** 컬럼: `BLB_*` (게시판 — 메타용어)
 - **본문(게시물)** 컬럼: `NAC_*` (게시물 — 메타용어)
 
-> **명명 비일관성 안내**: 본문 테이블 식별자는 `TAAABB_CBLBCM`(`Cblbcm`/`IDX_CBLBCM_*`)으로 유지되지만, 컬럼 prefix는 `NAC_*`(게시물)로 통일한다. 테이블명은 게시판 도메인 그룹핑(공통+게시판+콘텐츠+마스터) 의도이며, 컬럼은 메타용어 사전(`NAC=게시물`)을 따른다. 두 식별자 모두 동일한 게시판 본문을 가리킨다.
+> **명명 비일관성 안내**: 본문 테이블 식별자는 `TPRMPP_CBLBCM`(`Cblbcm`/`IDX_CBLBCM_*`)으로 유지되지만, 컬럼 prefix는 `NAC_*`(게시물)로 통일한다. 테이블명은 게시판 도메인 그룹핑(공통+게시판+콘텐츠+마스터) 의도이며, 컬럼은 메타용어 사전(`NAC=게시물`)을 따른다. 두 식별자 모두 동일한 게시판 본문을 가리킨다.
 
 #### 3.1.3 채번 형식
 | 항목 | 형식 | 예시 |
@@ -137,7 +137,7 @@
 
 > `PRLM`은 META 표준단어에서 **인사(Personnel Matters)**를 의미하므로, 본 스펙에서 "상위(parent)" 용도로 사용하지 않는다. 기존 코드베이스의 `PRLM_HRK_OGZ_C_CONE` 등은 인사 도메인 컬럼이며, 게시판 부모-자식 관계는 `HRK_*` prefix를 사용한다.
 
-### 3.2 `TAAABB_CBLBMM` (게시판 메타)
+### 3.2 `TPRMPP_CBLBMM` (게시판 메타)
 
 | 표준용어(Comment) | 컬럼명 | 타입 | NULL | 기본값 | 비고/예시 |
 |---|---|---|---|---|---|
@@ -159,7 +159,7 @@
 | 비고 | `RMK` | `VARCHAR2(500)` | YES | NULL | 운영자 메모 |
 | **공통** | — | — | — | — | **`BaseEntity` 상속** |
 
-### 3.3 `TAAABB_CBLBCM` (게시판 본문 = 게시물)
+### 3.3 `TPRMPP_CBLBCM` (게시판 본문 = 게시물)
 
 | 표준용어(Comment) | 컬럼명              | 타입              | NULL | 기본값            | 비고/예시                                           |
 | ------------- | ---------------- | --------------- | ---- | -------------- | ----------------------------------------------- |
@@ -184,7 +184,7 @@
 | 상위게시물관리번호     | `HRK_NAC_MNG_NO` | `VARCHAR2(32)`  | YES  | NULL           | 직계 부모 PK                                        |
 | **공통**        | —                | —               | —    | —              | **`BaseEntity` 상속**                             |
 
-### 3.4 `TAAABB_CCMMTM` (게시판 댓글)
+### 3.4 `TPRMPP_CCMMTM` (게시판 댓글)
 
 | 표준용어(Comment) | 컬럼명 | 타입 | NULL | 기본값 | 비고/예시 |
 |---|---|---|---|---|---|
@@ -200,7 +200,7 @@
 
 > 댓글은 게시판 메타의 `CMMT_USE_YN='Y'`인 경우에만 활성화. 첨부파일은 1차 미지원 (§1.3 비-스코프).
 
-### 3.5 `TAAABB_CBLBCL` / `TAAABB_CBLBML` / `TAAABB_CCMMTL` (변경 로그)
+### 3.5 `TPRMPP_CBLBCL` / `TPRMPP_CBLBML` / `TPRMPP_CCMMTL` (변경 로그)
 `BgdocmL`/`BplanmL`과 동일 패턴. `Cblbmm`·`Cblbcm`·`Ccmmtm` 각각에 `@LogTarget(entity = CblbmmL.class)` / `@LogTarget(entity = CblbcmL.class)` / `@LogTarget(entity = CcmmtmL.class)` 부여 → `ChangeLogEntityListener`가 자동 적재.
 
 ### 3.6 인덱스 전략
@@ -208,39 +208,39 @@
 ```sql
 -- 1. 게시물 목록 조회 (가장 빈번)
 CREATE INDEX IDX_CBLBCM_LIST
-    ON TAAABB_CBLBCM (BLB_MNG_NO, DEL_YN, SRE_YN, HRK_FXN_YN DESC, FST_ENR_DTM DESC);
+    ON TPRMPP_CBLBCM (BLB_MNG_NO, DEL_YN, SRE_YN, HRK_FXN_YN DESC, FST_ENR_DTM DESC);
 
 -- 2. 답변글 트리 정렬
 CREATE INDEX IDX_CBLBCM_GRP
-    ON TAAABB_CBLBCM (NAC_GRP_NO, NAC_GRP_SQN);
+    ON TPRMPP_CBLBCM (NAC_GRP_NO, NAC_GRP_SQN);
 
 -- 3. 직계 부모 탐색
 CREATE INDEX IDX_CBLBCM_HRK
-    ON TAAABB_CBLBCM (HRK_NAC_MNG_NO);
+    ON TPRMPP_CBLBCM (HRK_NAC_MNG_NO);
 
 -- 4. 작성자별 글 (마이페이지)
 CREATE INDEX IDX_CBLBCM_AUTHOR
-    ON TAAABB_CBLBCM (FST_ENR_USID, DEL_YN);
+    ON TPRMPP_CBLBCM (FST_ENR_USID, DEL_YN);
 
 -- 5. 부서 한정 게시물 필터
 CREATE INDEX IDX_CBLBCM_BBR
-    ON TAAABB_CBLBCM (BBR_C);
+    ON TPRMPP_CBLBCM (BBR_C);
 
 -- 6. 게시판 메타 사이드바 정렬
 CREATE INDEX IDX_CBLBMM_NAV
-    ON TAAABB_CBLBMM (USE_YN, SRE_SQN_NO);
+    ON TPRMPP_CBLBMM (USE_YN, SRE_SQN_NO);
 
 -- 7. 댓글 목록 (게시물별)
 CREATE INDEX IDX_CCMMTM_LIST
-    ON TAAABB_CCMMTM (NAC_MNG_NO, DEL_YN, SRE_YN, FST_ENR_DTM);
+    ON TPRMPP_CCMMTM (NAC_MNG_NO, DEL_YN, SRE_YN, FST_ENR_DTM);
 
 -- 8. 댓글 트리 정렬
 CREATE INDEX IDX_CCMMTM_GRP
-    ON TAAABB_CCMMTM (CMMT_GRP_NO, CMMT_GRP_SQN);
+    ON TPRMPP_CCMMTM (CMMT_GRP_NO, CMMT_GRP_SQN);
 
 -- 9. 직계 부모 댓글 탐색
 CREATE INDEX IDX_CCMMTM_HRK
-    ON TAAABB_CCMMTM (HRK_CMMT_MNG_NO);
+    ON TPRMPP_CCMMTM (HRK_CMMT_MNG_NO);
 ```
 
 > 본문 검색(`NAC_CONE LIKE '%키워드%'`)은 1차 풀스캔 허용. 게시판당 1만 건 초과 또는 검색 응답 1초 초과 시 Oracle Text 인덱스 별도 과제로 추진.
@@ -249,21 +249,21 @@ CREATE INDEX IDX_CCMMTM_HRK
 
 ```sql
 -- 1) 공통코드: 게시판유형 (BLB_TP)
-INSERT INTO TAAABB_CCODEM VALUES ('BLB_TP', 'BLB_TP_001', '공지사항', 1, 'Y', ...);
-INSERT INTO TAAABB_CCODEM VALUES ('BLB_TP', 'BLB_TP_002', '자료실',   2, 'Y', ...);
+INSERT INTO TPRMPP_CCODEM VALUES ('BLB_TP', 'BLB_TP_001', '공지사항', 1, 'Y', ...);
+INSERT INTO TPRMPP_CCODEM VALUES ('BLB_TP', 'BLB_TP_002', '자료실',   2, 'Y', ...);
 
 -- 2) 공통코드: 중요도 (PRIT_C)
-INSERT INTO TAAABB_CCODEM VALUES ('PRIT_C', 'PRIT_C_001', '일반', 1, 'Y', ...);
-INSERT INTO TAAABB_CCODEM VALUES ('PRIT_C', 'PRIT_C_002', '중요', 2, 'Y', ...);
-INSERT INTO TAAABB_CCODEM VALUES ('PRIT_C', 'PRIT_C_003', '긴급', 3, 'Y', ...);
+INSERT INTO TPRMPP_CCODEM VALUES ('PRIT_C', 'PRIT_C_001', '일반', 1, 'Y', ...);
+INSERT INTO TPRMPP_CCODEM VALUES ('PRIT_C', 'PRIT_C_002', '중요', 2, 'Y', ...);
+INSERT INTO TPRMPP_CCODEM VALUES ('PRIT_C', 'PRIT_C_003', '긴급', 3, 'Y', ...);
 
 -- 3) 공통코드: 게시물유형 (NAC_TP)
-INSERT INTO TAAABB_CCODEM VALUES ('NAC_TP', 'NAC_TP_001', '작업예정', 1, 'Y', ...);
-INSERT INTO TAAABB_CCODEM VALUES ('NAC_TP', 'NAC_TP_002', '작업완료', 2, 'Y', ...);
-INSERT INTO TAAABB_CCODEM VALUES ('NAC_TP', 'NAC_TP_003', '교육자료', 3, 'Y', ...);
+INSERT INTO TPRMPP_CCODEM VALUES ('NAC_TP', 'NAC_TP_001', '작업예정', 1, 'Y', ...);
+INSERT INTO TPRMPP_CCODEM VALUES ('NAC_TP', 'NAC_TP_002', '작업완료', 2, 'Y', ...);
+INSERT INTO TPRMPP_CCODEM VALUES ('NAC_TP', 'NAC_TP_003', '교육자료', 3, 'Y', ...);
 
 -- 4) 게시판 메타 시드: 공지사항 (관리자 등록, 답변X, 댓글X, 상위고정 사용, 유형X)
-INSERT INTO TAAABB_CBLBMM (
+INSERT INTO TPRMPP_CBLBMM (
     BLB_MNG_NO, BLB_NM, BLB_TP,
     REP_USE_YN, CMMT_USE_YN, FL_ESN_YN, HRK_FXN_USE_YN, NAC_TP_USE_YN, KD_USE_YN,
     INQ_ATH_C, ENR_ATH_C, BBR_LMTN_USE_YN,
@@ -278,7 +278,7 @@ INSERT INTO TAAABB_CBLBMM (
 );
 
 -- 5) 게시판 메타 시드: 자료실 (전체 등록, 답변X, 댓글O, 첨부 필수, 카테고리O, 유형X)
-INSERT INTO TAAABB_CBLBMM (
+INSERT INTO TPRMPP_CBLBMM (
     BLB_MNG_NO, BLB_NM, BLB_TP,
     REP_USE_YN, CMMT_USE_YN, FL_ESN_YN, HRK_FXN_USE_YN, NAC_TP_USE_YN, KD_USE_YN,
     INQ_ATH_C, ENR_ATH_C, BBR_LMTN_USE_YN,
@@ -322,7 +322,7 @@ HRK_NAC_MNG_NO   := NULL
 ### 4.3 트리 정렬 쿼리
 ```sql
 SELECT *
-  FROM TAAABB_CBLBCM
+  FROM TPRMPP_CBLBCM
  WHERE BLB_MNG_NO = :blbMngNo
    AND DEL_YN = 'N'
    AND SRE_YN = 'Y'
@@ -338,7 +338,7 @@ SELECT *
 ### 4.4 댓글 트리 정렬 쿼리
 ```sql
 SELECT *
-  FROM TAAABB_CCMMTM
+  FROM TPRMPP_CCMMTM
  WHERE NAC_MNG_NO = :nacMngNo
    AND DEL_YN = 'N'
    AND SRE_YN = 'Y'
@@ -534,7 +534,7 @@ canModifyComment(user, comment) :=
 
 ## 10. 변경 이력 (`@LogTarget`)
 
-`Cblbmm`·`Cblbcm`·`Ccmmtm` 각각에 `@LogTarget` 부여. `ChangeLogEntityListener`가 자동 INSERT/UPDATE/DELETE 감지 후 `TAAABB_CBLBML`/`TAAABB_CBLBCL`/`TAAABB_CCMMTL`에 적재.
+`Cblbmm`·`Cblbcm`·`Ccmmtm` 각각에 `@LogTarget` 부여. `ChangeLogEntityListener`가 자동 INSERT/UPDATE/DELETE 감지 후 `TPRMPP_CBLBML`/`TPRMPP_CBLBCL`/`TPRMPP_CCMMTL`에 적재.
 
 ---
 

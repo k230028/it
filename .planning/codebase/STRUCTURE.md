@@ -1,4 +1,4 @@
-# Codebase Structure
+﻿# Codebase Structure
 
 **Analysis Date:** 2026-05-19
 
@@ -348,11 +348,11 @@ it/                                        # 모노레포 루트 (C:\it)
 - Backend 도메인 패키지: 소문자 (예: `budget/project/`, `domain/log/`, `common/iam/`)
 
 **Database Tables (`it_backend/CLAUDE.md` §5.2):**
-- Format: `TAAABB_{1자리 구분값}{4자리 도메인}{1자리 용도}`
+- Format: `TPRMPP_{1자리 구분값}{4자리 도메인}{1자리 용도}`
 - 1자리 구분값: `C`(공통) / `B`(비즈니스)
 - 4자리 도메인: 용도별 (예: `PROJ`, `COST`, `BLBC`)
 - 1자리 용도: `M`(마스터) / `L`(로그) / `H`(이력)
-- 예시: `TAAABB_BPROJM`(정보화사업 마스터), `TAAABB_BPROJL`(정보화사업 로그), `TAAABB_CLOGNH`(로그인 이력)
+- 예시: `TPRMPP_BPROJM`(정보화사업 마스터), `TPRMPP_BPROJL`(정보화사업 로그), `TPRMPP_CLOGNH`(로그인 이력)
 
 **Database Columns (`C:\it\META.md` 기반):**
 - 모두 `UPPER_SNAKE_CASE` 약어

@@ -1,8 +1,8 @@
-# 공통코드 체계 개선 설계 (TAAABB_CCODEM 재정의)
+﻿# 공통코드 체계 개선 설계 (TPRMPP_CCODEM 재정의)
 
 - 작성일: 2026-05-11
 - 작성자: brainstorming 세션 (사용자 협업)
-- 영향 범위: DB(`TAAABB_CCODEM`, `TAAABB_CCODEL` + 다운스트림 FK 컬럼 다수), `it_backend` 공통코드 도메인, `it_frontend` 공통코드 호출부 전반
+- 영향 범위: DB(`TPRMPP_CCODEM`, `TPRMPP_CCODEL` + 다운스트림 FK 컬럼 다수), `it_backend` 공통코드 도메인, `it_frontend` 공통코드 호출부 전반
 - 전략: **빅뱅(Big Bang) 일괄 전환 · 단일 PR · 단일 운영 점검창**
 - 후속: 본 설계 승인 후 `writing-plans` 스킬로 구현 계획 문서 작성
 
@@ -14,7 +14,7 @@
 
 | 항목 | 현행 |
 |------|------|
-| 테이블 | `TAAABB_CCODEM` |
+| 테이블 | `TPRMPP_CCODEM` |
 | PK | (`C_ID`, `STT_DT`) |
 | `C_ID` 값 예시 | `CUR-001`, `PRJ_TP_001`, `BG-RQS-STA` (Dash/Underbar 혼재) |
 | `C_NM` | 코드 표시명 (예: `USD`) |
@@ -54,7 +54,7 @@
 
 ## 3. 데이터 모델
 
-### 3.1 신규 `TAAABB_CCODEM`
+### 3.1 신규 `TPRMPP_CCODEM`
 
 | 컬럼 | 타입 | NULL | PK | 주석 / 비고 |
 |------|------|------|----|------------|
@@ -75,7 +75,7 @@
 - `IDX_CCODEM_CID_VALID (C_ID, DEL_YN, STT_DT, END_DT)` — 카테고리 다건 조회용
 - `IDX_CCODEM_HRK_C (HRK_C)` — 자식 코드 역조회용 (도입 후 수요 발생 시)
 
-### 3.2 신규 `TAAABB_CCODEL` (변경 로그)
+### 3.2 신규 `TPRMPP_CCODEL` (변경 로그)
 
 `BaseLogEntity`를 상속하므로 자체 PK는 자동 채번 컬럼이 별도. 비즈니스 컬럼은 마스터와 동일 셋(CDVA_DTL, C_TP, C_TP_DES, HRK_C 추가 + CTT_TP/CTT_TP_DES 제거).
 
@@ -117,13 +117,13 @@
 > 파일명의 `V20260512`는 가상의 적용 예정일(D-day)을 표기한 예시이며, 실제 적용일은 PR 작성·운영 점검창 일정 확정 시점에 동기 갱신한다.
 
 ```
-V20260512_001__ccodem_v2_schema.sql        -- 신규 TAAABB_CCODEM_V2 생성
-V20260512_002__ccodel_v2_schema.sql        -- 신규 TAAABB_CCODEL_V2 생성
+V20260512_001__ccodem_v2_schema.sql        -- 신규 TPRMPP_CCODEM_V2 생성
+V20260512_002__ccodel_v2_schema.sql        -- 신규 TPRMPP_CCODEL_V2 생성
 V20260512_003__ccodem_v2_data_load.sql     -- 변환 INSERT + 로그 INSERT
 V20260512_004__ccodem_v2_data_verify.sql   -- 사전 검증 쿼리 (실패 시 RAISE)
 V20260512_005__downstream_fk_data.sql      -- 다운스트림 FK 'PRJ_TP_001' → '001' 일괄 UPDATE
-V20260512_006__rename_swap.sql             -- TAAABB_CCODEM → _OLD, _V2 → 정식명
-V20260512_007__rename_swap_log.sql         -- TAAABB_CCODEL → _OLD, _V2 → 정식명
+V20260512_006__rename_swap.sql             -- TPRMPP_CCODEM → _OLD, _V2 → 정식명
+V20260512_007__rename_swap_log.sql         -- TPRMPP_CCODEL → _OLD, _V2 → 정식명
 ```
 
 **스왑 방식 선택 이유:** PK 변경 + 데이터 변환 + 로그 정합을 한 in-place ALTER로 보장하기 어렵다. 신규 테이블에 변환 INSERT → swap 방식은 단순하고 롤백 가능.
@@ -136,18 +136,18 @@ SELECT prefix, postfix, stt_dt, COUNT(*)
   FROM (SELECT REGEXP_REPLACE(REPLACE(C_ID,'-','_'), '_[A-Z0-9]+$', '') prefix,
                REGEXP_SUBSTR(REPLACE(C_ID,'-','_'), '[A-Z0-9]+$')        postfix,
                STT_DT
-          FROM TAAABB_CCODEM
+          FROM TPRMPP_CCODEM
          WHERE DEL_YN = 'N')
  GROUP BY prefix, postfix, stt_dt
 HAVING COUNT(*) > 1;
 
 -- 다운스트림 FK dangling 검출 (PRJ_TP 예시 — 컬럼별 반복 필요)
 SELECT DISTINCT p.PRJ_TP
-  FROM TAAABB_BPROJM p
+  FROM TPRMPP_BPROJM p
  WHERE p.PRJ_TP IS NOT NULL
    AND p.PRJ_TP NOT IN (
      SELECT REGEXP_SUBSTR(REPLACE(c.C_ID,'-','_'), '[A-Z0-9]+$')
-       FROM TAAABB_CCODEM c
+       FROM TPRMPP_CCODEM c
       WHERE REGEXP_REPLACE(REPLACE(c.C_ID,'-','_'), '_[A-Z0-9]+$', '') = 'PRJ_TP'
         AND c.DEL_YN = 'N');
 ```
@@ -156,7 +156,7 @@ SELECT DISTINCT p.PRJ_TP
 
 ### 4.3 변경 로그(`CCODEL_V2`) 정합
 
-마이그레이션은 `ChangeLogEntityListener`를 우회하므로 자동 로그가 남지 않는다. `V20260512_003`에서 변환된 모든 행에 대해 동일 트랜잭션 내에 1건씩 `INSERT INTO TAAABB_CCODEL_V2`를 수행하고 변경 사유 컬럼에 `'SCHEMA_MIGRATION_20260512'`를 기록한다.
+마이그레이션은 `ChangeLogEntityListener`를 우회하므로 자동 로그가 남지 않는다. `V20260512_003`에서 변환된 모든 행에 대해 동일 트랜잭션 내에 1건씩 `INSERT INTO TPRMPP_CCODEL_V2`를 수행하고 변경 사유 컬럼에 `'SCHEMA_MIGRATION_20260512'`를 기록한다.
 
 ---
 
@@ -417,7 +417,7 @@ T+24 24시간 모니터링 후 _OLD 테이블 제거 결정 (실제 DROP은 D+30
 
 1. **HRK_C 데이터 확정** — 도메인별(전산여비/비목/조직 등) 부모-자식 관계 정의 워크숍 후 별도 UPDATE 마이그레이션
 2. **C_TP / C_TP_DES 정리** — 카테고리화 후 실제로 사용처가 있는 코드 식별. 사용처 없으면 다음 회차에 컬럼 제거 검토
-3. **_OLD 테이블 DROP** — 무사고 30일 경과 시 `TAAABB_CCODEM_OLD`/`_CCODEL_OLD` 제거
+3. **_OLD 테이블 DROP** — 무사고 30일 경과 시 `TPRMPP_CCODEM_OLD`/`_CCODEL_OLD` 제거
 
 ---
 

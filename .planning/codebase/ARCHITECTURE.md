@@ -1,4 +1,4 @@
-<!-- refreshed: 2026-05-19 -->
+﻿<!-- refreshed: 2026-05-19 -->
 # Architecture
 
 **Analysis Date:** 2026-05-19
@@ -165,7 +165,7 @@
   - Purpose: JPA 엔티티 (DB 테이블 ↔ 객체 매핑)
   - Location: `it_backend/src/main/java/com/kdb/it/**/entity/`
   - Pattern: `BaseEntity` 상속 + `@Column(comment=...)` + Lombok `@SuperBuilder`
-  - Examples: `Bprojm`(`TAAABB_BPROJM`), `Bcostm`, `Capplm`, `Cblbcm`, `CuserI`, `CorgnI`
+  - Examples: `Bprojm`(`TPRMPP_BPROJM`), `Bcostm`, `Capplm`, `Cblbcm`, `CuserI`, `CorgnI`
   - Logging: 모든 업무 엔티티에 짝이 되는 `*L` 로그 엔티티 존재 (`BprojmL`, `BcostmL`, `CapplmL` 등 23개)
 
 - **Common Domain:**
@@ -212,7 +212,7 @@
 ### Authentication Flow
 
 1. `/login` → `AuthController.login(LoginRequest)` 호출
-2. `LoginAttemptService.checkLocked(eno)`로 사번 기준 잠금 상태 확인 (`TAAABB_CLOGNH` 5회 실패/10분 잠금)
+2. `LoginAttemptService.checkLocked(eno)`로 사번 기준 잠금 상태 확인 (`TPRMPP_CLOGNH` 5회 실패/10분 잠금)
 3. `CustomPasswordEncoder`(SHA-256+Base64, KDB 표준)로 비밀번호 검증
 4. `JwtUtil`이 access(15분)/refresh(7일) 토큰 생성 → `CookieUtil`이 httpOnly 쿠키 설정
 5. 응답 본문에 사용자 정보(`User`) 반환 → Nuxt `auth.ts`가 `it-portal-user` 쿠키에 저장
@@ -366,7 +366,7 @@
 **Logging:**
 - 백엔드: SLF4J + Spring Boot 기본 Logback. `LoggerFactory.getLogger(...)` 패턴.
 - 감사: `ChangeLogEntityListener` → `AuditLogPersister` → `*L` 로그 테이블 자동 적재 (`it_backend/src/main/java/com/kdb/it/domain/log/listener/`).
-- 로그인 이력: `TAAABB_CLOGNH` (`it_backend/src/main/java/com/kdb/it/common/system/entity/Clognh.java`).
+- 로그인 이력: `TPRMPP_CLOGNH` (`it_backend/src/main/java/com/kdb/it/common/system/entity/Clognh.java`).
 
 **Validation:**
 - 백엔드: Bean Validation `@Valid` + DTO 어노테이션(`@NotBlank`, `@Size`). mutating 엔드포인트 필수 (`it_backend/CLAUDE.md` §5.5.2).
