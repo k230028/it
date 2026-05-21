@@ -29,5 +29,32 @@
 - [x] 백엔드 컴파일 + 알림 단위 테스트 통과 / 프론트 typecheck + 알림 단위 테스트 통과
 - [ ] cross-user E2E 시나리오 (백로그)
 
-## (예약) Phase 2 — 실시간 push (SSE/WebSocket)
+## (예약) Phase 2-notification — 실시간 push (SSE/WebSocket)
 - Phase 1 검증 후 별도 마일스톤으로 분리. 본 ROADMAP 범위 외.
+
+---
+
+# Roadmap — _SNO 컬럼 타입 표준화 (M02-SNO-MIGRATION)
+
+## 개요
+- 마일스톤: **_SNO 컬럼 표준화**
+- 마일스톤 코드: `M02-SNO-MIGRATION`
+- 시작일: 2026-05-21
+- 설계문서: `docs/superpowers/plans/2026-05-21-sno-column-type-migration.md`
+
+## Phase 1 — NUMBER 크기 확장 (`02-sno`)
+- **Goal**: `TOK_SNO`, `LGN_SNO` NUMBER(19) → NUMBER(22). 비파괴. Java 변경 없음.
+- **Status**: Planned
+- **상세**: [`phases/02-sno/PLAN.md`](phases/02-sno/PLAN.md)
+
+## Phase 2 — 숫자문자열 → NUMBER (`02-sno` 연속)
+- **Goal**: `TMN_SNO`, `DTP_SNO`, `ITM_SQN_SNO` VARCHAR2 → NUMBER. Java 엔티티 + IdClass 동기화.
+- **Status**: Planned
+
+## Phase 3 — 복합문자열 → NUMBER(22) (`02-sno` 연속)
+- **Goal**: `LOG_SNO` 23개 테이블, `APF_REL_SNO` VARCHAR2 → NUMBER. AuditLogIdGenerator 단순화.
+- **Status**: Planned
+
+## Phase 4 — UUID → NUMBER(22) (`02-sno` 연속)
+- **Goal**: `IVG_SNO` UUID VARCHAR2 → NUMBER. SEQ_BRIVGM 신규 생성. @GeneratedValue 전환.
+- **Status**: Planned

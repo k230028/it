@@ -35,6 +35,11 @@
     - 프론트 전체 회귀 — `utils/common.test.ts` `getHearingTypeLabel` 14건 사전 존재 회귀, 알림 작업과 무관
   - Playwright E2E 실행은 dev server 기동 + Playwright auth.setup의 수동 로그인 단계를 요구하므로 사용자 환경에서 별도 실행
 
+## M02-SNO-MIGRATION 착수 (2026-05-21)
+- 설계문서 점검 완료. `.planning/phases/02-sno/PLAN.md` 생성.
+- 발견된 설계 누락 4건 (P-1~P-4): `BtermmId`, `BperfmId`, `CorgnI.update()` 추가 수정 필요, `BtermmL` 경로 오정. 상세는 PLAN.md §2 참조.
+- 사전 확인 4개 쿼리(사전-1~4) 실행 후 Phase 1 착수 가능.
+
 ## 페이즈 마무리 (2026-05-20)
 - **Phase 1 — 알림 인프라 + UI**: 11단계 모두 산출 완료. 신규 16개 + 수정 5개 = 21개 파일
 - **검증 결과**: 컴파일/타입체크/단위 테스트(알림 범위 100% 통과). 회귀 미발견 (외부 사전 회귀만 존재)
