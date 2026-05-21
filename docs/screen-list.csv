@@ -1,0 +1,53 @@
+NO,대분류,화면명,URL 경로,접근권한,비고
+1,공통,로그인,/login,전체,사원번호/비밀번호 입력
+2,공통,홈 (리다이렉트),/,인증,/info 로 자동 이동
+3,사업·예산,사업·예산 홈(대시보드),/info,인증,KPI 카드·공지사항·주요 일정
+4,사업·예산,정보화사업 목록,/info/projects,인증,정보화사업+경상사업 통합 DataTable
+5,사업·예산,정보화사업 등록/수정,/info/projects/form,인증,신규(?id 없음) / 수정(?id=prjMngNo)
+6,사업·예산,정보화사업 상세,/info/projects/:id,인증,사업 상세·편집·삭제
+7,사업·예산,정보화사업 보고서+결재상신,/info/projects/report,인증,PDF 생성·결재라인 지정·상신
+8,사업·예산,전산업무비 목록,/info/cost,인증,인라인 편집 DataTable
+9,사업·예산,전산업무비 신청/수정,/info/cost/form,인증,신규·단건 수정·복수 수정 3가지 모드
+10,사업·예산,전산업무비 상세,/info/cost/:id,인증,상세 조회·수정·삭제
+11,사업·예산,금융정보단말기 상세,/info/cost/terminal/:id,인증,단말기별 비용 목록
+12,사업·예산,IT부문계획 목록,/info/plan,인증,연도별 계획 DataTable
+13,사업·예산,IT부문계획 등록,/info/plan/form,인증,연도·계획구분 선택 후 사업 선택·저장
+14,사업·예산,IT부문계획 상세,/info/plan/:id,인증,계획 상세 조회
+15,사전협의,사전협의 홈(대시보드),/info/documents,인증,KPI·월별추이·검토중 목록
+16,사전협의,요구사항정의서 목록,/info/documents/list,인증,전체 목록 DataTable·검색·삭제
+17,사전협의,사전협의 요청(등록),/info/documents/form,인증,Rich Editor·첨부파일
+18,사전협의,요구사항정의서 상세,/info/documents/:id,인증,상세 조회
+19,사전협의,요구사항정의서 리뷰,/info/documents/:id/review,인증,검토 의견 작성·버전 이력
+20,협의회,정보화실무협의회 목록,/info/council-request,인증,권한별 협의회 목록·상태별 라우팅
+21,협의회,협의회 타당성검토(Step1),/info/council-request/:id,인증,타당성검토표·FeasibilityChecklist
+22,협의회,협의회 개최준비(Step2),/info/council-request/prepare/:id,IT관리자,평가위원선정·일정취합·일정공지·사전Q&A
+23,협의회,협의회 개최·평가(Step3),/info/council-request/result/:id,인증,일정입력·평가의견작성·결과서 작성/확인
+24,예산,예산 신청 유형 선택,/budget,인증,정보화사업·전산업무비·경상사업 유형 카드
+25,예산,예산 통합 목록,/budget/list,인증,전체 예산 통합 DataTable·요약 카드
+26,예산,예산 작업(편성),/budget/work,인증,결재완료 예산 편성률 입력·적용
+27,예산,예산 현황,/budget/status,인증,정보화사업/전산업무비/경상사업 3탭 현황
+28,예산,전산예산 결재 상신 선택,/budget/approval,인증,결재 상신 대상 항목 체크박스 선택
+29,예산,예산 통합 PDF 보고서+결재상신,/budget/report,인증,PDF 생성·결재라인 지정·상신
+30,전자결재,전자결재 홈(대시보드),/approval,인증,KPI 카드·월별추이·결재대기 목록
+31,전자결재,전자결재 목록,/approval/list,인증,결재목록·승인/반려·일괄결재·타임라인
+32,감사,IT 자체감사 대시보드,/audit,인증,감사 현황 카드 (조치필요·진행중·완료)
+33,게시판,게시판 홈,/board,인증,권한별 게시판 카드 목록
+34,게시판,게시판 글 목록,/board/:blbMngNo,인증,게시판별 글 목록
+35,게시판,게시글 작성,/board/:blbMngNo/form,인증,신규 게시글 작성
+36,게시판,게시글 상세,/board/:blbMngNo/:nacMngNo,인증,게시글 상세·댓글
+37,게시판,게시글 수정,/board/:blbMngNo/:nacMngNo/edit,인증,게시글 수정
+38,진단,IT 사전진단 설문,/diagnosis,인증,10단계 설문·결과(추천부서·예상예산·기간)
+39,가이드,정보화사업 가이드,/guide,인증,단계별 가이드 문서 조회·편집(TipTap)
+40,관리자,관리자 홈,/admin,관리자,/admin/dashboard 리다이렉트
+41,관리자,관리자 대시보드,/admin/dashboard,관리자,접속자 추이 차트·요약 통계 카드
+42,관리자,사용자 관리,/admin/users,관리자,사용자 조회·추가·수정·삭제
+43,관리자,역할 관리,/admin/roles,관리자,역할(사용자↔자격등급 매핑) CRUD
+44,관리자,자격등급 관리,/admin/auth-grades,관리자,자격등급 CRUD
+45,관리자,조직 관리,/admin/organizations,관리자,조직(부서·팀) CRUD
+46,관리자,공통코드 관리,/admin/codes,관리자,공통코드 CRUD·엑셀 업로드
+47,관리자,게시판 관리,/admin/boards,관리자,게시판 메타 CRUD
+48,관리자,첨부파일 조회,/admin/files,관리자,전체 첨부파일 조회(읽기 전용)
+49,관리자,JWT 갱신토큰 조회,/admin/tokens,관리자,갱신토큰 목록 조회(읽기 전용·마스킹)
+50,관리자,로그인 이력 조회,/admin/login-history,관리자,전체 로그인 이력 조회
+51,관리자,시스템 로그 목록,/admin/logs,관리자,로그 테이블 선택 리다이렉트
+52,관리자,시스템 로그 상세,/admin/logs/:logKey,관리자,테이블별 로그 DataTable·엑셀 내보내기

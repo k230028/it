@@ -126,4 +126,9 @@
 | 이율      | ITSR   | 율/비율  | 율NU8.5   | NUMBER       | 8    | 5   |
 | 확률      | PBB    | 율/비율  | 율NU15.10 | NUMBER       | 15   | 10  |
 | 환율      | XCR    | 율/비율  | 율NU9.4   | NUMBER       | 9    | 4   |
+| 일련번호    | SNO    | 일련번호  | 일련번호NU4  | NUMBER       | 4    |     |
+| 일련번호    | SNO    | 일련번호  | 일련번호NU7  | NUMBER       | 7    |     |
 | 일련번호    | SNO    | 일련번호  | 일련번호NU9  | NUMBER       | 9    |     |
+| 일련번호    | SNO    | 일련번호  | 일련번호NU10 | NUMBER       | 10   |     |
+| 일련번호    | SNO    | 일련번호  | 일련번호NU18 | NUMBER       | 18   |     |
+| 일련번호    | SNO    | 일련번호  | 일련번호NU22 | NUMBER       | 22   |     |
