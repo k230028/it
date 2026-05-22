@@ -1,6 +1,6 @@
 ﻿# IT Portal 백로그
 
-> 기준일: 2026-05-19
+> 기준일: 2026-05-22
 > 목적: `REVIEW.md` 정비 과정에서 확인한 기술 부채, 미구현 항목, 후속 검증 과제를 추적합니다.
 
 ## 진행 중
@@ -30,6 +30,7 @@
 | [Open] | High     | `CodeController.createCcodem()`/`updateCcodem()` `@Valid` 추가 — Bean Validation이 컨트롤러 진입 시 동작하도록 일관성 확보                                        | `CodeController.java:68,81`                                                           |
 | [Open] | High     | `FileController` 다운로드/미리보기/단건조회/목록조회에 파일 읽기 권한 검증 적용 | `downloadFile()`/`previewFile()`이 `FileOwnershipChecker.checkReadAccess()` 없이 `fileService.downloadFile()` 직접 호출 |
 | [Open] | High     | `FileController.updateFileMeta()`와 `deleteFilesByOrc()`에 소유권 또는 관리자/도메인 권한 검증 추가 | 인증 사용자라면 임의 `flMngNo` 또는 `orcDtt+orcPkVl`로 메타 수정/일괄 삭제 호출 가능 |
+| [Open] | Medium   | `NotificationController` `size` 파라미터 상한 미적용 — `GET /api/notifications?size=100000` 식의 비정상 페이지 크기 방지를 위해 `@Max(100)` 또는 서비스 내 클램핑 추가 | `NotificationController.java` |
 | [Open] | Medium   | Gemini 요청 DTO 검증 추가 — `@NotBlank`, `@Size`, 첨부 개수 제한 적용 | `GeminiDto.Request`, `GeminiService.generate()` |
 | [Open] | Medium   | Gemini 첨부 파일 실제 크기 제한 구현 | DTO 주석의 파일당 20MB 제한과 달리 `Files.readAllBytes(filePath)` 전 크기 검사 코드 없음 |
 | [Open] | High     | 리소스 미존재 시 HTTP 404 반환을 위한 전용 `NotFoundException` 도입 + `GlobalExceptionHandler` 매핑                                                             | `UserController.java:72`, `GuideDocService.java:65,129,154` — 현재 400 반환               |
@@ -53,6 +54,9 @@
 | [Done] | High     | `FileService.java:318,325` IOException → `CustomGeneralException(msg, e)` — cause 전달                                                                                                                | 스택 트레이스 손실 — FIXME 주석 존재                                                         |
 | [Done] | High     | `ApplicationService.updateApprovalLineInDetail()` private `@Transactional` 제거·`ApprovalLineDelegate` 위임 메서드 추출                                                                                      | Spring AOP 무효 — FIXME 주석 존재                                                      |
 | [Done] | High     | `ApplicationService.java:207` 결재선 업데이트 실패 처리 방침 결정 (`warn`만 vs 예외 재발생)                                                                                                                              | @Transactional 컨텍스트에서 롤백 없이 커밋됨                                                  |
+| [Open] | High     | `NotificationService.send()` — `recipientEno` 미입력 시 `null` 반환 (NPE 위험). `Optional<Cinfmm>` 또는 예외 처리로 교체 | `NotificationService.java:56-58` |
+| [Open] | High     | `NotificationEventListener.onApprovalCompleted()` — AFTER_COMMIT 페이즈 내 `applicationRepository.findById()` 호출이 외부 트랜잭션 종료 후 수행되어 Lazy 연관 접근 시 `LazyInitializationException` 발생 가능. `@Transactional(REQUIRES_NEW)` 추가 또는 `send()` 내부로 이동 필요 | `NotificationEventListener.java:57-58` |
+| [Open] | Low      | `NotificationEvent` `infTtl`(100자)·`infCone`(300자) 길이 제한이 JavaDoc에만 명시되고 `send()` 내에서 강제 적용되지 않음 — 초과 시 `ORA-12899` 런타임 오류로 알림 유실 | `NotificationService.java:send()`, `NotificationEvent.java` |
 | [Open] | Medium   | 프론트엔드 `alert()` → PrimeVue `toast` 교체: `approval/list.vue:204`                                                                                                                                      | UX 불일치 — TODO 주석 존재                                                              |
 | [Open] | Medium   | 프론트엔드 toast 알림 누락 다발 보완 (`useCostListPage`, `projects/form.vue`, `budget/report.vue`, `terminal/[id].vue` 등)                                                                                        | catch 블록 사용자 피드백 없음 — TODO 주석 존재                                                 |
 | [Open] | High     | 사전협의 자동 저장 실패 사용자 알림 및 재시도 정책 보강                                                                                                                                                                    | `pages/info/documents/[id]/review.vue` 자동 저장 catch가 실패를 삼킴                       |
@@ -97,6 +101,12 @@
 | [Open] | Medium | 협의회 목록 `BASCTM`/`BCMMTM` 역방향 조회 인덱스 검토 | 후보: `BASCTM(PRJ_MNG_NO, PRJ_SNO, DEL_YN)`, `BCMMTM(ENO, DEL_YN, ASCT_ID)` |
 | [Open] | Medium | `ReviewCommentService` 검토의견 작성자명 조회 N+1 제거 | 댓글 목록 행마다 `userRepository.findById()` 호출. 사번 일괄 조회 또는 조인 프로젝션 검토 |
 | [Open] | Medium | `CouncilRepository.findWithDetails()` Native Query `Object[]` 전용 DTO/projection 전환 우선 처리 | 16개 컬럼 순서와 서비스 캐스팅이 강하게 결합되어 오매핑 위험 |
+| [Open] | Critical | `TPRMPP_CINFMM` 테이블명 매핑 확인 — DDL V20260520_001이 `TAAABB_CINFMM`으로 생성 후 V20260521_006에서 `TPRMPP_CINFMM`으로 RENAME되는지 검증. 마이그레이션 누락 시 런타임 `ORA-00942` 발생 | `V20260520_001__CreateCinfmmTable.sql`, `Cinfmm.java @Table(name="TPRMPP_CINFMM")` |
+| [Open] | Medium | `CinfmmRepositoryImpl.markAllReadByRcvUsid()` QueryDSL 벌크 UPDATE 후 `LST_CHG_DTM`/`LST_CHG_USID` 미갱신 — JPA Auditing 우회, 1차 캐시 stale 발생. `clearAutomatically` 또는 감사 컬럼 명시 SET 추가 | `CinfmmRepositoryImpl.java:67-78` (→ `CouncilRepository.java:67` 동일 패턴 참조) |
+| [Open] | Medium | `GET /api/notifications/unread-count` — 사용자당 60초 폴링 × 3,000명 = 상시 DB `COUNT(*)`. `@Cacheable` (TTL 60s, per-user key) 또는 SSE 전환으로 DB 부하 경감 | `NotificationService.java:94-97` |
+| [Open] | Medium | `TiptapVariableService.resolve()` — 토큰별 개별 집계 쿼리(최대 200 토큰 × 2쿼리 = 400 DB 호출). 동일 `(year, category)` 결과를 인트라-요청 Map으로 캐시 후 배치 처리로 전환 | `TiptapVariableService.java:74-80` |
+| [Open] | Medium | `TiptapVariableService.getMetadata()` — 활성 사업 전체 목록을 매 호출마다 DB 조회. `@Cacheable` + 사업 변경 시 evict 또는 사업 코드 검색 파라미터로 온디맨드 조회 전환 | `TiptapVariableService.java:44-55` |
+| [Open] | Low    | `SEQ_CINFMM NOCACHE` 설정 — 대량 알림 발송 시 시퀀스 redo 경합. `CACHE 20` 이상으로 변경하는 마이그레이션 추가 | `V20260520_001__CreateCinfmmTable.sql:78-83` |
 
 ### 프론트엔드 리팩토링
 
@@ -121,6 +131,8 @@
 | [Open] | Medium | Tiptap 표 도구 계약 문서화 및 주석 보강 | `useTiptapTableTools.ts`, `TiptapTableFloatingToolbar.vue`가 복잡도 대비 계약 설명 부족 |
 | [Open] | High | `pages/info/plan/[id].vue` 타입체크 실패 수정 — ExcelJS 컬럼 타입과 TiptapEditor `model-value` string 폴백 정리 | `npm run typecheck` 실패: `ws.columns`, `planData.*Cone` `string \| undefined` |
 | [Open] | Medium | `/admin/boards` 관리자 레이아웃 적용 여부 결정 | 페이지는 `middleware: 'admin'`만 선언하며, 다른 `/admin/**` 페이지와 달리 `layout: 'admin'`이 없음 |
+| [Open] | Medium | `useNotifications` 모듈 스코프 싱글턴 상태(`unreadCount`, `items`, `loading`, `pollHandle`) — 테스트 간 누출·SSR 전역 공유 위험. Pinia 스토어(`stores/notification.ts`) 전환 또는 `useState()` 기반 SSR-safe ref 검토 | `composables/useNotifications.ts:17-21` |
+| [Open] | Low    | `useNotifications.refresh()` 명시적 호출 경로(드롭다운 열기 등)에 호출자 catch+toast 보장 여부 확인 — composable 계약상 에러 전파이나 AppHeader 등 실제 호출부에 toast 핸들링이 없을 수 있음 | `composables/useNotifications.ts` |
 
 ### 백엔드 리팩토링
 
@@ -130,6 +142,8 @@
 | [Open] | Medium | 문서/내보내기 회귀 테스트 범위 확대 (HWPX/PDF/Excel) | `utils/hwpx.ts` HTML 파싱·이미지 패키징·XML 생성 통합 담당 |
 | [Open] | Medium | `domain/log` 감사로그 리스너 통합 테스트 보강 | JaCoCo 제외 대상이나 업무 감사 추적에 중요 |
 | [Open] | High | 백엔드 테스트 대량 `NoClassDefFoundError`/`ClassNotFoundException` 원인 분석 | 2026-05-17 `./gradlew test` 기준 compileJava 통과 후 194 tests 중 155 failed, Spring context/Mockito 초기화 단계에서 실패 |
+| [Open] | High | 알림 시스템 백엔드 단위·통합 테스트 추가 — `NotificationServiceTest`(Mockito), `MentionExtractorTest`(순수 단위), `CinfmmRepositoryImplTest`(Testcontainers/H2). 커버리지 대상: 빈 수신자 가드, REQUIRES_NEW 전파, markAllRead 행 수, 멘션 추출 엣지케이스 | `it_backend/src/test/` — notification 패키지 테스트 없음 |
+| [Open] | High | Tiptap 변수 시스템 백엔드 단위 테스트 추가 — `TiptapTokenParserTest`(정규식·switch·IllegalArgumentException), `TiptapVariableServiceTest`(Mockito: MISSING/INVALID·금액 포맷·null 가드) | `it_backend/src/test/` — tiptap 패키지 테스트 없음 |
 | [Open] | Low | `AuditLogEvent.java` → Java record 전환 | Java 25 환경, 3개 필드 + getter 구성 |
 | [Open] | Low | `BbugtmRepositoryImpl.sumCostDupBg`/`sumAssetDupBg` 공통 private 메서드 추출 | JOIN + WHERE + GROUP BY 동일 패턴, 집계 기준 컬럼만 다름 |
 | [Open] | Low | `ApplicationContextHolder.publishEvent()`/`AuditLogEvent` 잔여 이벤트 기반 감사로그 주석 정리 | 현재 감사로그는 `ChangeLogEntityListener`가 `AuditLogPersister.persist()` 직접 호출 |
@@ -138,6 +152,8 @@
 
 | 상태 | 일자 | 영역 | 조치 |
 |------|------|------|------|
+| [Done] | 2026-05-22 | 주석 | REVIEW.md Task 1 — java-reviewer·typescript-reviewer·silent-failure-hunter·comment-analyzer 병렬 분석. `@Valid` 누락 FIXME(ApplicationController, ProjectController, PlanController), `@Transactional(readOnly=true)` TODO(PlanService), 유니코드 이스케이프 TODO(CouncilService), 빈 catch [HIGH] TODO 3건(stores/review.ts), FIXME(budget/report.vue), 폴링 정책 주석 보강(useNotifications.ts), 고아 JavaDoc 삭제(NotificationService.java) |
+| [Done] | 2026-05-22 | 문서 | REVIEW.md Task 2/3 — BE/FE README.md 및 CLAUDE.md에 알림 시스템(common/notification), Tiptap 변수 시스템(common/system/tiptap) 섹션 추가. 컴포넌트 72개·Composable 48개 카운트 갱신. 루트 README §18.10 현행화 메모 추가 |
 | [Done] | 2026-05-17 | 주석 | REVIEW.md Task 1 재실행 — Java/TypeScript 주석 불일치 교정, Excalidraw/HWPX/Tiptap/Auth 실패 경로 TODO/FIXME 추가, `Bcmmtm.cnfmYn` 컬럼 comment 보강 |
 | [Done] | 2026-05-19 | 주석/문서 | REVIEW.md 재점검 — 깨진 한글 주석, JavaDoc 위치 오류, 게시판 QueryDSL 설명, 관리자 미들웨어 적용 범위 문서 보강 |
 | [Done] | 2026-05-17 | 문서 | 루트/백엔드/프론트 README·CLAUDE 현행화 — 테스트 수, Nuxt 버전, 실제 API 경로(`/api/cost`, `/api/plans`), Gemini 관리자 권한, 감사로그 저장 시점 정정 |
