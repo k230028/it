@@ -101,7 +101,7 @@
 | [Open] | Medium | 협의회 목록 `BASCTM`/`BCMMTM` 역방향 조회 인덱스 검토 | 후보: `BASCTM(PRJ_MNG_NO, PRJ_SNO, DEL_YN)`, `BCMMTM(ENO, DEL_YN, ASCT_ID)` |
 | [Open] | Medium | `ReviewCommentService` 검토의견 작성자명 조회 N+1 제거 | 댓글 목록 행마다 `userRepository.findById()` 호출. 사번 일괄 조회 또는 조인 프로젝션 검토 |
 | [Open] | Medium | `CouncilRepository.findWithDetails()` Native Query `Object[]` 전용 DTO/projection 전환 우선 처리 | 16개 컬럼 순서와 서비스 캐스팅이 강하게 결합되어 오매핑 위험 |
-| [Open] | Critical | `TPRMPP_CINFMM` 테이블명 매핑 확인 — DDL V20260520_001이 `TAAABB_CINFMM`으로 생성 후 V20260521_006에서 `TPRMPP_CINFMM`으로 RENAME되는지 검증. 마이그레이션 누락 시 런타임 `ORA-00942` 발생 | `V20260520_001__CreateCinfmmTable.sql`, `Cinfmm.java @Table(name="TPRMPP_CINFMM")` |
+| [Done] | Critical | `TPRMPP_CINFMM` 테이블명 매핑 확인 — V20260520_001이 `TAAABB_CINFMM` 생성, V20260521_006(line 60)이 `TPRMPP_CINFMM`으로 RENAME. 마이그레이션 체인 정상 확인. 엔티티 `@Table` 매핑 유효 | 2026-05-22 직접 검증 |
 | [Open] | Medium | `CinfmmRepositoryImpl.markAllReadByRcvUsid()` QueryDSL 벌크 UPDATE 후 `LST_CHG_DTM`/`LST_CHG_USID` 미갱신 — JPA Auditing 우회, 1차 캐시 stale 발생. `clearAutomatically` 또는 감사 컬럼 명시 SET 추가 | `CinfmmRepositoryImpl.java:67-78` (→ `CouncilRepository.java:67` 동일 패턴 참조) |
 | [Open] | Medium | `GET /api/notifications/unread-count` — 사용자당 60초 폴링 × 3,000명 = 상시 DB `COUNT(*)`. `@Cacheable` (TTL 60s, per-user key) 또는 SSE 전환으로 DB 부하 경감 | `NotificationService.java:94-97` |
 | [Open] | Medium | `TiptapVariableService.resolve()` — 토큰별 개별 집계 쿼리(최대 200 토큰 × 2쿼리 = 400 DB 호출). 동일 `(year, category)` 결과를 인트라-요청 Map으로 캐시 후 배치 처리로 전환 | `TiptapVariableService.java:74-80` |
