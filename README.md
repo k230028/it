@@ -24,8 +24,8 @@ it/
 │   ├── CLAUDE.md         ← 프론트 기술 결정 & API 맵
 │   ├── app/              ← 소스 루트 (Nuxt 4 convention)
 │   │   ├── pages/        ← 파일 기반 라우팅 (52개 페이지)
-│   │   ├── components/   ← 재사용 컴포넌트 (67개)
-│   │   ├── composables/  ← 비즈니스 로직 (45개)
+│   │   ├── components/   ← 재사용 컴포넌트 (72개)
+│   │   ├── composables/  ← 비즈니스 로직 (48개)
 │   │   ├── stores/       ← Pinia 상태관리 (인증/사전협의)
 │   │   └── types/        ← TypeScript 타입 정의 (6개)
 │   └── tests/            ← Vitest + Playwright 테스트
@@ -449,6 +449,8 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 | **신청서·결재** | `common/approval` | 전자결재 프로세스, 상태 전이 |
 | **공통 게시판** | `common/board` | 게시판 메타, 게시물, 댓글, 권한 검증 |
 | **공통코드** | `common/code` | 코드 CRUD, 캐싱 |
+| **알림** | `common/notification` | 결재/멘션/시스템 알림, Soft Delete, `@TransactionalEventListener` + `REQUIRES_NEW` 패턴 |
+| **Tiptap 변수** | `common/system/tiptap` | 에디터 동적 변수 삽입, 카탈로그 조회, 토큰 해석 |
 | **정보화사업** | `budget/project` | 사업 CRUD, 복합키 (`prjYy` + `prjSn`) |
 | **전산업무비** | `budget/cost` | 비용 항목, 단말기, 복합키 (`costYy` + `costSn`) |
 | **요구사항·검토** | `budget/document` | 가이드 문서, 요구사항 정의서, 검토의견 |
@@ -469,7 +471,9 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 | **요구사항·사전협의** | `stores/review.ts`, `composables/useDocuments.ts` | 문서 CRUD, 인라인 코멘트 (Tiptap Mark) |
 | **협의회** | `composables/useCouncil.ts`, `pages/info/council/` | 협의회 프로세스 관리 |
 | **결재** | `composables/useApprovals.ts`, `pages/approval/` | 신청 목록, 상세, 처리 |
+| **알림** | `composables/useNotifications.ts` | 알림 목록/읽음/삭제, 60초 폴링 (폴링 오류 의도적 삼킴) |
 | **Tiptap 에디터** | `components/TiptapEditor.vue` | 리치 텍스트, 표, 이미지, 다이어그램, 수식 |
+| **Tiptap 변수** | `composables/useTiptapVariables.ts` | 에디터 변수 토큰 추출·카탈로그 조회·해석 |
 | **공통 게시판** | `composables/useBoard*.ts`, `pages/board/` | 게시판 메타, 게시물, 댓글 CRUD |
 | **시스템 관리** | `pages/admin/`, `composables/useAdminApi.ts` | 공통코드, 사용자, 역할, 조직, 파일 관리 |
 
@@ -618,3 +622,12 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 - 사전협의 코멘트 흐름은 `ReviewCommentController`/`ReviewCommentService`가 `BRIVGM` 조회·생성·해결을 담당하고, 프론트 `useReviewCommentApi`가 UI 타입으로 변환합니다.
 - 사전협의 검토자 목록, 작성자 팀명, 첨부파일 매핑은 아직 후속 구현 대상입니다. 관련 항목은 루트 `TASK.md`에서 추적합니다.
 - 개발용 `application.properties`에 Oracle 비밀번호와 JWT 시크릿 기본값이 남아 있습니다. 운영 배포 전 환경변수 또는 비공개 프로파일 분리가 필요합니다.
+
+### 18.10 2026-05-22 REVIEW 재점검
+
+- **알림 시스템(`common/notification`)** 신규 추가 확인: `NotificationService`(`REQUIRES_NEW` + `saveAndFlush()` 패턴), `NotificationController`(5개 API), `StubNotificationDispatcher`. 도메인 테이블(§14.1), 프론트 모듈 테이블(§14.2)에 반영했습니다.
+- **Tiptap 변수 시스템(`common/system/tiptap`)** 신규 추가 확인: `TiptapVariableService`, `TiptapTokenParser`, `TiptapVariableController`(`GET /api/tiptap-variables/metadata`, `POST /api/tiptap-variables/resolve`). 도메인 및 모듈 테이블에 반영했습니다.
+- **소스코드 주석 보강**: java-reviewer·typescript-reviewer·silent-failure-hunter·comment-analyzer 4개 에이전트 병렬 분석. `ApplicationController`·`ProjectController`·`PlanController`에 `@Valid` 누락 FIXME 삽입, `PlanService`에 `@Transactional(readOnly=true)` 누락 TODO, `CouncilService`에 유니코드 이스케이프 교체 TODO, `stores/review.ts`에 빈 catch 블록 [HIGH] TODO 3건, `budget/report.vue`에 FIXME 1건, `useNotifications.ts`에 폴링 정책 주석 보강.
+- **컴포넌트·Composable 카운트 갱신**: components 67→72개, composables 45→48개.
+- `it_backend/README.md` — 알림 시스템·Tiptap 변수 시스템 섹션(§5.0, §5.0.1) 추가.
+- `it_frontend/README.md` — `useNotifications.ts`(§4.9), `useTiptapVariables.ts`(§4.10), `stores/review.ts` 알려진 한계(§4.11) 추가.
