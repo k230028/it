@@ -12,6 +12,25 @@
 
 ---
 
+## ⚠️ Schema Reality Notes (Task 1 사후 검증, 2026-05-25)
+
+**TPRMPP_CCODEM 실제 컬럼명** (다른 모든 Ccodem 관련 SQL에 동일하게 적용):
+- `CDVA` (NOT `C_VL`) — 코드값
+- `CDVA_NM` — 코드명 (한글 표시명)
+- `C_SQN` (NOT `SORT_NO`) — 정렬순서
+- `STT_DT` — 시작일자, **PK 일부** (NOT NULL). 기본값 `DATE '2026-01-01'` 사용 권장
+- `DEL_YN` 존재, **USE_YN 컬럼 없음**
+- `GUID`, `GUID_PRG_SNO` — BaseEntity 컬럼, NOT NULL. `RAWTOHEX(SYS_GUID())` + `1`로 채움
+- PK: `(C_ID, CDVA, STT_DT)`
+
+**INF_TP는 plan 그대로** — `NotificationEvent.java`가 `"001"`~`"005"` 숫자 코드를 사용하고 `Cinfmm.INF_TP_C VARCHAR2(3)`에 저장. Task 1에서 추가한 `INF_TP/006/결재회수`는 시스템 규약과 일치.
+
+**TPRMPP_CAPPLM/CDECIM/CAPPLA 컬럼명은 plan 가정 그대로 정확** — DDL 검증 완료.
+
+**CAPPLA PK 제약명**: `PK_CAPPLA` (확인됨, Task 20 SQL의 `<실제_PK_제약명>` 자리에 사용).
+
+---
+
 ## File Structure
 
 **Backend — 신규**
