@@ -3,50 +3,86 @@
 ## 1. 프로젝트 개요
 
 **IT Project Portal (IT 정보화 포탈)**  
-정보화 예산, 사업, 인력을 관리하는 사내 포털 시스템입니다.
+약 3,000명의 임직원이 이용하는 정보화 예산, 사업, 인력 관리 사내 포털 시스템입니다.
 
-- **사용자:** 약 3,000명의 임직원
-- **주요 기능:** 정보화사업 신청, 예산 현황 조회, 전자결재, 요구사항 정의서 검토, 협의회 관리
-- **기술 스택:**
-  - **프론트엔드:** Nuxt 4 (Vue 3 Composition API) + PrimeVue + Tailwind CSS
-  - **백엔드:** Spring Boot 4 + Oracle Database 21c XE + JPA/QueryDSL
-  - **인증:** JWT httpOnly 쿠키 기반 (Access 15분 / Refresh 7일)
-  - **변경 추적:** JPA 리스너 기반 자동 감사로그 (23개 도메인)
+**주요 기능:**
+- 정보화사업 CRUD 및 전자결재 프로세스
+- 예산 관리(전산예산, 전산업무비, 경상사업, 예산현황 조회)
+- 요구사항 정의서 및 사전협의(문서 검토 코멘트)
+- 정보화실무협의회(타당성검토, 위원선정, 평가, 결과)
+- 공통 게시판(게시판 메타, 게시물, 댓글, 답변글)
+- 변경 이력 추적(Audit Log, 23개 도메인)
+
+**기술 스택:**
+- **프론트엔드:** Nuxt 4 (Vue 3 Composition API) + PrimeVue + Tailwind CSS (CSR 모드)
+- **백엔드:** Spring Boot 4 (Java 25) + Oracle Database 21c XE + JPA/QueryDSL
+- **인증:** JWT httpOnly 쿠키 기반 (Access Token 15분 / Refresh Token 7일)
+- **외부 연동:** Gemini AI (텍스트 생성), SSO(선택적)
+- **소스 통계:** 백엔드 257개 Java 파일 + 86개 테스트, 프론트엔드 72개 컴포넌트 + 48개 Composable
 
 ---
 
-## 2. 모노레포 디렉토리 구조
+## 2. 전체 아키텍처
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Nuxt 4 (CSR)  http://localhost:3000                        │
+│  - 53개 페이지, 72개 컴포넌트, 48개 Composable             │
+│  - Pinia 상태관리 (인증, 사전협의)                          │
+│  - PrimeVue + Tailwind CSS 스타일링                        │
+└─────────────────────────────────────────────────────────────┘
+                    ↕ API (httpOnly 쿠키)
+┌─────────────────────────────────────────────────────────────┐
+│  Spring Boot 4  http://localhost:8080                        │
+│  - 14개 도메인 + 8개 공통 모듈                              │
+│  - 28개 컨트롤러, 257개 Java 파일                          │
+│  - JWT 인증 + RBAC + Soft Delete                            │
+│  - 변경 로그 (23개 도메인, 자동 추적)                       │
+└─────────────────────────────────────────────────────────────┘
+                    ↕
+┌─────────────────────────────────────────────────────────────┐
+│  Oracle Database 21c XE  XEPDB1 (ITPAPP)                   │
+│  - 61개 비즈니스 엔티티                                      │
+│  - Flyway 마이그레이션                                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 2.1 모노레포 디렉토리 구조
 
 ```
 it/
 ├── it_frontend/          ← Nuxt 4 웹 애플리케이션 (CSR 모드)
-│   ├── README.md         ← 프론트엔드 상세 가이드
-│   ├── CLAUDE.md         ← 프론트 기술 결정 & API 맵
+│   ├── README.md         ← 프론트엔드 상세 가이드 (기술 스택, 패턴, 테스트)
+│   ├── CLAUDE.md         ← 프론트 기술 결정 & API 맵 (개발 표준)
 │   ├── app/              ← 소스 루트 (Nuxt 4 convention)
-│   │   ├── pages/        ← 파일 기반 라우팅 (52개 페이지)
+│   │   ├── pages/        ← 파일 기반 라우팅 (53개 페이지)
 │   │   ├── components/   ← 재사용 컴포넌트 (72개)
-│   │   ├── composables/  ← 비즈니스 로직 (48개)
-│   │   ├── stores/       ← Pinia 상태관리 (인증/사전협의)
-│   │   └── types/        ← TypeScript 타입 정의 (6개)
-│   └── tests/            ← Vitest + Playwright 테스트
+│   │   ├── composables/  ← 비즈니스 로직 & API 래퍼 (48개)
+│   │   ├── stores/       ← Pinia 상태관리 (인증, 사전협의)
+│   │   ├── types/        ← TypeScript 타입 정의 (8개)
+│   │   ├── utils/        ← 유틸리티 함수 (금액포맷, PDF/Excel/HWPX 변환)
+│   │   └── middleware/   ← 라우트 가드 (인증, 관리자 접근 제어)
+│   └── tests/            ← Vitest + Playwright 테스트 (72개 unit, 11개 e2e)
 │
 ├── it_backend/           ← Spring Boot 4 REST API 서버
-│   ├── README.md         ← 백엔드 상세 가이드
-│   ├── CLAUDE.md         ← 백엔드 기술 결정 & 보안 정책
-│   ├── src/main/java/    ← 소스 코드
+│   ├── README.md         ← 백엔드 상세 가이드 (아키텍처, API, 환경 설정)
+│   ├── CLAUDE.md         ← 백엔드 기술 결정 & 보안 정책 (SoT)
+│   ├── src/main/java/    ← 소스 코드 (257개 파일)
 │   │   └── com/kdb/it/
 │   │       ├── config/   ← Spring 설정 (보안, JPA, Swagger 등)
-│   │       ├── common/   ← 공통 모듈 (인증, 게시판, 결재)
-│   │       ├── domain/   ← 비즈니스 도메인 (예산, 협의회, 문서)
+│   │       ├── common/   ← 공통 모듈 (인증, 게시판, 결재, 알림)
+│   │       ├── domain/   ← 비즈니스 도메인 (예산, 협의회, 문서, 로그)
 │   │       ├── infra/    ← 외부 연동 (파일, Gemini AI)
 │   │       └── exception/ ← 전역 예외 처리
-│   ├── src/test/java/    ← JUnit 5 + Mockito 테스트 (69개 파일)
-│   └── build.gradle      ← Gradle 빌드 스크립트
+│   ├── src/test/java/    ← JUnit 5 + Mockito 테스트 (86개 파일)
+│   └── build.gradle      ← Gradle 빌드 스크립트 (Spring Boot 4.0.5)
 │
 ├── it_database/          ← Oracle DB 마이그레이션 & 초기화
-│   ├── migrations/       ← Flyway SQL 마이그레이션 (최신 버전)
+│   ├── migrations/       ← Flyway SQL 마이그레이션 (V{YYYYMMDD_NNN} 형식)
 │   ├── seeds/            ← 초기 데이터 (공통코드, 사용자)
-│   └── connect-db.ps1    ← 로컬 DB 접속 스크립트 (PowerShell)
+│   └── connect-db.ps1    ← 로컬 DB 접속 스크립트 (PowerShell/배치)
 │
 ├── docs/                 ← PDCA 문서 & 아카이브
 │   ├── 01-plan/          ← 피처 계획서
@@ -56,9 +92,9 @@ it/
 │   ├── archive/          ← 과거 아카이브
 │   └── superpowers/      ← 워크플로우 플랜 & 스펙
 │
-├── CLAUDE.md             ← 모노레포 공통 규약 (인증, 주석, 보안)
-├── TASK.md               ← 미구현 기능, 기술 부채, 보안 과제
-├── README.md             ← 이 파일
+├── CLAUDE.md             ← 모노레포 공통 규약 (인증 SoT, 주석, 게시판 규칙)
+├── TASK.md               ← 미구현 기능, 기술 부채, 보안 강화 과제
+├── README.md             ← 이 파일 (프로젝트 개요 & 빠른 시작)
 └── .agents/              ← AI 에이전트 확장 설정
 
 ---
@@ -73,53 +109,57 @@ it/
 | Java | 25 | JDK 25 설치, `JAVA_HOME` 환경변수 설정 |
 | Oracle Client | 21c+ | [Oracle Database Express Edition](https://www.oracle.com/database/technologies/xe-downloads.html) |
 | Git | 2.30+ | 기본 설치 |
+| Gradle | 내장 | `./gradlew` (Gradle Wrapper 사용) |
 
-### 3.2 로컬 시작 명령어
+### 3.2 로컬 빠른 시작 (3터미널)
 
-**터미널 1: 프론트엔드 (포트 3000)**
+**터미널 1: 프론트엔드 (포트 3000, CSR)**
 ```bash
 cd it_frontend
-npm install         # 최초 1회
+npm install              # 최초 1회 (npm ci 권장)
+npm run postinstall      # 타입 정의 생성
 npm run dev
-# http://localhost:3000
+# → http://localhost:3000 (자동 브라우저 오픈)
 ```
 
-**터미널 2: 백엔드 (포트 8080)**
+**터미널 2: 백엔드 (포트 8080, REST API)**
 ```bash
 cd it_backend
-./gradlew bootRun   # Windows: .\gradlew.bat bootRun
-# http://localhost:8080
-# Swagger UI: http://localhost:8080/swagger-ui/index.html
+# 환경변수 설정 (Windows PowerShell)
+$env:DB_PASSWORD = "your-db-password"
+$env:JWT_SECRET = "your-jwt-secret-key"
+
+./gradlew bootRun       # Windows: .\gradlew.bat bootRun
+# → http://localhost:8080
+# → Swagger UI: http://localhost:8080/swagger-ui/index.html
 ```
 
-**터미널 3: Oracle DB 접속 (선택)**
+**터미널 3: Oracle DB (선택, 스키마 확인용)**
 ```bash
-# Windows PowerShell
 cd it_database
-.\connect-db.ps1    # 또는 .\connect-db.bat
-# sqlplus ITPAPP@XEPDB1
+.\connect-db.ps1        # 또는 .\connect-db.bat
+# sqlplus ITPAPP@127.0.0.1:1521/XEPDB1 (기본 자격증명)
 ```
 
-### 3.3 개발 설정 체크
+### 3.3 개발 품질 확인 (Health Stack)
+
+모든 명령어는 **각 디렉토리에서 실행**합니다.
 
 ```bash
-# 프론트엔드 타입 체크
-cd it_frontend && npm run typecheck
+# 프론트엔드 (it_frontend/)
+npm run typecheck       # TypeScript 타입 체크
+npm run lint           # ESLint + Prettier
+npm test               # Vitest 단위 테스트
+npm run test:watch     # 파일 변경 감지
 
-# 프론트엔드 린트
-cd it_frontend && npm run lint
-
-# 백엔드 빌드
-cd it_backend && ./gradlew build
-
-# 프론트엔드 단위 테스트
-cd it_frontend && npm test
-
-# 백엔드 테스트
-cd it_backend && ./gradlew test
+# 백엔드 (it_backend/)
+./gradlew test         # JUnit 5 + Mockito 테스트
+./gradlew jacocoTestReport  # 커버리지 리포트
+./gradlew build        # 전체 빌드 (test 포함)
+./gradlew clean build  # 클린 빌드
 ```
 
----
+**커버리지 목표:** 프론트엔드 80% 이상, 백엔드 70% 이상 (JaCoCo)
 
 ### 3.4 설치
 
@@ -149,57 +189,225 @@ Press Enter to open https://github.com/login/device in your browser...
 ✓ Logged in as gonnabe88
 ```
 
-## 4. 개발/운영 환경 URL
+---
 
-| 서비스 | 개발 | 운영 |
-|--------|------|------|
-| **프론트엔드** | http://localhost:3000 | https://it.kdb.co.kr:20443 (CSR) |
-| **백엔드 API** | http://localhost:8080 | http://localhost:8080 (Tomcat WAR) |
-| **Swagger UI** | http://localhost:8080/swagger-ui/index.html | (동일) |
-| **Oracle DB** | 127.0.0.1:1521/XEPDB1 (ITPAPP) | 운영 배포 설정 |
+## 4. 핵심 기술 결정 (Architecture & Design)
+
+### 4.1 프론트엔드 CSR(SPA) 모드
+
+**설정:** `nuxt.config.ts`의 `ssr: false`
+
+**이유:**
+- 초기 SSG(`npm run generate`) 시도 시 Pinia 스토어 `user=null`이 하이드레이션 타이밍에 쿠키 기반 인증을 덮어쓰는 문제 발생
+- 사내 포털(SEO 불필요) → CSR 최적
+- 모든 라우트가 동일 `index.html`에서 클라이언트 라우팅
+
+**배포:** `npm run generate` 후 정적 파일을 nginx/Apache에서 서빙. 모든 경로를 `index.html`로 라우팅.
+
+### 4.2 JWT httpOnly 쿠키 인증 (보안)
+
+**정책:** 프론트엔드가 토큰 문자열을 직접 저장/읽지 않음
+
+| 항목 | 설정 |
+|------|------|
+| Access Token | 15분 (httpOnly 쿠키) |
+| Refresh Token | 7일 (httpOnly 쿠키) |
+| 사용자 정보 | `it-portal-user` 쿠키 (JSON, 표시용) |
+| 인증 API 호출 | `credentials: 'include'` 필수 |
+
+**흐름:**
+1. POST `/api/auth/login` (사번/비밀번호)
+2. 백엔드가 JWT를 httpOnly 쿠키에 설정
+3. 프론트는 `useCookie('it-portal-user')`로 로컬 상태 복원
+4. 401 응답 시 자동 refresh 후 원요청 재시도 (plugin/auth.ts)
+
+**설명:** JavaScript에서 XSS 시 접근 불가 → XSS 방어의 첫 번째 계층
+
+### 4.3 관리자 접근 제어 (3계층)
+
+| 계층 | 기술 | 역할 |
+|------|------|------|
+| **1. 라우트 가드** | `middleware/admin.ts` | 미권한 사용자 `/login` 리다이렉트 (UX) |
+| **2. 메뉴 숨김** | `AppSidebar.vue` `admin: true` 플래그 | 비관리자 메뉴 불표시 (UX) |
+| **3. API 보안** | `@PreAuthorize("hasRole('ADMIN')")` | API 직접 호출 차단 **(진정한 보안 경계)** |
+
+**주의:** 1, 2번은 UX 보호일 뿐. **백엔드 API 보호가 최종 보안 경계**입니다. 비관리자가 개발자도구에서 쿠키 조작 후에도 API 호출 불가능해야 합니다.
+
+### 4.4 변경 로그 (Audit Log) — 자동 추적
+
+**대상:** 23개 도메인 엔티티 (BaseLogEntity 상속)
+
+**메커니즘:**
+- JPA `@PrePersist`/`@PreUpdate` 콜백 → `ChangeLogEntityListener` → `AuditLogPersister` → DB 저장
+- Soft Delete(`DEL_YN='Y'`) 자동 감지
+- 변경자, 변경일시, 변경유형(C/U/D) 자동 기록
+
+**특징:**
+- 로그 저장 실패는 원본 작업 롤백을 피하도록 catch 처리
+- 23개 `*L` 로그 엔티티 (예: BprojmL, CcodemL, CapplmL)
+
+### 4.5 이중 API 호출 패턴
+
+| 패턴 | Composable | 용도 | 특징 |
+|------|-----------|------|------|
+| GET 조회 | `useApiFetch<T>` | 목록/상세 조회 | 반응형(reactive), 자동 캐싱, 중복 호출 방지 |
+| 변경 | `$apiFetch` | POST/PUT/DELETE | 일회성, 이벤트 핸들러에서 명시적 호출 |
+
+**인증 및 에러 처리:**
+- 둘 다 자동으로 `credentials: 'include'` 설정 (httpOnly 쿠키 전송)
+- 401 응답 시 `plugin/auth.ts` 인터셉터 → refresh() → 원요청 재시도
+- refresh 실패 시 `/login` 리다이렉트
+
+**주의:** `stores/auth.ts` 내부에서는 `$apiFetch` 사용 불가 (순환 참조). 대신 Nuxt 내장 `$fetch` + `credentials: 'include'` 직접 사용.
+
+## 5. 서비스 구성 & URL
+
+| 서비스 | 개발 환경 | 운영 환경 | 설명 |
+|--------|---------|---------|------|
+| **프론트엔드** | http://localhost:3000 | https://it.kdb.co.kr:20443 | Nuxt 4 CSR (정적 생성) |
+| **백엔드 API** | http://localhost:8080 | http://localhost:8080 | Spring Boot 4 REST API |
+| **Swagger UI** | http://localhost:8080/swagger-ui/index.html | 동일 | OpenAPI 3.0 자동 문서화 |
+| **Oracle DB** | 127.0.0.1:1521/XEPDB1 (ITPAPP) | 운영 배포 설정 | 데이터 저장소 |
+
+**포트 설정:**
+- **프론트엔드**: `nuxt.config.ts`에서 `devServer.host`, `devServer.port` 확인
+- **백엔드**: `application.properties`의 `server.port=8080` 확인
+- **Oracle**: 기본 1521 (로컬 XE 설치 시)
 
 ---
 
-## 5. 프로젝트별 상세 문서
+## 6. 핵심 도메인 및 API 매핑
 
-각 프로젝트의 자세한 기술 결정, API 설계, 보안 정책은 다음 파일을 참조하세요:
+### 6.1 백엔드 주요 도메인 (Spring Boot 4 기반)
 
-- **백엔드 (Spring Boot):** [`it_backend/CLAUDE.md`](./it_backend/CLAUDE.md)
-  - 인증 & 보안 정책, 도메인 구조, API 엔드포인트, 환경 설정
-  
-- **프론트엔드 (Nuxt 4):** [`it_frontend/CLAUDE.md`](./it_frontend/CLAUDE.md)
-  - 기술 스택, 라우팅, 상태 관리, API 래퍼 패턴, Tiptap 통합
+| 도메인 | 패키지 | 설명 | 주요 엔티티 |
+|--------|--------|------|-----------|
+| **인증·보안** | `common/system` | JWT, 로그인 이력, Brute-force 보호 | CuserI, Crtokm, Clognh |
+| **사용자·조직** | `common/iam` | RBAC, 자격등급, 역할 매핑 | CuserI, CorgnI, CauthI, CroleI |
+| **결재** | `common/approval` | 전자결재 프로세스, 상태 전이 | Capplm, Cappla, Cdecim |
+| **공통 게시판** | `common/board` | 게시판 메타, 게시물, 댓글 | Cblbmm, Cblbcm, Ccmmtm |
+| **공통코드** | `common/code` | 코드 관리, 캐싱 | Ccodem |
+| **알림** | `common/notification` | 인앱/이메일/SMS/톡 알림 | Cinfmm |
+| **정보화사업** | `budget/project` | 사업 CRUD, 복합키 | Bprojm, Bitemm |
+| **전산업무비** | `budget/cost` | 비용 항목, 단말기 | Bcostm, Btermm |
+| **요구사항·검토** | `budget/document` | 가이드/요구사항 정의서, 검토의견 | Bgdocm, Brdocm, Brivgm |
+| **예산 관리** | `budget/plan`, `status`, `work` | 계획, 현황 대시보드, 편성률 | Bplanm, Bproja, Bbugtm |
+| **협의회** | `council` | 타당성검토, 위원선정, 평가, 결과 | Basctm, Bevalm, Bperfm 등 9개 |
+| **변경 로그** | `domain/log` | 자동 감사로그 (23개 도메인) | BaseLogEntity 하위 *L 엔티티 |
+| **파일·AI** | `infra/file`, `infra/ai` | 첨부파일, Gemini API | Cfilem |
 
-- **공통 규약:** [`CLAUDE.md`](./CLAUDE.md)
-  - 인증 정책 (SoT), 한글 주석 원칙, 개발 워크플로우, 공통 게시판 도메인 규칙
+### 6.2 프론트엔드 주요 모듈 (Nuxt 4 기반)
+
+| 모듈 | 경로 | 설명 |
+|------|------|------|
+| **인증** | `stores/auth.ts`, `composables/useAuth.ts` | 로그인/로그아웃, 세션 복원 |
+| **API 래퍼** | `composables/useApiFetch`, `$apiFetch` (plugin/auth.ts) | GET/POST/PUT/DELETE, 401 처리 |
+| **정보화사업** | `composables/useProjects.ts` | 사업 CRUD + 옵션 조회 |
+| **예산** | `composables/useBudget*.ts`, `pages/budget/` | 예산현황, 편성률, 통합 목록 |
+| **전산업무비** | `composables/useCost.ts`, `pages/info/cost/` | 비용 및 단말기 관리 |
+| **문서·협의** | `composables/useDocuments.ts`, `stores/review.ts` | 요구사항 정의서, 사전협의 |
+| **협의회** | `composables/useCouncil.ts`, `pages/info/council/` | 협의회 프로세스 |
+| **결재** | `composables/useApprovals.ts`, `pages/approval/` | 신청/승인/반려 |
+| **게시판** | `composables/useBoard*.ts`, `pages/board/` | 게시판 메타, 게시물, 댓글 |
+| **관리자** | `composables/useAdminApi.ts`, `pages/admin/` | 공통코드, 사용자, 역할, 조직 |
+| **알림** | `composables/useNotifications.ts` | 알림 조회/폴링/읽음 처리 |
+| **Tiptap 에디터** | `components/TiptapEditor.vue` | 리치텍스트(표/이미지/다이어그램) |
+| **Tiptap 변수** | `composables/useTiptapVariables.ts` | 동적 변수 토큰 삽입·해석 |
 
 ---
 
-## 6. Health Stack (빠른 품질 확인)
+## 7. 프로젝트별 상세 가이드
 
-신규 개발 또는 코드 변경 후 아래 명령어로 품질을 확인합니다:
+**각 디렉토리의 SoT(Single Source of Truth) 파일을 우선 참조하세요.**
+
+### 7.1 백엔드 (Spring Boot 4)
+- **[`it_backend/README.md`](./it_backend/README.md)** — 전체 기술 스택, 아키텍처, API 엔드포인트 (28개 컨트롤러)
+- **[`it_backend/CLAUDE.md`](./it_backend/CLAUDE.md)** — 기술 결정, 인증 정책 (SoT), 보안 규칙, 환경 설정
+- **[`it_backend/docs/guides/data-model.md`](./it_backend/docs/guides/data-model.md)** — 데이터 모델 (61개 엔티티, 채번 규칙)
+
+**주요 내용:**
+- 인증: JWT httpOnly 쿠키 (15분 Access / 7일 Refresh)
+- 아키텍처: Controller → Service → Repository (QueryDSL) → Oracle DB
+- 변경 로그: JPA 리스너 기반 자동 감사 (23개 도메인)
+- API 응답: 표준 JSON (success/data/message/meta)
+
+### 7.2 프론트엔드 (Nuxt 4)
+- **[`it_frontend/README.md`](./it_frontend/README.md)** — 전체 기술 스택, 컴포넌트 구조 (72개), Composable 패턴
+- **[`it_frontend/CLAUDE.md`](./it_frontend/CLAUDE.md)** — 기술 결정, API 호출 패턴, 라우트 가드 규칙
+- **[`it_frontend/docs/guides/styled-data-table.md`](./it_frontend/docs/guides/styled-data-table.md)** — DataTable 래퍼 사용법
+
+**주요 내용:**
+- CSR(SPA) 모드, httpOnly 쿠키 인증
+- 이중 API 패턴: `useApiFetch` (GET) vs `$apiFetch` (POST/PUT/DELETE)
+- 관리자 접근 제어: 라우트 가드 + 메뉴 숨김 + 백엔드 API 보호
+- Tiptap 에디터: 표/이미지/다이어그램/수식/변수 토큰 지원
+
+### 7.3 공통 규약
+- **[`CLAUDE.md`](./CLAUDE.md)** — 인증 정책 (SoT), 한글 주석 원칙, 문서 운영, 게시판 도메인 규칙
+- **[`TASK.md`](./TASK.md)** — 미구현 기능, 기술 부채, 보안 강화, 테스트 확대 과제
+
+---
+
+## 8. Health Stack (빠른 품질 확인)
+
+신규 개발 또는 코드 변경 후 아래 명령어로 품질을 확인합니다.
+
+**각 명령어는 해당 디렉토리에서 실행합니다.**
+
+### 프론트엔드 품질 확인
 
 ```bash
-# 프론트엔드 타입 체크
-cd it_frontend && npm run typecheck
+cd it_frontend
 
-# 프론트엔드 린트
-cd it_frontend && npm run lint
+# TypeScript 타입 체크 (Nuxt 내장)
+npm run typecheck
 
-# 프론트엔드 단위 테스트
-cd it_frontend && npm test
+# ESLint + Prettier 린트
+npm run lint
 
-# 백엔드 테스트
-cd it_backend && ./gradlew test
+# 단위 테스트 (Vitest) — 72개 파일, 1132+ 테스트
+npm test
 
-# 백엔드 커버리지 리포트 (JaCoCo)
-cd it_backend && ./gradlew jacocoTestReport
-# 리포트: build/reports/jacoco/test/html/index.html
+# 파일 변경 감지 실시간 테스트
+npm run test:watch
+
+# 커버리지 리포트 생성
+npm run test:coverage
+# 리포트: coverage/ 디렉토리
 ```
+
+### 백엔드 품질 확인
+
+```bash
+cd it_backend
+
+# JUnit 5 + Mockito 테스트 실행 — 84개 파일, 787+ 테스트
+./gradlew test
+
+# 커버리지 리포트 생성 (JaCoCo)
+./gradlew jacocoTestReport
+# 리포트: build/reports/jacoco/test/html/index.html
+
+# 전체 빌드 (테스트 포함)
+./gradlew build
+
+# 클린 빌드 (의존성 재다운로드)
+./gradlew clean build
+```
+
+### 품질 목표
+
+| 항목 | 목표 | 검증 방법 |
+|------|------|----------|
+| **프론트엔드 커버리지** | 80% 이상 | `npm run test:coverage` |
+| **백엔드 커버리지** | 70% 이상 | `./gradlew jacocoTestReport` |
+| **타입 안전성** | 0개 오류 | `npm run typecheck` |
+| **린트 위반** | 0개 경고 | `npm run lint` |
+| **테스트 통과율** | 100% | `npm test` + `./gradlew test` |
 
 ---
 
-## 7. AI 하네스 구성
+## 9. AI 하네스 구성
 
 본 프로젝트는 **Agentic Engineering** 기반 개발 워크플로우를 사용합니다.
 
@@ -263,7 +471,7 @@ ex4)
 ```
 
 ---
-## 8. gstack — 브라우저 기반 운영 명령어
+## 10. gstack — 브라우저 기반 운영 명령어
 
 gstack은 **슬래시 명령어 형태의 전문가 팀**입니다. 두 서버가 모두 기동된 상태에서 사용합니다.
 
@@ -289,7 +497,7 @@ cd it_frontend && npm run dev
 - 테스트 결과 파일 위치: `it\.gstack\qa-reports`
 
 ---
-## 9. bkit PDCA — 피처 단위 구조화 개발
+## 11. bkit PDCA — 피처 단위 구조화 개발
 
 bkit은 **PDCA 방법론 기반 피처 개발 워크플로우**입니다. 계획→설계→실행→검증→아카이브 순으로 진행합니다.
 
@@ -319,7 +527,7 @@ plan → design → do → analysis → archive
 
 ---
 
-## 10. ECC (Everything Claude Code) — 패턴 스킬 라이브러리
+## 12. ECC (Everything Claude Code) — 패턴 스킬 라이브러리
 
 ECC는 **프레임워크별 Best Practice 스킬 모음**입니다. IT Portal에 직접 연관된 스킬:
 
@@ -352,7 +560,7 @@ ECC는 **프레임워크별 Best Practice 스킬 모음**입니다. IT Portal에
 
 ---
 
-## 11. Superpowers — 메타 워크플로우 스킬
+## 13. Superpowers — 메타 워크플로우 스킬
 
 Superpowers는 **개발 방법론 수준의 워크플로우 스킬**입니다 (v5.0.7). 특정 작업 전 AI의 접근 방식 자체를 정의합니다.
 
@@ -367,7 +575,7 @@ Superpowers는 **개발 방법론 수준의 워크플로우 스킬**입니다 (v
 
 ---
 
-## 12. IT Portal 에이전트 팀
+## 14. IT Portal 에이전트 팀
 
 에이전트는 `~/.claude/agents/`에 설치된 ECC 전문가 에이전트입니다.  
 Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에이전트로 직접 호출합니다.
@@ -417,7 +625,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 
 ---
 
-## 13. 워크플로우 가이드
+## 15. 워크플로우 가이드
 
 ### 13.1 새 기능 개발 (풀스택)
 
@@ -466,7 +674,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 
 ---
 
-## 14. 핵심 도메인 및 모듈 관계
+## 16. 추가 핵심 도메인 및 모듈 관계 (상세)
 
 ### 14.1 백엔드 주요 도메인 (Spring Boot)
 
@@ -507,7 +715,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 
 ---
 
-## 15. 인증 및 보안
+## 17. 인증 및 보안 (정책 상세)
 
 ### 15.1 JWT httpOnly 쿠키 인증
 
@@ -533,7 +741,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 
 ---
 
-## 16. 기타 프로젝트 스킬
+## 18. 기타 프로젝트 스킬
 
 | 스킬 | 용도 |
 |------|------|
@@ -541,7 +749,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 
 ---
 
-## 17. 주요 파일 및 참조
+## 19. 주요 파일 및 참조
 
 | 항목 | 파일 | 용도 |
 |------|------|------|
@@ -555,7 +763,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 
 ---
 
-## 18. 개발 노트: 현재 코드베이스 구조
+## 20. 개발 노트: 현재 코드베이스 구조
 
 ### 12.1 백엔드 모듈 관계
 

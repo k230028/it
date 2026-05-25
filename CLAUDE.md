@@ -29,7 +29,8 @@ it/
 | 데이터 모델 (테이블 매핑)                              | `it_backend/docs/guides/data-model.md` |
 | 컴포넌트 가이드 (StyledDataTable 등)                 | `it_frontend/docs/guides/`             |
 | 공통 게시판 도메인 규칙                               | `it_backend/CLAUDE.md`, `it_frontend/CLAUDE.md` |
-| 엔티티, 컬럼명 명명 규칙(메타)                        | `it_backend/CLAUDE.md`, `it_frontend/CLAUDE.md` |
+| 엔티티, 컬럼명 명명 규칙 (메타용어사전)                   | `C:\it\META.md`                        |
+| 도메인 메타정보 (컬럼타입, 엔티티타입)                    | `C:\it\DOMAIN.md`                      |
 
 ## 3.1 개발 환경
 

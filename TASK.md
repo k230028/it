@@ -1,6 +1,6 @@
 ﻿# IT Portal 백로그
 
-> 기준일: 2026-05-22
+> 기준일: 2026-05-26
 > 목적: `REVIEW.md` 정비 과정에서 확인한 기술 부채, 미구현 항목, 후속 검증 과제를 추적합니다.
 
 ## 진행 중
@@ -35,6 +35,7 @@
 | [Open] | Medium   | Gemini 첨부 파일 실제 크기 제한 구현 | DTO 주석의 파일당 20MB 제한과 달리 `Files.readAllBytes(filePath)` 전 크기 검사 코드 없음 |
 | [Open] | High     | 리소스 미존재 시 HTTP 404 반환을 위한 전용 `NotFoundException` 도입 + `GlobalExceptionHandler` 매핑                                                             | `UserController.java:72`, `GuideDocService.java:65,129,154` — 현재 400 반환               |
 | [Open] | High     | `ResponseStatusException` 전용 핸들러 추가 — 서비스에서 던진 404/500 상태가 `RuntimeException` 포괄 핸들러에 의해 400으로 바뀌지 않도록 분리 | `GlobalExceptionHandler.java`, `PlanService.java` |
+| [Open] | Medium   | `CustomUserDetails` — `athIds` 클레임 타입 불일치 시 `log.warn` 추가 (권한 강등 탐지 어려움) | `JwtUtil` / `CustomUserDetails` 관련 클레임 파싱 경로 |
 | [Open] | Medium   | 사번(`eno`) PII INFO 로그 정책 정립 — DEBUG 강등 또는 마스킹 처리                                                                                              | `CouncilService.java:94`, 기타 로그인 이력 출력 위치 전수 검토                                       |
 
 ### 사전협의
@@ -75,6 +76,18 @@
 | [Open] | Medium   | `usePdfReport.ts` 한글 폰트 로드 실패 시 Roboto 폴백 — 한글 문자 깨짐 가능, 사용자 경고 토스트 추가                                                                                                                              | `usePdfReport.ts:174` 무경고 폴백                                                     |
 | [Open] | Medium   | Excalidraw/HWPX/Tiptap 실패 경로 사용자 알림 보강 — 내보내기 실패, 장면 복원 실패, 이미지 누락을 빈 결과와 구분 | `ExcalidrawWrapper.vue`, `ExcalidrawNodeView.vue`, `useHwpxExport.ts`, `hwpx-images.ts`, `useTiptapTableTools.ts` |
 | [Open] | Medium   | 손상된 `it-portal-user` 쿠키와 구버전 `localStorage.user` 파싱 실패 시 warn 로그 및 정리 정책 추가 | `stores/auth.ts` |
+| [Open] | Critical | `info/projects/form.vue:604-606` — 편집 모드 데이터 로드 실패 시 빈 폼 표시, 사용자가 저장하면 기존 프로젝트 전체 데이터 덮어쓰기 위험. 실패 즉시 `toast.error` 후 목록 리다이렉트 필수 | `pages/info/projects/form.vue:604-606`, 발견일: 2026-05-26 |
+| [Open] | High     | `approval/list.vue:213-214` — 결재 처리 실패 시 `console.error`만 출력, `toast.error` 사용자 알림 없음 (CLAUDE.md 4.2.1 위반) | `pages/approval/list.vue:213-214`, 발견일: 2026-05-26 |
+| [Open] | High     | `approval/[apfMngNo].vue:48-49` — 결재 상세 로드 실패 시 빈 화면 노출. `toast.error` 알림 및 목록 리다이렉트 필요 | `pages/approval/[apfMngNo].vue:48-49`, 발견일: 2026-05-26 |
+| [Open] | High     | `board/[blbMngNo]/[nacMngNo]/index.vue:38` — `catch {}` 완전 빈 블록, 에러 변수·로그·toast 모두 없음. 빈 게시글 페이지 노출 | `pages/board/[blbMngNo]/[nacMngNo]/index.vue:38`, 발견일: 2026-05-26 |
+| [Open] | High     | `EmployeeSearchDialog.vue:88-91,204-210` — 조직도 트리 로드 실패 및 부서원 목록 실패 시 `console.error`만 출력. `toast.error` 알림 추가 필요 | `components/common/EmployeeSearchDialog.vue`, 발견일: 2026-05-26 |
+| [Open] | High     | `ExcalidrawWrapper.vue:85-89,150-153` — `exportData()` 실패 시 `null` 반환으로 다이어그램 저장 silently 실패, 초기화 실패 시 빈 에디터 노출. 예외 전파 또는 `toast.error` 필요 | `components/ExcalidrawWrapper.vue`, 발견일: 2026-05-26 |
+| [Open] | High     | `useEmployeeSearch.ts:75-77` — 직원 검색 API 실패 시 `console.error`만 출력. `toast.error` 알림 및 실패/결과 없음 상태 구분 필요 (CLAUDE.md 4.2.1 위반) | `composables/useEmployeeSearch.ts:75-77`, 발견일: 2026-05-26 |
+| [Open] | High     | `useGlobalSearch.ts:75-79` — 글로벌 검색 실패 시 `suggestions.value = []` silent fallback. 경고 로그 및 인라인 오류 표시 검토 필요 | `composables/useGlobalSearch.ts:75-79`, 발견일: 2026-05-26 |
+| [Open] | High     | `useCostListPage.ts:366-368` — 코드 로드 실패 시 `console.error`만 출력. `toast.error` 알림 추가 필요 (CLAUDE.md 4.2.1 위반) | `composables/useCostListPage.ts:366-368`, 발견일: 2026-05-26 |
+| [Open] | High     | `budget/report.vue:170-172,249-251` — PDF 생성 실패 시 `console.error`만 출력, 데이터 로드 실패 시 PDF 버튼 활성 유지. `toast.error` 및 버튼 비활성화 처리 필요 | `pages/budget/report.vue:170-172,249-251`, 발견일: 2026-05-26 |
+| [Open] | High     | `info/projects/report.vue:164-166,199-201` — PDF 생성 실패 시 `console.error`만 출력, 프로젝트 로드 실패 시 PDF 버튼 비활성화 안됨. `toast.error` 및 버튼 비활성화 필요 | `pages/info/projects/report.vue:164-166,199-201`, 발견일: 2026-05-26 |
+| [Open] | High     | `info/cost/form.vue:184-186` — 비용 폼 초기 데이터 로드 실패 시 `console.error`만 출력. `toast.error` 알림 및 에러 상태 UI 처리 필요 (CLAUDE.md 4.2.1 위반) | `pages/info/cost/form.vue:184-186`, 발견일: 2026-05-26 |
 
 ### DB / JPA 최적화
 
@@ -152,6 +165,7 @@
 
 | 상태 | 일자 | 영역 | 조치 |
 |------|------|------|------|
+| [Done] | 2026-05-26 | 백로그 | REVIEW.md Task 4 — refactor-cleaner·database-reviewer·silent-failure-hunter 분석. `task1-silent-failures.md` HIGH 이상 항목 전수 검토 후 신규 14건(Critical 1·High 13) 에러 처리 섹션에 등록. 기존 항목 완료 여부 코드 확인(모두 Open 유지). 기준일 2026-05-26 갱신. |
 | [Done] | 2026-05-22 | 주석 | REVIEW.md Task 1 — java-reviewer·typescript-reviewer·silent-failure-hunter·comment-analyzer 병렬 분석. `@Valid` 누락 FIXME(ApplicationController, ProjectController, PlanController), `@Transactional(readOnly=true)` TODO(PlanService), 유니코드 이스케이프 TODO(CouncilService), 빈 catch [HIGH] TODO 3건(stores/review.ts), FIXME(budget/report.vue), 폴링 정책 주석 보강(useNotifications.ts), 고아 JavaDoc 삭제(NotificationService.java) |
 | [Done] | 2026-05-22 | 문서 | REVIEW.md Task 2/3 — BE/FE README.md 및 CLAUDE.md에 알림 시스템(common/notification), Tiptap 변수 시스템(common/system/tiptap) 섹션 추가. 컴포넌트 72개·Composable 48개 카운트 갱신. 루트 README §18.10 현행화 메모 추가 |
 | [Done] | 2026-05-17 | 주석 | REVIEW.md Task 1 재실행 — Java/TypeScript 주석 불일치 교정, Excalidraw/HWPX/Tiptap/Auth 실패 경로 TODO/FIXME 추가, `Bcmmtm.cnfmYn` 컬럼 comment 보강 |
