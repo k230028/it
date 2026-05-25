@@ -121,6 +121,34 @@ cd it_backend && ./gradlew test
 
 ---
 
+### 3.4 설치
+
+git cli
+```bash
+C:\Users\gonna>winget install --id GitHub.cli
+찾음 GitHub CLI [GitHub.cli] 버전 2.92.0
+이 응용 프로그램의 라이선스는 그 소유자가 사용자에게 부여했습니다.
+Microsoft는 타사 패키지에 대한 책임을 지지 않고 라이선스를 부여하지도 않습니다.
+다운로드 중 https://github.com/cli/cli/releases/download/v2.92.0/gh_2.92.0_windows_amd64.msi
+  ██████████████████████████████  14.0 MB / 14.0 MB
+설치 관리자 해시를 확인했습니다.
+패키지 설치를 시작하는 중...
+설치 성공
+
+C:\Users\gonna>gh auth login
+? Where do you use GitHub? GitHub.com
+? What is your preferred protocol for Git operations on this host? HTTPS
+? Authenticate Git with your GitHub credentials? Yes
+? How would you like to authenticate GitHub CLI? Login with a web browser
+
+! First copy your one-time code: 670E-11EE
+Press Enter to open https://github.com/login/device in your browser...
+✓ Authentication complete.
+- gh config set -h github.com git_protocol https
+✓ Configured git protocol
+✓ Logged in as gonnabe88
+```
+
 ## 4. 개발/운영 환경 URL
 
 | 서비스 | 개발 | 운영 |
