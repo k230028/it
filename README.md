@@ -113,6 +113,43 @@ it/
 
 ### 3.2 로컬 빠른 시작 (3터미널)
 
+Git 설치 후 설정
+
+```
+C:\>git clone https://github.com/gonnabe88/it.git
+Cloning into 'it'...
+remote: Enumerating objects: 1856, done.
+remote: Counting objects: 100% (201/201), done.
+remote: Compressing objects: 100% (141/141), done.
+remote: Total 1856 (delta 62), reused 150 (delta 44), pack-reused 1655 (from 1)
+Receiving objects: 100% (1856/1856), 2.89 MiB | 12.63 MiB/s, done.
+Resolving deltas: 100% (856/856), done.
+
+C:\>cd it
+
+C:\it>git clone https://github.com/gonnabe88/it_backend.git
+Cloning into 'it_backend'...
+remote: Enumerating objects: 6291, done.
+remote: Counting objects: 100% (2803/2803), done.
+remote: Compressing objects: 100% (1452/1452), done.
+remote: Total 6291 (delta 1149), reused 2406 (delta 836), pack-reused 3488 (from 1)
+Receiving objects: 100% (6291/6291), 1.89 MiB | 15.71 MiB/s, done.
+Resolving deltas: 100% (2734/2734), done.
+
+C:\it>git clone https://github.com/gonnabe88/it_frontend.git
+Cloning into 'it_frontend'...
+remote: Enumerating objects: 5389, done.
+remote: Counting objects: 100% (479/479), done.
+remote: Compressing objects: 100% (307/307), done.
+remote: Total 5389 (delta 264), reused 324 (delta 170), pack-reused 4910 (from 1)
+Receiving objects: 100% (5389/5389), 28.59 MiB | 18.26 MiB/s, done.
+Resolving deltas: 100% (3659/3659), done.
+Updating files: 100% (400/400), done.
+
+PS C:\it> git config user.name "K140024(KDB)"
+PS C:\it> git config user.email "jjong@kdb.co.kr" 
+```
+
 **터미널 1: 프론트엔드 (포트 3000, CSR)**
 ```bash
 cd it_frontend
