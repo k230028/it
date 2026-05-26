@@ -147,7 +147,7 @@ Resolving deltas: 100% (3659/3659), done.
 Updating files: 100% (400/400), done.
 
 PS C:\it> git config user.name "K140024(KDB)"
-PS C:\it> git config user.email "jjong@kdb.co.kr" 
+PS C:\it> git config user.email "jjong@kdb.co.kr"
 ```
 
 **터미널 1: 프론트엔드 (포트 3000, CSR)**
