@@ -1,11 +1,11 @@
 ﻿# IT Portal 백로그
 
-> 기준일: 2026-05-26
+> 기준일: 2026-05-29
 > 목적: `REVIEW.md` 정비 과정에서 확인한 기술 부채, 미구현 항목, 후속 검증 과제를 추적합니다.
 
 ## 진행 중
 
-> 최종 업데이트: 2026-05-19
+> 최종 업데이트: 2026-05-29
 
 ### 보안
 
@@ -37,6 +37,9 @@
 | [Open] | High     | `ResponseStatusException` 전용 핸들러 추가 — 서비스에서 던진 404/500 상태가 `RuntimeException` 포괄 핸들러에 의해 400으로 바뀌지 않도록 분리 | `GlobalExceptionHandler.java`, `PlanService.java` |
 | [Open] | Medium   | `CustomUserDetails` — `athIds` 클레임 타입 불일치 시 `log.warn` 추가 (권한 강등 탐지 어려움) | `JwtUtil` / `CustomUserDetails` 관련 클레임 파싱 경로 |
 | [Open] | Medium   | 사번(`eno`) PII INFO 로그 정책 정립 — DEBUG 강등 또는 마스킹 처리                                                                                              | `CouncilService.java:94`, 기타 로그인 이력 출력 위치 전수 검토                                       |
+| [Open] | High     | `QnaService.updateQna()` 관리자 수정 무력화 — 권한 비교가 `"ROLE_ITPAD001"`(존재하지 않는 권한 문자열)을 사용. `CustomUserDetails`는 ITPAD001을 `ROLE_ADMIN`으로 매핑하므로 항상 false → 관리자 우회 수정 불가. `"ROLE_ADMIN"` 또는 `userDetails.isAdmin()`으로 교정 (FIXME 주석 존재) | `QnaService.java:122`, 발견일: 2026-05-29 |
+| [Open] | Medium   | `GET /api/documents/dashboard`, `/badge-count` — 클라이언트 제공 `bbrC` 신뢰로 수평적 데이터 노출. 인증 사용자가 임의 부서코드로 타 부서 집계 조회 가능. JWT 클레임 `bbrC` 또는 `isAdmin()` 기준 서비스 계층 검증 필요 | `ServiceRequestDocController.java:183,197`, 발견일: 2026-05-29 |
+| [Open] | Low      | `AuthController.getClientIp()` — `X-Forwarded-For` 멀티 IP(`client, proxy1, ...`) 미분리로 전체 문자열을 IP로 저장. `ip.split(",")[0].trim()` 추가 필요. IP 기반 Brute-force 도입 시 위조 우회 벡터 | `AuthController.java:256`, 발견일: 2026-05-29 |
 
 ### 의존성 취약점 (Snyk, 업스트림 미해결)
 
@@ -173,6 +176,7 @@
 
 | 상태 | 일자 | 영역 | 조치 |
 |------|------|------|------|
+| [Done] | 2026-05-29 | 주석/문서 | REVIEW.md 전체 재실행 — Task1: java/typescript/silent-failure 병렬 탐지 후 검증, 잘못된 주석 3건 교정(`AuthService` 로그인이력 테이블명 `TPRMPP_CLOGNH`, `AuthController` 로그인 응답 필드 주석, `review.ts` nextVersion JSDoc 0.01/2자리), `QnaService` ROLE_ITPAD001 버그 FIXME 추가. Task2/3: BE/FE README·CLAUDE.md에 IT부문 예산 도메인(`domain/budget/it`, `/api/budget/it` ADMIN 전용)·신규 composable(useItBudget/useItProjectRows/useApprovalStatus) 반영. Task4: security-reviewer 신규 2건(문서 대시보드 bbrC 신뢰, getClientIp XFF 미분리) + QnaService 권한 버그 등록. 다수 기존 탐지 항목은 이전 회차에서 이미 수정됨(stale) 확인 |
 | [Done] | 2026-05-26 | 백로그 | REVIEW.md Task 4 — refactor-cleaner·database-reviewer·silent-failure-hunter 분석. `task1-silent-failures.md` HIGH 이상 항목 전수 검토 후 신규 14건(Critical 1·High 13) 에러 처리 섹션에 등록. 기존 항목 완료 여부 코드 확인(모두 Open 유지). 기준일 2026-05-26 갱신. |
 | [Done] | 2026-05-22 | 주석 | REVIEW.md Task 1 — java-reviewer·typescript-reviewer·silent-failure-hunter·comment-analyzer 병렬 분석. `@Valid` 누락 FIXME(ApplicationController, ProjectController, PlanController), `@Transactional(readOnly=true)` TODO(PlanService), 유니코드 이스케이프 TODO(CouncilService), 빈 catch [HIGH] TODO 3건(stores/review.ts), FIXME(budget/report.vue), 폴링 정책 주석 보강(useNotifications.ts), 고아 JavaDoc 삭제(NotificationService.java) |
 | [Done] | 2026-05-22 | 문서 | REVIEW.md Task 2/3 — BE/FE README.md 및 CLAUDE.md에 알림 시스템(common/notification), Tiptap 변수 시스템(common/system/tiptap) 섹션 추가. 컴포넌트 72개·Composable 48개 카운트 갱신. 루트 README §18.10 현행화 메모 추가 |
