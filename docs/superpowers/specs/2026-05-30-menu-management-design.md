@@ -24,7 +24,7 @@
 | 항목 | 결정 |
 |---|---|
 | 관리 범위 | **완전 DB화** — 메뉴 트리 전체를 DB로 관리 |
-| 컨텍스트 모델 | **단일 테이블 + `CTX_C` 컬럼** |
+| 화면 영역 모델 | **단일 테이블 + `SRE_C` 컬럼** (info/audit/admin/board/documents/approval) |
 | 권한 모델 | **자격등급(ROLE) 다중 연결 테이블** (`cmenur` / `TPRMPP_CMENUR`) |
 | 동적 메뉴 처리 | **`MNU_TP='DYNAMIC'` 노드**로 등록, 렌더 시 소스 데이터로 children 치환 |
 | 편집 범위 | **신설/삭제 가능**, 단 경로는 **DB 라우트 카탈로그(`cmenud`)에서 선택만** |
@@ -43,13 +43,16 @@
 
 테이블·컬럼명은 [META.md](../../../META.md), [DOMAIN.md](../../../DOMAIN.md), `it_backend/CLAUDE.md` §5.2(테이블 명명), §5.12.1(BaseLogEntity 로깅 패턴)에 맞춰 확정했다.
 
-**확인된 표준어** (META.md 출처):
+**확인된 표준어** (META.md 출처, 모두 등재어):
 - 메뉴=MNU(2234), 명세=SFS(2316), 관계=REL(1435), 기본=BSC(1715), 로그=LOG(2146)
 - 경로=PTH(1245), 상위=HRK(3152), 순서=SQN(3552), 깊이=DEP(1790), 레벨=LEV(2140)
 - 숨김=HID(3560), 그룹=GRP(1572), 코드=C(5665), 비고=RMK(DOMAIN)
+- **화면=SRE(6261)** — 컨텍스트(info/audit/admin 등 화면 영역 구분) 대체
+- **이미지=IMG(4453)** — 아이콘(시각 식별자) 대체
+- **알림=INFM(3790)** — 배지(미상신/검토중 등 알림 카운트) 대체
+- **원천=FNT(4269)** — 소스(DYNAMIC 메뉴의 데이터 원천) 대체
 
-**META.md 미등재 — 본 설계에서 임시 약어 사용 (TASK.md 등록):**
-- 컨텍스트→`CTX`, 아이콘→`ICN`, 배지→`BDG`, 소스→`SRC`
+> META.md 신규 등재 금지 원칙 준수 — 미등재어는 모두 의미가 가장 가까운 등재어로 매핑함.
 
 **테이블 후미 표준 외 사용 (TASK.md 등록):**
 CLAUDE.md §5.2는 후미를 `M`(마스터)/`L`(로그)/`H`(이력)으로 한정한다. 사용자 결정에 따라 `D`(명세, Definition), `R`(관계, Relation) 후미를 신규 도입하므로 §5.2를 업데이트해야 한다.
@@ -86,13 +89,13 @@ CHECK (USE_YN IN ('Y','N'))
 ```
 MNU_ID         VARCHAR2(40)   PK            -- 메뉴ID ('MNU_INFO_BUDGET_APPROVAL' 등 안정 키)
 HRK_MNU_ID     VARCHAR2(40)   FK→self       -- 상위메뉴ID (NULL=루트)
-CTX_C          VARCHAR2(20)   NN            -- 컨텍스트코드 (info/audit/admin/board/documents/approval)
+SRE_C          VARCHAR2(20)   NN            -- 화면코드 (info/audit/admin/board/documents/approval)
 MNU_NM         VARCHAR2(100)  NN            -- 메뉴명 (표시 라벨)
 MNU_TP         VARCHAR2(10)   NN            -- 메뉴타입 (LINK/GROUP/DYNAMIC)
 MNU_PTH        VARCHAR2(300)  FK→CMENUD     -- 메뉴경로 (LINK일 때 필수, GROUP/DYNAMIC은 NULL)
-SRC_KEY        VARCHAR2(40)                 -- 소스키 (DYNAMIC, 예: 'BOARD_LIST')
-ICN_C          VARCHAR2(40)                 -- 아이콘코드 ('pi pi-wallet')
-BDG_C          VARCHAR2(40)                 -- 배지코드 ('docReviewing','approvalPending')
+FNT_C          VARCHAR2(40)                 -- 원천코드 (DYNAMIC, 예: 'BOARD_LIST')
+IMG_C          VARCHAR2(40)                 -- 이미지코드 ('pi pi-wallet' 등 아이콘 식별자)
+INFM_C         VARCHAR2(40)                 -- 알림코드 ('docReviewing','approvalPending' 등 배지 키)
 MNU_SQN        NUMBER(5)      NN            -- 메뉴순서 (같은 부모 내, 10/20/30 간격)
 HID_YN         VARCHAR2(1)    NN            -- 숨김여부 (Y=전체 숨김)
 DEP_LEV        NUMBER(2)      NN            -- 깊이레벨 (1=루트, 2/3=하위)
@@ -110,7 +113,7 @@ CHECK ((MNU_TP = 'LINK' AND MNU_PTH IS NOT NULL) OR MNU_TP <> 'LINK')
 ```
 
 인덱스:
-- `(CTX_C, HRK_MNU_ID, MNU_SQN)` — 사이드바 트리 조회
+- `(SRE_C, HRK_MNU_ID, MNU_SQN)` — 화면별 사이드바 트리 조회
 - `(MNU_PTH)` — Breadcrumb 역인덱스
 - `(HRK_PTH)` — 후손 일괄 갱신 (`LIKE 'prefix%'`)
 
@@ -149,8 +152,8 @@ CHG_USID         VARCHAR2(14) NN   -- 변경자사번
 DEL_YN, GUID, GUID_PRG_SNO, FST_ENR_DTM, FST_ENR_USID, LST_CHG_DTM, LST_CHG_USID  -- 스냅샷
 
 -- 마스터(CMENUM) 비즈니스 컬럼 복제 (스냅샷):
-MNU_ID, HRK_MNU_ID, CTX_C, MNU_NM, MNU_TP, MNU_PTH, SRC_KEY,
-ICN_C, BDG_C, MNU_SQN, HID_YN, DEP_LEV, HRK_PTH
+MNU_ID, HRK_MNU_ID, SRE_C, MNU_NM, MNU_TP, MNU_PTH, FNT_C,
+IMG_C, INFM_C, MNU_SQN, HID_YN, DEP_LEV, HRK_PTH
 ```
 
 ### 3.5 정합성 유지
@@ -246,8 +249,8 @@ app/
   - `nodeByPath: Map<string, MenuNode>` — Breadcrumb 역인덱스
   - `nodeById: Map<string, MenuNode>` — `HRK_PTH` split 매핑
 - 동적 메뉴 해석:
-  - `MNU_TP='DYNAMIC' && SRC_KEY='BOARD_LIST'` 노드는 `useBoard().sidebarBoards`를 children으로 주입
-  - 새 `SRC_KEY` 추가 시 useMenu 내부에서 매핑 추가 (코드 변경 필요)
+  - `MNU_TP='DYNAMIC' && FNT_C='BOARD_LIST'` 노드는 `useBoard().sidebarBoards`를 children으로 주입
+  - 새 `FNT_C` 추가 시 useMenu 내부에서 매핑 추가 (코드 변경 필요)
 - 캐시 무효화: `/admin/menus` 저장 후 `refresh()` 호출 → 사이드바·Breadcrumb 즉시 반영
 
 ### 5.3 `AppSidebar.vue` 리팩토링
@@ -255,7 +258,7 @@ app/
 - `menuItems = computed(...)` 거대 블록(약 145행) **전체 삭제**
 - 데이터 소스: `const { treeByContext } = useMenu(); const menuItems = computed(() => treeByContext.value[context.value] ?? []);`
 - 동적 메뉴 children 주입은 `useMenu` 내부에서 처리 → 사이드바는 소스 무관
-- 배지(`BDG_C`)·아이콘(`ICN_C`)·관리자 표시는 노드 필드에서 직접 읽음
+- 배지(`INFM_C`)·아이콘(`IMG_C`)·관리자 표시는 노드 필드에서 직접 읽음
 - **템플릿(약 190행)은 그대로 유지** — 데이터 소스만 교체
 
 ### 5.4 `AppBreadcrumb.vue`
@@ -295,7 +298,7 @@ const items = computed(() => {
 ### 5.5 관리화면 `/admin/menus`
 
 - **좌측:** PrimeVue `Tree` (drag&drop 활성화)
-- **우측 편집 폼:** `MNU_NM`, `ICN_C`, `MNU_TP`, `MNU_PTH`(Dropdown ← `/api/admin/routes`), `BDG_C`, `HID_YN`, 역할 체크박스
+- **우측 편집 폼:** `MNU_NM`, `IMG_C`, `MNU_TP`, `MNU_PTH`(Dropdown ← `/api/admin/routes`), `INFM_C`, `HID_YN`, 역할 체크박스
 - **상단 액션:** [신규] [이력] [삭제]
 - 드래그&드롭 부모 변경 → `move` API
 - 같은 부모 내 순서 변경 → `reorder` API 일괄 호출
@@ -339,7 +342,7 @@ Flyway 파일 3개 (CLAUDE.md §4.4 명명 규칙 준수).
 - `AppSidebar.vue`의 모든 `menuItems` 노드를 `TPRMPP_CMENUM`에 INSERT
 - `HRK_PTH`·`DEP_LEV` 명시 계산 후 저장
 - `TPRMPP_CMENUR` 매핑: `admin: true` → `ITPAD001` 1행, 그 외 → 매핑 0건(전체 공개)
-- 동적 메뉴: `BOARD_LIST` 노드 1건 (`MNU_TP='DYNAMIC'`, `SRC_KEY='BOARD_LIST'`)
+- 동적 메뉴: `BOARD_LIST` 노드 1건 (`MNU_TP='DYNAMIC'`, `FNT_C='BOARD_LIST'`)
 - 관리 메뉴 자체 노드(`MNU_ADMIN_MENUS`, `MNU_ADMIN_ROUTES`) 포함
 
 ### 6.4 시드 정확성 검증 (필수)
@@ -393,7 +396,6 @@ Flyway 파일 3개 (CLAUDE.md §4.4 명명 규칙 준수).
 | 시드와 코드 메뉴 불일치로 운영 후 메뉴 누락 | §6.4 검증 스크립트 자동화, 배포 직후 필수 실행 |
 | 관리자가 본인을 모든 메뉴에서 제외 후 자기 잠금 | `/admin/menus` 자체는 `middleware/admin`으로 항상 접근 가능 — DB 설정과 무관 |
 | 동시 편집으로 `HRK_PTH` 충돌 | `cmenum`에 `@Version` 낙관적 잠금, 충돌 시 409 + 사용자에게 재시도 안내 |
-| META.md 미등재 약어(`CTX`/`ICN`/`BDG`/`SRC`) 사용 | TASK.md 등록 → 거버넌스 통한 표준어 등재 후 컬럼 재작성 |
 | 테이블 후미 `D`/`R` 표준 외 사용 | CLAUDE.md §5.2 보강 PR로 후미 규칙 확장 등록 |
 | Caffeine 캐시 다중 인스턴스 비동기화 | 현 운영은 단일 WAR. 확장 시 Redis 전환 → `TASK.md` 등록 |
 | 신규 페이지 추가 시 `cmenud` 등록 누락 | 루트 `CLAUDE.md` §4에 체크리스트 명시, PR 템플릿에 항목 추가 |
@@ -405,8 +407,7 @@ Flyway 파일 3개 (CLAUDE.md §4.4 명명 규칙 준수).
 - `it_backend/CLAUDE.md` §5.12.1: 감사 로그 적용 엔티티 23개 → 24개(`CmenumL` 추가)
 - `it_frontend/CLAUDE.md` §4.6: `pages/admin/menus`, `pages/admin/routes` 추가
 - 루트 `CLAUDE.md` §4: **신규 페이지 추가 시 `cmenud` 등록 필수** 워크플로우 명시
-- `META.md`: 컨텍스트(CTX), 아이콘(ICN), 배지(BDG), 소스(SRC) 표준어 등재 검토
-- `TASK.md`: META 표준어 등재, 테이블 후미 규칙 확장, 다중 인스턴스 Redis 전환, DYNAMIC 소스 분리
+- `TASK.md`: 테이블 후미 규칙 확장(D/R), 다중 인스턴스 Redis 전환, DYNAMIC 원천 분리
 
 ## 11. 향후 과제 (이 설계 범위 밖)
 
