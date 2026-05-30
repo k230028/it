@@ -24,12 +24,13 @@
 | 항목 | 결정 |
 |---|---|
 | 관리 범위 | **완전 DB화** — 메뉴 트리 전체를 DB로 관리 |
-| 컨텍스트 모델 | **단일 테이블 + `ctx_c` 컬럼** |
-| 권한 모델 | **자격등급(ROLE) 다중 연결 테이블** (`cmnumr`) |
-| 동적 메뉴 처리 | **`mnu_tp='DYNAMIC'` 노드**로 등록, 렌더 시 소스 데이터로 children 치환 |
-| 편집 범위 | **신설/삭제 가능**, 단 경로는 **DB 라우트 카탈로그(`cmrte`)에서 선택만** |
-| 라우트 카탈로그 | **DB 테이블 `cmrte`로 관리**, FK로 dead link 원천 차단 |
-| 계층 표현 | `parent_mnu_id` + Materialized Path(`mnu_pth`) + `dpt_lv` 이중 보유 |
+| 컨텍스트 모델 | **단일 테이블 + `CTX_C` 컬럼** |
+| 권한 모델 | **자격등급(ROLE) 다중 연결 테이블** (`cmenur` / `TPRMPP_CMENUR`) |
+| 동적 메뉴 처리 | **`MNU_TP='DYNAMIC'` 노드**로 등록, 렌더 시 소스 데이터로 children 치환 |
+| 편집 범위 | **신설/삭제 가능**, 단 경로는 **DB 라우트 카탈로그(`cmenud`)에서 선택만** |
+| 라우트 카탈로그 | **DB 테이블 `cmenud` / `TPRMPP_CMENUD`로 관리**, FK로 dead link 원천 차단 |
+| 계층 표현 | `HRK_MNU_ID` + Materialized Path(`HRK_PTH`) + `DEP_LEV` 이중 보유 |
+| 변경 로그 | **`BaseLogEntity` 상속 (`CmenumL`/`TPRMPP_CMENUL`)** — `ChangeLogEntityListener` 자동 적재, 스냅샷 방식 |
 | Breadcrumb | PrimeVue `Breadcrumb` 컴포넌트 사용, `useMenu` 캐시 공유 |
 | 권한 필터링 | **서버 단 일원화** (`GET /api/menus` 응답에 ROLE 필터 적용) |
 | 캐시 | **Caffeine 로컬 캐시** (Redis 미도입, 단일 WAR) |
@@ -38,75 +39,124 @@
 
 ## 3. 데이터 모델
 
-### 3.1 `cmrte` — 라우트 카탈로그
+### 3.0 명명 규약 검증
+
+테이블·컬럼명은 [META.md](../../../META.md), [DOMAIN.md](../../../DOMAIN.md), `it_backend/CLAUDE.md` §5.2(테이블 명명), §5.12.1(BaseLogEntity 로깅 패턴)에 맞춰 확정했다.
+
+**확인된 표준어** (META.md 출처):
+- 메뉴=MNU(2234), 명세=SFS(2316), 관계=REL(1435), 기본=BSC(1715), 로그=LOG(2146)
+- 경로=PTH(1245), 상위=HRK(3152), 순서=SQN(3552), 깊이=DEP(1790), 레벨=LEV(2140)
+- 숨김=HID(3560), 그룹=GRP(1572), 코드=C(5665), 비고=RMK(DOMAIN)
+
+**META.md 미등재 — 본 설계에서 임시 약어 사용 (TASK.md 등록):**
+- 컨텍스트→`CTX`, 아이콘→`ICN`, 배지→`BDG`, 소스→`SRC`
+
+**테이블 후미 표준 외 사용 (TASK.md 등록):**
+CLAUDE.md §5.2는 후미를 `M`(마스터)/`L`(로그)/`H`(이력)으로 한정한다. 사용자 결정에 따라 `D`(명세, Definition), `R`(관계, Relation) 후미를 신규 도입하므로 §5.2를 업데이트해야 한다.
+
+**테이블 매핑:**
+| 엔티티 | 테이블 | 역할 |
+|---|---|---|
+| `cmenud` | `TPRMPP_CMENUD` | 공통메뉴명세 — 라우트 카탈로그 (도메인 경로) |
+| `cmenum` | `TPRMPP_CMENUM` | 공통메뉴기본 — 메뉴 마스터 |
+| `cmenur` | `TPRMPP_CMENUR` | 공통메뉴관계 — 메뉴↔자격등급 |
+| `cmenul` | `TPRMPP_CMENUL` | 공통메뉴로그 — 변경 스냅샷 (BaseLogEntity 상속) |
+
+### 3.1 `TPRMPP_CMENUD` — 공통메뉴명세 (라우트 카탈로그)
+
+`Cmenud` 엔티티, `BaseEntity` 상속.
 
 ```
-rt_path       VARCHAR2(200)  PK     -- '/budget/approval'
-rt_nm         VARCHAR2(100)  NN     -- '결재 상신' (참고 라벨, 메뉴 라벨과 분리)
-rt_grp        VARCHAR2(40)          -- 'BUDGET' / 'INFO' / 'ADMIN' / ...
-use_yn        CHAR(1)        NN     -- N이면 신규 메뉴 선택 불가, 기존 메뉴는 유지
-rmk           VARCHAR2(500)         -- 페이지 설명
-fst_enr_eno, fst_enr_dtm, lst_chg_eno, lst_chg_dtm
+MNU_PTH        VARCHAR2(300)  PK   -- 메뉴경로 ('/budget/approval')
+MNU_NM         VARCHAR2(100)  NN   -- 메뉴명 (참고 라벨, cmenum의 표시 라벨과는 별개)
+MNU_GRP_C      VARCHAR2(40)        -- 메뉴그룹코드 ('BUDGET','INFO','ADMIN' 등 관리화면 분류)
+USE_YN         VARCHAR2(1)    NN   -- 사용여부 (N이면 신규 메뉴 선택 불가)
+RMK            VARCHAR2(300)       -- 비고
+
+-- BaseEntity 공통 (자동 상속):
+DEL_YN, GUID, FST_ENR_DTM, FST_ENR_USID, LST_CHG_DTM, LST_CHG_USID
+
+CHECK (USE_YN IN ('Y','N'))
 ```
 
-### 3.2 `cmnum` — 메뉴 마스터
+### 3.2 `TPRMPP_CMENUM` — 공통메뉴기본 (메뉴 마스터)
+
+`Cmenum` 엔티티, `BaseEntity` 상속 + `@EntityListeners(ChangeLogEntityListener.class)` (감사 로그 자동화).
 
 ```
-mnu_id        VARCHAR2(40)   PK     -- 'MNU_INFO_BUDGET_APPROVAL' 등 안정적 키
-parent_mnu_id VARCHAR2(40)   FK→self -- NULL이면 루트
-ctx_c         VARCHAR2(20)   NN     -- info/audit/admin/board/documents/approval
-mnu_nm        VARCHAR2(100)  NN     -- 표시 라벨
-mnu_tp        VARCHAR2(10)   NN     -- LINK / GROUP / DYNAMIC
-rt_path       VARCHAR2(200)  FK→cmrte -- LINK 타입일 때 필수, NULL이면 GROUP/DYNAMIC
-src_key       VARCHAR2(40)          -- DYNAMIC 소스 키 ('BOARD_LIST' 등)
-icn_c         VARCHAR2(40)          -- 'pi pi-wallet'
-bdg_c         VARCHAR2(40)          -- 배지 키 ('docReviewing', 'approvalPending' 등)
-ord_no        NUMBER(5)      NN     -- 같은 부모 내 정렬 (10,20,30 간격)
-open_yn       CHAR(1)        NN     -- Y/N (전체 숨김 토글)
-dpt_lv        NUMBER(2)      NN     -- 1=루트, 2/3=하위
-mnu_pth       VARCHAR2(500)  NN     -- '/MNU_INFO/MNU_INFO_BUDGET/MNU_INFO_BUDGET_APPROVAL'
-version       NUMBER         NN     -- 낙관적 잠금 (@Version)
-fst_enr_eno, fst_enr_dtm, lst_chg_eno, lst_chg_dtm
+MNU_ID         VARCHAR2(40)   PK            -- 메뉴ID ('MNU_INFO_BUDGET_APPROVAL' 등 안정 키)
+HRK_MNU_ID     VARCHAR2(40)   FK→self       -- 상위메뉴ID (NULL=루트)
+CTX_C          VARCHAR2(20)   NN            -- 컨텍스트코드 (info/audit/admin/board/documents/approval)
+MNU_NM         VARCHAR2(100)  NN            -- 메뉴명 (표시 라벨)
+MNU_TP         VARCHAR2(10)   NN            -- 메뉴타입 (LINK/GROUP/DYNAMIC)
+MNU_PTH        VARCHAR2(300)  FK→CMENUD     -- 메뉴경로 (LINK일 때 필수, GROUP/DYNAMIC은 NULL)
+SRC_KEY        VARCHAR2(40)                 -- 소스키 (DYNAMIC, 예: 'BOARD_LIST')
+ICN_C          VARCHAR2(40)                 -- 아이콘코드 ('pi pi-wallet')
+BDG_C          VARCHAR2(40)                 -- 배지코드 ('docReviewing','approvalPending')
+MNU_SQN        NUMBER(5)      NN            -- 메뉴순서 (같은 부모 내, 10/20/30 간격)
+HID_YN         VARCHAR2(1)    NN            -- 숨김여부 (Y=전체 숨김)
+DEP_LEV        NUMBER(2)      NN            -- 깊이레벨 (1=루트, 2/3=하위)
+HRK_PTH        VARCHAR2(500)  NN            -- 상위경로 (Materialized Path,
+                                            --   '/MNU_INFO/MNU_INFO_BUDGET/MNU_INFO_BUDGET_APPROVAL')
+VERSION        NUMBER         NN            -- @Version 낙관적 잠금
 
-CHECK (mnu_tp IN ('LINK','GROUP','DYNAMIC'))
-CHECK (open_yn IN ('Y','N'))
-CHECK (dpt_lv BETWEEN 1 AND 3)
-CHECK ((mnu_tp = 'LINK' AND rt_path IS NOT NULL) OR mnu_tp <> 'LINK')
+-- BaseEntity 공통 (자동 상속):
+DEL_YN, GUID, FST_ENR_DTM, FST_ENR_USID, LST_CHG_DTM, LST_CHG_USID
+
+CHECK (MNU_TP IN ('LINK','GROUP','DYNAMIC'))
+CHECK (HID_YN IN ('Y','N'))
+CHECK (DEP_LEV BETWEEN 1 AND 3)
+CHECK ((MNU_TP = 'LINK' AND MNU_PTH IS NOT NULL) OR MNU_TP <> 'LINK')
 ```
 
 인덱스:
-- `(ctx_c, parent_mnu_id, ord_no)` — 사이드바 트리 조회
-- `(rt_path)` — Breadcrumb 역인덱스
+- `(CTX_C, HRK_MNU_ID, MNU_SQN)` — 사이드바 트리 조회
+- `(MNU_PTH)` — Breadcrumb 역인덱스
+- `(HRK_PTH)` — 후손 일괄 갱신 (`LIKE 'prefix%'`)
 
-### 3.3 `cmnumr` — 메뉴-자격등급 매핑
+### 3.3 `TPRMPP_CMENUR` — 공통메뉴관계 (메뉴↔자격등급)
+
+`Cmenur` 엔티티, `@IdClass(CmenurId.class)` 복합 PK.
 
 ```
-mnu_id  VARCHAR2(40)  PK,FK→cmnum (ON DELETE CASCADE)
-ath_id  VARCHAR2(20)  PK            -- ITPAD001 / ITPZZ001 / ITPZZ002
+MNU_ID         VARCHAR2(40)   PK,FK→CMENUM (ON DELETE CASCADE)
+ATH_ID         VARCHAR2(20)   PK            -- 자격등급ID (ITPAD001/ITPZZ001/ITPZZ002)
+
+-- BaseEntity 공통 (자동 상속)
 
 -- 규칙:
--- 매핑이 0건 = 모든 로그인 사용자 노출 (전체 공개)
--- 매핑이 1건 이상 = 해당 ROLE 보유자에게만 노출
+--   매핑 0건 = 모든 로그인 사용자 노출 (전체 공개)
+--   매핑 1건 이상 = 해당 ROLE 보유자에게만 노출
 ```
 
-### 3.4 `cmnuh` — 메뉴 변경 이력
+### 3.4 `TPRMPP_CMENUL` — 공통메뉴로그 (표준 로깅 방식)
+
+**표준 로깅 패턴 준수** (it_backend/CLAUDE.md §5.12.1):
+
+- `CmenumL` 엔티티가 `BaseLogEntity` 상속 → PK `LOG_HIS_TGR_SNO`, 변경구분 `CHG_DTT_YN`(C/U/D), `CHG_DTM`, `CHG_USID`, BaseEntity 스냅샷 6필드 자동 포함
+- 마스터 `Cmenum`에 `@EntityListeners(ChangeLogEntityListener.class)` 부착 → JPA `@PrePersist`/`@PreUpdate` 시점에 `AuditLogPersister`가 자동 INSERT
+- **별도의 `chg_tp`, `bf_json`, `af_json` 컬럼 불필요** — 스냅샷 방식(마스터 비즈니스 컬럼을 그대로 복제)
+- 시퀀스 `SEQ_CMENUL` 등록 (`it_backend/src/main/resources/sql/audit_log_sequences_ddl.sql`)
+- `ADMIN_LOG_TABLES`(`it_frontend/app/utils/adminLogs.ts`)에 추가: `{ key: 'cmenum', title: '메뉴 변경 로그', menuLabel: '메뉴 관리', tableName: 'TPRMPP_CMENUL' }`
+- 관리자 로그 화면 `/admin/logs/cmenum`에서 자동 조회
 
 ```
-log_seq    NUMBER         PK
-mnu_id     VARCHAR2(40)   NN
-chg_tp     VARCHAR2(10)   NN     -- INSERT / UPDATE / DELETE / MOVE / REORDER
-bf_json    CLOB                  -- 변경 전 스냅샷
-af_json    CLOB                  -- 변경 후 스냅샷
-chg_eno    VARCHAR2(20)   NN
-chg_dtm    TIMESTAMP      NN
-```
+-- BaseLogEntity 상속 (자동):
+LOG_HIS_TGR_SNO  NUMBER(22)   PK   -- SEQ_CMENUL.NEXTVAL
+CHG_DTT_YN       VARCHAR2(1)  NN   -- 변경구분 (C/U/D)
+CHG_DTM          TIMESTAMP    NN   -- 변경일시
+CHG_USID         VARCHAR2(14) NN   -- 변경자사번
+DEL_YN, GUID, GUID_PRG_SNO, FST_ENR_DTM, FST_ENR_USID, LST_CHG_DTM, LST_CHG_USID  -- 스냅샷
 
-`ADMIN_LOG_TABLES`에 `cmnuh` 추가 → 관리자 로그 화면(`/admin/logs/cmnuh`)에서 조회.
+-- 마스터(CMENUM) 비즈니스 컬럼 복제 (스냅샷):
+MNU_ID, HRK_MNU_ID, CTX_C, MNU_NM, MNU_TP, MNU_PTH, SRC_KEY,
+ICN_C, BDG_C, MNU_SQN, HID_YN, DEP_LEV, HRK_PTH
+```
 
 ### 3.5 정합성 유지
 
-- `mnu_pth`/`dpt_lv`는 **백엔드 `AdminMenuService` 계층에서 계산·저장** (트리거 사용 안 함, 디버깅·테스트 용이)
-- 부모 이동 시 모든 후손의 `mnu_pth` 일괄 갱신 (트랜잭션 내 재귀 update)
+- `HRK_PTH`/`DEP_LEV`는 **백엔드 `AdminMenuService` 계층에서 계산·저장** (트리거 사용 안 함, 디버깅·테스트 용이)
+- 부모 이동 시 모든 후손의 `HRK_PTH` 일괄 갱신 (트랜잭션 내 재귀 update)
 - 순환 참조 방지: 자기 자신 또는 후손을 부모로 지정 시 400
 - 깊이 초과: 이동 후 depth가 3 초과 시 400
 
@@ -122,7 +172,7 @@ it_backend/.../menu/
 │   └── AdminRouteController.java     -- 관리자용 (라우트 카탈로그 CRUD)
 ├── service/
 │   ├── MenuQueryService.java
-│   ├── AdminMenuService.java         -- mnu_pth/dpt_lv 재계산 책임
+│   ├── AdminMenuService.java         -- HRK_PTH/DEP_LEV 재계산 책임
 │   └── AdminRouteService.java
 ├── repository/ (Menu, MenuRole, MenuHistory, Route)
 ├── entity/    (Menu, MenuRole, MenuHistory, Route)
@@ -133,37 +183,37 @@ it_backend/.../menu/
 
 | Method | Path | 권한 | 용도 |
 |---|---|---|---|
-| GET | `/api/menus` | 인증사용자 | 전체 메뉴 트리 (사이드바·Breadcrumb 공용). 서버에서 ROLE 필터 + `open_yn='Y'` 필터 적용 |
-| GET | `/api/admin/menus` | ADMIN | 관리화면용 전체 메뉴 (`open_yn='N'` 포함) |
+| GET | `/api/menus` | 인증사용자 | 전체 메뉴 트리 (사이드바·Breadcrumb 공용). 서버에서 ROLE 필터 + `HID_YN='N'` 필터 적용 |
+| GET | `/api/admin/menus` | ADMIN | 관리화면용 전체 메뉴 (`HID_YN='Y'` 포함) |
 | POST | `/api/admin/menus` | ADMIN | 단건 생성 |
-| PUT | `/api/admin/menus/{mnuId}` | ADMIN | 단건 수정 (라벨·아이콘·경로·권한·open_yn) |
+| PUT | `/api/admin/menus/{mnuId}` | ADMIN | 단건 수정 (라벨·아이콘·경로·권한·HID_YN) |
 | DELETE | `/api/admin/menus/{mnuId}` | ADMIN | 단건 삭제 (후손 존재 시 409) |
 | PATCH | `/api/admin/menus/reorder` | ADMIN | 같은 부모 내 일괄 순서 변경 |
 | PATCH | `/api/admin/menus/{mnuId}/move` | ADMIN | 부모 이동 + 후손 일괄 재계산 |
 | GET | `/api/admin/menus/{mnuId}/history` | ADMIN | 변경 이력 |
-| GET | `/api/admin/routes` | ADMIN | 라우트 카탈로그 (use_yn='Y'만) |
+| GET | `/api/admin/routes` | ADMIN | 라우트 카탈로그 (USE_YN='Y'만) |
 | GET | `/api/admin/routes/all` | ADMIN | 라우트 카탈로그 전체 |
 | POST/PUT/DELETE | `/api/admin/routes` | ADMIN | 라우트 CRUD |
 
 ### 4.3 보안
 
 - 모든 `Admin*Controller`는 **클래스 레벨 `@PreAuthorize("hasRole('ADMIN')")`** (CLAUDE.md §4.4.1 이중 보호)
-- `GET /api/menus`는 인증만 요구하되 서버에서 `cmnumr` 매핑과 `authUser.athIds` 교집합으로 필터
+- `GET /api/menus`는 인증만 요구하되 서버에서 `cmenur` 매핑과 `authUser.athIds` 교집합으로 필터
 - 프론트는 받은 트리를 그대로 렌더 → 권한 판단 책임 서버 일원화
 
 ### 4.4 캐싱
 
 - `GET /api/menus`: `@Cacheable("menus")`, 캐시 키에 ROLE 포함
 - `AdminMenuService` 변경 시 `@CacheEvict(value="menus", allEntries=true)`
-- `cmrte` 변경은 `cmnum` 캐시에 영향 없음 (별도 캐시)
+- `cmenud` 변경은 `cmenum` 캐시에 영향 없음 (별도 캐시)
 - Caffeine 로컬 캐시. 다중 인스턴스 확장 시 Redis 전환(TASK.md 등록)
 
 ### 4.5 핵심 서비스 로직 — `AdminMenuService.move(...)`
 
-1. 대상 노드 + 모든 후손 SELECT (`WHERE mnu_pth LIKE '/oldPath/%'`)
-2. 새 parent의 `mnu_pth`·`dpt_lv` 기준으로 본인 갱신
-3. 후손들의 `mnu_pth`는 `replace(oldPrefix, newPrefix)`, `dpt_lv`는 차이만큼 가감
-4. 같은 트랜잭션에서 `cmnuh` INSERT
+1. 대상 노드 + 모든 후손 SELECT (`WHERE HRK_PTH LIKE '/oldPath/%'`)
+2. 새 parent의 `HRK_PTH`·`DEP_LEV` 기준으로 본인 갱신
+3. 후손들의 `HRK_PTH`는 `replace(oldPrefix, newPrefix)`, `DEP_LEV`는 차이만큼 가감
+4. **로그(`cmenul`)는 별도 INSERT 불필요** — `@EntityListeners(ChangeLogEntityListener.class)`가 `@PreUpdate`에서 자동 처리 (it_backend/CLAUDE.md §5.12.1)
 5. depth 3 초과 또는 순환 참조 → `IllegalArgumentException` → 400
 6. 캐시 evict
 
@@ -194,10 +244,10 @@ app/
 - 평탄화 응답 → 다음 computed 노출:
   - `treeByContext: Record<ContextCode, MenuNode[]>` — 사이드바용 트리
   - `nodeByPath: Map<string, MenuNode>` — Breadcrumb 역인덱스
-  - `nodeById: Map<string, MenuNode>` — `mnu_pth` split 매핑
+  - `nodeById: Map<string, MenuNode>` — `HRK_PTH` split 매핑
 - 동적 메뉴 해석:
-  - `mnu_tp='DYNAMIC' && src_key='BOARD_LIST'` 노드는 `useBoard().sidebarBoards`를 children으로 주입
-  - 새 src_key 추가 시 useMenu 내부에서 매핑 추가 (코드 변경 필요)
+  - `MNU_TP='DYNAMIC' && SRC_KEY='BOARD_LIST'` 노드는 `useBoard().sidebarBoards`를 children으로 주입
+  - 새 `SRC_KEY` 추가 시 useMenu 내부에서 매핑 추가 (코드 변경 필요)
 - 캐시 무효화: `/admin/menus` 저장 후 `refresh()` 호출 → 사이드바·Breadcrumb 즉시 반영
 
 ### 5.3 `AppSidebar.vue` 리팩토링
@@ -205,7 +255,7 @@ app/
 - `menuItems = computed(...)` 거대 블록(약 145행) **전체 삭제**
 - 데이터 소스: `const { treeByContext } = useMenu(); const menuItems = computed(() => treeByContext.value[context.value] ?? []);`
 - 동적 메뉴 children 주입은 `useMenu` 내부에서 처리 → 사이드바는 소스 무관
-- 배지(`bdg_c`)·아이콘(`icn_c`)·관리자 표시는 노드 필드에서 직접 읽음
+- 배지(`BDG_C`)·아이콘(`ICN_C`)·관리자 표시는 노드 필드에서 직접 읽음
 - **템플릿(약 190행)은 그대로 유지** — 데이터 소스만 교체
 
 ### 5.4 `AppBreadcrumb.vue`
@@ -223,11 +273,11 @@ const home = { icon: 'pi pi-home', route: '/' };
 const items = computed(() => {
   const current = nodeByPath.value.get(route.path);
   if (!current) return [];
-  return current.mnu_pth.split('/').filter(Boolean).map(id => {
+  return current.hrkPth.split('/').filter(Boolean).map(id => {
     const node = nodeById.value.get(id);
     return {
-      label: node?.mnu_nm ?? id,
-      route: node?.mnu_tp === 'LINK' ? node.rt_path : undefined,
+      label: node?.mnuNm ?? id,
+      route: node?.mnuTp === 'LINK' ? node.mnuPth : undefined,
     };
   });
 });
@@ -245,7 +295,7 @@ const items = computed(() => {
 ### 5.5 관리화면 `/admin/menus`
 
 - **좌측:** PrimeVue `Tree` (drag&drop 활성화)
-- **우측 편집 폼:** `mnu_nm`, `icn_c`, `mnu_tp`, `rt_path`(Dropdown ← `/api/admin/routes`), `bdg_c`, `open_yn`, 역할 체크박스
+- **우측 편집 폼:** `MNU_NM`, `ICN_C`, `MNU_TP`, `MNU_PTH`(Dropdown ← `/api/admin/routes`), `BDG_C`, `HID_YN`, 역할 체크박스
 - **상단 액션:** [신규] [이력] [삭제]
 - 드래그&드롭 부모 변경 → `move` API
 - 같은 부모 내 순서 변경 → `reorder` API 일괄 호출
@@ -255,7 +305,7 @@ const items = computed(() => {
 
 - `StyledDataTable`로 라우트 카탈로그 관리
 - `useAdminTableEdit` 컴포저블과 함께 사용 (CLAUDE.md §4.9)
-- 컬럼: `rt_path`, `rt_nm`, `rt_grp`, `use_yn`, `rmk`, 표준 audit
+- 컬럼: `MNU_PTH`, `MNU_NM`, `MNU_GRP_C`, `USE_YN`, `RMK`, BaseEntity 공통
 
 ### 5.7 미들웨어/라우트 가드
 
@@ -265,8 +315,8 @@ const items = computed(() => {
 
 ### 5.8 메뉴 관리 메뉴 자체
 
-- `cmnum` 시드에 `MNU_ADMIN_MENUS`, `MNU_ADMIN_ROUTES` 추가
-- `cmnumr`에 `ITPAD001` 매핑만 추가 → 일반 사용자에게 비노출
+- `cmenum` 시드에 `MNU_ADMIN_MENUS`, `MNU_ADMIN_ROUTES` 추가
+- `cmenur`에 `ITPAD001` 매핑만 추가 → 일반 사용자에게 비노출
 - 사이드바 `admin` 컨텍스트의 "데이터 관리" 그룹 하위에 배치
 
 ## 6. 마이그레이션
@@ -275,21 +325,21 @@ Flyway 파일 3개 (CLAUDE.md §4.4 명명 규칙 준수).
 
 ### 6.1 `V20260530_001__CreateMenuTables.sql`
 
-- `cmrte`, `cmnum`, `cmnumr`, `cmnuh` 테이블 + 인덱스 + FK + CHECK 제약
-- 시퀀스: `cmnuh_seq`
+- `TPRMPP_CMENUD`, `TPRMPP_CMENUM`, `TPRMPP_CMENUR`, `TPRMPP_CMENUL` 테이블 + 인덱스 + FK + CHECK 제약
+- 시퀀스: `SEQ_CMENUL` (BaseLogEntity PK 채번용, `audit_log_sequences_ddl.sql`에 추가)
 
 ### 6.2 `V20260530_002__SeedRouteCatalog.sql`
 
-- 현재 `AppSidebar.vue`에서 사용 중인 모든 `to` 경로 약 60건 INSERT
-- `rt_grp`는 경로 prefix 기반 분류
-- `use_yn='Y'`로 일괄 등록
+- 현재 `AppSidebar.vue`에서 사용 중인 모든 `to` 경로 약 60건 `TPRMPP_CMENUD`에 INSERT
+- `MNU_GRP_C`는 경로 prefix 기반 분류
+- `USE_YN='Y'`로 일괄 등록
 
 ### 6.3 `V20260530_003__SeedMenuTree.sql`
 
-- `AppSidebar.vue`의 모든 `menuItems` 노드를 `cmnum`에 INSERT
-- `mnu_pth`·`dpt_lv` 명시 계산 후 저장
-- `cmnumr` 매핑: `admin: true` → `ITPAD001` 1행, 그 외 → 매핑 0건(전체 공개)
-- 동적 메뉴: `BOARD_LIST` 노드 1건 (`mnu_tp='DYNAMIC'`, `src_key='BOARD_LIST'`)
+- `AppSidebar.vue`의 모든 `menuItems` 노드를 `TPRMPP_CMENUM`에 INSERT
+- `HRK_PTH`·`DEP_LEV` 명시 계산 후 저장
+- `TPRMPP_CMENUR` 매핑: `admin: true` → `ITPAD001` 1행, 그 외 → 매핑 0건(전체 공개)
+- 동적 메뉴: `BOARD_LIST` 노드 1건 (`MNU_TP='DYNAMIC'`, `SRC_KEY='BOARD_LIST'`)
 - 관리 메뉴 자체 노드(`MNU_ADMIN_MENUS`, `MNU_ADMIN_ROUTES`) 포함
 
 ### 6.4 시드 정확성 검증 (필수)
@@ -324,14 +374,15 @@ Flyway 파일 3개 (CLAUDE.md §4.4 명명 규칙 준수).
 
 | 레이어 | 도구 | 대상 |
 |---|---|---|
-| Backend Unit | JUnit | `AdminMenuService.move()` — mnu_pth 후손 일괄 갱신, depth 제한, 순환 방지 |
+| Backend Unit | JUnit | `AdminMenuService.move()` — `HRK_PTH` 후손 일괄 갱신, depth 제한, 순환 방지 |
 | Backend Unit | JUnit | `AdminMenuService.delete()` — 후손 존재 시 409 |
-| Backend Unit | JUnit | `AdminMenuService.reorder()` — 같은 부모 내 ord_no 일괄 갱신 |
+| Backend Unit | JUnit | `AdminMenuService.reorder()` — 같은 부모 내 `MNU_SQN` 일괄 갱신 |
 | Backend Integration | `@SpringBootTest` | `/api/menus` 권한 필터링 (ADMIN vs USER 응답 비교) |
 | Backend Integration | `@SpringBootTest` | `/api/admin/menus` `@PreAuthorize` — 비관리자 403 |
-| Backend Integration | `@SpringBootTest` | `cmnum.rt_path` FK — 카탈로그에 없는 경로 저장 시 제약 위반 |
+| Backend Integration | `@SpringBootTest` | `TPRMPP_CMENUM.MNU_PTH` FK — `TPRMPP_CMENUD`에 없는 경로 저장 시 제약 위반 |
+| Backend Integration | `@SpringBootTest` | `CmenumL` 자동 INSERT — `Cmenum` UPDATE 시 `TPRMPP_CMENUL`에 스냅샷 1건 적재 (`CHG_DTT_YN='U'`) |
 | Frontend Unit | Vitest | `useMenu` — treeByContext 변환, nodeByPath 인덱스, 동적 노드 children 주입 |
-| Frontend Unit | Vitest | `AppBreadcrumb` — mnu_pth split → items 변환, LINK/GROUP 구분 |
+| Frontend Unit | Vitest | `AppBreadcrumb` — `HRK_PTH` split → items 변환, LINK/GROUP 구분 |
 | Frontend E2E | Playwright | 관리자가 메뉴 숨김 토글 → 사이드바 즉시 반영 (4월 이슈 회귀 방지) |
 | Frontend E2E | Playwright | 일반 사용자에게 admin 전용 메뉴 미노출 |
 
@@ -341,21 +392,25 @@ Flyway 파일 3개 (CLAUDE.md §4.4 명명 규칙 준수).
 |---|---|
 | 시드와 코드 메뉴 불일치로 운영 후 메뉴 누락 | §6.4 검증 스크립트 자동화, 배포 직후 필수 실행 |
 | 관리자가 본인을 모든 메뉴에서 제외 후 자기 잠금 | `/admin/menus` 자체는 `middleware/admin`으로 항상 접근 가능 — DB 설정과 무관 |
-| 동시 편집으로 `mnu_pth` 충돌 | `cmnum`에 `@Version` 낙관적 잠금, 충돌 시 409 + 사용자에게 재시도 안내 |
+| 동시 편집으로 `HRK_PTH` 충돌 | `cmenum`에 `@Version` 낙관적 잠금, 충돌 시 409 + 사용자에게 재시도 안내 |
+| META.md 미등재 약어(`CTX`/`ICN`/`BDG`/`SRC`) 사용 | TASK.md 등록 → 거버넌스 통한 표준어 등재 후 컬럼 재작성 |
+| 테이블 후미 `D`/`R` 표준 외 사용 | CLAUDE.md §5.2 보강 PR로 후미 규칙 확장 등록 |
 | Caffeine 캐시 다중 인스턴스 비동기화 | 현 운영은 단일 WAR. 확장 시 Redis 전환 → `TASK.md` 등록 |
-| 신규 페이지 추가 시 `cmrte` 등록 누락 | 루트 `CLAUDE.md` §4에 체크리스트 명시, PR 템플릿에 항목 추가 |
+| 신규 페이지 추가 시 `cmenud` 등록 누락 | 루트 `CLAUDE.md` §4에 체크리스트 명시, PR 템플릿에 항목 추가 |
 | DYNAMIC 메뉴 소스 추가 시 코드 변경 필요 | `BOARD_LIST` 외 동적 소스가 늘어나면 `useMenu` 내부 매핑 테이블 분리 — 현재는 YAGNI |
 
 ## 10. 문서 업데이트
 
-- `it_backend/CLAUDE.md`: `menu` 패키지 추가 설명
+- `it_backend/CLAUDE.md` §5.2: 테이블 후미 `D`(명세)·`R`(관계) 규칙 추가, `menu` 패키지 설명 추가
+- `it_backend/CLAUDE.md` §5.12.1: 감사 로그 적용 엔티티 23개 → 24개(`CmenumL` 추가)
 - `it_frontend/CLAUDE.md` §4.6: `pages/admin/menus`, `pages/admin/routes` 추가
-- 루트 `CLAUDE.md` §4: **신규 페이지 추가 시 `cmrte` 등록 필수** 워크플로우 명시
-- `TASK.md`: 다중 인스턴스 확장 시 Redis 전환, DYNAMIC 소스 분리
+- 루트 `CLAUDE.md` §4: **신규 페이지 추가 시 `cmenud` 등록 필수** 워크플로우 명시
+- `META.md`: 컨텍스트(CTX), 아이콘(ICN), 배지(BDG), 소스(SRC) 표준어 등재 검토
+- `TASK.md`: META 표준어 등재, 테이블 후미 규칙 확장, 다중 인스턴스 Redis 전환, DYNAMIC 소스 분리
 
 ## 11. 향후 과제 (이 설계 범위 밖)
 
 - 메뉴별 통계(클릭 수, 마지막 접근 시각) — 사용 빈도 기반 정렬 추천
 - 사용자별 즐겨찾기 메뉴
-- 다국어 라벨 (`mnu_nm_en` 컬럼 등)
+- 다국어 라벨 (`MNU_NM_EN` 컬럼 등)
 - DYNAMIC 메뉴 소스 카탈로그(현재는 useMenu 내부 매핑)
