@@ -33,7 +33,7 @@
 | 변경 로그 | **`BaseLogEntity` 상속 (`CmenumL`/`TPRMPP_CMENUL`)** — `ChangeLogEntityListener` 자동 적재, 스냅샷 방식 |
 | Breadcrumb | PrimeVue `Breadcrumb` 컴포넌트 사용, `useMenu` 캐시 공유 |
 | 권한 필터링 | **서버 단 일원화** (`GET /api/menus` 응답에 ROLE 필터 적용) |
-| 캐시 | **Caffeine 로컬 캐시** (Redis 미도입, 단일 WAR) |
+| 캐시 | **도입하지 않음** — 70행 규모 + 인덱스로 충분, 측정 후 필요 시 TASK 백로그에서 검토 |
 | 깊이 제한 | **3단** (현재 `adminLogMenuGroups`가 3단 사용) |
 | 롤아웃 | **단일 배포** (백엔드+프론트+시드 동시), 마이그레이션 직후 데이터 검증 강화 |
 
@@ -204,12 +204,16 @@ it_backend/.../menu/
 - `GET /api/menus`는 인증만 요구하되 서버에서 `cmenur` 매핑과 `authUser.athIds` 교집합으로 필터
 - 프론트는 받은 트리를 그대로 렌더 → 권한 판단 책임 서버 일원화
 
-### 4.4 캐싱
+### 4.4 캐싱 (1단계에서는 도입 안 함)
 
-- `GET /api/menus`: `@Cacheable("menus")`, 캐시 키에 ROLE 포함
-- `AdminMenuService` 변경 시 `@CacheEvict(value="menus", allEntries=true)`
-- `cmenud` 변경은 `cmenum` 캐시에 영향 없음 (별도 캐시)
-- Caffeine 로컬 캐시. 다중 인스턴스 확장 시 Redis 전환(TASK.md 등록)
+- 메뉴 트리 규모(약 70행) + `(SRE_C, HRK_MNU_ID, MNU_SQN)` 인덱스로 직접 쿼리도 ms 단위
+- JPA 영속성 컨텍스트 + Oracle SGA가 사실상 캐시 역할 수행
+- `@Cacheable` 도입 시 `@CacheEvict` 누락 위험 — 메뉴 수정이 사이드바에 반영되지 않는 종류의 버그가 발생하면 본 기능의 핵심 가치(즉시 반영)가 훼손됨
+- 단일 WAR 가정으로 Caffeine은 가능하나 다중 인스턴스 확장 시 비동기화 문제 → 결국 Redis 도입 필요
+- **운영 후 측정 (`/api/menus` p95 응답시간):**
+  - p95 < 200ms → 캐시 불필요, 현 상태 유지
+  - p95 ≥ 200ms 또는 DB 부하 체감 → Caffeine 도입 (단일 WAR 한정) 또는 Redis 검토 — TASK.md 등록
+- 측정 수단: Spring Actuator `/actuator/metrics/http.server.requests` 또는 `@Timed` 어노테이션
 
 ### 4.5 핵심 서비스 로직 — `AdminMenuService.move(...)`
 
@@ -365,7 +369,7 @@ Flyway 파일 3개 (CLAUDE.md §4.4 명명 규칙 준수).
 
 - 마이그레이션 적용 직후 §6.4 검증 스크립트 실행
 - 운영 사용자 일부(관리자 본인 + 1팀)로 사이드바·Breadcrumb·관리화면 스모크 테스트
-- Caffeine 캐시 정상 evict 확인 (`/admin/menus`에서 라벨 변경 → 사이드바 새로고침 시 반영)
+- `/admin/menus`에서 라벨 변경 → 다른 브라우저 세션에서 사이드바 새로고침 시 즉시 반영 확인
 
 ### 7.2 롤백
 
@@ -397,7 +401,7 @@ Flyway 파일 3개 (CLAUDE.md §4.4 명명 규칙 준수).
 | 관리자가 본인을 모든 메뉴에서 제외 후 자기 잠금 | `/admin/menus` 자체는 `middleware/admin`으로 항상 접근 가능 — DB 설정과 무관 |
 | 동시 편집으로 `HRK_PTH` 충돌 | `cmenum`에 `@Version` 낙관적 잠금, 충돌 시 409 + 사용자에게 재시도 안내 |
 | 테이블 후미 `D`/`R` 표준 외 사용 | CLAUDE.md §5.2 보강 PR로 후미 규칙 확장 등록 |
-| Caffeine 캐시 다중 인스턴스 비동기화 | 현 운영은 단일 WAR. 확장 시 Redis 전환 → `TASK.md` 등록 |
+| 메뉴 조회 부하가 예상보다 클 가능성 | 운영 후 p95 측정. 임계 초과 시에만 캐시 도입(§4.4) — 선제 도입은 캐시 무효화 버그 위험이 더 큼 |
 | 신규 페이지 추가 시 `cmenud` 등록 누락 | 루트 `CLAUDE.md` §4에 체크리스트 명시, PR 템플릿에 항목 추가 |
 | DYNAMIC 메뉴 소스 추가 시 코드 변경 필요 | `BOARD_LIST` 외 동적 소스가 늘어나면 `useMenu` 내부 매핑 테이블 분리 — 현재는 YAGNI |
 
@@ -407,7 +411,7 @@ Flyway 파일 3개 (CLAUDE.md §4.4 명명 규칙 준수).
 - `it_backend/CLAUDE.md` §5.12.1: 감사 로그 적용 엔티티 23개 → 24개(`CmenumL` 추가)
 - `it_frontend/CLAUDE.md` §4.6: `pages/admin/menus`, `pages/admin/routes` 추가
 - 루트 `CLAUDE.md` §4: **신규 페이지 추가 시 `cmenud` 등록 필수** 워크플로우 명시
-- `TASK.md`: 테이블 후미 규칙 확장(D/R), 다중 인스턴스 Redis 전환, DYNAMIC 원천 분리
+- `TASK.md`: 테이블 후미 규칙 확장(D/R), `/api/menus` 응답시간 측정 후 캐시 도입 검토, DYNAMIC 원천 분리
 
 ## 11. 향후 과제 (이 설계 범위 밖)
 
