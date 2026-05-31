@@ -26,9 +26,9 @@
 | 관리 범위 | **완전 DB화** — 메뉴 트리 전체를 DB로 관리 |
 | 화면 영역 모델 | **단일 테이블 + `SRE_C` 컬럼** (info/audit/admin/board/documents/approval) |
 | 권한 모델 | **자격등급(ROLE) 다중 연결 테이블** (`cmenur` / `TPRMPP_CMENUR`) |
-| 동적 메뉴 처리 | **`MNU_TP='DYNAMIC'` 노드**로 등록, 렌더 시 소스 데이터로 children 치환 |
-| 편집 범위 | **신설/삭제 가능**, 단 경로는 **DB 라우트 카탈로그(`cmenud`)에서 선택만** |
-| 라우트 카탈로그 | **DB 테이블 `cmenud` / `TPRMPP_CMENUD`로 관리**, FK로 dead link 원천 차단 |
+| 동적 메뉴 처리 | **`MNU_TP='DYNAMIC'` 노드**로 등록, 서버 응답 생성 시 권한 필터링된 children으로 치환 |
+| 편집 범위 | **신설/숨김 가능**, 단 경로는 **검증된 DB 라우트 카탈로그(`cmenud`)에서 선택만** |
+| 라우트 카탈로그 | **DB 테이블 `cmenud` / `TPRMPP_CMENUD`로 관리**, FK + 라우트 검증 스크립트로 dead link 방지 |
 | 계층 표현 | `HRK_MNU_ID` + Materialized Path(`HRK_PTH`) + `DEP_LEV` 이중 보유 |
 | 변경 로그 | **`BaseLogEntity` 상속 (`CmenumL`/`TPRMPP_CMENUL`)** — `ChangeLogEntityListener` 자동 적재, 스냅샷 방식 |
 | Breadcrumb | PrimeVue `Breadcrumb` 컴포넌트 사용, `useMenu` 캐시 공유 |
@@ -57,6 +57,8 @@
 **테이블 후미 표준 외 사용 (TASK.md 등록):**
 CLAUDE.md §5.2는 후미를 `M`(마스터)/`L`(로그)/`H`(이력)으로 한정한다. 사용자 결정에 따라 `D`(명세, Definition), `R`(관계, Relation) 후미를 신규 도입하므로 §5.2를 업데이트해야 한다.
 
+> 구현 순서 주의: `D`/`R` 후미 도입은 현 SoT와 충돌하므로, 메뉴 기능 구현 PR보다 먼저 `it_backend/CLAUDE.md` §5.2와 루트 운영 규약을 보강한다. SoT 갱신 전에는 마이그레이션/엔티티명 리뷰에서 `TPRMPP_CMENUD`, `TPRMPP_CMENUR` 명칭을 확정한 것으로 취급하지 않는다.
+
 **테이블 매핑:**
 | 엔티티 | 테이블 | 역할 |
 |---|---|---|
@@ -68,6 +70,12 @@ CLAUDE.md §5.2는 후미를 `M`(마스터)/`L`(로그)/`H`(이력)으로 한정
 ### 3.1 `TPRMPP_CMENUD` — 공통메뉴명세 (라우트 카탈로그)
 
 `Cmenud` 엔티티, `BaseEntity` 상속.
+
+라우트 카탈로그는 FK 대상이지만, FK만으로 실제 Nuxt 라우트 존재 여부를 보장할 수 없다. 운영자가 존재하지 않는 경로를 `cmenud`에 등록하면 이후 `cmenum.MNU_PTH` FK는 그 잘못된 경로를 정상으로 인정한다. 따라서 다음 이중 검증을 필수로 한다.
+
+- 관리자 화면 저장 시: `MNU_PTH` 형식(`/` 시작, 공백/외부 URL 금지)과 중복 여부 검증
+- 배포/시드 검증 시: Nuxt route manifest 또는 `app/pages/**` 스캔 결과, `docs/screen-list.csv`, `TPRMPP_CMENUD`를 대조해 미존재 경로를 실패 처리
+- 운영 중 신규 라우트 추가 시: 페이지 파일 추가 PR에 `cmenud` 등록 여부 체크리스트 포함
 
 ```
 MNU_PTH        VARCHAR2(300)  PK   -- 메뉴경로 ('/budget/approval')
@@ -110,7 +118,14 @@ CHECK (MNU_TP IN ('LINK','GROUP','DYNAMIC'))
 CHECK (HID_YN IN ('Y','N'))
 CHECK (DEP_LEV BETWEEN 1 AND 3)
 CHECK ((MNU_TP = 'LINK' AND MNU_PTH IS NOT NULL) OR MNU_TP <> 'LINK')
+CHECK (
+  (MNU_TP = 'LINK' AND MNU_PTH IS NOT NULL AND FNT_C IS NULL)
+  OR (MNU_TP = 'GROUP' AND MNU_PTH IS NULL AND FNT_C IS NULL)
+  OR (MNU_TP = 'DYNAMIC' AND MNU_PTH IS NULL AND FNT_C IS NOT NULL)
+)
 ```
+
+서비스 계층에서도 동일 검증을 수행한다. DB CHECK는 최종 방어선이며, 사용자에게는 `MNU_TP`별 필수/금지 필드 오류를 400 응답 메시지로 반환한다.
 
 인덱스:
 - `(SRE_C, HRK_MNU_ID, MNU_SQN)` — 화면별 사이드바 트리 조회
@@ -122,7 +137,7 @@ CHECK ((MNU_TP = 'LINK' AND MNU_PTH IS NOT NULL) OR MNU_TP <> 'LINK')
 `Cmenur` 엔티티, `@IdClass(CmenurId.class)` 복합 PK.
 
 ```
-MNU_ID         VARCHAR2(40)   PK,FK→CMENUM (ON DELETE CASCADE)
+MNU_ID         VARCHAR2(40)   PK,FK→CMENUM
 ATH_ID         VARCHAR2(20)   PK            -- 자격등급ID (ITPAD001/ITPZZ001/ITPZZ002)
 
 -- BaseEntity 공통 (자동 상속)
@@ -131,6 +146,19 @@ ATH_ID         VARCHAR2(20)   PK            -- 자격등급ID (ITPAD001/ITPZZ001
 --   매핑 0건 = 모든 로그인 사용자 노출 (전체 공개)
 --   매핑 1건 이상 = 해당 ROLE 보유자에게만 노출
 ```
+
+삭제 정책은 프로젝트 공통 규약에 맞춰 물리 삭제가 아니라 Soft Delete를 기본으로 한다.
+
+- `CMENUM` 메뉴 삭제 API는 실제로 `DEL_YN='Y'` 처리한다.
+- `CMENUR` 관계도 `BaseEntity`를 상속하므로 메뉴 삭제 또는 권한 해제 시 `DEL_YN='Y'`로 정리한다.
+- FK `ON DELETE CASCADE`는 사용하지 않는다. 물리 삭제가 금지되어 있고, Soft Delete에서는 cascade가 동작하지 않기 때문이다.
+- 동일 `(MNU_ID, ATH_ID)` 권한을 재추가할 때는 기존 Soft Delete row를 복구하거나, DB 제약 조건을 고려해 중복 PK 충돌이 나지 않도록 서비스에서 처리한다.
+
+권한 필터링 규칙:
+
+- 부모 GROUP이 권한 필터로 제외되면 후손도 함께 제외한다.
+- 부모는 통과했지만 필터 후 children이 0개가 된 GROUP/DYNAMIC 노드는 사용자용 `GET /api/menus` 응답에서 제거한다.
+- 관리화면용 `GET /api/admin/menus`는 숨김/권한/빈 그룹 여부와 무관하게 전체 트리를 반환한다.
 
 ### 3.4 `TPRMPP_CMENUL` — 공통메뉴로그 (표준 로깅 방식)
 
@@ -155,6 +183,8 @@ DEL_YN, GUID, GUID_PRG_SNO, FST_ENR_DTM, FST_ENR_USID, LST_CHG_DTM, LST_CHG_USID
 MNU_ID, HRK_MNU_ID, SRE_C, MNU_NM, MNU_TP, MNU_PTH, FNT_C,
 IMG_C, INFM_C, MNU_SQN, HID_YN, DEP_LEV, HRK_PTH
 ```
+
+주의: `CMENUR` 권한 관계 변경은 `CmenumL`에 자동 기록되지 않는다. 메뉴 권한 변경 이력이 감사 요구사항에 포함되면 `CmenurL` 로그 엔티티를 추가하거나, `Cmenum`의 변경일시를 함께 갱신해 권한 스냅샷을 별도 조회할 수 있게 해야 한다. 1단계 범위에서는 메뉴 마스터 변경 로그를 우선 구현하고, 권한 관계 로그 필요 여부는 보안/감사 검토 후 결정한다.
 
 ### 3.5 정합성 유지
 
@@ -190,7 +220,7 @@ it_backend/.../menu/
 | GET | `/api/admin/menus` | ADMIN | 관리화면용 전체 메뉴 (`HID_YN='Y'` 포함) |
 | POST | `/api/admin/menus` | ADMIN | 단건 생성 |
 | PUT | `/api/admin/menus/{mnuId}` | ADMIN | 단건 수정 (라벨·아이콘·경로·권한·HID_YN) |
-| DELETE | `/api/admin/menus/{mnuId}` | ADMIN | 단건 삭제 (후손 존재 시 409) |
+| DELETE | `/api/admin/menus/{mnuId}` | ADMIN | 단건 Soft Delete (후손 존재 시 409) |
 | PATCH | `/api/admin/menus/reorder` | ADMIN | 같은 부모 내 일괄 순서 변경 |
 | PATCH | `/api/admin/menus/{mnuId}/move` | ADMIN | 부모 이동 + 후손 일괄 재계산 |
 | GET | `/api/admin/menus/{mnuId}/history` | ADMIN | 변경 이력 |
@@ -198,11 +228,19 @@ it_backend/.../menu/
 | GET | `/api/admin/routes/all` | ADMIN | 라우트 카탈로그 전체 |
 | POST/PUT/DELETE | `/api/admin/routes` | ADMIN | 라우트 CRUD |
 
+삭제 API 의미:
+
+- `DELETE /api/admin/menus/{mnuId}`는 물리 삭제가 아니라 `DEL_YN='Y'` Soft Delete다.
+- 후손이 존재하는 메뉴는 삭제 대신 409를 반환한다. 후손까지 일괄 숨김이 필요한 경우 별도 `PATCH /api/admin/menus/{mnuId}/hide-subtree` 도입을 검토한다.
+- `DELETE /api/admin/routes`는 이미 메뉴에서 참조 중인 경로이면 409를 반환하고, 미참조 경로만 Soft Delete 처리한다.
+- `/admin/menus`와 `/admin/routes` 페이지 자체는 DB 메뉴 노출 설정과 무관하게 `middleware/admin` + 백엔드 `@PreAuthorize`로 접근 가능해야 한다. 관리자가 실수로 메뉴 관리 메뉴를 숨겨도 직접 URL 접근으로 복구할 수 있는 break-glass 경로다.
+
 ### 4.3 보안
 
 - 모든 `Admin*Controller`는 **클래스 레벨 `@PreAuthorize("hasRole('ADMIN')")`** (CLAUDE.md §4.4.1 이중 보호)
 - `GET /api/menus`는 인증만 요구하되 서버에서 `cmenur` 매핑과 `authUser.athIds` 교집합으로 필터
 - 프론트는 받은 트리를 그대로 렌더 → 권한 판단 책임 서버 일원화
+- 동적 메뉴도 동일 원칙을 따른다. `BOARD_LIST` children은 프론트에서 전체 게시판을 받아 필터링하지 않고, 백엔드가 현재 사용자 기준으로 조회 가능한 게시판만 children으로 주입해 응답한다.
 
 ### 4.4 캐싱 (1단계에서는 도입 안 함)
 
@@ -222,7 +260,7 @@ it_backend/.../menu/
 3. 후손들의 `HRK_PTH`는 `replace(oldPrefix, newPrefix)`, `DEP_LEV`는 차이만큼 가감
 4. **로그(`cmenul`)는 별도 INSERT 불필요** — `@EntityListeners(ChangeLogEntityListener.class)`가 `@PreUpdate`에서 자동 처리 (it_backend/CLAUDE.md §5.12.1)
 5. depth 3 초과 또는 순환 참조 → `IllegalArgumentException` → 400
-6. 캐시 evict
+6. 사용자용 메뉴 응답은 DB 재조회로 즉시 반영된다. 향후 서버 캐시를 도입한 경우에만 캐시 evict를 추가한다.
 
 ## 5. 프론트엔드 통합
 
@@ -253,8 +291,8 @@ app/
   - `nodeByPath: Map<string, MenuNode>` — Breadcrumb 역인덱스
   - `nodeById: Map<string, MenuNode>` — `HRK_PTH` split 매핑
 - 동적 메뉴 해석:
-  - `MNU_TP='DYNAMIC' && FNT_C='BOARD_LIST'` 노드는 `useBoard().sidebarBoards`를 children으로 주입
-  - 새 `FNT_C` 추가 시 useMenu 내부에서 매핑 추가 (코드 변경 필요)
+  - `MNU_TP='DYNAMIC' && FNT_C='BOARD_LIST'` 노드는 백엔드 응답에 이미 권한 필터링된 children이 포함된다.
+  - 프론트는 동적 소스별 추가 API를 호출하지 않는다. 새 `FNT_C` 추가 시 백엔드 `MenuQueryService`의 dynamic resolver 매핑을 추가한다.
 - 캐시 무효화: `/admin/menus` 저장 후 `refresh()` 호출 → 사이드바·Breadcrumb 즉시 반영
 
 ### 5.3 `AppSidebar.vue` 리팩토링
@@ -278,7 +316,7 @@ const { nodeByPath, nodeById } = useMenu();
 const home = { icon: 'pi pi-home', route: '/' };
 
 const items = computed(() => {
-  const current = nodeByPath.value.get(route.path);
+  const current = nodeByPath.value.get(route.fullPath) ?? nodeByPath.value.get(route.path);
   if (!current) return [];
   return current.hrkPth.split('/').filter(Boolean).map(id => {
     const node = nodeById.value.get(id);
@@ -298,6 +336,7 @@ const items = computed(() => {
 - 마지막 노드, `route` 없는 GROUP 항목은 PrimeVue가 자동 비활성 처리
 - 배치: `layouts/default.vue` 상단 헤더 아래
 - 카탈로그 외 페이지(로그인 등)에서는 렌더링하지 않음
+- `MNU_PTH`는 query string 포함 경로를 허용한다. `/approval/list?tab=pending`처럼 같은 path에 여러 메뉴가 걸린 경우 breadcrumb는 `route.fullPath`를 우선 사용하고, 일치 항목이 없을 때만 `route.path`로 fallback한다.
 
 ### 5.5 관리화면 `/admin/menus`
 
@@ -355,6 +394,8 @@ Flyway 파일 3개 (CLAUDE.md §4.4 명명 규칙 준수).
 
 - `GET /api/menus` (ROLE=ADMIN)의 응답 트리를 현재 하드코딩 메뉴와 비교
 - 라벨·순서·아이콘·경로·권한·배지 모두 일치 확인
+- `TPRMPP_CMENUD.MNU_PTH`를 Nuxt 실제 라우트 목록 및 `docs/screen-list.csv`와 대조해 미존재 경로가 있으면 실패 처리
+- query string 포함 메뉴는 `fullPath` 기준으로 비교하고, query 없는 상세/동적 라우트는 path 패턴 기준으로 비교
 - 불일치 항목이 있으면 hotfix 마이그레이션(`V20260530_004__...`)으로 즉시 보정
 - 검증 스크립트는 `it_database/scripts/verify-menu-seed.ts` 등으로 보관
 
@@ -385,11 +426,13 @@ Flyway 파일 3개 (CLAUDE.md §4.4 명명 규칙 준수).
 | Backend Unit | JUnit | `AdminMenuService.delete()` — 후손 존재 시 409 |
 | Backend Unit | JUnit | `AdminMenuService.reorder()` — 같은 부모 내 `MNU_SQN` 일괄 갱신 |
 | Backend Integration | `@SpringBootTest` | `/api/menus` 권한 필터링 (ADMIN vs USER 응답 비교) |
+| Backend Integration | `@SpringBootTest` | `/api/menus` 동적 `BOARD_LIST` children 서버 권한 필터링 |
 | Backend Integration | `@SpringBootTest` | `/api/admin/menus` `@PreAuthorize` — 비관리자 403 |
 | Backend Integration | `@SpringBootTest` | `TPRMPP_CMENUM.MNU_PTH` FK — `TPRMPP_CMENUD`에 없는 경로 저장 시 제약 위반 |
 | Backend Integration | `@SpringBootTest` | `CmenumL` 자동 INSERT — `Cmenum` UPDATE 시 `TPRMPP_CMENUL`에 스냅샷 1건 적재 (`CHG_DTT_YN='U'`) |
-| Frontend Unit | Vitest | `useMenu` — treeByContext 변환, nodeByPath 인덱스, 동적 노드 children 주입 |
-| Frontend Unit | Vitest | `AppBreadcrumb` — `HRK_PTH` split → items 변환, LINK/GROUP 구분 |
+| Backend Integration | `@SpringBootTest` | Soft Delete 후 `CMENUR` 관계 필터링 및 권한 재추가 복구 |
+| Frontend Unit | Vitest | `useMenu` — treeByContext 변환, nodeByPath 인덱스, 서버가 내려준 동적 children 렌더링 |
+| Frontend Unit | Vitest | `AppBreadcrumb` — `HRK_PTH` split → items 변환, LINK/GROUP 구분, fullPath/query fallback |
 | Frontend E2E | Playwright | 관리자가 메뉴 숨김 토글 → 사이드바 즉시 반영 (4월 이슈 회귀 방지) |
 | Frontend E2E | Playwright | 일반 사용자에게 admin 전용 메뉴 미노출 |
 
@@ -398,12 +441,15 @@ Flyway 파일 3개 (CLAUDE.md §4.4 명명 규칙 준수).
 | 리스크 | 완화책 |
 |---|---|
 | 시드와 코드 메뉴 불일치로 운영 후 메뉴 누락 | §6.4 검증 스크립트 자동화, 배포 직후 필수 실행 |
-| 관리자가 본인을 모든 메뉴에서 제외 후 자기 잠금 | `/admin/menus` 자체는 `middleware/admin`으로 항상 접근 가능 — DB 설정과 무관 |
+| 라우트 카탈로그에 미존재 Nuxt 경로 등록 | 관리자 저장 검증 + 배포 검증 스크립트에서 route manifest/screen-list 대조 |
+| 관리자가 본인을 모든 메뉴에서 제외 후 자기 잠금 | `/admin/menus` 자체는 직접 URL + `middleware/admin`으로 항상 접근 가능 — DB 메뉴 노출 설정과 무관 |
+| Soft Delete 관계 row가 남아 권한 필터가 오동작 | 모든 조회에서 `DEL_YN='N'` 필터 강제, 권한 재추가 시 기존 row 복구 정책 구현 |
+| 부모/자식 권한 불일치로 빈 그룹 노출 | 사용자용 트리 생성 시 권한 없는 부모 하위 제거, children 0개 GROUP/DYNAMIC 제거 |
 | 동시 편집으로 `HRK_PTH` 충돌 | `cmenum`에 `@Version` 낙관적 잠금, 충돌 시 409 + 사용자에게 재시도 안내 |
 | 테이블 후미 `D`/`R` 표준 외 사용 | CLAUDE.md §5.2 보강 PR로 후미 규칙 확장 등록 |
 | 메뉴 조회 부하가 예상보다 클 가능성 | 운영 후 p95 측정. 임계 초과 시에만 캐시 도입(§4.4) — 선제 도입은 캐시 무효화 버그 위험이 더 큼 |
 | 신규 페이지 추가 시 `cmenud` 등록 누락 | 루트 `CLAUDE.md` §4에 체크리스트 명시, PR 템플릿에 항목 추가 |
-| DYNAMIC 메뉴 소스 추가 시 코드 변경 필요 | `BOARD_LIST` 외 동적 소스가 늘어나면 `useMenu` 내부 매핑 테이블 분리 — 현재는 YAGNI |
+| DYNAMIC 메뉴 소스 추가 시 코드 변경 필요 | `BOARD_LIST` 외 동적 소스가 늘어나면 백엔드 dynamic resolver 매핑 테이블 분리 — 현재는 YAGNI |
 
 ## 10. 문서 업데이트
 
@@ -418,4 +464,4 @@ Flyway 파일 3개 (CLAUDE.md §4.4 명명 규칙 준수).
 - 메뉴별 통계(클릭 수, 마지막 접근 시각) — 사용 빈도 기반 정렬 추천
 - 사용자별 즐겨찾기 메뉴
 - 다국어 라벨 (`MNU_NM_EN` 컬럼 등)
-- DYNAMIC 메뉴 소스 카탈로그(현재는 useMenu 내부 매핑)
+- DYNAMIC 메뉴 소스 카탈로그(현재는 백엔드 `MenuQueryService` resolver 매핑)

@@ -35,5 +35,8 @@
     "tailwindCSS.includeLanguages": {
         "vue": "html",
         "vue-html": "html"
+    },
+    "[vue]": {
+        "editor.defaultFormatter": "Vue.volar"
     }
 }
