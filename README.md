@@ -377,7 +377,7 @@ npm run typecheck
 # ESLint + Prettier 린트
 npm run lint
 
-# 단위 테스트 (Vitest) — 72개 파일, 1132+ 테스트
+# 단위 테스트 (Vitest) — 86개 단위 테스트 파일
 npm test
 
 # 파일 변경 감지 실시간 테스트
@@ -393,7 +393,7 @@ npm run test:coverage
 ```bash
 cd it_backend
 
-# JUnit 5 + Mockito 테스트 실행 — 84개 파일, 787+ 테스트
+# JUnit 5 + Mockito 테스트 실행 — 92개 테스트 파일
 ./gradlew test
 
 # 커버리지 리포트 생성 (JaCoCo)
@@ -697,6 +697,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 | **신청서·결재** | `common/approval` | 전자결재 프로세스, 상태 전이 |
 | **공통 게시판** | `common/board` | 게시판 메타, 게시물, 댓글, 권한 검증 |
 | **공통코드** | `common/code` | 코드 CRUD, 캐싱 |
+| **실시간 로그** | `common/admin/realtime` | `V_ITPAPP_LOG_FEED` 기반 관리자 전용 변경 로그 스냅샷 |
 | **알림** | `common/notification` | 결재/멘션/시스템 알림, Soft Delete, `@TransactionalEventListener` + `REQUIRES_NEW` 패턴 |
 | **Tiptap 변수** | `common/system/tiptap` | 에디터 동적 변수 삽입, 카탈로그 조회, 토큰 해석 |
 | **정보화사업** | `budget/project` | 사업 CRUD, 복합키 (`prjYy` + `prjSn`) |
@@ -720,6 +721,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 | **협의회** | `composables/useCouncil.ts`, `pages/info/council/` | 협의회 프로세스 관리 |
 | **결재** | `composables/useApprovals.ts`, `pages/approval/` | 신청 목록, 상세, 처리 |
 | **알림** | `composables/useNotifications.ts` | 알림 목록/읽음/삭제, 60초 폴링 (폴링 오류 의도적 삼킴) |
+| **실시간 로그** | `composables/useRealtimeLogs.ts`, `pages/admin/realtime-logs.vue` | 관리자 변경 로그 폴링, 복합 커서 기반 슬라이딩 윈도우 |
 | **Tiptap 에디터** | `components/TiptapEditor.vue` | 리치 텍스트, 표, 이미지, 다이어그램, 수식 |
 | **Tiptap 변수** | `composables/useTiptapVariables.ts` | 에디터 변수 토큰 추출·카탈로그 조회·해석 |
 | **공통 게시판** | `composables/useBoard*.ts`, `pages/board/` | 게시판 메타, 게시물, 댓글 CRUD |
@@ -879,3 +881,10 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 - **컴포넌트·Composable 카운트 갱신**: components 67→72개, composables 45→48개.
 - `it_backend/README.md` — 알림 시스템·Tiptap 변수 시스템 섹션(§5.0, §5.0.1) 추가.
 - `it_frontend/README.md` — `useNotifications.ts`(§4.9), `useTiptapVariables.ts`(§4.10), `stores/review.ts` 알려진 한계(§4.11) 추가.
+
+### 18.11 2026-06-01 REVIEW 재점검
+
+- **실시간 로그 모니터링** 확인: 백엔드 `common/admin/realtime`(`RealtimeLogController`/`Service`/`Repository`)와 프론트 `pages/admin/realtime-logs.vue`, `useRealtimeLogs.ts`, `components/admin/realtime/` 구조를 루트/하위 README와 CLAUDE에 반영했습니다.
+- **소스 통계 갱신**: 백엔드 271개 메인 Java 파일, 92개 테스트 파일, 63개 JPA 엔티티, 프론트 components 83개, composables 50개, pages 56개 기준으로 현행화했습니다.
+- **주석 보강**: `CouncilService`, `info/plan/[id].vue`, `budget/status.vue`의 무시형 실패 경로에 한글 TODO를 추가했습니다.
+- **백로그 갱신**: 2026-06-01 기준 typecheck/lint 실패, 실시간 로그 검증, N+1/인덱스 후보를 `TASK.md`에 반영했습니다.
