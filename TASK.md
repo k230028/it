@@ -236,6 +236,16 @@
 - [ ] NodeView aria-label 부여 확인 (DevTools)
 - [ ] 모바일 뷰포트(768px 이하) 팝업 위치 정상
 
+## 실시간 로그 모니터링 (이번 범위 밖)
+
+- [ ] 라이브 피드 행 클릭 → 변경 본문(BEFORE/AFTER) 인라인 드릴다운 (`/admin/logs/[logKey]` 데이터 재사용)
+- [ ] SSE 또는 WebSocket push 전환 (관리자 수·트래픽 증가 시)
+- [ ] 로그 데이터 보존 정책 / 아카이브 분리 View
+- [ ] 사용자별 즐겨찾기 테이블 필터 저장 (localStorage)
+- [ ] `V_ITPAPP_LOG_FEED` 실행계획 `EXPLAIN PLAN` 검증 결과 기록 및 필요 시 복합 인덱스 도입
+- [ ] Spring Boot bootRun 환경 셋업 후 V20260531_001 마이그레이션 적용 검증
+- [ ] Playwright E2E (`tests/e2e/admin/realtime-logs.spec.ts`) 백엔드+프론트 dev 모드 기동 후 실제 실행
+
 ## 공통 게시판 후속 과제
 
 - [ ] `Bgdocm.docCone` BLOB → CLOB 마이그레이션 (게시판 도입 후 일관성 회복)
