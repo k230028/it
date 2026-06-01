@@ -1,11 +1,11 @@
 ﻿# IT Portal 백로그
 
-> 기준일: 2026-05-26
+> 기준일: 2026-06-01
 > 목적: `REVIEW.md` 정비 과정에서 확인한 기술 부채, 미구현 항목, 후속 검증 과제를 추적합니다.
 
 ## 진행 중
 
-> 최종 업데이트: 2026-05-19
+> 최종 업데이트: 2026-06-01
 
 ### 보안
 
@@ -35,8 +35,12 @@
 | [Open] | Medium   | Gemini 첨부 파일 실제 크기 제한 구현 | DTO 주석의 파일당 20MB 제한과 달리 `Files.readAllBytes(filePath)` 전 크기 검사 코드 없음 |
 | [Open] | High     | 리소스 미존재 시 HTTP 404 반환을 위한 전용 `NotFoundException` 도입 + `GlobalExceptionHandler` 매핑                                                             | `UserController.java:72`, `GuideDocService.java:65,129,154` — 현재 400 반환               |
 | [Open] | High     | `ResponseStatusException` 전용 핸들러 추가 — 서비스에서 던진 404/500 상태가 `RuntimeException` 포괄 핸들러에 의해 400으로 바뀌지 않도록 분리 | `GlobalExceptionHandler.java`, `PlanService.java` |
+| [Open] | High     | `AccessDeniedException` 전용 핸들러 추가 — 서비스/보안 계층 권한 실패가 `RuntimeException` 포괄 핸들러로 400 처리되지 않고 403으로 반환되도록 분리 | `GlobalExceptionHandler.java`, `/api/admin/realtime-logs` 비-ADMIN 접근 검증 |
 | [Open] | Medium   | `CustomUserDetails` — `athIds` 클레임 타입 불일치 시 `log.warn` 추가 (권한 강등 탐지 어려움) | `JwtUtil` / `CustomUserDetails` 관련 클레임 파싱 경로 |
 | [Open] | Medium   | 사번(`eno`) PII INFO 로그 정책 정립 — DEBUG 강등 또는 마스킹 처리                                                                                              | `CouncilService.java:94`, 기타 로그인 이력 출력 위치 전수 검토                                       |
+| [Open] | High     | `QnaService.updateQna()` 관리자 수정 무력화 — 권한 비교가 `"ROLE_ITPAD001"`(존재하지 않는 권한 문자열)을 사용. `CustomUserDetails`는 ITPAD001을 `ROLE_ADMIN`으로 매핑하므로 항상 false → 관리자 우회 수정 불가. `"ROLE_ADMIN"` 또는 `userDetails.isAdmin()`으로 교정 (FIXME 주석 존재) | `QnaService.java:122`, 발견일: 2026-05-29 |
+| [Open] | Medium   | `GET /api/documents/dashboard`, `/badge-count` — 클라이언트 제공 `bbrC` 신뢰로 수평적 데이터 노출. 인증 사용자가 임의 부서코드로 타 부서 집계 조회 가능. JWT 클레임 `bbrC` 또는 `isAdmin()` 기준 서비스 계층 검증 필요 | `ServiceRequestDocController.java:183,197`, 발견일: 2026-05-29 |
+| [Open] | Low      | `AuthController.getClientIp()` — `X-Forwarded-For` 멀티 IP(`client, proxy1, ...`) 미분리로 전체 문자열을 IP로 저장. `ip.split(",")[0].trim()` 추가 필요. IP 기반 Brute-force 도입 시 위조 우회 벡터 | `AuthController.java:256`, 발견일: 2026-05-29 |
 
 ### 의존성 취약점 (Snyk, 업스트림 미해결)
 
@@ -79,6 +83,9 @@
 | [Open] | Critical | `ApplicationService.getApplicationsByIds()`·`ProjectService.findByIds()`·`CostService.findByIds()` — `IllegalArgumentException` catch 후 `null` 반환 + `Objects::nonNull` 필터 패턴 제거. 실패 항목 수가 호출자에게 가려짐 | `ApplicationService.java:440`, `ProjectService.java:564`, `CostService.java:351` |
 | [Open] | High     | `ChangeLogEntityListener.beforeAnyOperation()` `catch (Exception e)` — 감사로그 영속화 실패 시 스택 트레이스 + 알람 필요                                                                                                | `ChangeLogEntityListener.java:75` 현재 `log.warn`만                                 |
 | [Open] | High     | `GeminiService` `RestClient`에 `connectTimeout`/`readTimeout` 설정 — Gemini API 응답 지연 시 스레드 풀 고갈 가능                                                                                                    | `GeminiService.java:98` 타임아웃 미지정                                                 |
+| [Open] | Medium   | `FileService.downloadFile()` `MalformedURLException` 원인 예외 보존 — `CustomGeneralException` 생성 시 cause를 포함해 파일 경로 생성 실패 스택트레이스를 남김 | `FileService.java:522`, 발견일: 2026-06-01 |
+| [Open] | Medium   | `LoginAttemptService` 조회 전용 트랜잭션 경계 명시 — 클래스 레벨 `@Transactional(readOnly=true)` 적용 검토 | `LoginAttemptService.java`, 발견일: 2026-06-01 |
+| [Open] | Medium   | `FeasibilityService.replacePerformances()` 물리 DELETE 예외 정책 정리 — `Bperfm` 성과지표도 Soft Delete 원칙을 지키도록 PK 재삽입 문제를 해결하거나 운영 예외로 승인 | `FeasibilityService.java:223`, 발견일: 2026-06-01 |
 | [Open] | High     | `PlanService.applyExistingPlanSnapshot()` 빈 `catch (JsonProcessingException) {}` — 스냅샷 파싱 실패 시 카운트 0 폴백으로 잘못된 예산 보고서 산출                                                                             | `PlanService.java:108`                                                           |
 | [Open] | High     | `useTiptapImageInsertion.ts` 임시 blob URL 미해제 — 이미지 업로드 실패 catch 경로 + 성공 경로 모두 `URL.revokeObjectURL()` 보장                                                                                            | `useTiptapImageInsertion.ts:60,111,135` 메모리 누수 위험                                |
 | [Open] | Medium   | `usePdfReport.ts` 한글 폰트 로드 실패 시 Roboto 폴백 — 한글 문자 깨짐 가능, 사용자 경고 토스트 추가                                                                                                                              | `usePdfReport.ts:174` 무경고 폴백                                                     |
@@ -121,6 +128,11 @@
 | [Open] | High | 요구사항 정의서 대시보드 `BRDOCM`/`BRIVGM` 보조 인덱스 검토 | `ServiceRequestDocRepository`가 `FST_ENR_USID`, `DEL_YN`, `FST_ENR_DTM`, `DOC_MNG_NO`, `FSG_YN` 조건 반복 사용 |
 | [Open] | Medium | 협의회 목록 `BASCTM`/`BCMMTM` 역방향 조회 인덱스 검토 | 후보: `BASCTM(PRJ_MNG_NO, PRJ_SNO, DEL_YN)`, `BCMMTM(ENO, DEL_YN, ASCT_ID)` |
 | [Open] | Medium | `ReviewCommentService` 검토의견 작성자명 조회 N+1 제거 | 댓글 목록 행마다 `userRepository.findById()` 호출. 사번 일괄 조회 또는 조인 프로젝션 검토 |
+| [Open] | High | `ApplicationService.getApplications()` 결재자 목록 N+1 제거 | `applicationRepository.findAll()` 후 신청서마다 `approverRepository.findByDcdMngNoOrderByDcrSqnSnoAsc()` 반복 호출. `findByDcdMngNoIn...` 일괄 조회 또는 QueryDSL 조인/프로젝션 전환 |
+| [Open] | High | 요구사항 정의서 목록 작성자명 조회 N+1 제거 | `ServiceRequestDocService`가 `findLatestVersionsAll()` 결과마다 `cuserIRepository.findById()` 호출. 최초등록자 사번 일괄 조회 후 매핑 |
+| [Open] | High | 전산업무비 삭제 시 단말기 조회 N+1 제거 | `CostService`가 비용별 `btermmRepository.findByItMngcNoAndItMngcSno()` 반복 호출. `IT_MNGC_NO` 기준 단말기 일괄 조회 후 그룹핑 |
+| [Open] | Medium | `BRDOCM` 최신버전 목록 조회 실행계획 검증 및 복합 인덱스 검토 | `findLatestVersionsAll()`의 `DEL_YN='N'` + 상관 서브쿼리 `MAX(DOC_VRS)` + `FST_ENR_DTM DESC` 정렬. 후보: `(DEL_YN, DOC_MNG_NO, DOC_VRS, FST_ENR_DTM)` |
+| [Open] | Medium | `BRIVGM` 검토의견 목록 조회 인덱스 추가 검토 | 댓글 목록이 `(DOC_MNG_NO, DOC_VRS, DEL_YN)` 필터와 `FST_ENR_DTM ASC` 정렬을 사용. 후보: `(DOC_MNG_NO, DOC_VRS, DEL_YN, FST_ENR_DTM)` |
 | [Open] | Medium | `CouncilRepository.findWithDetails()` Native Query `Object[]` 전용 DTO/projection 전환 우선 처리 | 16개 컬럼 순서와 서비스 캐스팅이 강하게 결합되어 오매핑 위험 |
 | [Done] | Critical | `TPRMPP_CINFMM` 테이블명 매핑 확인 — V20260520_001이 `TAAABB_CINFMM` 생성, V20260521_006(line 60)이 `TPRMPP_CINFMM`으로 RENAME. 마이그레이션 체인 정상 확인. 엔티티 `@Table` 매핑 유효 | 2026-05-22 직접 검증 |
 | [Open] | Medium | `CinfmmRepositoryImpl.markAllReadByRcvUsid()` QueryDSL 벌크 UPDATE 후 `LST_CHG_DTM`/`LST_CHG_USID` 미갱신 — JPA Auditing 우회, 1차 캐시 stale 발생. `clearAutomatically` 또는 감사 컬럼 명시 SET 추가 | `CinfmmRepositoryImpl.java:67-78` (→ `CouncilRepository.java:67` 동일 패턴 참조) |
@@ -151,6 +163,10 @@
 | [Open] | Medium | 공통 `useDeptFilter` composable 구현 또는 규칙 폐기 결정 | 기존 CLAUDE 규칙과 달리 `app/composables/useDeptFilter.ts`가 없음 |
 | [Open] | Medium | Tiptap 표 도구 계약 문서화 및 주석 보강 | `useTiptapTableTools.ts`, `TiptapTableFloatingToolbar.vue`가 복잡도 대비 계약 설명 부족 |
 | [Open] | High | `pages/info/plan/[id].vue` 타입체크 실패 수정 — ExcelJS 컬럼 타입과 TiptapEditor `model-value` string 폴백 정리 | `npm run typecheck` 실패: `ws.columns`, `planData.*Cone` `string \| undefined` |
+| [Open] | High | 프론트 typecheck 실패 현행화 — Nitro SSO 미들웨어 event 타입, color-scheme 플러그인 cookie decode 타입, vue-router/volar `sfc-route-blocks` export 호환성 확인 | 2026-06-01 `npm run typecheck` 실패: `server/middleware/sso-auth-redirect.ts`, `server/plugins/color-scheme.ts`, `vue-router/volar/sfc-route-blocks` |
+| [Open] | High | 프론트 ESLint 오류 현행화 — 운영 코드 `any`, `ResultForm` emit overload, `useTableColumnResize` 배열 초기화, `result/[id].vue` 단일 template root, 테스트 mock 타입 정리 | 2026-06-01 `npm run lint -- --quiet` 기준 73 errors |
+| [Open] | Medium | 정보기술부문 예산 조회/비교 화면 목업 데이터 API 연동 | `pages/budget/summary.vue`, `pages/budget/comparison.vue`의 `MOCK_ROWS`/`MOCK_FSS_ROWS`/`MOCK_YOY_ROWS` TODO |
+| [Open] | Medium | 관리자 화면 `사용여부` 옵션/태그 로직 중복 제거 | `pages/admin/auth-grades.vue`, `pages/admin/roles.vue`가 동일한 `useYnOptions`와 표시 로직을 각각 보유 |
 | [Open] | Medium | `/admin/boards` 관리자 레이아웃 적용 여부 결정 | 페이지는 `middleware: 'admin'`만 선언하며, 다른 `/admin/**` 페이지와 달리 `layout: 'admin'`이 없음 |
 | [Open] | Medium | `useNotifications` 모듈 스코프 싱글턴 상태(`unreadCount`, `items`, `loading`, `pollHandle`) — 테스트 간 누출·SSR 전역 공유 위험. Pinia 스토어(`stores/notification.ts`) 전환 또는 `useState()` 기반 SSR-safe ref 검토 | `composables/useNotifications.ts:17-21` |
 | [Open] | Low    | `useNotifications.refresh()` 명시적 호출 경로(드롭다운 열기 등)에 호출자 catch+toast 보장 여부 확인 — composable 계약상 에러 전파이나 AppHeader 등 실제 호출부에 toast 핸들링이 없을 수 있음 | `composables/useNotifications.ts` |
@@ -173,6 +189,8 @@
 
 | 상태 | 일자 | 영역 | 조치 |
 |------|------|------|------|
+| [Done] | 2026-06-01 | 주석/문서 | REVIEW.md 전체 재실행 — Task1: java/typescript/silent-failure 병렬 탐지 후 `CouncilService`, `info/plan/[id].vue`, `budget/status.vue` 무시형 실패 경로에 한글 TODO 주석 추가. Task2/3: BE/FE README·CLAUDE.md에 실시간 로그 모니터링(`common/admin/realtime`, `useRealtimeLogs`, `/api/admin/realtime-logs`), Nitro `server/` 구조, 최신 파일 수 반영. Task4: 2026-06-01 typecheck/lint 실패, 실시간 로그 검증, N+1/인덱스 후보를 신규 백로그로 등록 |
+| [Done] | 2026-05-29 | 주석/문서 | REVIEW.md 전체 재실행 — Task1: java/typescript/silent-failure 병렬 탐지 후 검증, 잘못된 주석 3건 교정(`AuthService` 로그인이력 테이블명 `TPRMPP_CLOGNH`, `AuthController` 로그인 응답 필드 주석, `review.ts` nextVersion JSDoc 0.01/2자리), `QnaService` ROLE_ITPAD001 버그 FIXME 추가. Task2/3: BE/FE README·CLAUDE.md에 IT부문 예산 도메인(`domain/budget/it`, `/api/budget/it` ADMIN 전용)·신규 composable(useItBudget/useItProjectRows/useApprovalStatus) 반영. Task4: security-reviewer 신규 2건(문서 대시보드 bbrC 신뢰, getClientIp XFF 미분리) + QnaService 권한 버그 등록. 다수 기존 탐지 항목은 이전 회차에서 이미 수정됨(stale) 확인 |
 | [Done] | 2026-05-26 | 백로그 | REVIEW.md Task 4 — refactor-cleaner·database-reviewer·silent-failure-hunter 분석. `task1-silent-failures.md` HIGH 이상 항목 전수 검토 후 신규 14건(Critical 1·High 13) 에러 처리 섹션에 등록. 기존 항목 완료 여부 코드 확인(모두 Open 유지). 기준일 2026-05-26 갱신. |
 | [Done] | 2026-05-22 | 주석 | REVIEW.md Task 1 — java-reviewer·typescript-reviewer·silent-failure-hunter·comment-analyzer 병렬 분석. `@Valid` 누락 FIXME(ApplicationController, ProjectController, PlanController), `@Transactional(readOnly=true)` TODO(PlanService), 유니코드 이스케이프 TODO(CouncilService), 빈 catch [HIGH] TODO 3건(stores/review.ts), FIXME(budget/report.vue), 폴링 정책 주석 보강(useNotifications.ts), 고아 JavaDoc 삭제(NotificationService.java) |
 | [Done] | 2026-05-22 | 문서 | REVIEW.md Task 2/3 — BE/FE README.md 및 CLAUDE.md에 알림 시스템(common/notification), Tiptap 변수 시스템(common/system/tiptap) 섹션 추가. 컴포넌트 72개·Composable 48개 카운트 갱신. 루트 README §18.10 현행화 메모 추가 |
@@ -231,6 +249,18 @@
 - [ ] 키보드만으로 변수 삽입 가능
 - [ ] NodeView aria-label 부여 확인 (DevTools)
 - [ ] 모바일 뷰포트(768px 이하) 팝업 위치 정상
+
+## 실시간 로그 모니터링
+
+- [x] 백엔드 실시간 로그 API 구현 — `RealtimeLogController`/`RealtimeLogService`/`RealtimeLogRepository`, `V_ITPAPP_LOG_FEED` 조회, ADMIN 권한 테스트와 서비스 단위 테스트 추가
+- [ ] `/api/admin/realtime-logs` 통합/E2E 검증 — Flyway `V20260531_001` 적용 DB에서 관리자/일반사용자/미인증 접근과 since 커서 증분 조회 확인
+- [ ] 라이브 피드 행 클릭 → 변경 본문(BEFORE/AFTER) 인라인 드릴다운 (`/admin/logs/[logKey]` 데이터 재사용)
+- [ ] SSE 또는 WebSocket push 전환 (관리자 수·트래픽 증가 시)
+- [ ] 로그 데이터 보존 정책 / 아카이브 분리 View
+- [ ] 사용자별 즐겨찾기 테이블 필터 저장 (localStorage)
+- [ ] `V_ITPAPP_LOG_FEED` 실행계획 `EXPLAIN PLAN` 검증 결과 기록 및 필요 시 복합 인덱스 도입
+- [ ] Spring Boot bootRun 환경 셋업 후 V20260531_001 마이그레이션 적용 검증
+- [ ] Playwright E2E (`tests/e2e/admin/realtime-logs.spec.ts`) 백엔드+프론트 dev 모드 기동 후 실제 실행
 
 ## 공통 게시판 후속 과제
 

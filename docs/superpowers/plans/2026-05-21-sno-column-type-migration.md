@@ -1,4 +1,4 @@
-﻿# _SNO 컬럼 타입 표준화 마이그레이션 계획
+# _SNO 컬럼 타입 표준화 마이그레이션 계획
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

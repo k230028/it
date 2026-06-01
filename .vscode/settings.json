@@ -15,5 +15,28 @@
         "editor.formatOnSave": true,
         "editor.tabSize": 4,
         "editor.insertSpaces": true
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Tailwind CSS / Nuxt 프론트엔드 설정 (it_frontend)
+    //  - main.css의 @tailwind, @apply 지시어를 VS Code 내장 CSS LS가 모르므로
+    //    내장 validator를 끄고 *.css 파일을 tailwindcss 언어 모드로 매핑합니다.
+    //  - Tailwind CSS IntelliSense 확장(bradlc.vscode-tailwindcss)이 정확한 진단 제공.
+    // ─────────────────────────────────────────────────────────────────────────
+    "css.validate": false,
+    "scss.validate": false,
+    "less.validate": false,
+    "css.lint.unknownAtRules": "ignore",
+    "scss.lint.unknownAtRules": "ignore",
+    "less.lint.unknownAtRules": "ignore",
+    "files.associations": {
+        "*.css": "tailwindcss"
+    },
+    "tailwindCSS.includeLanguages": {
+        "vue": "html",
+        "vue-html": "html"
+    },
+    "[vue]": {
+        "editor.defaultFormatter": "Vue.volar"
     }
 }
