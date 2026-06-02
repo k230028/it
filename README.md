@@ -18,7 +18,7 @@
 - **백엔드:** Spring Boot 4 (Java 25) + Oracle Database 21c XE + JPA/QueryDSL
 - **인증:** JWT httpOnly 쿠키 기반 (Access Token 15분 / Refresh Token 7일)
 - **외부 연동:** Gemini AI (텍스트 생성), SSO(선택적)
-- **소스 통계:** 백엔드 257개 Java 파일 + 86개 테스트, 프론트엔드 72개 컴포넌트 + 48개 Composable
+- **소스 통계:** 백엔드 271개 Java 파일 + 92개 테스트 + 63개 엔티티, 프론트엔드 83개 컴포넌트 + 50개 Composable + 56개 페이지
 
 ---
 
@@ -27,22 +27,22 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Nuxt 4 (CSR)  http://localhost:3000                        │
-│  - 53개 페이지, 72개 컴포넌트, 48개 Composable             │
+│  - 56개 페이지, 83개 컴포넌트, 50개 Composable             │
 │  - Pinia 상태관리 (인증, 사전협의)                          │
 │  - PrimeVue + Tailwind CSS 스타일링                        │
 └─────────────────────────────────────────────────────────────┘
                     ↕ API (httpOnly 쿠키)
 ┌─────────────────────────────────────────────────────────────┐
 │  Spring Boot 4  http://localhost:8080                        │
-│  - 14개 도메인 + 8개 공통 모듈                              │
-│  - 28개 컨트롤러, 257개 Java 파일                          │
+│  - 15개 도메인 + 8개 공통 모듈                              │
+│  - 29개 컨트롤러, 271개 Java 파일                          │
 │  - JWT 인증 + RBAC + Soft Delete                            │
 │  - 변경 로그 (23개 도메인, 자동 추적)                       │
 └─────────────────────────────────────────────────────────────┘
                     ↕
 ┌─────────────────────────────────────────────────────────────┐
 │  Oracle Database 21c XE  XEPDB1 (ITPAPP)                   │
-│  - 61개 비즈니스 엔티티                                      │
+│  - 63개 비즈니스 엔티티                                      │
 │  - Flyway 마이그레이션                                      │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -57,26 +57,26 @@ it/
 │   ├── README.md         ← 프론트엔드 상세 가이드 (기술 스택, 패턴, 테스트)
 │   ├── CLAUDE.md         ← 프론트 기술 결정 & API 맵 (개발 표준)
 │   ├── app/              ← 소스 루트 (Nuxt 4 convention)
-│   │   ├── pages/        ← 파일 기반 라우팅 (53개 페이지)
-│   │   ├── components/   ← 재사용 컴포넌트 (72개)
-│   │   ├── composables/  ← 비즈니스 로직 & API 래퍼 (48개)
+│   │   ├── pages/        ← 파일 기반 라우팅 (56개 페이지)
+│   │   ├── components/   ← 재사용 컴포넌트 (83개)
+│   │   ├── composables/  ← 비즈니스 로직 & API 래퍼 (50개)
 │   │   ├── stores/       ← Pinia 상태관리 (인증, 사전협의)
 │   │   ├── types/        ← TypeScript 타입 정의 (8개)
 │   │   ├── utils/        ← 유틸리티 함수 (금액포맷, PDF/Excel/HWPX 변환)
 │   │   └── middleware/   ← 라우트 가드 (인증, 관리자 접근 제어)
-│   └── tests/            ← Vitest + Playwright 테스트 (72개 unit, 11개 e2e)
+│   └── tests/            ← Vitest + Playwright 테스트 (83개 unit, 18개 e2e)
 │
 ├── it_backend/           ← Spring Boot 4 REST API 서버
 │   ├── README.md         ← 백엔드 상세 가이드 (아키텍처, API, 환경 설정)
 │   ├── CLAUDE.md         ← 백엔드 기술 결정 & 보안 정책 (SoT)
-│   ├── src/main/java/    ← 소스 코드 (257개 파일)
+│   ├── src/main/java/    ← 소스 코드 (271개 파일)
 │   │   └── com/kdb/it/
 │   │       ├── config/   ← Spring 설정 (보안, JPA, Swagger 등)
 │   │       ├── common/   ← 공통 모듈 (인증, 게시판, 결재, 알림)
 │   │       ├── domain/   ← 비즈니스 도메인 (예산, 협의회, 문서, 로그)
 │   │       ├── infra/    ← 외부 연동 (파일, Gemini AI)
 │   │       └── exception/ ← 전역 예외 처리
-│   ├── src/test/java/    ← JUnit 5 + Mockito 테스트 (86개 파일)
+│   ├── src/test/java/    ← JUnit 5 + Mockito 테스트 (92개 파일)
 │   └── build.gradle      ← Gradle 빌드 스크립트 (Spring Boot 4.0.5)
 │
 ├── it_database/          ← Oracle DB 마이그레이션 & 초기화
@@ -300,6 +300,7 @@ Press Enter to open https://github.com/login/device in your browser...
 | **공통 게시판** | `common/board` | 게시판 메타, 게시물, 댓글 | Cblbmm, Cblbcm, Ccmmtm |
 | **공통코드** | `common/code` | 코드 관리, 캐싱 | Ccodem |
 | **알림** | `common/notification` | 인앱/이메일/SMS/톡 알림 | Cinfmm |
+| **실시간 로그** | `common/admin/realtime` | 변경 로그 스냅샷 조회 (관리자 전용) | V_ITPAPP_LOG_FEED |
 | **정보화사업** | `budget/project` | 사업 CRUD, 복합키 | Bprojm, Bitemm |
 | **전산업무비** | `budget/cost` | 비용 항목, 단말기 | Bcostm, Btermm |
 | **요구사항·검토** | `budget/document` | 가이드/요구사항 정의서, 검토의견 | Bgdocm, Brdocm, Brivgm |
@@ -323,6 +324,7 @@ Press Enter to open https://github.com/login/device in your browser...
 | **게시판** | `composables/useBoard*.ts`, `pages/board/` | 게시판 메타, 게시물, 댓글 |
 | **관리자** | `composables/useAdminApi.ts`, `pages/admin/` | 공통코드, 사용자, 역할, 조직 |
 | **알림** | `composables/useNotifications.ts` | 알림 조회/폴링/읽음 처리 |
+| **실시간 로그** | `composables/useRealtimeLogs.ts`, `pages/admin/realtime-logs.vue` | 변경 로그 폴링, 복합 커서 기반 슬라이딩 윈도우 |
 | **Tiptap 에디터** | `components/TiptapEditor.vue` | 리치텍스트(표/이미지/다이어그램) |
 | **Tiptap 변수** | `composables/useTiptapVariables.ts` | 동적 변수 토큰 삽입·해석 |
 
@@ -333,9 +335,9 @@ Press Enter to open https://github.com/login/device in your browser...
 **각 디렉토리의 SoT(Single Source of Truth) 파일을 우선 참조하세요.**
 
 ### 7.1 백엔드 (Spring Boot 4)
-- **[`it_backend/README.md`](./it_backend/README.md)** — 전체 기술 스택, 아키텍처, API 엔드포인트 (28개 컨트롤러)
+- **[`it_backend/README.md`](./it_backend/README.md)** — 전체 기술 스택, 아키텍처, API 엔드포인트 (29개 컨트롤러)
 - **[`it_backend/CLAUDE.md`](./it_backend/CLAUDE.md)** — 기술 결정, 인증 정책 (SoT), 보안 규칙, 환경 설정
-- **[`it_backend/docs/guides/data-model.md`](./it_backend/docs/guides/data-model.md)** — 데이터 모델 (61개 엔티티, 채번 규칙)
+- **[`it_backend/docs/guides/data-model.md`](./it_backend/docs/guides/data-model.md)** — 데이터 모델 (63개 엔티티, 채번 규칙)
 
 **주요 내용:**
 - 인증: JWT httpOnly 쿠키 (15분 Access / 7일 Refresh)
@@ -377,7 +379,7 @@ npm run typecheck
 # ESLint + Prettier 린트
 npm run lint
 
-# 단위 테스트 (Vitest) — 86개 단위 테스트 파일
+# 단위 테스트 (Vitest) — 83개 단위 테스트 + 18개 E2E 테스트
 npm test
 
 # 파일 변경 감지 실시간 테스트
