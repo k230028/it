@@ -74,8 +74,8 @@
 | `INQ_ATH_C`       | VARCHAR2(32 CHAR)   | CBLBML, CBLBMM                                                                 | INQ_DWN_ATH_TC / 조회권한구분코드 (VARCHAR22)          |                                                                     |
 | `ITD_YM`          | VARCHAR2(6)         | BITEML, BITEMM                                                                 | BSE_YM / 기준년월 (VARCHAR26)                      |                                                                     |
 | `IT_DPM`          | VARCHAR2(100 CHAR)  | BPROJL, BPROJM                                                                 | DVM_DPM_C / 개발부서코드 (VARCHAR220)                |                                                                     |
-| `IT_DPM_CGPR`     | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | DVM_USID / 개발사용자ID (VARCHAR214)               | 타깃 변경·메타 등록(VARCHAR2 14)                                            |
-| `IT_DPM_TLR`      | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | TLR_USID / 팀장사용자ID (VARCHAR214)               | 타깃 변경·메타 등록(VARCHAR2 14)                                            |
+| `IT_DPM_CGPR`     | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | DVM_USID / 개발사용자ID (VARCHAR214)                | 타깃 변경·메타 등록(VARCHAR2 14)                                            |
+| `IT_DPM_TLR`      | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | TLR_USID / 팀장사용자ID (VARCHAR214)                | 타깃 변경·메타 등록(VARCHAR2 14)                                            |
 | `IT_MNGC_BG_AMT`  | NUMBER(18,3)        | BCOSTL, BCOSTM                                                                 | TOT_XP_AMT / 총비용금액 (NUMBER18)                  |                                                                     |
 | `IT_MNGC_NO`      | VARCHAR2(32 CHAR)   | BCOSTL, BCOSTM, BTERML, BTERMM                                                 | BG_NO / 예산번호 (VARCHAR215)                      |                                                                     |
 | `IT_MNGC_SNO`     | NUMBER(4,0)         | BCOSTL, BCOSTM, BTERML, BTERMM                                                 | SNO / 일련번호 (NUMBER9)                           |                                                                     |
@@ -130,7 +130,7 @@
 | `STT_DT`          | DATE                | BPROJL, BPROJM, CBLBCL, CBLBCM                                                 | STT_DTM / 시작일시 (DATE)                          |                                                                     |
 | `SVN_DPM`         | VARCHAR2(100 CHAR)  | BPROJL, BPROJM                                                                 | SVN_DPM_C / 주관부서코드 (VARCHAR220)                |                                                                     |
 | `SVN_DPM_CGPR`    | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | SVN_DPM_USID / 주관부서사용자ID (VARCHAR214)          |                                                                     |
-| `SVN_DPM_TLR`     | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | SVN_DPM_DCD_USID / 주관부서결재사용자ID (VARCHAR214) | 타깃 변경·메타 등록(VARCHAR2 14)                                            |
+| `SVN_DPM_TLR`     | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | SVN_DPM_DCD_USID / 주관부서결재사용자ID (VARCHAR214)    | 타깃 변경·메타 등록(VARCHAR2 14)                                            |
 | `SVN_HDQ`         | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | PRLM_HRK_OGZ_C_CONE / 인사상위조직코드내용 (VARCHAR2100) | 타깃 수정                                                               |
 | `TCHN_TP`         | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | SKL_TP_TC / 기술유형구분코드 (VARCHAR22)               |                                                                     |
 | `TML_AMT`         | NUMBER(18,3)        | BTERML, BTERMM                                                                 | RQM_BG_AMT / 소요예산금액 (NUMBER18)                 |                                                                     |
@@ -145,10 +145,10 @@
 
 ## 4. 표준명(타입변경) — 물리명은 표준어, 타입만 변환
 
-| 컬럼 | 사용테이블 | 현재 타입 | 등록 표준 |
-|------|-----------|----------|----------|
-| `FST_DFR_DT` | BCOSTL, BCOSTM | DATE | 최초지급일자 (VARCHAR28) |
-| `XCR_BSE_DT` | BCOSTL, BCOSTM, BITEML, BITEMM, BTERML, BTERMM | DATE | 환율기준일자 (VARCHAR28) |
+| 컬럼           | 사용테이블                                          | 현재 타입 | 등록 표준              |
+| ------------ | ---------------------------------------------- | ----- | ------------------ |
+| `FST_DFR_DT` | BCOSTL, BCOSTM                                 | DATE  | 최초지급일자 (VARCHAR28) |
+| `XCR_BSE_DT` | BCOSTL, BCOSTM, BITEML, BITEMM, BTERML, BTERMM | DATE  | 환율기준일자 (VARCHAR28) |
 
 ## 5. 등록예정(요청) — 현재 명칭으로 표준 신규 등록
 
