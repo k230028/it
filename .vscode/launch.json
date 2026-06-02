@@ -1,0 +1,20 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "ItApplication",
+      "request": "launch",
+      "mainClass": "com.kdb.it.ItApplication",
+      "projectName": "it-it_backend"
+    },
+    {
+      "type": "java",
+      "name": "Run IT Backend",
+      "request": "launch",
+      "mainClass": "com.kdb.it.ItApplication",
+      "projectName": "it",
+      "cwd": "${workspaceFolder}/it_backend"
+    }
+  ]
+}
