@@ -10,3 +10,6 @@ everything-claude-code/
 .agents/skills/gstack
 .bkit
 .claude
+# Python
+__pycache__/
+*.pyc
