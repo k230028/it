@@ -732,3 +732,30 @@ cd /c/it/it_frontend && git add -A && git commit -m "refactor(cost): 화면 변�
 - **Spec 커버리지:** §2 명명규칙→Task1·3, §2.4 충돌→Task2·6, §3 툴링→Task1~5, §3.3 스캐너→Task4, §4 게이트→Task5·7, §5 순서→Task9, §6 테스트/롤백→Task5·8·9, §7 거버넌스산출물→Task6 ✅
 - **플레이스홀더:** 도구 코드·테스트·명령·기대출력 모두 구체화. Task8/9는 런북(Task7)을 참조하는 반복 절차로, 동일 코드 중복 대신 결정적 도구+런북으로 표현(거버넌스 재현성 목적에 부합) ✅
 - **타입 일관성:** `parse_pairs`/`camel`/`reused_columns`/`build_target_map`/`find_refs` 시그니처가 Task 간 일치 ✅
+
+---
+
+## 실행 진행 현황 (2026-06-04 기준, 일시 중단)
+
+### 완료 (각 도메인 verify_domain.sh ALL GREEN: compile·scan0·BOOT_OK·typecheck신규0)
+
+| Task | 도메인 | 백엔드 커밋 | 프론트 커밋 |
+|---|---|---|---|
+| 1~5 | 툴링(파서·충돌·타깃맵·스캐너·하네스) | root: e294ef7,a1b0554,89a97c7,ab47e0e,bc2c05b,(scan fix 8c18a0f) | — |
+| 6 | 충돌 매핑표(승인본) | it_backend d8079ac / root 556d6a8,c5d7008 | — |
+| 7 | 런북 | root fb83cc0 | — |
+| 8 | cost (워크드 예제) | ff43bea, 44b994c | 9ef5b3e |
+| 9 | project (파일럿, 선행) | d5d45c9, 430d187 | 22540af, e96b998 |
+| 9 | plan | 9091cd9 | 430c394 |
+| 9 | document | 8223a0b | afd3306 |
+| 9 | work | 5c25430 | (DTO 미변경으로 불필요) |
+| 9 | status | ff9b968 | 4188f93 |
+| 9 | it | (이미 준수, 작업 불필요) | (불필요) |
+
+### 남은 도메인 (재개 시 런북 + 도메인별 게이트 반복)
+- 공통: approval, board, code, iam, notification, system
+- 협의회·기타: council(서브테이블군), cdp, audit, infra
+
+### 후속 정비 항목
+- **work `BudgetWorkDto`** 요청/응답 필드(orcTb·dupRt 등) DTO 미정합 — 엔티티는 정합됨. 일관성 위해 추후 DTO 정합 검토.
+- 재개 절차: `tools/colname-align/README.md` 런북 + `overrides.json`(승인된 충돌맵) 사용. 각 도메인 옛 토큰으로 `verify_domain.sh` ALL GREEN 후 원자적 커밋.
