@@ -12,9 +12,18 @@ def _cap(token: str) -> str:
 def find_refs(src: str, tokens):
     """[(종류, 라인번호, 라인), ...]. native 쿼리 라인은 제외."""
     hits = []
+    # Spring Data JPA 파생 쿼리 구분자: 필드명 다음에 오는 키워드 목록
+    # 필드명 뒤에 이 키워드나 메서드명 끝/파라미터 영역이 오는 경우만 매치한다.
+    # 이를 통해 docVrsSno처럼 구 필드명이 접두어인 신규 필드명을 false positive에서 제외한다.
+    _SEPARATORS = r'(?:And|Or|OrderBy|Order|Asc|Desc|In|NotIn|Is|Not|Null|True|False|Between|Like|Containing|StartingWith|EndingWith|Exists|Before|After|LessThan|GreaterThan|IgnoreCase|AllIgnoreCase|First|Top|Distinct)'
+    derived_parts = []
+    for t in tokens:
+        cap = _cap(t)
+        # 토큰 다음에 Spring Data 구분자 키워드, 여는 괄호, 줄끝이 오는 경우만 매치
+        derived_parts.append(re.escape(cap) + r'(?=' + _SEPARATORS + r'|[^A-Za-z]|$)')
     derived = re.compile(
         r'\b(?:findAll|find|readAll|read|getAll|get|queryAll|query|stream|count|exists|delete|removeAll|remove)By[A-Za-z]*('
-        + '|'.join(_cap(t) for t in tokens) + r')[A-Za-z]*\b'
+        + '|'.join(derived_parts) + r')'
     )
     for i, line in enumerate(src.splitlines(), 1):
         if 'nativeQuery = true' in line or 'nativeQuery=true' in line:
