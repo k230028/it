@@ -889,7 +889,7 @@ public class BprojmL extends BaseLogEntity {
     @Column(name = "PRJ_STS",       length = 32)  private String     prjSts;
     @Column(name = "BG_YY",         length = 4)   private String     bgYy;
     @Column(name = "SVN_HDQ",       length = 32)  private String     svnHdq;
-    @Column(name = "ORN_YN",        length = 1)   private String     ornYn;
+    @Column(name = "ODN_YN",        length = 1)   private String     ornYn;
     @Column(name = "PUL_DTT",       length = 32)  private String     pulDtt;
 }
 ```

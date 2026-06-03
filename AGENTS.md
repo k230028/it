@@ -6,7 +6,7 @@ AI 어시스턴트는 코드 생성 시 모든 주석을 한글로 작성합니�
 
 ## 1. 프로젝트 개요
 - 명칭 : IT Project Portal (IT 정보화 포탈)
-- 주요 기능: 정보화 예산, 사업, 인력 관리
+- 주요 기능: 정보화 예산, 사업, 인력 관리, 관리자 실시간 로그 모니터링
 - 사용자: 약 3,000명의 사내 임직원
 
 ## 2. 디렉토리 구조 및 SoT 분배
@@ -29,8 +29,7 @@ it/
 | 데이터 모델 (테이블 매핑)                              | `it_backend/docs/guides/data-model.md` |
 | 컴포넌트 가이드 (StyledDataTable 등)                 | `it_frontend/docs/guides/`             |
 | 공통 게시판 도메인 규칙                               | `it_backend/CLAUDE.md`, `it_frontend/CLAUDE.md` |
-| 엔티티, 컬럼명 명명 규칙 (메타용어사전)                   | `C:\it\META.md`                        |
-| 도메인 메타정보 (컬럼타입, 엔티티타입)                    | `C:\it\DOMAIN.md`                      |
+| 엔티티, 컬럼명 명명 규칙 (메타용어사전)                   | `C:\it\meta.csv`                        |
 
 ## 3.1 개발 환경
 
@@ -76,8 +75,6 @@ it/
 - `README.md` — 신규 개발자가 흐름을 파악하는 개발 노트
 - `CLAUDE.md` — 실제 코드에서 확인된 규칙만 기록 (휘발성/카운트 정보 금지)
 - `TASK.md` — 미구현, 기술 부채, 보안/성능/테스트 보강 과제
-- `META.md` - 메타 용어사전 (컬럼명, 엔티티명 명명규칙)
-- `DOMAIN.md` - 메타 도메인사전 (컬럼타입, 엔티티타입)
 
 ### 4.4 데이터베이스 마이그레이션 (Flyway)
 - **경로**: `it_database/migrations/`

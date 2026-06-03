@@ -1,180 +1,100 @@
-# ITPAPP 컬럼 ↔ meta 표준용어 대조 분석 (최종 확정)
+# ITPAPP 컬럼 코멘트 ↔ meta 표준용어 대조 분석
 
-- 기준 스키마: `it_database/migrations/ITPAPP_DDL_live.sql` (라이브 DB 추출)
-- 기준 표준: `meta.csv` (확장본)
-- 분석 제외 테이블(21): BASCTL, BASCTM, BCHKLC, BCHKLL, BCHKLM, BCMMTL, BCMMTM, BEVALL, BEVALM, BMQNAL, BMQNAM, BPERFL, BPERFM, BPOVWL, BPOVWM, BPQNAL, BPQNAM, BRSLTL, BRSLTM, BSCHDL, BSCHDM
-- 사용자 검토·수정 의견을 모두 반영해 확정 (미처리 0건).
+- 기준 시점: 2026-06-03 12:31:49 KST
+- 기준 스키마: 라이브 DB `ITPAPP`의 `TPRMPP_%` 테이블
+- 기준 표준: `C:/it/meta.csv` (`표준용어물리명`, `표준용어논리명`)
+- 판정 기준: 컬럼 물리명으로 meta를 찾고, DB 컬럼 코멘트에서 `(메타등록필요)` 표기를 제거한 값이 meta 논리명과 같은지 비교
+- 메타에 없는 용어는 `...(메타등록필요)`로 표기
+- 상세 표는 동일 컬럼/코멘트 조합을 사용테이블 기준으로 묶어 표시
 
 ## 1. 요약
 
-| 구분 | 컬럼 수 | 설명 |
-|------|--------|------|
-| 표준 준수(등록) | 112 | 물리명·타입이 등록 표준어와 일치 |
-| 지정(전문가) | 112 | 사용자 확정 매핑 (마이그레이션 대상) |
-| 표준명(타입변경) | 2 | 물리명은 표준어, 타입만 변환 필요 |
-| 등록예정(요청) | 8 | 현재 명칭으로 표준 신규 등록 예정 |
-| 삭제후보(불필요/미사용) | 5 | 제거 검토 |
-| 조합표준(자기) | 0 | 등록 단어 조합(용어 미등록) |
+| 구분 | 건수 | 설명 |
+|---|---:|---|
+| 전체 컬럼 | 1125 | 라이브 DB 테이블 컬럼 |
+| 코멘트 있음 | 1035 | DB `USER_COL_COMMENTS` 기준 |
+| 코멘트 누락 | 90 | 코멘트가 NULL/빈 문자열 |
+| 코멘트-메타 일치 | 924 | 물리명 등록 + 논리명 일치 |
+| 메타 미등록 | 96 | 물리명이 meta.csv에 없음 |
+| 코멘트 불일치 | 15 | 물리명은 있으나 코멘트가 meta 논리명과 다름 |
 
-## 2. 타깃 신규 등록 필요 — (해소 완료)
+> 요약 건수는 실제 컬럼 단위 집계이며, 아래 표는 같은 컬럼/코멘트 조합을 묶어 표시합니다.
 
-> 타깃이 메타에 미등록이던 3건은 타깃 재지정 + 메타 등록으로 모두 해소됨. DB·엔티티 적용 완료(§3 참조).
+## 2. 코멘트 누락 컬럼
 
-| 컬럼 | 최종 타깃(메타 등록) | 적용 |
-|------|--------------------|------|
-| `IT_DPM_CGPR` | DVM_USID / 개발사용자ID (VARCHAR2 14) | ✅ |
-| `IT_DPM_TLR` | TLR_USID / 팀장사용자ID (VARCHAR2 14) | ✅ |
-| `SVN_DPM_TLR` | SVN_DPM_DCD_USID / 주관부서결재사용자ID (VARCHAR2 14) | ✅ |
+| 컬럼 | 타입 | 사용테이블 | meta 표준논리명 | 비고 |
+|---|---|---|---|---|
+| `ASG_RT` | NUMBER(8,5) | BBUGTL | 배정률 | 코멘트 추가 필요 |
+| `C_SQN_SNO` | NUMBER(9) | CCODEL | 코드순서일련번호 | 코멘트 추가 필요 |
+| `CHG_TC` | VARCHAR2(1) | BRDOCL | CHG_TC(메타등록필요) | 코멘트 추가 필요 |
+| `CMMT_DEP_NBR` | NUMBER(4) | CCMMTL | 댓글깊이수 | 코멘트 추가 필요 |
+| `CMMT_SQN_SNO` | NUMBER(9) | CCMMTL | 댓글순서일련번호 | 코멘트 추가 필요 |
+| `CNFM_YN` | VARCHAR2(1) | BCMMTM | 확인여부 | 코멘트 추가 필요 |
+| `FST_ENR_DTM` | DATE | BBUGTL, BCOSTL, BCOSTM, BGDOCL, BITEML, BPLANL, BPROJL, BRDOCL, BRIVGL, BRIVGM, CAPPLL, CBLBCL, CBLBCM, CBLBML, CBLBMM, CCMMTL, CCMMTM, CCODEL, CCODEM, CINFMM, CLOGNH | 최초등록일시 | 코멘트 추가 필요 |
+| `GUID_PRG_SNO` | NUMBER(4) | BBUGTL, BCOSTL, BCOSTM, BGDOCL, BITEML, BPLANL, BPROJL, BRDOCL, BRIVGM, CAPPLL, CBLBCL, CBLBCM, CBLBMM, CCODEM, CINFMM, CLOGNH | GUID진행일련번호 | 코멘트 추가 필요 |
+| `IPM_OPNN_SNO` | NUMBER(9) | BRIVGL, BRIVGM | 개선의견일련번호 | 코멘트 추가 필요 |
+| `LGN_DTM` | DATE | CLOGNH | 로그인일시 | 코멘트 추가 필요 |
+| `LOG_HIS_TGR_SNO` | NUMBER(18) | BBUGTL, BCOSTL, BGDOCL, BITEML, BPLANL, BPROJL, BRDOCL, CBLBCL | 로그이력전문일련번호 | 코멘트 추가 필요 |
+| `LST_CHG_DTM` | DATE | BBUGTL, BCOSTL, BCOSTM, BGDOCL, BITEML, BPLANL, BPROJL, BRDOCL, BRIVGL, BRIVGM, CAPPLL, CBLBCL, CBLBCM, CBLBML, CBLBMM, CCMMTL, CCMMTM, CCODEL, CCODEM, CINFMM, CLOGNH | 최종변경일시 | 코멘트 추가 필요 |
+| `PRJ_BG_AMR` | NUMBER(18,3) | BPOVWL, BPOVWM | PRJ_BG_AMR(메타등록필요) | 코멘트 추가 필요 |
+| `QTN_ENO` | VARCHAR2(32) | BMQNAL, BMQNAM, BPQNAL, BPQNAM | QTN_ENO(메타등록필요) | 코멘트 추가 필요 |
+| `REP_ENO` | VARCHAR2(32) | BMQNAL, BMQNAM, BPQNAL, BPQNAM | REP_ENO(메타등록필요) | 코멘트 추가 필요 |
+| `SNO` | NUMBER(9) | BBUGTL, BPROJL | 일련번호 | 코멘트 추가 필요 |
+| `SRE_SQN_SNO` | NUMBER(9) | CBLBML | 화면순서일련번호 | 코멘트 추가 필요 |
+| `VLR_TC` | VARCHAR2(32) | BCMMTL, BCMMTM | VLR_TC(메타등록필요) | 코멘트 추가 필요 |
 
+## 3. 메타 미등록 코멘트
 
-## 3. 지정(전문가) — 확정 매핑
+| 컬럼 | 타입 | 사용테이블 | 현재 코멘트 | 현행 표기 |
+|---|---|---|---|---|
+| `ASCT_ID` | VARCHAR2(32) | BASCTL, BASCTM, BCHKLC, BCHKLL, BCHKLM, BCMMTL, BCMMTM, BEVALL, BEVALM, BMQNAL, BMQNAM, BPERFL, BPERFM, BPOVWL, BPOVWM, BPQNAL, BPQNAM, BRSLTL, BRSLTM, BSCHDL, BSCHDM | 협의회ID | 협의회ID(메타등록필요) |
+| `ASCT_STS_C` | VARCHAR2(3) | BASCTL, BASCTM | 협의회상태코드 | 협의회상태코드(메타등록필요) |
+| `CKG_ITM_C` | VARCHAR2(20) | BCHKLC, BCHKLL, BCHKLM, BEVALL, BEVALM | 점검항목코드 | 점검항목코드(메타등록필요) |
+| `CKG_RCRD` | NUMBER(10) | BCHKLC, BCHKLL, BCHKLM, BEVALL, BEVALM | 점검점수 | 점검점수(메타등록필요) |
+| `CNRC_TM` | VARCHAR2(6) | BASCTL, BASCTM | 회의시간 | 회의시간(메타등록필요) |
+| `DBR_TC` | VARCHAR2(20) | BASCTL, BASCTM | 심의유형코드 | 심의유형코드(메타등록필요) |
+| `DSD_DT` | VARCHAR2(8) | BSCHDL, BSCHDM | 일정일자 | 일정일자(메타등록필요) |
+| `DSD_TM` | VARCHAR2(10) | BSCHDL, BSCHDM | 일정시간 | 일정시간(메타등록필요) |
+| `DTP_CONE` | VARCHAR2(1000) | BPERFL, BPERFM | 성과지표정의 | 성과지표정의(메타등록필요) |
+| `DTP_NM` | VARCHAR2(200) | BPERFL, BPERFM | 성과지표명 | 성과지표명(메타등록필요) |
+| `DTP_SNO` | NUMBER(10) | BPERFL, BPERFM | 지표일련번호 | 지표일련번호(메타등록필요) |
+| `EDRT_NM` | VARCHAR2(100) | BPOVWL, BPOVWM | 전결권명 | 전결권명(메타등록필요) |
+| `FL_MNG_NO` | VARCHAR2(32) | BPOVWL, BPOVWM | 첨부파일관리번호 | 첨부파일관리번호(메타등록필요) |
+| `FL_MNG_NO` | VARCHAR2(32) | BRSLTL, BRSLTM | 관련자료 첨부파일관리번호 | 관련자료 첨부파일관리번호(메타등록필요) |
+| `GL_NV_CONE` | VARCHAR2(200) | BPERFL, BPERFM | 목표수치내용 | 목표수치내용(메타등록필요) |
+| `KPN_TC` | VARCHAR2(10) | BPOVWL, BPOVWM | 저장구분코드 | 저장구분코드(메타등록필요) |
+| `LGL_RGL_NM` | VARCHAR2(500) | BPOVWL, BPOVWM | 법률규제명 | 법률규제명(메타등록필요) |
+| `LGL_RGL_YN` | VARCHAR2(1) | BPOVWL, BPOVWM | 법률규제여부 | 법률규제여부(메타등록필요) |
+| `MSM_CLE` | VARCHAR2(100) | BPERFL, BPERFM | 측정주기 | 측정주기(메타등록필요) |
+| `MSM_MANR_CONE` | VARCHAR2(1000) | BPERFL, BPERFM | 측정방법내용 | 측정방법내용(메타등록필요) |
+| `MSM_PTM_CONE` | VARCHAR2(100) | BPERFL, BPERFM | 측정시점내용 | 측정시점내용(메타등록필요) |
+| `NCS_CONE` | VARCHAR2(1000) | BPOVWL, BPOVWM | 필요성내용 | 필요성내용(메타등록필요) |
+| `PRJ_BG_AMT` | NUMBER(18,3) | BPOVWL, BPOVWM | 프로젝트예산금액 | 프로젝트예산금액(메타등록필요) |
+| `PRJ_DES` | VARCHAR2(1000) | BPOVWL, BPOVWM | 프로젝트설명 | 프로젝트설명(메타등록필요) |
+| `PRJ_MNG_NO` | VARCHAR2(32) | BASCTL, BASCTM | 프로젝트관리번호 | 프로젝트관리번호(메타등록필요) |
+| `PRJ_SNO` | NUMBER(10) | BASCTL, BASCTM | 프로젝트순번 | 프로젝트순번(메타등록필요) |
+| `PRJ_TRM_CONE` | VARCHAR2(100) | BPOVWL, BPOVWM | 프로젝트기간내용 | 프로젝트기간내용(메타등록필요) |
+| `PSB_YN` | VARCHAR2(1) | BSCHDL, BSCHDM | 가능여부 | 가능여부(메타등록필요) |
+| `QTN_USID` | VARCHAR2(14) | BMQNAL, BMQNAM, BPQNAL, BPQNAM | 질의사용자ID | 질의사용자ID(메타등록필요) |
+| `REP_USID` | VARCHAR2(14) | BMQNAL, BMQNAM, BPQNAL, BPQNAM | 답변사용자ID | 답변사용자ID(메타등록필요) |
+| `REP_YN` | VARCHAR2(1) | BMQNAL, BMQNAM, BPQNAL, BPQNAM | 답변여부 | 답변여부(메타등록필요) |
+| `RSLV_YN` | VARCHAR2(1) | BRIVGL | 해결여부 | 해결여부(메타등록필요) |
+| `XPT_EFF_CONE` | VARCHAR2(1000) | BPOVWL, BPOVWM | 기대효과내용 | 기대효과내용(메타등록필요) |
 
-| 현재 컬럼             | 타입                  | 사용테이블                                                                          | 지정 표준어                                         | 비고                                                                  |
-| ----------------- | ------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------- | ------------------------------------------------------------------- |
-| `ABUS_C`          | VARCHAR2(100 CHAR)  | BCOSTL, BCOSTM                                                                 | BG_UNT_ABUS_C / 예산단위사업코드 (VARCHAR23)           |                                                                     |
-| `BG_FDTN_CONE`    | VARCHAR2(300)       | BITEML, BITEMM                                                                 | CNCD_FDTN_CONE / 관련근거내용 (VARCHAR2600)          |                                                                     |
-| `BG_MNG_NO`       | VARCHAR2(32 CHAR)   | BBUGTL, BBUGTM                                                                 | BG_NO / 예산번호 (VARCHAR215)                      |                                                                     |
-| `BG_SNO`          | NUMBER(10,0)        | BBUGTL, BBUGTM                                                                 | SNO / 일련번호 (NUMBER9)                           |                                                                     |
-| `BG_YY`           | VARCHAR2(4 CHAR)    | BBUGTL, BBUGTM, BCOSTL, BCOSTM, BPROJL, BPROJM                                 | BSE_YY / 기준연도 (VARCHAR24)                      |                                                                     |
-| `BICE_DPM_C`      | VARCHAR2(3)         | BCOSTL, BCOSTM, BTERML, BTERMM                                                 | SVN_DPM_C / 주관부서코드 (VARCHAR220)                |                                                                     |
-| `BICE_TEM_C`      | VARCHAR2(5 CHAR)    | BCOSTL, BCOSTM, BTERML, BTERMM                                                 | SVN_TEM_C / 주관팀코드 (VARCHAR25)                  |                                                                     |
-| `BLB_MNG_NO`      | VARCHAR2(32)        | CBLBCL, CBLBCM, CBLBML, CBLBMM                                                 | BLB_ID / 게시판ID (VARCHAR210)                    |                                                                     |
-| `BZ_DTT`          | VARCHAR2(32 CHAR)   | BPROJL, BPROJM, BRDOCL, BRDOCM                                                 | BZ_DTT_NM / 업무구분명 (VARCHAR2100)                |                                                                     |
-| `BZ_MNG_NO`       | VARCHAR2(255 CHAR)  | BPROJA                                                                         | DOC_MNG_NO / 문서관리번호 (VARCHAR220)               |                                                                     |
-| `CGPR_ENO`        | VARCHAR2(32)        | BCOSTL, BCOSTM, BTERML, BTERMM                                                 | CGPR_ID / 담당자ID (VARCHAR214)                   |                                                                     |
-| `CHG_TC`          | VARCHAR2(1 CHAR)    | BBUGTL, BCOSTL, BGDOCL, BITEML, BPLANL, BPROJL, BRDOCL, BRIVGL, BTERML, CBLBCL | ~~CHG_DTT_YN~~ → **보류**                        | 기존 CHG_DTT_YN(BaseLogEntity 공통컬럼) 선존재 충돌. CHG_TC는 미매핑 orphan(정리 대상) |
-| `CMMT_GRP_LEV`    | NUMBER(10,0)        | CCMMTL, CCMMTM                                                                 | CMMT_DEP_NBR / 댓글깊이수 (NUMBER4)                 |                                                                     |
-| `CMMT_GRP_NO`     | VARCHAR2(32 CHAR)   | CCMMTL, CCMMTM                                                                 | CMMT_TGT_SNO / 댓글대상일련번호 (NUMBER9)              | 타입변경 수반                                                             |
-| `CMMT_GRP_SQN`    | NUMBER(10,0)        | CCMMTL, CCMMTM                                                                 | CMMT_SQN_SNO / 댓글순서일련번호 (NUMBER9)              |                                                                     |
-| `CMMT_MNG_NO`     | VARCHAR2(32 CHAR)   | CCMMTL, CCMMTM                                                                 | CMMT_SNO / 댓글일련번호 (NUMBER9)                    | 타입변경 수반                                                             |
-| `CNCD_IT_MNGC_NO` | VARCHAR2(32 CHAR)   | BCOSTM                                                                         | CNCD_RFR_NO / 관련참조번호 (VARCHAR230)              |                                                                     |
-| `CNCD_PRJ_MNG_NO` | VARCHAR2(32 CHAR)   | BPROJM                                                                         | CNCD_RFR_NO / 관련참조번호 (VARCHAR230)              |                                                                     |
-| `CPT_BG`          | NUMBER(15,2)        | BPLANL, BPLANM                                                                 | CPIT_BG_APV_AMT / 자본예산승인금액 (NUMBER18)          |                                                                     |
-| `DOC_INF`         | CLOB                | BGDOCL, BGDOCM                                                                 | NAC_TXT_INF / 게시물본문정보 (CLOB)                   |                                                                     |
-| `DOC_NM`          | VARCHAR2(200 CHAR)  | BGDOCL, BGDOCM                                                                 | DOC_TTL_CONE / 문서제목내용 (VARCHAR2300)            |                                                                     |
-| `DOC_VRS`         | NUMBER(4,2)         | BRDOCL, BRDOCM, BRIVGL, BRIVGM                                                 | DOC_VRS_SNO / 문서버전일련번호 (NUMBER9)               |                                                                     |
-| `DUP_BG_AMT`      | NUMBER(18,3)        | BBUGTL, BBUGTM                                                                 | RQM_BG_AMT / 소요예산금액 (NUMBER18)                 |                                                                     |
-| `DUP_RT`          | NUMBER(10,0)        | BBUGTL, BBUGTM                                                                 | ASG_RT / 배정률 (NUMBER8)                         |                                                                     |
-| `EDRT`            | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | EDRT_TC / 전결권구분코드 (VARCHAR22)                  |                                                                     |
-| `END_DT`          | DATE                | BPROJL, BPROJM, CBLBCL, CBLBCM                                                 | END_DTM / 종료일시 (DATE)                          |                                                                     |
-| `ENR_ATH_C`       | VARCHAR2(32 CHAR)   | CBLBML, CBLBMM                                                                 | WRT_DWN_ATH_TC / 쓰기권한구분코드 (VARCHAR22)          |                                                                     |
-| `FL_ESN_YN`       | VARCHAR2(1 CHAR)    | CBLBML, CBLBMM                                                                 | APG_FL_USE_YN / 첨부파일사용여부 (VARCHAR21)           | 타깃 수정                                                               |
-| `FL_NBR`          | NUMBER(4,0)         | CBLBCL, CBLBCM                                                                 | APG_FL_NBR / 첨부파일수 (NUMBER10)                  |                                                                     |
-| `FSG_TLM`         | DATE                | BRDOCL, BRDOCM                                                                 | RVW_FSG_TLM_DT / 리뷰완료기한일자 (VARCHAR28)          | 타입변경 수반                                                             |
-| `GCL_AMT`         | NUMBER(18,3)        | BITEML, BITEMM                                                                 | AMT / 금액 (NUMBER18)                            |                                                                     |
-| `GCL_QTY`         | NUMBER(10,0)        | BITEML, BITEMM                                                                 | QTY / 수량 (NUMBER10)                            |                                                                     |
-| `GCL_SNO`         | NUMBER(10,0)        | BITEML, BITEMM                                                                 | SNO / 일련번호 (NUMBER9)                           |                                                                     |
-| `HRF_PLN`         | VARCHAR2(1000 CHAR) | BPROJL, BPROJM                                                                 | HRF_PLN_CONE / 향후계획내용 (VARCHAR2300)            |                                                                     |
-| `HRK_CMMT_MNG_NO` | VARCHAR2(32 CHAR)   | CCMMTL, CCMMTM                                                                 | HRK_CMMT_SNO / 상위댓글일련번호 (NUMBER9)              | 타입변경 수반                                                             |
-| `HRK_FXN_USE_YN`  | VARCHAR2(1 CHAR)    | CBLBML, CBLBMM                                                                 | IOA_TC / 공지사항구분코드 (VARCHAR22)                  |                                                                     |
-| `HRK_FXN_YN`      | VARCHAR2(1)         | CBLBCL, CBLBCM                                                                 | ANC_YN / 공지여부 (VARCHAR21)                      |                                                                     |
-| `HRK_NAC_MNG_NO`  | VARCHAR2(32)        | CBLBCL, CBLBCM                                                                 | CNCD_RFR_NO / 관련참조번호 (VARCHAR230)              |                                                                     |
-| `IDC_ID`          | VARCHAR2(64 CHAR)   | BRIVGL, BRIVGM                                                                 | RFR_ID / 참조ID (VARCHAR214)                     |                                                                     |
-| `INF_PRT_YN`      | VARCHAR2(4 CHAR)    | BCOSTL, BCOSTM, BITEML, BITEMM                                                 | SECT_SYS_UTZ_YN / 보안시스템운용여부 (VARCHAR21)        |                                                                     |
-| `INQ_ATH_C`       | VARCHAR2(32 CHAR)   | CBLBML, CBLBMM                                                                 | INQ_DWN_ATH_TC / 조회권한구분코드 (VARCHAR22)          |                                                                     |
-| `ITD_YM`          | VARCHAR2(6)         | BITEML, BITEMM                                                                 | BSE_YM / 기준년월 (VARCHAR26)                      |                                                                     |
-| `IT_DPM`          | VARCHAR2(100 CHAR)  | BPROJL, BPROJM                                                                 | DVM_DPM_C / 개발부서코드 (VARCHAR220)                |                                                                     |
-| `IT_DPM_CGPR`     | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | DVM_USID / 개발사용자ID (VARCHAR214)                | 타깃 변경·메타 등록(VARCHAR2 14)                                            |
-| `IT_DPM_TLR`      | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | TLR_USID / 팀장사용자ID (VARCHAR214)                | 타깃 변경·메타 등록(VARCHAR2 14)                                            |
-| `IT_MNGC_BG_AMT`  | NUMBER(18,3)        | BCOSTL, BCOSTM                                                                 | TOT_XP_AMT / 총비용금액 (NUMBER18)                  |                                                                     |
-| `IT_MNGC_NO`      | VARCHAR2(32 CHAR)   | BCOSTL, BCOSTM, BTERML, BTERMM                                                 | BG_NO / 예산번호 (VARCHAR215)                      |                                                                     |
-| `IT_MNGC_SNO`     | NUMBER(4,0)         | BCOSTL, BCOSTM, BTERML, BTERMM                                                 | SNO / 일련번호 (NUMBER9)                           |                                                                     |
-| `IT_MNGC_TP`      | VARCHAR2(100 CHAR)  | BCOSTL, BCOSTM                                                                 | BG_XP_TC / 예산비용구분코드 (VARCHAR22)                |                                                                     |
-| `IT_PRJ_CONE`     | VARCHAR2(4000)      | BPLANL, BPLANM                                                                 | PRJ_DVM_CONE / 프로젝트개발내용 (VARCHAR2300)          |                                                                     |
-| `IVG_CONE`        | VARCHAR2(4000)      | BRIVGL, BRIVGM                                                                 | IVG_OPNN_CONE / 검토의견내용 (VARCHAR22000)          |                                                                     |
-| `IVG_SNO`         | NUMBER(22,0)        | BRIVGL, BRIVGM                                                                 | IPM_OPNN_SNO / 개선의견일련번호 (NUMBER9)              |                                                                     |
-| `KD_USE_YN`       | VARCHAR2(1 CHAR)    | CBLBML, CBLBMM                                                                 | ~~USE_YN~~ → **보류**                            | 기존 USE_YN 컬럼과 충돌(동일테이블 USE_YN 선존재)                                  |
-| `IVG_TP`          | VARCHAR2(1 CHAR)    | BRIVGL, BRIVGM                                                                 | RPL_OPNN_TC / 회신의견구분코드 (VARCHAR22)             | 실사용 컬럼(드롭→rename)                                                   |
-| `KD_C`            | VARCHAR2(32)        | CBLBCL, CBLBCM                                                                 | NAC_KD_TC / 게시물종류구분코드 (VARCHAR22)              | 실사용 컬럼(드롭→rename)                                                   |
-| `PRIT_C`          | VARCHAR2(32)        | CBLBCL, CBLBCM                                                                 | MRL_PRIT_TC / 자료중요도구분코드 (VARCHAR22)            | 실사용(CBLBCL 길이축소 보류)                                                 |
-| `LBL_FSG_TLM`     | DATE                | BPROJL, BPROJM                                                                 | FLF_FSG_DT / 이행완료일자 (VARCHAR28)                | 타입변경 수반                                                             |
-| `MNGC`            | NUMBER(15,2)        | BPLANL, BPLANM                                                                 | TOT_XP_AMT / 총비용금액 (NUMBER18)                  |                                                                     |
-| `MN_USR`          | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | CST_TP_TC / 고객유형구분코드 (VARCHAR23)               |                                                                     |
-| `NAC_GRP_LEV`     | NUMBER(2,0)         | CBLBCL, CBLBCM                                                                 | NAC_LEV_MNG_SNO / 게시물레벨관리일련번호 (NUMBER9)        |                                                                     |
-| `NAC_GRP_NO`      | VARCHAR2(32)        | CBLBCL, CBLBCM                                                                 | CNCD_RFR_NO / 관련참조번호 (VARCHAR230)              |                                                                     |
-| `NAC_GRP_SQN`     | NUMBER(5,0)         | CBLBCL, CBLBCM                                                                 | GRP_SQN_SNO / 그룹순서일련번호 (NUMBER9)               |                                                                     |
-| `NAC_MNG_NO`      | VARCHAR2(32)        | CBLBCL, CBLBCM, CCMMTL, CCMMTM                                                 | NAC_NO / 게시물번호 (VARCHAR216)                    |                                                                     |
-| `NAC_NM`          | VARCHAR2(300)       | CBLBCL, CBLBCM                                                                 | NAC_TTL / 게시물제목 (VARCHAR2300)                  |                                                                     |
-| `NAC_TP`          | VARCHAR2(32)        | CBLBCL, CBLBCM                                                                 | NAC_ID / 게시물ID (VARCHAR210)                    |                                                                     |
-| `NAC_TP_USE_YN`   | VARCHAR2(1 CHAR)    | CBLBML, CBLBMM                                                                 | HED_TAG_USE_YN / 머리말태그사용여부 (VARCHAR21)         |                                                                     |
-| `NCS`             | VARCHAR2(1000 CHAR) | BPROJL, BPROJM                                                                 | ABUS_NCS_CONE / 사업필요성내용 (VARCHAR2300)          |                                                                     |
-| `NYY_PRJ_BG`      | NUMBER(15,2)        | BPROJL, BPROJM                                                                 | MPL_AMT / 예정금액 (NUMBER18)                      |                                                                     |
-| `ORC_PK_VL`       | VARCHAR2(32 CHAR)   | BBUGTL, BBUGTM                                                                 | PK_COL_NM / 주식별자컬럼명 (VARCHAR24000)             |                                                                     |
-| `ORC_SNO_VL`      | NUMBER(10,0)        | BBUGTL, BBUGTM                                                                 | FNT_TB_CRY_SNO / 원천테이블적재일련번호 (NUMBER10)        |                                                                     |
-| `ORC_TB`          | VARCHAR2(10 CHAR)   | BBUGTL, BBUGTM                                                                 | FNT_TB_NM / 원천테이블명 (VARCHAR2120)               |                                                                     |
-| `PLM`             | VARCHAR2(1000 CHAR) | BPROJL, BPROJM                                                                 | PLM_DES / 문제설명 (VARCHAR24000)                  |                                                                     |
-| `PLN_DTL_INF`     | CLOB                | BPLANL, BPLANM                                                                 | REDT_CONE_INF / 보고서내용정보 (CLOB)                 |                                                                     |
-| `PLN_MNG_NO`      | VARCHAR2(32 CHAR)   | BPLANL, BPLANM                                                                 | REQ_DOC_NO / 요청문서번호 (VARCHAR230)               |                                                                     |
-| `PLN_TP`          | VARCHAR2(16 CHAR)   | BPLANL, BPLANM                                                                 | PLN_TP_C / 계획유형코드 (VARCHAR22)                  |                                                                     |
-| `PLN_YY`          | VARCHAR2(4 CHAR)    | BPLANL, BPLANM                                                                 | BSE_YY / 기준연도 (VARCHAR24)                      |                                                                     |
-| `PRJ_BG`          | NUMBER(15,2)        | BPROJL, BPROJM                                                                 | RQM_BG_AMT / 소요예산금액 (NUMBER18)                 |                                                                     |
-| `PRJ_DES`         | VARCHAR2(1000 CHAR) | BPROJL, BPROJM                                                                 | ABUS_CONE / 사업내용 (VARCHAR21000)                |                                                                     |
-| `PRJ_MNG_NO`      | VARCHAR2(32 CHAR)   | BITEML, BITEMM, BPROJA, BPROJL, BPROJM                                         | ABUS_MNG_NO / 사업관리번호 (VARCHAR230)              |                                                                     |
-| `PRJ_PUL_PTT`     | VARCHAR2(3)         | BPROJL, BPROJM                                                                 | EXE_PTT_YN / 실행가능성여부 (VARCHAR21)               |                                                                     |
-| `PRJ_RNG`         | VARCHAR2(1000 CHAR) | BPROJL, BPROJM                                                                 | PRJ_TGT_RNG_CONE / 프로젝트대상범위내용 (VARCHAR2300)    |                                                                     |
-| `PRJ_SNO`         | NUMBER(10,0)        | BITEML, BITEMM, BPROJL, BPROJM                                                 | SNO / 일련번호 (NUMBER9)                           |                                                                     |
-| `PRJ_STS`         | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | STS_TC / 상태구분코드 (VARCHAR22)                    |                                                                     |
-| `PRJ_TP`          | VARCHAR2(100 CHAR)  | BPROJL, BPROJM                                                                 | PRJ_BZ_TC / 프로젝트업무구분코드 (VARCHAR22)             |                                                                     |
-| `PUL_DTT`         | VARCHAR2(100 CHAR)  | BCOSTL, BCOSTM, BPROJL, BPROJM                                                 | ABUS_TC / 사업구분코드 (VARCHAR22)                   |                                                                     |
-| `PUL_PSG`         | VARCHAR2(1000 CHAR) | BPROJL, BPROJM                                                                 | PUL_PSG_CONE / 추진경과내용 (VARCHAR26000)           |                                                                     |
-| `QOT_CONE`        | VARCHAR2(4000 CHAR) | BRIVGL, BRIVGM                                                                 | RFR_CONE / 참조내용 (VARCHAR24000)                 |                                                                     |
-| `REP_USE_YN`      | VARCHAR2(1 CHAR)    | CBLBML, CBLBMM                                                                 | REP_FNC_USE_YN / 답변기능사용여부 (VARCHAR21)          |                                                                     |
-| `REQ_DTT`         | VARCHAR2(32 CHAR)   | BRDOCL, BRDOCM                                                                 | REQ_DTT_NO / 요청구분번호 (VARCHAR22)                |                                                                     |
-| `REQ_INF`         | CLOB                | BRDOCL, BRDOCM                                                                 | REDT_CONE_INF / 보고서내용정보 (CLOB)                 |                                                                     |
-| `REQ_NM`          | VARCHAR2(200 CHAR)  | BRDOCL, BRDOCM                                                                 | REQ_TTL / 요청제목 (VARCHAR2500)                   |                                                                     |
-| `RPR_STS`         | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | RPR_STS_TC / 보고상태구분코드 (VARCHAR21)              |                                                                     |
-| `RSLV_YN`         | VARCHAR2(1 CHAR)    | BRIVGL                                                                         | FSG_YN / 완료여부 (VARCHAR21)                      |                                                                     |
-| `SAF`             | VARCHAR2(1000 CHAR) | BPROJL, BPROJM                                                                 | CPN_SAF_CONE / 회사현황내용 (VARCHAR21000)           |                                                                     |
-| `SRE_SQN_NO`      | NUMBER(10,0)        | CBLBML, CBLBMM                                                                 | SRE_SQN_SNO / 화면순서일련번호 (NUMBER9)               |                                                                     |
-| `SRE_YN`          | VARCHAR2(1)         | CBLBCL, CBLBCM, CCMMTL, CCMMTM                                                 | SRE_USE_YN / 화면사용여부 (VARCHAR21)                |                                                                     |
-| `STT_DT`          | DATE                | BPROJL, BPROJM, CBLBCL, CBLBCM                                                 | STT_DTM / 시작일시 (DATE)                          |                                                                     |
-| `SVN_DPM`         | VARCHAR2(100 CHAR)  | BPROJL, BPROJM                                                                 | SVN_DPM_C / 주관부서코드 (VARCHAR220)                |                                                                     |
-| `SVN_DPM_CGPR`    | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | SVN_DPM_USID / 주관부서사용자ID (VARCHAR214)          |                                                                     |
-| `SVN_DPM_TLR`     | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | SVN_DPM_DCD_USID / 주관부서결재사용자ID (VARCHAR214)    | 타깃 변경·메타 등록(VARCHAR2 14)                                            |
-| `SVN_HDQ`         | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | PRLM_HRK_OGZ_C_CONE / 인사상위조직코드내용 (VARCHAR2100) | 타깃 수정                                                               |
-| `TCHN_TP`         | VARCHAR2(32 CHAR)   | BPROJL, BPROJM                                                                 | SKL_TP_TC / 기술유형구분코드 (VARCHAR22)               |                                                                     |
-| `TML_AMT`         | NUMBER(18,3)        | BTERML, BTERMM                                                                 | RQM_BG_AMT / 소요예산금액 (NUMBER18)                 |                                                                     |
-| `TMN_NM`          | VARCHAR2(100 CHAR)  | BTERML, BTERMM                                                                 | SPF_TMN_NM / 특정단말명 (VARCHAR2100)               |                                                                     |
-| `TMN_SNO`         | NUMBER(10,0)        | BTERML, BTERMM                                                                 | SNO / 일련번호 (NUMBER9)                           |                                                                     |
-| `TMN_SVC`         | VARCHAR2(100 CHAR)  | BTERML, BTERMM                                                                 | TMN_CLSF_C / 단말분류코드 (VARCHAR21)                |                                                                     |
-| `TMN_TUZ_MANR`    | VARCHAR2(100 CHAR)  | BTERML, BTERMM                                                                 | TMN_KD_TC / 단말종류구분코드 (VARCHAR22)               | 타깃 수정                                                               |
-| `TOK_CONE`        | VARCHAR2(2000 CHAR) | CRTOKM                                                                         | API_TOK_CONE / API토큰내용 (VARCHAR22000)          |                                                                     |
-| `TOK_SNO`         | NUMBER(22,0)        | CRTOKM                                                                         | LGN_LOG_SNO / 로그인로그일련번호 (NUMBER22)             |                                                                     |
-| `TTL_BG`          | NUMBER(15,2)        | BPLANL, BPLANM                                                                 | ADU_TOT_AMT / 합계총금액 (NUMBER18)                 |                                                                     |
-| `XPT_EFF`         | VARCHAR2(1000 CHAR) | BPROJL, BPROJM                                                                 | DGOG_PPO_CONE / 효과성목적내용 (VARCHAR24000)         |                                                                     |
+## 4. meta 등록 용어와 코멘트 불일치
 
-## 4. 표준명(타입변경) — 물리명은 표준어, 타입만 변환
+| 컬럼 | 타입 | 사용테이블 | 현재 코멘트 | meta 표준논리명 | meta 타입 |
+|---|---|---|---|---|---|
+| `FLF_FSG_DT` | VARCHAR2(8) | BPROJL, BPROJM | 의무완료기한 | 이행완료일자 | VARCHAR2(8) |
+| `FST_DFR_DT` | VARCHAR2(8) | BCOSTL, BCOSTM | 지급예정월 | 최초지급일자 | VARCHAR2(8) |
+| `FST_ENR_DTM` | DATE | BTERML | 최종변경일시 | 최초등록일시 | DATE |
+| `IT_PRJ_RMK` | VARCHAR2(600) | BPLANL, BPLANM | IT예산비고 | IT프로젝트비고 | VARCHAR2(600) |
+| `RFR_CONE` | VARCHAR2(4000) | BRIVGL, BRIVGM | 인용내용 | 참조내용 | VARCHAR2(4000) |
+| `RFR_ID` | VARCHAR2(14) | BRIVGL, BRIVGM | 표시ID | 참조ID | VARCHAR2(14) |
+| `RPL_OPNN_TC` | VARCHAR2(2) | BRIVGL, BRIVGM | 의견유형 | 회신의견구분코드 | VARCHAR2(2) |
+| `RVW_FSG_TLM_DT` | VARCHAR2(8) | BRDOCL, BRDOCM | 완료기한 | 리뷰완료기한일자 | VARCHAR2(8) |
 
-| 컬럼           | 사용테이블                                          | 현재 타입 | 등록 표준              |
-| ------------ | ---------------------------------------------- | ----- | ------------------ |
-| `FST_DFR_DT` | BCOSTL, BCOSTM                                 | DATE  | 최초지급일자 (VARCHAR28) |
-| `XCR_BSE_DT` | BCOSTL, BCOSTM, BITEML, BITEMM, BTERML, BTERMM | DATE  | 환율기준일자 (VARCHAR28) |
+## 5. 산출 파일
 
-## 5. 등록예정(요청) — 현재 명칭으로 표준 신규 등록
-
-| 컬럼 | 타입 | 사용테이블 |
-|------|------|-----------|
-| `CPIT_BG_RMK` | VARCHAR2(600) | BPLANL, BPLANM |
-| `GCL_MNG_NO` | VARCHAR2(32 CHAR) | BITEML, BITEMM |
-| `ITR_INFR_YN` | VARCHAR2(1 CHAR) | BITEML, BITEMM |
-| `IT_BG_CONE` | VARCHAR2(4000) | BPLANL, BPLANM |
-| `IT_PRJ_RMK` | VARCHAR2(600) | BPLANL, BPLANM |
-| `MNGC_BG_RMK` | VARCHAR2(600) | BPLANL, BPLANM |
-| `ORN_YN` | VARCHAR2(1 CHAR) | BPROJL, BPROJM |
-| `TMN_MNG_NO` | VARCHAR2(32 CHAR) | BTERML, BTERMM |
-
-## 6. 삭제 (미사용/빈 컬럼 — 적용 완료)
-
-| 컬럼 | 타입 | 사용테이블 | 사유 |
-|------|------|-----------|------|
-| `GCL_DTT` | VARCHAR2(32 CHAR) | BITEML | 불필요(엔티티 미매핑) |
-| `MARK_ID` | VARCHAR2(64 CHAR) | BRIVGL, BRIVGM | 빈 중복컬럼(전부 NULL) |
-| `QTD_CONE` | VARCHAR2(4000 CHAR) | BRIVGL, BRIVGM | 빈 중복컬럼(전부 NULL) |
-| `END_YMD` | DATE | CBLBCL | 미사용(빈 컬럼) |
-| `STT_YMD` | DATE | CBLBCL | 미사용(빈 컬럼) |
-
-> `IVG_TP`/`KD_C`/`PRIT_C`는 실사용 컬럼으로 확인되어 §3 지정(rename)으로 이동(`RPL_OPNN_TC`/`NAC_KD_TC`/`MRL_PRIT_TC`).
-> `TMN_USG`(미사용)는 엔티티 매핑이 남아 있어 현행 유지(표준화 보류).
-> `CMMT_MNG_NO`/`CMMT_GRP_NO`/`HRK_CMMT_MNG_NO`는 시퀀스 기반 숫자ID(NUMBER)로 재설계 적용(§3, 코드/프론트 정합 완료).
-
-
+- 원천 추출: 라이브 DB `USER_TAB_COLUMNS`, `USER_COL_COMMENTS`
+- 본 문서는 라이브 DB 코멘트 기준으로 재생성됨

@@ -990,7 +990,7 @@ EXIT
 
 DB rename과 무관하게, 표준어 사전에 다음을 등록해야 사전상 정합이 완성된다(미등록이어도 DB/코드 동작에는 영향 없음):
 - 타깃 신규등록 3건: `DVM_CGPR_ID`(개발담당자ID), `DVM_TLR_USID`(개발담당자사용자ID), `SVN_DPM_TLR_USID`(주관부서담당자사용자ID)
-- 등록예정 8건(현재명 유지): `CPIT_BG_RMK`,`GCL_MNG_NO`,`ITR_INFR_YN`,`IT_BG_CONE`,`IT_PRJ_RMK`,`MNGC_BG_RMK`,`ORN_YN`,`TMN_MNG_NO`
+- 등록예정 8건(현재명 유지): `CPIT_BG_RMK`,`GCL_MNG_NO`,`ITR_INFR_YN`,`IT_BG_CONE`,`IT_PRJ_RMK`,`MNGC_BG_RMK`,`ODN_YN`,`TMN_MNG_NO`
 
 `meta.csv`에 `No.,표준용어논리명,표준용어물리명,데이터타입,데이터길이,...` 형식으로 행 추가 후, 본 보고서 분석 스크립트를 재실행하면 해당 컬럼들이 "표준 준수(등록)"으로 승격된다.
 
