@@ -1,0 +1,15 @@
+{
+  "_doc": "충돌(서로 다른 의미 재사용) 컬럼의 비소유자 도메인 접두사. 소유자는 원형(camel) 유지.",
+  "Bcostm": "cost",
+  "BcostmL": "cost",
+  "Btermm": "term",
+  "BtermmL": "term",
+  "Bbugtm": "bug",
+  "BbugtL": "bug",
+  "Bplanm": "pln",
+  "Bprojm": "prj",
+  "Bitemm": "item",
+  "Bgdocm": "gdoc",
+  "Brdocm": "rdoc",
+  "Brivgm": "rivg"
+}

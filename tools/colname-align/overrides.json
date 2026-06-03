@@ -1,0 +1,8 @@
+{
+  "Bcostm":  {"BG_NO": "costBgNo", "TOT_XP_AMT": "costTotXpAmt", "SVN_DPM_C": "costSvnDpmC"},
+  "BcostmL": {"BG_NO": "costBgNo", "TOT_XP_AMT": "costTotXpAmt", "SVN_DPM_C": "costSvnDpmC"},
+  "Btermm":  {"BG_NO": "termBgNo", "BG_SNO": "termBgSno", "RQM_BG_AMT": "termRqmBgAmt", "SVN_DPM_C": "termSvnDpmC", "SVN_TEM_C": "termSvnTemC"},
+  "BtermmL": {"BG_NO": "termBgNo", "BG_SNO": "termBgSno", "RQM_BG_AMT": "termRqmBgAmt", "SVN_DPM_C": "termSvnDpmC", "SVN_TEM_C": "termSvnTemC"},
+  "Bbugtm":  {"RQM_BG_AMT": "bugRqmBgAmt"},
+  "BbugtL":  {"RQM_BG_AMT": "bugRqmBgAmt"}
+}
