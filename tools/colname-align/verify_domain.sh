@@ -17,6 +17,9 @@ python "$ROOT/tools/colname-align/scan_runtime_refs.py" "$TOKENS" -- \
   && echo "스캔: 잔존 없음" || { echo "FAIL: 런타임 참조 잔존"; exit 1; }
 
 echo "== 4) bootRun 실기동 검증 (최대 150초) =="
+# 8080 점유 프로세스 정리 (이전 실행 잔류 등) — 포트 충돌로 인한 오탐 방지
+PORT_PID="$(netstat -ano 2>/dev/null | grep ':8080' | grep -i LISTENING | head -1 | awk '{print $NF}')"
+if [ -n "${PORT_PID:-}" ]; then taskkill //PID "$PORT_PID" //F >/dev/null 2>&1 || kill -9 "$PORT_PID" 2>/dev/null; sleep 3; fi
 timeout 150 ./gradlew bootRun > /tmp/cna_boot.log 2>&1 &
 for i in $(seq 1 30); do
   sleep 5
