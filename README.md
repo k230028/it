@@ -18,7 +18,7 @@
 - **백엔드:** Spring Boot 4 (Java 25) + Oracle Database 21c XE + JPA/QueryDSL
 - **인증:** JWT httpOnly 쿠키 기반 (Access Token 15분 / Refresh Token 7일)
 - **외부 연동:** Gemini AI (텍스트 생성), SSO(선택적)
-- **소스 통계:** 백엔드 271개 Java 파일 + 92개 테스트 + 63개 엔티티, 프론트엔드 83개 컴포넌트 + 50개 Composable + 56개 페이지
+- **소스 통계:** 백엔드 291개 Java 파일 + 96개 테스트 + 63개 엔티티, 프론트엔드 84개 컴포넌트 + 52개 Composable + 58개 페이지
 
 ---
 
@@ -27,7 +27,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Nuxt 4 (CSR)  http://localhost:3000                        │
-│  - 56개 페이지, 83개 컴포넌트, 50개 Composable             │
+│  - 58개 페이지, 84개 컴포넌트, 52개 Composable             │
 │  - Pinia 상태관리 (인증, 사전협의)                          │
 │  - PrimeVue + Tailwind CSS 스타일링                        │
 └─────────────────────────────────────────────────────────────┘
@@ -35,7 +35,7 @@
 ┌─────────────────────────────────────────────────────────────┐
 │  Spring Boot 4  http://localhost:8080                        │
 │  - 15개 도메인 + 8개 공통 모듈                              │
-│  - 29개 컨트롤러, 271개 Java 파일                          │
+│  - 32개 컨트롤러, 291개 Java 파일                          │
 │  - JWT 인증 + RBAC + Soft Delete                            │
 │  - 변경 로그 (23개 도메인, 자동 추적)                       │
 └─────────────────────────────────────────────────────────────┘
@@ -57,26 +57,26 @@ it/
 │   ├── README.md         ← 프론트엔드 상세 가이드 (기술 스택, 패턴, 테스트)
 │   ├── CLAUDE.md         ← 프론트 기술 결정 & API 맵 (개발 표준)
 │   ├── app/              ← 소스 루트 (Nuxt 4 convention)
-│   │   ├── pages/        ← 파일 기반 라우팅 (56개 페이지)
-│   │   ├── components/   ← 재사용 컴포넌트 (83개)
-│   │   ├── composables/  ← 비즈니스 로직 & API 래퍼 (50개)
+│   │   ├── pages/        ← 파일 기반 라우팅 (58개 페이지)
+│   │   ├── components/   ← 재사용 컴포넌트 (84개)
+│   │   ├── composables/  ← 비즈니스 로직 & API 래퍼 (52개)
 │   │   ├── stores/       ← Pinia 상태관리 (인증, 사전협의)
-│   │   ├── types/        ← TypeScript 타입 정의 (8개)
+│   │   ├── types/        ← TypeScript 타입 정의 (11개)
 │   │   ├── utils/        ← 유틸리티 함수 (금액포맷, PDF/Excel/HWPX 변환)
 │   │   └── middleware/   ← 라우트 가드 (인증, 관리자 접근 제어)
-│   └── tests/            ← Vitest + Playwright 테스트 (83개 unit, 18개 e2e)
+│   └── tests/            ← Vitest + Playwright 테스트 (89개 unit, 15개 e2e)
 │
 ├── it_backend/           ← Spring Boot 4 REST API 서버
 │   ├── README.md         ← 백엔드 상세 가이드 (아키텍처, API, 환경 설정)
 │   ├── CLAUDE.md         ← 백엔드 기술 결정 & 보안 정책 (SoT)
-│   ├── src/main/java/    ← 소스 코드 (271개 파일)
+│   ├── src/main/java/    ← 소스 코드 (291개 파일)
 │   │   └── com/kdb/it/
 │   │       ├── config/   ← Spring 설정 (보안, JPA, Swagger 등)
 │   │       ├── common/   ← 공통 모듈 (인증, 게시판, 결재, 알림)
 │   │       ├── domain/   ← 비즈니스 도메인 (예산, 협의회, 문서, 로그)
 │   │       ├── infra/    ← 외부 연동 (파일, Gemini AI)
 │   │       └── exception/ ← 전역 예외 처리
-│   ├── src/test/java/    ← JUnit 5 + Mockito 테스트 (92개 파일)
+│   ├── src/test/java/    ← JUnit 5 + Mockito 테스트 (96개 파일)
 │   └── build.gradle      ← Gradle 빌드 스크립트 (Spring Boot 4.0.5)
 │
 ├── it_database/          ← Oracle DB 마이그레이션 & 초기화
@@ -335,7 +335,7 @@ Press Enter to open https://github.com/login/device in your browser...
 **각 디렉토리의 SoT(Single Source of Truth) 파일을 우선 참조하세요.**
 
 ### 7.1 백엔드 (Spring Boot 4)
-- **[`it_backend/README.md`](./it_backend/README.md)** — 전체 기술 스택, 아키텍처, API 엔드포인트 (29개 컨트롤러)
+- **[`it_backend/README.md`](./it_backend/README.md)** — 전체 기술 스택, 아키텍처, API 엔드포인트 (32개 컨트롤러)
 - **[`it_backend/CLAUDE.md`](./it_backend/CLAUDE.md)** — 기술 결정, 인증 정책 (SoT), 보안 규칙, 환경 설정
 - **[`it_backend/docs/guides/data-model.md`](./it_backend/docs/guides/data-model.md)** — 데이터 모델 (63개 엔티티, 채번 규칙)
 
@@ -346,14 +346,14 @@ Press Enter to open https://github.com/login/device in your browser...
 - API 응답: 표준 JSON (success/data/message/meta)
 
 ### 7.2 프론트엔드 (Nuxt 4)
-- **[`it_frontend/README.md`](./it_frontend/README.md)** — 전체 기술 스택, 컴포넌트 구조 (72개), Composable 패턴
+- **[`it_frontend/README.md`](./it_frontend/README.md)** — 전체 기술 스택, 컴포넌트 구조 (84개), Composable 패턴
 - **[`it_frontend/CLAUDE.md`](./it_frontend/CLAUDE.md)** — 기술 결정, API 호출 패턴, 라우트 가드 규칙
 - **[`it_frontend/docs/guides/styled-data-table.md`](./it_frontend/docs/guides/styled-data-table.md)** — DataTable 래퍼 사용법
 
 **주요 내용:**
 - CSR(SPA) 모드, httpOnly 쿠키 인증
 - 이중 API 패턴: `useApiFetch` (GET) vs `$apiFetch` (POST/PUT/DELETE)
-- 관리자 접근 제어: 라우트 가드 + 메뉴 숨김 + 백엔드 API 보호
+- 관리자 접근 제어: 라우트 가드 + DB 메뉴 권한 필터링 + 백엔드 API 보호
 - Tiptap 에디터: 표/이미지/다이어그램/수식/변수 토큰 지원
 
 ### 7.3 공통 규약
@@ -395,7 +395,7 @@ npm run test:coverage
 ```bash
 cd it_backend
 
-# JUnit 5 + Mockito 테스트 실행 — 92개 테스트 파일
+# JUnit 5 + Mockito 테스트 실행 — 96개 테스트 파일
 ./gradlew test
 
 # 커버리지 리포트 생성 (JaCoCo)
@@ -791,6 +791,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 | `common/iam` | 사용자, 조직, 자격등급 | `CuserI`, `CorgnI`, `CauthI`, `CroleI` 중심의 RBAC 기반 데이터 |
 | `common/approval` | 전자결재 | 신청서 마스터와 원본 업무 객체 연결, 결재 완료 이벤트 발행 |
 | `common/board` | 공통 게시판 | 게시판 메타, 게시물, 댓글, 답변글, 권한/부서 제한 정책 |
+| `domain/menu` | DB 기반 메뉴 | `Cmenum`/`Cmenua`/`Cmenud` 기준 메뉴 트리, 역할 필터링, DYN 게시판 메뉴 |
 | `domain/budget` | 정보화 예산/사업 | project, cost, plan, work, status, document 하위 도메인으로 분리 |
 | `domain/council` | 정보화실무협의회 | 심의과제, 평가위원, 타당성, 결과서, 일정 관리 |
 | `domain/log` | 감사 로그 | JPA 엔티티 리스너 기반 변경 로그 인프라 |
@@ -804,7 +805,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 |------|------|-----------|
 | `app/pages` | 라우트 화면 | admin, info, budget, approval, audit 등 업무 메뉴별 화면 |
 | `app/components` | UI 조립 단위 | PrimeVue 기반 공통 테이블, 결재/사전협의/협의회 컴포넌트 |
-| `app/composables` | API 및 화면 로직 | `useApiFetch`는 GET 조회, `$apiFetch`는 변경 요청에 사용. 게시판은 `useBoard*` 계열 사용 |
+| `app/composables` | API 및 화면 로직 | `useApiFetch`는 GET 조회, `$apiFetch`는 변경 요청에 사용. `useMenu`는 서버 필터링 메뉴 트리의 단일 소스 |
 | `app/stores` | 전역 상태 | 인증 상태와 사전협의 세션 상태 관리 |
 | `app/types` | 공유 타입 | 인증/RBAC, 예산작업, 협의회, 사전협의 타입 |
 | `app/utils` | 순수 유틸 | 금액/상태 표시, Excel/HWPX/PDF 생성 보조 |
@@ -814,6 +815,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 - 인증은 httpOnly 쿠키 방식입니다. 프론트엔드가 JWT 문자열을 직접 다루지 않고, 브라우저가 쿠키를 자동 전송합니다.
 - Access Token의 기본 유효시간은 15분입니다. 백엔드 JWT 설정과 쿠키 Max-Age를 같은 시간으로 유지해야 합니다.
 - 관리자 접근 제어는 프론트 라우트 가드와 백엔드 URL/메서드 권한 검사를 함께 사용합니다.
+- 사이드바와 Breadcrumb 메뉴는 `GET /api/menus` 응답을 `useMenu`가 역인덱싱해 사용합니다. 프론트 메뉴 숨김은 UX 보조이며 권한 필터링의 SoT는 `MenuQueryService`와 백엔드 API 권한입니다.
 - `StyledDataTable`은 PrimeVue DataTable 스타일 차이를 흡수하는 표준 래퍼입니다. 신규 목록 화면은 이 컴포넌트를 우선 사용합니다.
 - 사전협의 검토 세션은 일부 UI 상태가 아직 메모리/모의 데이터에 의존합니다. 서버 영속화와 프로젝트별 검토자 조회는 `TASK.md`의 후속 과제로 관리합니다.
 - 공통 게시판은 `/board/**` 사용자 화면과 `/admin/boards` 관리자 화면으로 구성됩니다. 프론트 메뉴 필터는 UX 보조이며, 최종 권한은 백엔드 게시판 서비스에서 검증합니다.
@@ -890,3 +892,9 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 - **소스 통계 갱신**: 백엔드 271개 메인 Java 파일, 92개 테스트 파일, 63개 JPA 엔티티, 프론트 components 83개, composables 50개, pages 56개 기준으로 현행화했습니다.
 - **주석 보강**: `CouncilService`, `info/plan/[id].vue`, `budget/status.vue`의 무시형 실패 경로에 한글 TODO를 추가했습니다.
 - **백로그 갱신**: 2026-06-01 기준 typecheck/lint 실패, 실시간 로그 검증, N+1/인덱스 후보를 `TASK.md`에 반영했습니다.
+
+### 18.12 2026-06-05 REVIEW 재점검
+
+- **DB 기반 메뉴 구조 확인**: 백엔드 `domain/menu`(`MenuQueryService`, `AdminMenuService`)와 프론트 `useMenu`를 확인해 서버 권한 필터링 메뉴 트리와 Breadcrumb 역인덱스 구조를 문서에 반영했습니다.
+- **소스 통계 갱신**: 백엔드 291개 메인 Java 파일, 96개 테스트 파일, 63개 JPA 엔티티, 32개 컨트롤러, 프론트 components 84개, composables 52개, pages 58개 기준으로 현행화했습니다.
+- **주석 보강**: `MenuQueryController`, `MenuQueryService`, `AdminMenuService`, `useMenu`의 공개 계약과 DYN 메뉴 처리 주석을 한글로 보강했습니다.
