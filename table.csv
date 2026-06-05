@@ -320,7 +320,7 @@ TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,FL_APG_YN,파일첨부여
 TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,GRP_SQN_SNO,그룹순서일련번호,NUMBER,N,9,,N
 TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,HRK_NAC_NO,상위게시물번호,VARCHAR2,Y,16,,N
 TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,NAC_CONE,게시물내용,VARCHAR2,Y,4000,,N
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,NAC_ID,게시물ID,VARCHAR2,Y,10,,N
+TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,NAC_UNQ_ID,게시물고유ID,VARCHAR2,Y,16,,N
 TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,NAC_INQ_NBR,게시물조회수,NUMBER,N,10,,N
 TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,NAC_LEV_MNG_SNO,게시물레벨관리일련번호,NUMBER,N,9,,N
 TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,NAC_TTL,게시물제목,VARCHAR2,N,300,,N
@@ -380,7 +380,7 @@ TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,FL_APG_YN,파
 TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,GRP_SQN_SNO,그룹순서일련번호,NUMBER,N,9,,N
 TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,HRK_NAC_NO,상위게시물번호,VARCHAR2,Y,16,,N
 TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,NAC_CONE,게시물내용,VARCHAR2,Y,4000,,N
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,NAC_ID,게시물ID,VARCHAR2,Y,10,,N
+TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,NAC_UNQ_ID,게시물고유ID,VARCHAR2,Y,16,,N
 TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,NAC_INQ_NBR,게시물조회수,NUMBER,N,10,,N
 TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,NAC_LEV_MNG_SNO,게시물레벨관리일련번호,NUMBER,N,9,,N
 TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,NAC_TTL,게시물제목,VARCHAR2,N,300,,N
