@@ -89,7 +89,7 @@ it_frontend/app/pages/project/
 | 문서번호 (PK1) | `RQM_BG_REQ_DOC_NO`(①) / `DOC_MNG_NO`(②③④) | VARCHAR2(30)/(20) | ✅ 메타 | 채번 `{접두}-{YYYY}-{4seq}` |
 | 문서버전일련번호 (PK2) | `DOC_VRS_SNO` | NUMBER(9) | ✅ 메타 | 버전 구분 |
 | 최종여부 | `LST_YN` | VARCHAR2(1) | ✅ 메타 | `'Y'`=현재버전 |
-| 대상구분코드 | `BG_PRN_TC` (예산성격구분코드) | VARCHAR2(3) | ✅ 메타 | 01=사업, 02=전산업무비 |
+| 대상구분코드 | `BG_PRN_TC` (예산성격구분코드) | VARCHAR2(3) | ✅ 메타 | 공통코드 `IT_PTL_BG_PRN_TC`: 100=정보화사업, 200=전산업무비 |
 | 대상관리번호 | `CNCD_RFR_NO` (관련참조번호) | VARCHAR2(30) | ✅ 메타 | 사업=`ABUS_MNG_NO`, 전산업무비=`BG_NO` 값 |
 | 진행상태코드 | `IT_PTL_STS_TC` | VARCHAR2(2) | ✅ 메타 | 단계별 작성중/진행중/완료 |
 | 요청내용 | `REQ_CONE` | VARCHAR2(300) | ✅ 메타 | |
@@ -103,7 +103,7 @@ it_frontend/app/pages/project/
 #### ① 소요예산 산정 — `Bestim`(요청, 대상=사업 고정) + `Bestid`(팀별 산정행)
 
 `Bestim` PK `(RQM_BG_REQ_DOC_NO, DOC_VRS_SNO)`
-- 대상=사업 고정: `BG_PRN_TC='01'`, `CNCD_RFR_NO`=사업 `ABUS_MNG_NO`
+- 대상=사업 고정: `BG_PRN_TC='100'`, `CNCD_RFR_NO`=사업 `ABUS_MNG_NO`
 
 `Bestid` PK `(RQM_BG_REQ_DOC_NO, DOC_VRS_SNO, SVN_TEM_C, IOE_C)` — 자연키(팀+비목)
 
@@ -160,10 +160,10 @@ PK `(DOC_MNG_NO, DOC_VRS_SNO)`
 ### 3.4 신규 신청 목록 (메타 절대 수정 금지 → 별도 신청)
 
 - **신규 용어: 0건** (전 컬럼 기존 메타 용어 매핑 완료)
-- **공통코드 값 등록 3건**:
-  1. `BG_PRN_TC` — 01(사업), 02(전산업무비) 값
-  2. `TASK_DBR_RLT_TC` — 승인/반려/조건부 값
-  3. `CTT_MANR_C` — 협상에의한계약/규격가격동시/수의계약 등
+- **프로젝트 전용 공통코드 등록 3건** (각 컬럼 길이에 맞춘 코드값):
+  1. `IT_PTL_BG_PRN_TC` — 100(정보화사업), 200(전산업무비)  · 컬럼 `BG_PRN_TC` VARCHAR2(3)
+  2. `TASK_DBR_RLT_TC` — 01(승인), 02(반려), 03(조건부)  · 컬럼 VARCHAR2(2)
+  3. `CTT_MANR_C` — 01(협상에의한계약), 02(규격가격동시), 03(수의계약) 등  · 컬럼 VARCHAR2(2)
 
 ---
 
@@ -267,11 +267,11 @@ PK `(DOC_MNG_NO, DOC_VRS_SNO)`
 
 검증은 서비스 경계에서 수행. DTO `@Valid`(`@NotNull`/`@Size`)와 이중.
 
-- **대상 유효성**: `BG_PRN_TC`(01/02)에 맞는 대상이 `CNCD_RFR_NO`로 실재하고 현재버전(`LST_YN='Y'`)인지 확인. 없으면 400.
+- **대상 유효성**: `BG_PRN_TC`(100/200)에 맞는 대상이 `CNCD_RFR_NO`로 실재하고 현재버전(`LST_YN='Y'`)인지 확인. 없으면 400.
 - **중복 신청 방지**: 동일 대상+단계에 진행중(x1/x2) 문서 존재 시 신규 생성 차단(완료/삭제 건 허용).
 - **상태 전이 적법성**: 인접 전이만. 역행·건너뛰기 400.
 - **상태별 쓰기 주체**: 작성중=신청자 본인/부서, 진행중 작업=작업자 역할. 위반 시 `AccessDeniedException`.
-- **금액·코드**: `RQM_BG_AMT`/`CTT_AMT`/`DFR_AMT` ≥ 0. 코드값은 등록된 공통코드(`BG_PRN_TC`/`TASK_DBR_RLT_TC`/`CTT_MANR_C`) 값만 허용.
+- **금액·코드**: `RQM_BG_AMT`/`CTT_AMT`/`DFR_AMT` ≥ 0. 코드값은 등록된 공통코드(`IT_PTL_BG_PRN_TC`/`TASK_DBR_RLT_TC`/`CTT_MANR_C`) 값만 허용.
 - **입력 정제**: 자유 텍스트(`REQ_CONE`/`OPNN_CONE`/`CTT_MANR_RSN`)는 저장 전 `HtmlSanitizer` 적용.
 - **오류 응답**: 기존 전역 예외 핸들러 + 응답 규약(400/401/403/404) 재사용. 내부 메시지·스택 미노출.
 
@@ -290,7 +290,7 @@ PK `(DOC_MNG_NO, DOC_VRS_SNO)`
 ## 9. 구현 순서 (순차, 단계별 PR)
 
 0. **선행 공통 작업**
-   - 공통코드 값 3건 등록(`BG_PRN_TC` 01/02, `TASK_DBR_RLT_TC`, `CTT_MANR_C`)
+   - 프로젝트 전용 공통코드 3건 등록(`IT_PTL_BG_PRN_TC` 100/200, `TASK_DBR_RLT_TC` 01/02/03, `CTT_MANR_C` 01/02/03)
    - 공유 유틸: `changeStatus()`, 대상 검증, 대상 통합 조회 API(`/api/project/targets`)
    - 사이드바 메뉴 시드("사업 관리/집행" 그룹 + 4 링크)
 1. **① 소요예산 산정** (마스터+명세+팀 그리드) — 패턴 검증 기준
