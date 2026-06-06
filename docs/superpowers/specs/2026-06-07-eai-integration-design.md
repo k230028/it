@@ -101,7 +101,7 @@ ePAMS는 플랫폼 기본 charset에 의존(환경마다 길이계산이 달라�
 
 | 비결정 필드 | 시임 |
 |------------|------|
-| GUID (`EHR`+yyyyMMdd+HHmmssSSS+rand9+rand9), 요청일시 `REQ_DTM`, 거래일자/시각 `TR_DT`/`TR_TM` | `java.time.Clock` |
+| GUID (`{eai.fwdi-sys-c=IPP}`+yyyyMMdd+HHmmssSSS+rand9+rand9), 요청일시 `REQ_DTM`, 거래일자/시각 `TR_DT`/`TR_TM` | `java.time.Clock` |
 | GUID 난수부 | `Supplier<String> guidRandom` |
 | IP/MAC | `HostAddressProvider` |
 
@@ -171,20 +171,32 @@ eai.url=                           # 운영 게이트웨이 URL (운영 프로�
 eai.charset=MS949                  # 고정길이 전문 인코딩
 eai.connect-timeout=3000           # ms (ePAMS 3초)
 eai.read-timeout=3000              # ms
-eai.fwdi-sys-c=EHR                 # ⚠ 전송시스템코드 — KDB 확인 필요
-eai.app-c=HUR                      # ⚠ 어플리케이션코드 — KDB 확인 필요
-eai.app-bz-lv1-c=XH                # ⚠ 어플리케이션업무1레벨코드 — KDB 확인 필요
-eai.bz-c-s3=EHR                    # ⚠ 업무코드_S3 — KDB 확인 필요
+# ── IT Portal 시스템 식별자 (확정: IPP / PRM / PP) ──────────────────────────
+eai.fwdi-sys-c=IPP                 # 전송시스템코드 FWDI_SYS_C / FST_FWDI_SYS_C (3자리, GUID 접두로도 사용)
+eai.bz-c-s3=IPP                    # 업무코드_S3 BZ_C_S3 (3자리)
+eai.app-c=PRM                      # 어플리케이션코드 APP_C (3자리)
+eai.app-bz-lv1-c=PP                # 어플리케이션업무1레벨코드 APP_BZ_LV1_C (2자리)
 ```
 
-### 5.2 ⚠ KDB 확인 필요 (설계 리스크)
+모든 시스템 식별자는 `EaiProperties`로 바인딩되어 **소스 하드코딩 없이 프로퍼티/프로파일로 관리**한다.
+GUID 접두는 `eai.fwdi-sys-c` 값(IPP)을 사용한다(ePAMS가 `EHR` 시스템코드를 GUID 접두로 쓴 것과 동일 패턴).
 
-ePAMS의 `EHR`/`HUR`/`XH` 등은 ePAMS(인사 eHR) 시스템 식별자다. IT Portal은 **자체 시스템코드 /
-IF_ID / UMS업무구분ID(템플릿)**를 KDB EAI 운영팀으로부터 별도 발급받아야 실제 전송이 동작한다.
+### 5.2 시스템 식별자 매핑 (IT Portal: IPP / PRM / PP)
 
-- 포팅 시점엔 ePAMS 값을 **기본 플레이스홀더**로 두고 설정으로 오버라이드 가능하게 한다.
-- `umsBzDttId`(UMS업무구분ID/템플릿) 및 `ifId`(인터페이스ID)는 ePAMS처럼 **호출자가 `EaiRequest`에 지정**한다.
-- **실제 게이트웨이 연동 전 위 값들을 채워야 함**을 `TASK.md`에 후속 과제로 등록한다.
+ePAMS의 `EHR`/`HUR`/`XH`는 ePAMS(인사 eHR) 시스템 식별자다. IT Portal은 아래 값을 사용하며,
+모두 `EaiProperties`로 **프로퍼티 관리**한다(프로파일별 오버라이드 가능).
+
+| ePAMS 필드 | ePAMS 값 | IT Portal 값 | 프로퍼티 |
+|---|---|---|---|
+| 전송시스템코드 `FWDI_SYS_C`/`FST_FWDI_SYS_C` (+ GUID 접두) | `EHR` (3) | **IPP** (3) | `eai.fwdi-sys-c` |
+| 업무코드 `BZ_C_S3` | `EHR` (3) | **IPP** (3) | `eai.bz-c-s3` |
+| 어플리케이션코드 `APP_C` | `HUR` (3) | **PRM** (3) | `eai.app-c` |
+| 어플리케이션업무1레벨코드 `APP_BZ_LV1_C` | `XH` (2) | **PP** (2) | `eai.app-bz-lv1-c` |
+
+- ePAMS가 `EHR`을 시스템코드·업무코드에 재사용한 패턴 그대로 **IPP**를 두 필드에 적용(3개 코드 → 4개 필드).
+- ⚠ **여전히 KDB 발급 필요**: `ifId`(인터페이스ID)와 `umsBzDttId`(UMS업무구분ID/템플릿)는 시스템 식별자와
+  별개로 KDB EAI 운영팀에서 발급받는 값이다. ePAMS처럼 **호출자가 `EaiRequest`에 지정**한다
+  (예: SMS·알림톡 템플릿ID, 발송용 IF_ID). 실제 게이트웨이 연동 전 확정해야 함을 `TASK.md`에 등록한다.
 
 ### 5.3 실패 처리 (부수효과 원칙)
 
@@ -225,6 +237,6 @@ ePAMS는 빌드 실패 시 `null`, 전송 실패 시 빈 `new EaiDTO()`를 반�
 
 ## 7. 후속 과제 (TASK.md)
 
-- KDB EAI 운영팀으로부터 IT Portal 전용 시스템코드 / IF_ID / UMS 템플릿(업무구분ID) 발급·확정.
+- 시스템 식별자는 IPP / PRM / PP로 확정(프로퍼티 관리). KDB EAI 운영팀으로부터 **IF_ID(인터페이스ID) / UMS 템플릿(업무구분ID)** 발급·확정만 잔여.
 - (선택) `NotificationDispatcher` 실연동 어댑터로 EaiService 연결 (알림톡/SMS/이메일 채널).
 - 운영 프로파일 `eai.enabled=true` + `eai.url` 환경변수 주입 및 배포 체크리스트 반영.
