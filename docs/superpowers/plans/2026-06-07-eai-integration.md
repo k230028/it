@@ -77,7 +77,7 @@ class EaiResultTest {
     @Test
     @DisplayName("skipped: 전송 스킵 상태 (success=false, skipped=true)")
     void skipped_setsFlags() {
-        EaiResult r = EaiResult.skipped();
+        EaiResult r = EaiResult.skip();
         assertThat(r.success()).isFalse();
         assertThat(r.skipped()).isTrue();
         assertThat(r.responseRaw()).isNull();
@@ -124,8 +124,9 @@ public record EaiResult(boolean success, boolean skipped, String responseRaw, St
         return new EaiResult(true, false, responseRaw, null);
     }
 
-    /** 전송 스킵(비활성화). 전문은 빌드·로깅되었으나 HTTP는 호출되지 않음. */
-    public static EaiResult skipped() {
+    /** 전송 스킵(비활성화). 전문은 빌드·로깅되었으나 HTTP는 호출되지 않음.
+     *  주의: record 컴포넌트 접근자 {@code skipped()}와 시그니처가 충돌하므로 팩토리명은 {@code skip()}. */
+    public static EaiResult skip() {
         return new EaiResult(false, true, null, null);
     }
 
@@ -1481,7 +1482,7 @@ public class EaiService {
         if (!props.enabled()) {
             log.info("EAI 비활성화(eai.enabled=false) — 전송 스킵. ifId={}, tpl={}, len={}바이트, 미리보기=[{}]",
                     request.getIfId(), request.getUmsBzDttId(), message.length, maskedPreview(message));
-            return EaiResult.skipped();
+            return EaiResult.skip();
         }
 
         try {
