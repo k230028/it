@@ -303,3 +303,7 @@
 - [ ] (코드리뷰 LOW-4) `EaiServiceTest`에 `umsTrSno=""`/비숫자 케이스 추가 — `Integer.parseInt` `NumberFormatException` → `EaiResult.failure` 경로 명시적 커버.
 - [ ] (플러그형) GWE `RMS_SYS_C`("GWE")·`IF_ID`·`MSG_KEY` 접두("mailt") 실제 규칙 KDB 확인. GWE 발신자 상수(systemalert/관리자)·SYSTEM_CODE 운영값 확인.
 - [ ] 신규 시스템 연동 시 EaiPayload(record) + EaiPayloadSection(@Component) 1쌍 추가 패턴 따름.
+
+## 과업심의위원회 (Stage ②) 후속 과제
+
+- [ ] 과업심의 목록 부서(bbrC) 필터 미적용 — 대상이 사업/전산업무비 2종이라 단일 join 곤란. 후속 고도화.
