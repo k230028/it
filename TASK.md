@@ -301,3 +301,5 @@
 - [ ] 발신채널 상수(`1588-1500`, `hrd@kdb.co.kr`)는 ePAMS(eHR) 값 — IT Portal 발신처로 교체 필요 시 프로퍼티화.
 - [ ] (코드리뷰 LOW-2) `eai.enabled=true`인데 `eai.url`이 비어 있으면 기동 시점 검증으로 차단 — `@PostConstruct` 또는 `EaiProperties` `@AssertTrue`. 현재는 첫 호출 시 `EaiResult.failure`로만 표면화되어 오설정이 조용히 누락될 수 있음.
 - [ ] (코드리뷰 LOW-4) `EaiServiceTest`에 `umsTrSno=""`/비숫자 케이스 추가 — `Integer.parseInt` `NumberFormatException` → `EaiResult.failure` 경로 명시적 커버.
+- [ ] (플러그형) GWE `RMS_SYS_C`("GWE")·`IF_ID`·`MSG_KEY` 접두("mailt") 실제 규칙 KDB 확인. GWE 발신자 상수(systemalert/관리자)·SYSTEM_CODE 운영값 확인.
+- [ ] 신규 시스템 연동 시 EaiPayload(record) + EaiPayloadSection(@Component) 1쌍 추가 패턴 따름.
