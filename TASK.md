@@ -298,3 +298,5 @@
 - [ ] 운영 프로파일에서 `eai.enabled=true` + `eai.url`(환경변수 `EAI_URL`) 주입, 배포 체크리스트 반영.
 - [ ] (선택) `NotificationDispatcher` 실연동 어댑터로 `EaiService` 연결 — 알림톡/SMS/이메일 채널 발송.
 - [ ] 발신채널 상수(`1588-1500`, `hrd@kdb.co.kr`)는 ePAMS(eHR) 값 — IT Portal 발신처로 교체 필요 시 프로퍼티화.
+- [ ] (코드리뷰 LOW-2) `eai.enabled=true`인데 `eai.url`이 비어 있으면 기동 시점 검증으로 차단 — `@PostConstruct` 또는 `EaiProperties` `@AssertTrue`. 현재는 첫 호출 시 `EaiResult.failure`로만 표면화되어 오설정이 조용히 누락될 수 있음.
+- [ ] (코드리뷰 LOW-4) `EaiServiceTest`에 `umsTrSno=""`/비숫자 케이스 추가 — `Integer.parseInt` `NumberFormatException` → `EaiResult.failure` 경로 명시적 커버.
