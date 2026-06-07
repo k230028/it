@@ -193,6 +193,7 @@
 | [Open] | High | 백엔드 테스트 대량 `NoClassDefFoundError`/`ClassNotFoundException` 원인 분석 | 2026-05-17 `./gradlew test` 기준 compileJava 통과 후 194 tests 중 155 failed, Spring context/Mockito 초기화 단계에서 실패 |
 | [Open] | High | 알림 시스템 백엔드 단위·통합 테스트 추가 — `NotificationServiceTest`(Mockito), `MentionExtractorTest`(순수 단위), `CinfmmRepositoryImplTest`(Testcontainers/H2). 커버리지 대상: 빈 수신자 가드, REQUIRES_NEW 전파, markAllRead 행 수, 멘션 추출 엣지케이스 | `it_backend/src/test/` — notification 패키지 테스트 없음 |
 | [Open] | High | Tiptap 변수 시스템 백엔드 단위 테스트 추가 — `TiptapTokenParserTest`(정규식·switch·IllegalArgumentException), `TiptapVariableServiceTest`(Mockito: MISSING/INVALID·금액 포맷·null 가드) | `it_backend/src/test/` — tiptap 패키지 테스트 없음 |
+| [Open] | Medium | 소요예산 산정 `EstimateRepositoryImpl.search()` QueryDSL에 대한 통합 테스트 부재 (프로젝트에 `@DataJpaTest` 인프라 없음, 현재 Mockito 단위테스트만). 단계별 화면 안정화 후 통합 테스트 보강 | `it_backend/src/test/.../estimate/repository/EstimateRepositoryTest.java`, 탐지: 2026-06-07 |
 | [Open] | Low | `AuditLogEvent.java` → Java record 전환 | Java 25 환경, 3개 필드 + getter 구성 |
 | [Open] | Low | `BbugtmRepositoryImpl.sumCostDupBg`/`sumAssetDupBg` 공통 private 메서드 추출 | JOIN + WHERE + GROUP BY 동일 패턴, 집계 기준 컬럼만 다름 |
 | [Open] | Low | `ApplicationContextHolder.publishEvent()`/`AuditLogEvent` 잔여 이벤트 기반 감사로그 주석 정리 | 현재 감사로그는 `ChangeLogEntityListener`가 `AuditLogPersister.persist()` 직접 호출 |
