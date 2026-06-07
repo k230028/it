@@ -10,6 +10,11 @@
 
 **설계서(SoT):** `docs/superpowers/specs/2026-06-07-project-execution-stages-design.md`
 
+> **⚠️ 사후 정정 (2026-06-07, 명명규칙 정합):** 본 플랜의 아래 본문은 구현 당시 그대로의 기록입니다. 구현 직후 **상세 테이블/엔티티가 명명규칙(`TPRMPP_B{4도메인}{M/L/H}`, 용도문자 `D` 미사용)에 맞게 개명**되었습니다. 아래 본문의 다음 이름들은 현재 코드/DB에서 **개명된 이름**으로 존재합니다:
+> - 테이블 `TPRMPP_BESTID` → **`TPRMPP_BESTTM`**, 로그 `TPRMPP_BESTIDL` → **`TPRMPP_BESTTL`**, 시퀀스 `SEQ_BESTIDL` → **`SEQ_BESTTL`**
+> - 엔티티 `Bestid` → **`Besttm`**, `BestidId` → **`BesttmId`**, `BestidL` → **`BesttmL`** (도메인 `ESTT`)
+> - 개명은 신규 마이그레이션 `V20260607_004__RenameEstimateDetailTables.sql`(이미 적용)로 수행. 마스터(`Bestim`/`TPRMPP_BESTIM`)는 불변. 현재 명명규칙은 설계서 §3.1 참조.
+
 ---
 
 ## 핵심 규약 (작업 전 필독)

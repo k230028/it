@@ -72,12 +72,12 @@ it_frontend/app/pages/project/
 
 | 단계 | 마스터 | 명세(자식) | 로그 엔티티 |
 |---|---|---|---|
-| ① 소요예산 산정 | `Bestim` → `TPRMPP_BESTIM` | `Bestid` → `TPRMPP_BESTID` | `BestimL`, `BestidL` |
+| ① 소요예산 산정 | `Bestim` → `TPRMPP_BESTIM` | `Besttm` → `TPRMPP_BESTTM` | `BestimL`, `BesttmL` |
 | ② 과업심의위원회 | `Bdelim` → `TPRMPP_BDELIM` | — | `BdelimL` |
 | ③ 입찰/계약 | `Bcontm` → `TPRMPP_BCONTM` | — | `BcontmL` |
-| ④ 대금지급 | `Bpaymm` → `TPRMPP_BPAYMM` | `Bpaymd` → `TPRMPP_BPAYMD` | `BpaymmL`, `BpaymdL` |
+| ④ 대금지급 | `Bpaymm` → `TPRMPP_BPAYMM` | `Bpaymt` → `TPRMPP_BPAYTM` | `BpaymmL`, `BpaymtL` |
 
-- 도메인 접두 `ESTI`/`DELI`/`CONT`/`PAYM`로 그룹화. 명세는 용도문자 `D`(상세)로 마스터(`M`)와 짝.
+- 도메인 접두 `ESTI`/`DELI`/`CONT`/`PAYM`로 그룹화. **명세(상세) 테이블도 자체 4자리 도메인 + 용도 `M`을 사용한다** — `TPRMPP_B{4도메인}{M/L/H}` 규칙 준수(용도문자 `D` 미사용). 예: 소요예산 상세 도메인 `ESTT`(`TPRMPP_BESTTM` / 로그 `TPRMPP_BESTTL`), 대금지급 상세 도메인 `PAYT`(`TPRMPP_BPAYTM` / `TPRMPP_BPAYTL`).
 - 모든 마스터/명세는 `BaseEntity` 상속 + `@LogTarget(entity = *L.class)`. 짝 `*L` 로그 엔티티는 `BaseLogEntity` 상속. (총 마스터/명세 6개 → `*L` 6개)
 - 삭제는 Soft Delete(`DEL_YN='Y'`)만. 물리 삭제 금지.
 - 복합키는 `@IdClass` 패턴.
@@ -100,12 +100,12 @@ it_frontend/app/pages/project/
 
 ### 3.3 단계별 고유 컬럼 (모두 메타 실재 ✅)
 
-#### ① 소요예산 산정 — `Bestim`(요청, 대상=사업 고정) + `Bestid`(팀별 산정행)
+#### ① 소요예산 산정 — `Bestim`(요청, 대상=사업 고정) + `Besttm`(팀별 산정행)
 
 `Bestim` PK `(RQM_BG_REQ_DOC_NO, DOC_VRS_SNO)`
 - 대상=사업 고정: `BG_PRN_TC='100'`, `CNCD_RFR_NO`=사업 `ABUS_MNG_NO`
 
-`Bestid` PK `(RQM_BG_REQ_DOC_NO, DOC_VRS_SNO, SVN_TEM_C, IOE_C)` — 자연키(팀+비목)
+`Besttm` PK `(RQM_BG_REQ_DOC_NO, DOC_VRS_SNO, SVN_TEM_C, IOE_C)` — 자연키(팀+비목)
 
 | 논리명 | 물리명 | 타입 |
 |---|---|---|
@@ -142,12 +142,12 @@ PK `(DOC_MNG_NO, DOC_VRS_SNO)`
 | 계약상대처명 | `CTT_OPP_NM` | VARCHAR2(100) |
 | 계약일자 | `CTT_DT` | VARCHAR2(8) |
 
-#### ④ 대금지급 — `Bpaymm`(대상 기준) + `Bpaymd`(회차별 지급행)
+#### ④ 대금지급 — `Bpaymm`(대상 기준) + `Bpaymt`(회차별 지급행)
 
 `Bpaymm` PK `(DOC_MNG_NO, DOC_VRS_SNO)`
 - 계약 정보 직접 입력(단계 독립): `CTT_NM`(계약명), `CTT_AMT`(계약금액)
 
-`Bpaymd` PK `(DOC_MNG_NO, DOC_VRS_SNO, DFR_TOD)` — 자연키(지급회차)
+`Bpaymt` PK `(DOC_MNG_NO, DOC_VRS_SNO, DFR_TOD)` — 자연키(지급회차)
 
 | 논리명 | 물리명 | 타입 |
 |---|---|---|
@@ -193,7 +193,7 @@ PK `(DOC_MNG_NO, DOC_VRS_SNO)`
 
 ### 대금지급 특이사항
 
-- `Bpaymm`(마스터)은 대상당 1건. 진행중(72) 상태에서 `Bpaymd`(회차) 행을 여러 번 추가.
+- `Bpaymm`(마스터)은 대상당 1건. 진행중(72) 상태에서 `Bpaymt`(회차) 행을 여러 번 추가.
 - "완료(79)"는 더 이상 지급이 없을 때 작업자가 수동 확정. 누계 검증은 후속 고도화(MVP는 자유 입력).
 
 ---
@@ -242,7 +242,7 @@ PK `(DOC_MNG_NO, DOC_VRS_SNO)`
 
 ### 6.2 단계별 추가 엔드포인트
 
-- **① 소요예산**: `PUT /api/project/estimates/{docNo}/lines` — 팀별 산정행(`Bestid`) 일괄 저장(작업자, 진행중). 요청 포함 행 upsert, 누락 행 soft delete(`Bitemm` 동기화 패턴 재사용).
+- **① 소요예산**: `PUT /api/project/estimates/{docNo}/lines` — 팀별 산정행(`Besttm`) 일괄 저장(작업자, 진행중). 요청 포함 행 upsert, 누락 행 soft delete(`Bitemm` 동기화 패턴 재사용).
 - **② 과업심의**: 작업 입력은 마스터 `PUT`에 포함.
 - **③ 입찰/계약**: 작업 입력은 마스터 `PUT`에 포함.
 - **④ 대금지급**: `POST /api/project/payments/{docNo}/installments` 회차 추가, `DELETE …/installments/{tod}` 회차 삭제(작업자, 진행중).
@@ -302,7 +302,7 @@ PK `(DOC_MNG_NO, DOC_VRS_SNO)`
 
 ### 마이그레이션 (`it_database/migrations/`)
 
-- 테이블 6개(`BESTIM`/`BESTID`/`BDELIM`/`BCONTM`/`BPAYMM`/`BPAYMD`) + 로그 테이블/시퀀스 + 공통코드 값 DML.
+- 테이블 6개(`BESTIM`/`BESTTM`/`BDELIM`/`BCONTM`/`BPAYMM`/`BPAYTM`) + 로그 테이블/시퀀스 + 공통코드 값 DML.
 - 각 스크립트 멱등성 유지. 성공한 스크립트 수정 금지.
 
 ---
