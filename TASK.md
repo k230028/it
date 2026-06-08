@@ -1,11 +1,11 @@
 ﻿# IT Portal 백로그
 
-> 기준일: 2026-06-01
+> 기준일: 2026-06-09
 > 목적: `REVIEW.md` 정비 과정에서 확인한 기술 부채, 미구현 항목, 후속 검증 과제를 추적합니다.
 
 ## 진행 중
 
-> 최종 업데이트: 2026-06-01
+> 최종 업데이트: 2026-06-09
 
 ### 보안
 
@@ -42,6 +42,13 @@
 | [Open] | High     | `QnaService.updateQna()` 관리자 수정 무력화 — 권한 비교가 `"ROLE_ITPAD001"`(존재하지 않는 권한 문자열)을 사용. `CustomUserDetails`는 ITPAD001을 `ROLE_ADMIN`으로 매핑하므로 항상 false → 관리자 우회 수정 불가. `"ROLE_ADMIN"` 또는 `userDetails.isAdmin()`으로 교정 (FIXME 주석 존재) | `QnaService.java:122`, 발견일: 2026-05-29 |
 | [Open] | Medium   | `GET /api/documents/dashboard`, `/badge-count` — 클라이언트 제공 `bbrC` 신뢰로 수평적 데이터 노출. 인증 사용자가 임의 부서코드로 타 부서 집계 조회 가능. JWT 클레임 `bbrC` 또는 `isAdmin()` 기준 서비스 계층 검증 필요 | `ServiceRequestDocController.java:183,197`, 발견일: 2026-05-29 |
 | [Open] | Low      | `AuthController.getClientIp()` — `X-Forwarded-For` 멀티 IP(`client, proxy1, ...`) 미분리로 전체 문자열을 IP로 저장. `ip.split(",")[0].trim()` 추가 필요. IP 기반 Brute-force 도입 시 위조 우회 벡터 | `AuthController.java:256`, 발견일: 2026-05-29 |
+| [Open] | High     | 사업집행 4단계 서비스 — 쓰기 메서드(update/delete/changeStatus/saveLines·saveResult·saveContract·savePayments)가 `CustomUserDetails user`를 받지만 소유자/관리자 검증을 하지 않음. 인증된 임의 직원이 타인의 산정·심의·계약·지급 문서를 수정·삭제·상태전이 가능. `e.getFstEnrUsid().equals(user.getEno()) \|\| user.isAdmin()` 검증 추가(공통 OwnershipVerifier 유틸 권장) | `EstimateService.java:82`, `DeliberationService.java:86`, `ContractService.java:86`, `PaymentService.java:93`, 발견일: 2026-06-09 |
+| [Open] | High     | `ContractRepositoryImpl`·`DeliberationRepositoryImpl`·`PaymentRepositoryImpl` — `bbrC` 부서 필터 MVP 미적용(쿼리 조건 없음). 서비스가 bbrC를 전달해도 Repository가 무시 → 일반 사용자가 타부서 계약·심의·지급 목록 전체 열람 가능. `EstimateRepositoryImpl`(적용됨)과 불일치. Bcontm/Bdelim/Bpaymm에 주관부서코드 컬럼 추가 또는 대상 테이블 JOIN 필요 | `ContractRepositoryImpl.java:47`, `DeliberationRepositoryImpl.java:47`, `PaymentRepositoryImpl.java:43`, 발견일: 2026-06-09 (line 309 과업심의 bbrC 항목 통합·확장) |
+| [Open] | Medium   | 사업집행 4단계 `changeStatus` — 단방향 상태전이(인접만)는 검증하나 역할(ADMIN/작업자/신청자)별 전이 권한 분기 없음. 업무 요건(제출=본인/관리자, 완료=관리자/작업자 등) 확정 후 서비스 계층 role 분기 추가 | `EstimateService.java:115`, `DeliberationService/ContractService/PaymentService` 동일, 발견일: 2026-06-09 |
+| [Open] | Medium   | 사업집행 4단계 DTO — 금융 금액 필드(`cttAmt`, `dfrAmt`) `@DecimalMin("0")` 미적용으로 null·음수 저장 가능, YN 플래그(`taskDbrOmtYn`)는 `@Pattern(regexp="^[YN]$")` 미적용 | `ContractDto.WorkRequest`, `PaymentDto.CreateRequest/UpdateRequest/LineRequest`, `DeliberationDto.ResultRequest`, 발견일: 2026-06-09 |
+| [Open] | Medium   | `EnvironmentValidator`에 `eai.enabled`/`EAI_URL` 운영값 검증 추가 — `eai.enabled=false`(기본값)인 채 운영 배포 시 전문이 실제 전송되지 않고 빌드·로깅만 수행(`EaiResult.skip()`)되어 알림이 전송 성공처럼 보임. 운영 프로파일에서 경고 또는 차단 | `EaiProperties.java:36`, `EaiService.java:64`, 발견일: 2026-06-09 |
+| [Open] | Medium   | `EaiService.sendEai()` 전송 실패 로그 — `e.getMessage()`가 `RestClient` 예외의 EAI URL/내부 경로를 포함할 수 있음. `e.getClass().getSimpleName()` 또는 안전 추출로 교체 | `EaiService.java:81`, 발견일: 2026-06-09 |
+| [Open] | Low      | `EaiProperties` 컴팩트 생성자 — `enabled=true`이면서 `url`이 공백/null이면 `RestClient.post().uri("")`로 잘못된 발송. `if (enabled && (url==null \|\| url.isBlank())) throw ...` 가드 추가 | `EaiProperties.java:36`, 발견일: 2026-06-09 |
 
 ### 의존성 취약점 (Snyk, 업스트림 미해결)
 
@@ -151,6 +158,12 @@
 | [Open] | Medium | `TiptapVariableService.resolve()` — 토큰별 개별 집계 쿼리(최대 200 토큰 × 2쿼리 = 400 DB 호출). 동일 `(year, category)` 결과를 인트라-요청 Map으로 캐시 후 배치 처리로 전환 | `TiptapVariableService.java:74-80` |
 | [Open] | Medium | `TiptapVariableService.getMetadata()` — 활성 사업 전체 목록을 매 호출마다 DB 조회. `@Cacheable` + 사업 변경 시 evict 또는 사업 코드 검색 파라미터로 온디맨드 조회 전환 | `TiptapVariableService.java:44-55` |
 | [Open] | Low    | `SEQ_CINFMM NOCACHE` 설정 — 대량 알림 발송 시 시퀀스 redo 경합. `CACHE 20` 이상으로 변경하는 마이그레이션 추가 | `V20260520_001__CreateCinfmmTable.sql:78-83` |
+| [Open] | High   | 사업집행 4단계 채번 시퀀스(`SEQ_BESTIM`/`SEQ_BDELIM`/`SEQ_BCONTM`/`SEQ_BPAYMM`) `NOCACHE → CACHE 20` 변경 마이그레이션 — 3,000명 동시 신청 시 redo 경합. (`SEQ_CINFMM` 항목과 별개) | `V20260607_002:105`, `V20260607_005:80`, `V20260607_008:84`, `V20260607_011:165` 모두 `NOCACHE NOCYCLE`, 탐지: 2026-06-09 |
+| [Open] | High   | 사업집행 4단계 마스터(`BESTIM`/`BDELIM`/`BCONTM`/`BPAYMM`) 목록 조회 복합 인덱스 보강 — 핵심 WHERE `DEL_YN='N' AND LST_YN='Y'`가 기존 단일 인덱스(`IDX_*_STS`)에 미포함. `(DEL_YN, LST_YN, IT_PTL_STS_TC)` 후보 | `EstimateRepositoryImpl:41-43`, `V20260607_002:32-33` 외 3개 마이그레이션, 탐지: 2026-06-09 |
+| [Open] | Medium | 사업집행 4단계 목록 정렬 컬럼 `FST_ENR_DTM DESC` 보조 인덱스 검토 — 건수 증가 시 FULL TABLE SCAN 후 정렬 발생 | `EstimateRepositoryImpl:63`, `Deliberation/Contract/PaymentRepositoryImpl` 동일, 탐지: 2026-06-09 |
+| [Open] | Medium | `Deliberation/Contract/PaymentService.get()` 상세 조회 대상명 별도 SELECT 제거 — `loadCurrent()` + `resolveTargetName()` 2쿼리를 `EstimateRepositoryImpl`처럼 BPROJM/BCOSTM LEFT JOIN 프로젝션 단일 쿼리로 통일. 목록→상세 순차 로드 시 누적 N+1 | `DeliberationService.java:148`, `ContractService.java:146`, `PaymentService.java:176`, 탐지: 2026-06-09 |
+| [Open] | Medium | `BPAYTM`(회차별 지급) `(DOC_MNG_NO, DOC_VRS_SNO, DEL_YN)` 보조 인덱스 검토 — PK에 DEL_YN 미포함으로 `findBy...AndDelYn()` 시 PK 범위 스캔 후 필터. 지급 회차 누적 시 IO 증가 | `V20260607_011:60`, `PaymentService.java:178`, 탐지: 2026-06-09 |
+| [Open] | Low    | `BestimL`/`BesttmL` 로그 엔티티가 `SEQ_BESTIL`/`SEQ_BESTTL` 시퀀스를 정확히 참조하는지 `AuditLogIdGenerator` 파생 로직과 대조 검증 (`V20260607_004`에서 `SEQ_BESTIDL→SEQ_BESTTL` rename) | `V20260607_004:15`, `V20260607_002:105-107`, 탐지: 2026-06-09 |
 
 ### 프론트엔드 리팩토링
 
@@ -181,6 +194,9 @@
 | [Open] | Medium | `/admin/boards` 관리자 레이아웃 적용 여부 결정 | 페이지는 `middleware: 'admin'`만 선언하며, 다른 `/admin/**` 페이지와 달리 `layout: 'admin'`이 없음 |
 | [Open] | Medium | `useNotifications` 모듈 스코프 싱글턴 상태(`unreadCount`, `items`, `loading`, `pollHandle`) — 테스트 간 누출·SSR 전역 공유 위험. Pinia 스토어(`stores/notification.ts`) 전환 또는 `useState()` 기반 SSR-safe ref 검토 | `composables/useNotifications.ts:17-21` |
 | [Open] | Low    | `useNotifications.refresh()` 명시적 호출 경로(드롭다운 열기 등)에 호출자 catch+toast 보장 여부 확인 — composable 계약상 에러 전파이나 AppHeader 등 실제 호출부에 toast 핸들링이 없을 수 있음 | `composables/useNotifications.ts` |
+| [Open] | Low    | 사업집행 3개 목록 페이지 대상구분 선택 Dialog 로직 공통화 — `deliberation/contract/payment/index.vue`가 `selectedTgt`/`selectedProject`/`selectedCost`/`hasTarget`/`selectedCncdRfrNo`/`resetSelection` 패턴을 중복 보유. `useProjectCostSelector()` composable 추출 | `pages/project/{deliberation,contract,payment}/index.vue:56~`, 탐지: 2026-06-09 |
+| [Open] | Low    | 사업집행 4개 composable `changeStatus(docNo, stsTc)` 중복 — URL만 다르고 구현 동일. 중장기 `useDocumentApi(baseUrl)` 팩토리 도입 시 일괄 처리 후보 | `useEstimates.ts:115`, `useDeliberations.ts:115`, `useContracts.ts:115`, `usePayments.ts:117`, 탐지: 2026-06-09 |
+| [Open] | Low    | `contract/index.vue` 빈 `/* ── 상태 표시 ── */` 주석 잔재 제거 — `estimate/index.vue`의 statusLabel 헬퍼 자리이나 contract에서는 함수 없이 주석만 남음 | `pages/project/contract/index.vue:57`, 탐지: 2026-06-09 |
 
 ### 백엔드 리팩토링
 
@@ -188,6 +204,7 @@
 |------|----------|------|------|
 | [Open] | Medium | `stream().collect(Collectors.toList())` → `.toList()` 전환 — 탐지된 48곳 중 주요 파일: `ApplicationDto.java:331`, `BoardCommentService.java:65`, `BoardMetaService.java:31`, `BoardPostService.java:68`, `CodeService.java:44,73`, `OrganizationService.java:49`, `UserService.java:56`, `AuthService.java:359`, `CostService.java:151,179,409,542,554,637,661`, `ReviewCommentService.java:45`, `ServiceRequestDocService.java:73,121`, `PlanService.java:86,137,162,363,378,387,404,418`, `ProjectService.java:131,164,200,619,663,674,914`, `CouncilService.java:109,116,125,251`, `EvaluationService.java:102,134,281`, `FeasibilityService.java:287,295`, `ScheduleService.java:116,128,163`, `FileService.java:242`. 주의: `.toList()`는 불변 반환이므로 소비자 코드에서 `add()`/`remove()` 호출 시 `ArrayList` 래핑 필요 — 변환 전 소비자 코드 확인 필수 | Java 25 환경, 가독성·불변성 향상, 탐지: 2026-06-01 |
 | [Open] | Medium | `buildCodeNameMap` 중복 private 메서드 추출 — `CostService`와 `ProjectService`가 동일한 코드명 맵 생성 로직을 각자 보유. 공통 유틸 또는 `CodeService`에 단일 구현 후 위임 | `CostService.java`, `ProjectService.java`, 탐지: 2026-06-01 |
+| [Open] | Medium | 사업집행 `validateTarget`+`resolveTargetName` 공통 추출 — `Deliberation/Contract/PaymentService` 3곳에 동일 private 메서드 2개(대상구분 100/200 분기로 BPROJM/BCOSTM 존재·명칭 조회)가 복사됨. `common`에 `DomainTargetResolver @Component` 추출 후 위임(line 164 N+1 과제와 병행) | `DeliberationService.java:60,157`, `ContractService.java:60,155`, `PaymentService.java:62,185`, 탐지: 2026-06-09 |
 | [Open] | Medium | 문서/내보내기 회귀 테스트 범위 확대 (HWPX/PDF/Excel) | `utils/hwpx.ts` HTML 파싱·이미지 패키징·XML 생성 통합 담당 |
 | [Open] | Medium | `domain/log` 감사로그 리스너 통합 테스트 보강 | JaCoCo 제외 대상이나 업무 감사 추적에 중요 |
 | [Open] | High | 백엔드 테스트 대량 `NoClassDefFoundError`/`ClassNotFoundException` 원인 분석 | 2026-05-17 `./gradlew test` 기준 compileJava 통과 후 194 tests 중 155 failed, Spring context/Mockito 초기화 단계에서 실패 |
@@ -202,6 +219,7 @@
 
 | 상태 | 일자 | 영역 | 조치 |
 |------|------|------|------|
+| [Done] | 2026-06-09 | 주석/문서/백로그 | REVIEW.md 재실행 — Task1: java/typescript/silent-failure 병렬 탐지 결과 검증(기존 추적·false positive 다수 확인, `MenuChildrenResolver` 영문주석 지적은 이미 한글로 오탐), 신규 도메인 코드는 한글 주석 충실 → `PaymentController` 클래스 주석 1건 보강. Task2/3: 정보화사업 집행 4단계(`domain/{estimate,deliberation,contract,payment}`, `/api/project/**`)와 `infra/eai`를 BE/FE README·CLAUDE.md에 반영, 소스 통계 현행화(BE 291→350 Java/96→115 test/64→79 entity/감사로그 25→31, FE composables 52→56/pages 58→67), CLAUDE.md §5.18~5.19 집행 4단계·EAI 섹션 신설. Task3 security-reviewer: 집행 4단계 소유권 검증 누락·bbrC 필터 미적용 등 HIGH 2건 외 보안 7건 등록. Task4 database-reviewer: 시퀀스 NOCACHE·DEL_YN 복합인덱스·상세 N+1 등 DB 7건 등록. |
 | [Done] | 2026-06-05 | 주석/문서/백로그 | REVIEW.md 재실행 — DB 기반 메뉴(`domain/menu`, `useMenu`, `useAdminMenu`) 주석과 README/CLAUDE 반영, 소스 통계 현행화(백엔드 291 Java/96 test/63 entity, 프론트 84 components/52 composables/58 pages), 실시간 로그 타입 경로 정정. stale `approval/list.vue` toast 항목 [Done] 전환, `PlanService` 라인 근거 126-130으로 현행화, 프론트 silent fallback 3건과 DB N+1/실시간 로그 인덱스 후보 추가. |
 | [Done] | 2026-06-01 | 백로그 | silent-failure-hunter·refactor-cleaner·database-reviewer·security-reviewer 4개 분석 결과 신규 7건(High 3·Medium 4) 추가. `NotificationService.send()` recipientEno null 가드 구현 완료 확인 → [Done] 전환. `QnaService` ROLE_ITPAD001·`PlanService.java:108` 빈 catch 코드 미수정 확인 → [Open] 유지. `cors.allowed-origins` High 보안 항목 신규 등록. `Collectors.toList()` 48곳 파일 목록 구체화. `ChangeLogEntityListener:133` Medium·`PlanService:443` High·`budget/approval.vue:458` Medium silent-failure 신규 등록. DB N+1 2건(`BudgetWorkService.getProjectSummary` High·`resolveProjectName` Medium) 신규 등록. |
 | [Done] | 2026-06-01 | 주석/문서 | REVIEW.md 전체 재실행 — Task1: java/typescript/silent-failure 병렬 탐지 후 `CouncilService`, `info/plan/[id].vue`, `budget/status.vue` 무시형 실패 경로에 한글 TODO 주석 추가. Task2/3: BE/FE README·CLAUDE.md에 실시간 로그 모니터링(`common/admin/realtime`, `useRealtimeLogs`, `/api/admin/realtime-logs`), Nitro `server/` 구조, 최신 파일 수 반영. Task4: 2026-06-01 typecheck/lint 실패, 실시간 로그 검증, N+1/인덱스 후보를 신규 백로그로 등록 |
@@ -298,6 +316,7 @@
 - [ ] KDB EAI 운영팀으로부터 IT Portal 전용 **IF_ID(인터페이스ID)** 및 **UMS 템플릿(업무구분ID)** 발급·확정. (시스템 식별자 IPP/PRM/PP는 프로퍼티로 확정)
 - [ ] 운영 프로파일에서 `eai.enabled=true` + `eai.url`(환경변수 `EAI_URL`) 주입, 배포 체크리스트 반영.
 - [ ] (선택) `NotificationDispatcher` 실연동 어댑터로 `EaiService` 연결 — 알림톡/SMS/이메일 채널 발송.
+- [ ] `EaiService` 도메인 미연동 해소 — `infra/eai` 전체가 구현·테스트 완비 상태이나 `Estimate/Deliberation/Contract/PaymentService` 어디서도 `EaiService.sendEai()`를 호출하지 않아 상태전이 시 EAI 알림이 실제 발송되지 않음. 각 `changeStatus()`에 발송 연결(부수효과, 실패 무전파) 검토. (발견일: 2026-06-09)
 - [ ] 발신채널 상수(`1588-1500`, `hrd@kdb.co.kr`)는 ePAMS(eHR) 값 — IT Portal 발신처로 교체 필요 시 프로퍼티화.
 - [ ] (코드리뷰 LOW-2) `eai.enabled=true`인데 `eai.url`이 비어 있으면 기동 시점 검증으로 차단 — `@PostConstruct` 또는 `EaiProperties` `@AssertTrue`. 현재는 첫 호출 시 `EaiResult.failure`로만 표면화되어 오설정이 조용히 누락될 수 있음.
 - [ ] (코드리뷰 LOW-4) `EaiServiceTest`에 `umsTrSno=""`/비숫자 케이스 추가 — `Integer.parseInt` `NumberFormatException` → `EaiResult.failure` 경로 명시적 커버.
