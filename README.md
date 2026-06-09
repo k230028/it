@@ -110,6 +110,33 @@ it/
 | Git | 2.30+ | 기본 설치 |
 | Gradle | 내장 | `./gradlew` (Gradle Wrapper 사용) |
 
+환경변수 세팅
+```Bash
+C:\> setx SPRING_PROFILES_ACTIVE "local"  # local / dev / prod
+C:\> setx GRADLE_USER_HOME "C:\it\.gradle"  # 운영 서버는 /sw/itpapp/.gradle
+C:\> setx DB_PASSWORD "kdb1234!!"
+C:\> setx JWT_SECRET "HFRw7fQsWNFy9FULDWhh9e1ace1QlspznnCDBXZafb64l3hIGVYjhb27IWEeZ0/J46kpq6J8NidyKNO2FT5niQ=="
+C:\> setx GEMINI_API_KEY "실제_API_키"      :: Gemini 사용 시
+C:\> setx EAI_URL "https://eai.kdb.internal/..."  :: EAI 운영 시
+```
+
+JWT_SECRET 생성
+```Bash
+cd it_backend\scripts
+
+# 1) 기본: 512비트(64바이트) 시크릿 생성 → 화면 출력
+.\generate-jwt-secret.ps1
+
+# 2) 최소 길이(256비트) 생성
+.\generate-jwt-secret.ps1 -Bytes 32
+
+# 3) 생성과 동시에 사용자 환경변수 JWT_SECRET 등록
+.\generate-jwt-secret.ps1 -SetEnv
+
+# 4) 시스템 전역 환경변수로 등록 (관리자 권한 필요)
+.\generate-jwt-secret.ps1 -SetEnv -Machine
+```
+
 ### 3.2 로컬 빠른 시작 (3터미널)
 
 Git 설치 후 설정

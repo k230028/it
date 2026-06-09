@@ -10,6 +10,9 @@ everything-claude-code/
 .agents/skills/gstack
 .bkit
 .claude
+# Gradle (GRADLE_USER_HOME = C:\it\.gradle)
+/.gradle/
+
 # Python
 __pycache__/
 *.pyc
