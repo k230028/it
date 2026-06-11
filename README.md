@@ -177,7 +177,7 @@ $env:JWT_SECRET = "your-jwt-secret-key"
 ```bash
 cd it_database
 .\connect-db.ps1        # 또는 .\connect-db.bat
-# sqlplus ITPAPP@127.0.0.1:1521/XEPDB1 (기본 자격증명)
+# sqlplus ITPAPP@127.0.0.1:11521/XEPDB1 (기본 자격증명)
 ```
 
 ### 3.3 개발 품질 확인 (Health Stack)
@@ -306,12 +306,12 @@ Press Enter to open https://github.com/login/device in your browser...
 | **프론트엔드** | http://localhost:3000 | https://it.kdb.co.kr:20443 | Nuxt 4 CSR (정적 생성) |
 | **백엔드 API** | http://localhost:8080 | http://localhost:8080 | Spring Boot 4 REST API |
 | **Swagger UI** | http://localhost:8080/swagger-ui/index.html | 동일 | OpenAPI 3.0 자동 문서화 |
-| **Oracle DB** | 127.0.0.1:1521/XEPDB1 (ITPAPP) | 운영 배포 설정 | 데이터 저장소 |
+| **Oracle DB** | 127.0.0.1:11521/XEPDB1 (ITPAPP) | 운영 배포 설정 | 데이터 저장소 |
 
 **포트 설정:**
 - **프론트엔드**: `nuxt.config.ts`에서 `devServer.host`, `devServer.port` 확인
 - **백엔드**: `application.properties`의 `server.port=8080` 확인
-- **Oracle**: 기본 1521 (로컬 XE 설치 시)
+- **Oracle**: 11521 (로컬 XE 리스너 포트 변경 적용, 변경 절차는 `it_database/README.MD` §4 참조)
 
 ---
 

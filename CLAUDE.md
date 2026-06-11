@@ -38,11 +38,11 @@ it/
 | 프론트엔드 | http://localhost:3000 | `cd it_frontend && npm run dev`        |
 | 백엔드 API | http://localhost:8080 | `cd it_backend && ./gradlew bootRun`   |
 | Swagger UI | http://localhost:8080/swagger-ui/index.html | (백엔드 기동 후) |
-| Oracle DB | 127.0.0.1:1521/XEPDB1 | `.\it_database\connect-db.ps1` |
+| Oracle DB | 127.0.0.1:11521/XEPDB1 | `.\it_database\connect-db.ps1` |
 
 ### 3.1.1 로컬 Oracle DB 접속
 - DB 확인이 필요하면 루트에서 `.\it_database\connect-db.ps1` 또는 `.\it_database\connect-db.bat`를 실행합니다.
-- 기본 접속 정보는 Spring Boot 개발 설정과 동일합니다: `ITPAPP@127.0.0.1:1521/XEPDB1`.
+- 기본 접속 정보는 Spring Boot 개발 설정과 동일합니다: `ITPAPP@127.0.0.1:11521/XEPDB1`.
 - 스크립트는 `sqlplus`를 우선 사용하고, 없으면 SQLcl의 `sql` 명령을 사용합니다.
 - 접속 정보 변경이 필요하면 `-HostName`, `-Port`, `-ServiceName`, `-Username`, `-Password`, `-Client` 인자로 오버라이드합니다.
 
@@ -53,6 +53,10 @@ it/
 | WebTobe    | https://it.kdb.co.kr:20443 |-----------|
 | 프론트엔드 | (CSR)                      | `cd it_frontend && npm run generate` |
 | 백엔드 API | http://localhost:8080      | `cd it_backend && java -jar ooo.war` |
+
+- DB 스키마 분리 (전 환경 공통): 접속 계정은 `ITPAPP`, 객체 소유 스키마는 `ITPOWN`(`ITPOWN.테이블명`으로 접근).
+  베이스 설정이 `CURRENT_SCHEMA=ITPOWN`으로 세션을 전환하므로 코드에 스키마 접두어를 쓰지 않습니다.
+  상세는 `it_backend/CLAUDE.md` §2 참조.
 
 ## 4. 공통 운영 규약 (모든 하위 프로젝트 적용)
 
