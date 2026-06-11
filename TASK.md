@@ -5,7 +5,7 @@
 
 ## 진행 중
 
-> 최종 업데이트: 2026-06-09
+> 최종 업데이트: 2026-06-12
 
 ### 보안
 
@@ -117,6 +117,10 @@
 | [Open] | High     | `budget/report.vue:170-172,249-251` — PDF 생성 실패 시 `console.error`만 출력, 데이터 로드 실패 시 PDF 버튼 활성 유지. `toast.error` 및 버튼 비활성화 처리 필요 | `pages/budget/report.vue:170-172,249-251`, 발견일: 2026-05-26 |
 | [Open] | High     | `info/projects/report.vue:164-166,199-201` — PDF 생성 실패 시 `console.error`만 출력, 프로젝트 로드 실패 시 PDF 버튼 비활성화 안됨. `toast.error` 및 버튼 비활성화 필요 | `pages/info/projects/report.vue:164-166,199-201`, 발견일: 2026-05-26 |
 | [Open] | High     | `info/cost/form.vue:184-186` — 비용 폼 초기 데이터 로드 실패 시 `console.error`만 출력. `toast.error` 알림 및 에러 상태 UI 처리 필요 (CLAUDE.md 4.2.1 위반) | `pages/info/cost/form.vue:184-186`, 발견일: 2026-05-26 |
+| [Open] | High     | `ResultReviewProgress.vue` — `syncReviewStatus()` 상태 전이 실패를 catch가 완전 삼킴(로그 0건). 10→11 자동 전이 실패 추적 불가. `console.warn(e)` 기록 추가 (toast 억제는 유지, FIXME 주석 등록 완료) | `components/council/result/ResultReviewProgress.vue:61`, 탐지: 2026-06-12 |
+| [Open] | Medium   | `council-request/[id].vue` — `saveTemp`/`saveComplete`/`submitApproval` catch 바인딩 없음. 백엔드 오류 메시지(`e.data?.message`) 대신 일반 문구만 노출. `prepare/[id].vue`의 `catch (e: unknown)` 패턴으로 통일 (TODO 주석 등록 완료) | `pages/info/council-request/[id].vue:370,407,476`, 탐지: 2026-06-12 |
+| [Open] | Medium   | `council-request/[id].vue` — `councilStatus`의 `?? '01'` 폴백이 데이터 미로드(null)를 DRAFT로 둔갑시켜 편집 가드 해제. 로드 실패 상태에서 빈 데이터 저장 위험. null 유지 + 가드 보강 (TODO 주석 등록 완료) | `pages/info/council-request/[id].vue:189`, 탐지: 2026-06-12 |
+| [Open] | Low      | `CommitteeSelector.vue`(위원 저장·기본위원 배정)·`ScheduleStatus.vue`(일정 확정) catch 바인딩 없음 — 업무 오류 메시지 미전달. `EvaluationForm.vue` 오류 추출 패턴으로 통일 | `CommitteeSelector.vue:261,295`, `ScheduleStatus.vue:159`, 탐지: 2026-06-12 |
 
 ### DB / JPA 최적화
 
@@ -164,6 +168,10 @@
 | [Open] | Medium | `Deliberation/Contract/PaymentService.get()` 상세 조회 대상명 별도 SELECT 제거 — `loadCurrent()` + `resolveTargetName()` 2쿼리를 `EstimateRepositoryImpl`처럼 BPROJM/BCOSTM LEFT JOIN 프로젝션 단일 쿼리로 통일. 목록→상세 순차 로드 시 누적 N+1 | `DeliberationService.java:148`, `ContractService.java:146`, `PaymentService.java:176`, 탐지: 2026-06-09 |
 | [Open] | Medium | `BPAYTM`(회차별 지급) `(DOC_MNG_NO, DOC_VRS_SNO, DEL_YN)` 보조 인덱스 검토 — PK에 DEL_YN 미포함으로 `findBy...AndDelYn()` 시 PK 범위 스캔 후 필터. 지급 회차 누적 시 IO 증가 | `V20260607_011:60`, `PaymentService.java:178`, 탐지: 2026-06-09 |
 | [Open] | Low    | `BestimL`/`BesttmL` 로그 엔티티가 `SEQ_BESTIL`/`SEQ_BESTTL` 시퀀스를 정확히 참조하는지 `AuditLogIdGenerator` 파생 로직과 대조 검증 (`V20260607_004`에서 `SEQ_BESTIDL→SEQ_BESTTL` rename) | `V20260607_004:15`, `V20260607_002:105-107`, 탐지: 2026-06-09 |
+| [Open] | High   | 메뉴 권한 매핑 `athByMenu()` 캐시 도입 — `CMENUA` 전체 조회가 모든 인증 사용자의 페이지 이동마다 실행됨(`getMenuTree`/`getAdminMenuTree` 각각 호출). 준정적 데이터이므로 `CodeService`의 `@Cacheable` 패턴 적용 + `AdminMenuService` 쓰기 경로에 `@CacheEvict`. readOnly 트랜잭션 프록시 중첩 주의(별도 캐시 빈 분리 검토) | `MenuQueryService.java:41,58`, 탐지: 2026-06-12 |
+| [Open] | High   | `TPRMPP_CMENUA` DEL_YN 인덱스 추가 — `findAllActive()`의 `DEL_YN='N'` 필터가 PK 외 인덱스 없이 수행. `(DEL_YN, MNU_ID)` 복합 인덱스 후보(`findActiveByMnuId`도 동시 이득) | `V20260603_007__CreateMenuTables.sql`, `CmenuaRepository`, 탐지: 2026-06-12 |
+| [Open] | Medium | `TPRMPP_CMENUM` DEL_YN 인덱스 검토 — `IDX_CMENUM_TREE` 선두 컬럼이 `SRE_TC`라 `findAllActive()`에 미활용. 소규모 테이블이므로 `EXPLAIN PLAN` 확인 후 적용 판단 | `V20260603_007__CreateMenuTables.sql`, 탐지: 2026-06-12 |
+| [Open] | Low    | `applyAthIds()` 적용 대상 최소화 — prune 이후 잔존 노드의 mnuId 집합 기준으로 권한 Map 구성 검토. 캐시 도입(위 High 항목) 후 실익 재평가 | `MenuQueryService.java:62`, 탐지: 2026-06-12 |
 
 ### 프론트엔드 리팩토링
 
@@ -176,9 +184,9 @@
 | [Open] | Low | `ReviewVersionHistory.vue` 로컬 `formatDateTime()` 유지 여부 검토 — 축약 표시가 의도라면 함수명을 도메인 전용으로 변경 | `components/review/ReviewVersionHistory.vue` |
 | [Open] | Medium | `info/index.vue` 정적 KPI/공지/일정 데이터를 실제 API 또는 운영 데이터 소스로 전환 | 파일 헤더가 정적 데이터/향후 API 연결 예정임을 명시 |
 | [Open] | High | 프론트 ESLint 오류 정리 — dead import, 미사용 변수, type-only import, 템플릿 파싱 오류 우선 처리 | 2026-05-14 `npm run lint` 기준 62 errors / 137 warnings. `EvalSummaryPanel.vue`, `result/[id].vue`, cost 컴포넌트 등 |
-| [Open] | High | `useCouncilCodes.ts` 코드명 필드 불일치 수정 — `CodeItem`은 `cdvaNm`을 정의하지만 매핑 로직은 존재하지 않는 `cNm`을 사용 | 2026-05-19 `npm run typecheck` 실패. `statusMap`/`hearingMap`/`memberTypeMap`에서 실제 CCODEM 응답 필드 SoT 확인 필요 |
+| [Done] | High | `useCouncilCodes.ts` 코드명 필드 불일치 수정 — `statusMap`/`hearingMap`/`memberTypeMap` 모두 `c.cdvaNm` 매핑 사용, `CodeItem`에 `cNm`/`cdvaNm` 정의 확인 | 코드 확인 2026-06-12: `useCouncilCodes.ts:68,73,78` |
 | [Open] | High | 전산업무비 컴포넌트 지급주기 prop 이름 정합화 — `dfrCleCOptions`와 호출부 `dfr-cle-options` 불일치 해소 | 2026-05-19 `npm run typecheck` 실패. `TerminalTableSection.vue`, `CostFormTableSection.vue`, `TerminalFormDialog.vue`, `pages/info/cost/form.vue` |
-| [Open] | High | 협의회 평가 요약 템플릿 닫힘 구조 정리 | `EvalSummaryPanel.vue` `vue/no-parsing-error`, `x-invalid-end-tag` 발생 |
+| [Done] | High | 협의회 평가 요약 템플릿 닫힘 구조 정리 | ESLint 단독 실행 2026-06-12: `EvalSummaryPanel.vue` 오류 0건 (847a947 개선 반영) |
 | [Open] | High | 협의회 결과 페이지 단일 template root 복구 | `pages/info/council-request/result/[id].vue`의 `EmployeeSearchDialog`가 루트 밖에 남아 `vue/no-multiple-template-root` 발생 |
 | [Open] | Medium | `budget/list.vue` 탭 제거 후 잔여 dead code 정리 | 미사용 import/filter/pageSize/download 함수 다수 |
 | [Open] | Medium | cost 컴포넌트 type-only import 및 미사용 환율 함수 정리 | `TerminalFormDialog.vue`, `CostFormTableSection.vue`, `TerminalTableSection.vue` lint 유형 |
@@ -197,6 +205,9 @@
 | [Open] | Low    | 사업집행 3개 목록 페이지 대상구분 선택 Dialog 로직 공통화 — `deliberation/contract/payment/index.vue`가 `selectedTgt`/`selectedProject`/`selectedCost`/`hasTarget`/`selectedCncdRfrNo`/`resetSelection` 패턴을 중복 보유. `useProjectCostSelector()` composable 추출 | `pages/project/{deliberation,contract,payment}/index.vue:56~`, 탐지: 2026-06-09 |
 | [Open] | Low    | 사업집행 4개 composable `changeStatus(docNo, stsTc)` 중복 — URL만 다르고 구현 동일. 중장기 `useDocumentApi(baseUrl)` 팩토리 도입 시 일괄 처리 후보 | `useEstimates.ts:115`, `useDeliberations.ts:115`, `useContracts.ts:115`, `usePayments.ts:117`, 탐지: 2026-06-09 |
 | [Open] | Low    | `contract/index.vue` 빈 `/* ── 상태 표시 ── */` 주석 잔재 제거 — `estimate/index.vue`의 statusLabel 헬퍼 자리이나 contract에서는 함수 없이 주석만 남음 | `pages/project/contract/index.vue:57`, 탐지: 2026-06-09 |
+| [Open] | High | `result/[id].vue` `reviewProgressEnabled`의 `s >= '05'` 문자열 사전순 비교 — `'SKIPPED' >= '05'`도 true라 생략된 협의회에서 위원 검토 패널이 노출될 수 있음. 허용 상태 집합(`Set.has`) 판정으로 교체 (FIXME 주석 등록 완료) | `pages/info/council-request/result/[id].vue:147`, 탐지: 2026-06-12 |
+| [Open] | Low  | `AppSidebar.vue` 미사용 함수 `_isGroupExpanded` 제거 — 호출 0건, eslint-disable 지시어로 가려져 있음 | `AppSidebar.vue:176`, 탐지: 2026-06-12 |
+| [Open] | Low  | 위원유형 라벨 로직 중복 정리 — `ScheduleStatus.vue` 로컬 맵(`{'01':'당연',...}`)을 `useCouncilCodes().getMemberTypeLabel`로 통일하고, `CommitteeList.vue`/`CommitteeSelector.vue`의 1줄 `typeLabel` 래퍼 제거 | `ScheduleStatus.vue:167-169`, `CommitteeList.vue:34`, `CommitteeSelector.vue:310`, 탐지: 2026-06-12 |
 
 ### 백엔드 리팩토링
 
@@ -219,6 +230,7 @@
 
 | 상태 | 일자 | 영역 | 조치 |
 |------|------|------|------|
+| [Done] | 2026-06-12 | 주석/문서/백로그 | REVIEW.md 재실행 (델타 중심: BE 26a71cd 메뉴 athIds, FE 9dcdc68..HEAD 4커밋) — Task1: 협의회 상태코드 3→2자리 전환 미반영 주석 5건 교정(`[id].vue`, `result/[id].vue`), `MenuQueryService.getMenuTree` JavaDoc athIds 반영, `types/menu.ts` athIds TSDoc 전환, 오류삼킴 FIXME/TODO 5곳 등록. Task2/3: FE README 메뉴 표시 유틸·council 2자리 코드 반영, 루트 README 메뉴 숨김 계층(`admin:true` 플래그→DB 권한 매핑) 정정·감사로그 고정 카운트 제거, BE CLAUDE.md §5.5.5 athIds 이원 용도·메뉴 유형 HED 허용(`AdminMenuService:174` 기준) 반영, 감사로그 31쌍 재검증(검증일 부기), FE CLAUDE.md 메뉴 왕관 유틸·협의회 2자리 코드 규칙 추가(인증 코드 무변경 확인으로 보안 규칙 보강 불필요). Task4: silent-failure 4건(High 1)·메뉴 DB 4건(캐시·인덱스, High 2)·리팩토링 3건 신규 등록, `useCouncilCodes` cdvaNm·`EvalSummaryPanel` 템플릿 오류 해소 확인 → [Done] 전환. |
 | [Done] | 2026-06-09 | 주석/문서/백로그 | REVIEW.md 재실행 — Task1: java/typescript/silent-failure 병렬 탐지 결과 검증(기존 추적·false positive 다수 확인, `MenuChildrenResolver` 영문주석 지적은 이미 한글로 오탐), 신규 도메인 코드는 한글 주석 충실 → `PaymentController` 클래스 주석 1건 보강. Task2/3: 정보화사업 집행 4단계(`domain/{estimate,deliberation,contract,payment}`, `/api/project/**`)와 `infra/eai`를 BE/FE README·CLAUDE.md에 반영, 소스 통계 현행화(BE 291→350 Java/96→115 test/64→79 entity/감사로그 25→31, FE composables 52→56/pages 58→67), CLAUDE.md §5.18~5.19 집행 4단계·EAI 섹션 신설. Task3 security-reviewer: 집행 4단계 소유권 검증 누락·bbrC 필터 미적용 등 HIGH 2건 외 보안 7건 등록. Task4 database-reviewer: 시퀀스 NOCACHE·DEL_YN 복합인덱스·상세 N+1 등 DB 7건 등록. |
 | [Done] | 2026-06-05 | 주석/문서/백로그 | REVIEW.md 재실행 — DB 기반 메뉴(`domain/menu`, `useMenu`, `useAdminMenu`) 주석과 README/CLAUDE 반영, 소스 통계 현행화(백엔드 291 Java/96 test/63 entity, 프론트 84 components/52 composables/58 pages), 실시간 로그 타입 경로 정정. stale `approval/list.vue` toast 항목 [Done] 전환, `PlanService` 라인 근거 126-130으로 현행화, 프론트 silent fallback 3건과 DB N+1/실시간 로그 인덱스 후보 추가. |
 | [Done] | 2026-06-01 | 백로그 | silent-failure-hunter·refactor-cleaner·database-reviewer·security-reviewer 4개 분석 결과 신규 7건(High 3·Medium 4) 추가. `NotificationService.send()` recipientEno null 가드 구현 완료 확인 → [Done] 전환. `QnaService` ROLE_ITPAD001·`PlanService.java:108` 빈 catch 코드 미수정 확인 → [Open] 유지. `cors.allowed-origins` High 보안 항목 신규 등록. `Collectors.toList()` 48곳 파일 목록 구체화. `ChangeLogEntityListener:133` Medium·`PlanService:443` High·`budget/approval.vue:458` Medium silent-failure 신규 등록. DB N+1 2건(`BudgetWorkService.getProjectSummary` High·`resolveProjectName` Medium) 신규 등록. |

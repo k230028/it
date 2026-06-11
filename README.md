@@ -267,14 +267,14 @@ Press Enter to open https://github.com/login/device in your browser...
 | 계층 | 기술 | 역할 |
 |------|------|------|
 | **1. 라우트 가드** | `middleware/admin.ts` | 미권한 사용자 `/login` 리다이렉트 (UX) |
-| **2. 메뉴 숨김** | `AppSidebar.vue` `admin: true` 플래그 | 비관리자 메뉴 불표시 (UX) |
+| **2. 메뉴 숨김** | DB 메뉴 권한 매핑(`Cmenua`) + `useMenu()` 서버 필터링 | 비관리자 메뉴 불표시, 관리자 전용 메뉴는 왕관 아이콘 표시 (UX) |
 | **3. API 보안** | `@PreAuthorize("hasRole('ADMIN')")` | API 직접 호출 차단 **(진정한 보안 경계)** |
 
 **주의:** 1, 2번은 UX 보호일 뿐. **백엔드 API 보호가 최종 보안 경계**입니다. 비관리자가 개발자도구에서 쿠키 조작 후에도 API 호출 불가능해야 합니다.
 
 ### 4.4 변경 로그 (Audit Log) — 자동 추적
 
-**대상:** 23개 도메인 엔티티 (BaseLogEntity 상속)
+**대상:** `@LogTarget` 부착 업무 엔티티 전체 (짝이 되는 `*L` 로그 엔티티가 `BaseLogEntity` 상속)
 
 **메커니즘:**
 - JPA `@PrePersist`/`@PreUpdate` 콜백 → `ChangeLogEntityListener` → `AuditLogPersister` → DB 저장
@@ -283,7 +283,7 @@ Press Enter to open https://github.com/login/device in your browser...
 
 **특징:**
 - 로그 저장 실패는 원본 작업 롤백을 피하도록 catch 처리
-- 23개 `*L` 로그 엔티티 (예: BprojmL, CcodemL, CapplmL)
+- `*L` 로그 엔티티 (예: BprojmL, CcodemL, CapplmL)
 
 ### 4.5 이중 API 호출 패턴
 
