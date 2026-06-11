@@ -120,7 +120,7 @@ C:\> setx GEMINI_API_KEY "실제_API_키"      :: Gemini 사용 시
 C:\> setx EAI_URL "https://eai.kdb.internal/..."  :: EAI 운영 시
 ```
 
-JWT_SECRET 생성
+[참고] JWT_SECRET 생성
 ```Bash
 cd it_backend\scripts
 
