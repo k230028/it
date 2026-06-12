@@ -342,5 +342,8 @@
 ## 메타 용어사전(table.csv) 정합성 후속 과제 (2026-06-11 스키마 통일 작업 잔여)
 
 - [ ] 메타 미등재 테이블 13종 등재 — `BCHKLC`(사전점검 항목), 사업집행 4단계(`BESTIM/BESTTM/BDELIM/BCONTM/BPAYMM/BPAYTM` + 각 `*L` 로그). 컬럼명은 이미 표준 명칭 사용 중.
-- [ ] 메타 `CBLBCM/CBLBCL.NAC_ID` 폭 정정(10 → 16) — 실데이터/채번 형식 `NAC-{YYYY}-{NNNN}`(13자)이 10자를 초과하여 DB는 VARCHAR2(16) 유지 중 (의도적 잔여 불일치, `V20260611_001` 헤더 참조).
+- [x] 메타(table.csv) `CBLBCM/CBLBCL` 게시물고유ID 컬럼 정정 — DB·엔티티는 `NAC_UNQ_ID` VARCHAR2(16) 변경 완료(`V20260612_003`), table.csv도 `NAC_UNQ_ID`(16)·`DFR_DT`(지급일자) 등재 반영 확인(2026-06-12). 컬럼 순서 정합은 `V20260612_004`로 완료.
+- [ ] 메타 `BPAYTM/BPAYTL.DFR_DT` NULL여부 정정(N → Y) — 지급 회차는 지급일자 미확정(작성중) 상태로 저장될 수 있어 DB는 NULL 허용 유지(2026-06-12 결정, `V20260612_004` 헤더 참조). 운영 메타 NULL여부=N 등재가 stale — 정정 필요.
 - [ ] BPOVWM 드롭된 `PRJ_BG_AMR`(테스트 1행) 값은 `RQM_BG_AMT`로 승계되지 않음 — 운영 데이터 이관 시 소요예산금액 원천 확인 필요.
+- [ ] `TPRMPP_BBUGTM` PK 정합 보류 — 운영(table.csv)은 PK(`BG_NO`) 단일이나 로컬은 PK(`BG_NO`,`SNO`)이고 `BG_NO` 중복 20건 존재. 운영 PK 정의 재확인(메타 stale 가능성) 또는 로컬 데이터 중복 정리 후 `V20260612_002` 재실행 시 자동 정합 (2026-06-12 전면 정합 작업 잔여).
+- [ ] `TPRMPP_BRDOCM` PK 정합 보류 — 운영은 PK(`DOC_MNG_NO`) 단일이나 로컬은 PK(`DOC_MNG_NO`,`DOC_VRS_SNO`)이고 중복 2건 존재. 문서 버전 관리 구조상 운영 PK 정의 재확인 필요. 해소 후 `V20260612_002` 재실행 시 자동 정합 (2026-06-12 전면 정합 작업 잔여).
