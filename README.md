@@ -373,6 +373,8 @@ Press Enter to open https://github.com/login/device in your browser...
 - 아키텍처: Controller → Service → Repository (QueryDSL) → Oracle DB
 - 변경 로그: JPA 리스너 기반 자동 감사 (23개 도메인)
 - API 응답: 표준 JSON (success/data/message/meta)
+- 폐쇄망 빌드: 외부망에서 수집한 `C:\maven-repo`를 file:// 저장소로 사용
+  (→ `it_backend/README.md` §10.1, 변환 스크립트 `it_backend/make-local-maven-repo.ps1`)
 
 ### 7.2 프론트엔드 (Nuxt 4)
 - **[`it_frontend/README.md`](./it_frontend/README.md)** — 전체 기술 스택, 컴포넌트 구조 (84개), Composable 패턴
