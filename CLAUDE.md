@@ -36,8 +36,8 @@ it/
 | 서비스 | URL | 시작 명령 |
 |--------|-----|----------|
 | 프론트엔드 | http://localhost:3000 | `cd it_frontend && npm run dev`        |
-| 백엔드 API | http://localhost:8080 | `cd it_backend && ./gradlew bootRun`   |
-| Swagger UI | http://localhost:8080/swagger-ui/index.html | (백엔드 기동 후) |
+| 백엔드 API | http://localhost:28080 | `cd it_backend && ./gradlew bootRun`   |
+| Swagger UI | http://localhost:28080/swagger-ui/index.html | (백엔드 기동 후) |
 | Oracle DB | 127.0.0.1:11521/XEPDB1 | `.\it_database\connect-db.ps1` |
 
 ### 3.1.1 로컬 Oracle DB 접속
@@ -52,7 +52,7 @@ it/
 |------------|----------------------------|-----------|
 | WebTobe    | https://it.kdb.co.kr:20443 |-----------|
 | 프론트엔드 | (CSR)                      | `cd it_frontend && npm run generate` |
-| 백엔드 API | http://localhost:8080      | `cd it_backend && java -jar ooo.war` |
+| 백엔드 API | http://localhost:28080     | `cd it_backend && java -jar ooo.war` |
 
 - DB 스키마 분리 (전 환경 공통): 접속 계정은 `ITPAPP`, 객체 소유 스키마는 `ITPOWN`(`ITPOWN.테이블명`으로 접근).
   베이스 설정이 `CURRENT_SCHEMA=ITPOWN`으로 세션을 전환하므로 코드에 스키마 접두어를 쓰지 않습니다.
