@@ -627,7 +627,8 @@ TPRMPP_BPROJM,프로젝트관리_정보화사업기본,HRF_PLN_CONE,향후계획
 TPRMPP_BPROJM,프로젝트관리_정보화사업기본,LST_YN,최종여부,,Y,,VARCHAR2,1,
 TPRMPP_BPROJM,프로젝트관리_정보화사업기본,MN_PRG_CONE,주요진행내용,,Y,,VARCHAR2,2000,
 TPRMPP_BPROJM,프로젝트관리_정보화사업기본,TOT_RQM_AMT,총소요금액,,Y,,NUMBER,18,3
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,MPL_AMT,예정금액,,Y,,NUMBER,18,3
+TPRMPP_BPROJM,프로젝트관리_정보화사업기본,MPL_CPIT_AMT,예정자본금액,,Y,,NUMBER,18,3
+TPRMPP_BPROJM,프로젝트관리_정보화사업기본,MPL_XP_AMT,예정비용금액,,Y,,NUMBER,18,3
 TPRMPP_BPROJM,프로젝트관리_정보화사업기본,ODN_YN,경상여부,,Y,,VARCHAR2,1,
 TPRMPP_BPROJM,프로젝트관리_정보화사업기본,PLM_DES,문제설명,,Y,,VARCHAR2,4000,
 TPRMPP_BPROJM,프로젝트관리_정보화사업기본,PRLM_HRK_OGZ_C_CONE,인사상위조직코드내용,,Y,,VARCHAR2,100,
@@ -788,7 +789,8 @@ TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,HRF_PLN_CONE,
 TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,LST_YN,최종여부,,Y,,VARCHAR2,1,
 TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,MN_PRG_CONE,주요진행내용,,Y,,VARCHAR2,2000,
 TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,TOT_RQM_AMT,총소요금액,,Y,,NUMBER,18,3
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,MPL_AMT,예정금액,,Y,,NUMBER,18,3
+TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,MPL_CPIT_AMT,예정자본금액,,Y,,NUMBER,18,3
+TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,MPL_XP_AMT,예정비용금액,,Y,,NUMBER,18,3
 TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,ODN_YN,경상여부,,Y,,VARCHAR2,1,
 TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,PLM_DES,문제설명,,Y,,VARCHAR2,4000,
 TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,PRLM_HRK_OGZ_C_CONE,인사상위조직코드내용,,Y,,VARCHAR2,100,
