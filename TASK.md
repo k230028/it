@@ -1,11 +1,11 @@
 ﻿# IT Portal 백로그
 
-> 기준일: 2026-06-09
+> 기준일: 2026-06-14
 > 목적: `REVIEW.md` 정비 과정에서 확인한 기술 부채, 미구현 항목, 후속 검증 과제를 추적합니다.
 
 ## 진행 중
 
-> 최종 업데이트: 2026-06-12
+> 최종 업데이트: 2026-06-14
 
 ### 보안
 
@@ -97,7 +97,7 @@
 | [Open] | Medium   | `FileService.downloadFile()` `MalformedURLException` 원인 예외 보존 — `CustomGeneralException` 생성 시 cause를 포함해 파일 경로 생성 실패 스택트레이스를 남김 | `FileService.java:522`, 발견일: 2026-06-01 |
 | [Open] | Medium   | `LoginAttemptService` 조회 전용 트랜잭션 경계 명시 — 클래스 레벨 `@Transactional(readOnly=true)` 적용 검토 | `LoginAttemptService.java`, 발견일: 2026-06-01 |
 | [Open] | Medium   | `FeasibilityService.replacePerformances()` 물리 DELETE 예외 정책 정리 — `Bperfm` 성과지표도 Soft Delete 원칙을 지키도록 PK 재삽입 문제를 해결하거나 운영 예외로 승인 | `FeasibilityService.java:223`, 발견일: 2026-06-01 |
-| [Open] | High     | `PlanService.applyExistingPlanSnapshot()` 빈 `catch (JsonProcessingException) {}` — 스냅샷 파싱 실패 시 카운트 0 폴백으로 잘못된 예산 보고서 산출                                                                             | `PlanService.java:126-130`, 현행화: 2026-06-05                                                           |
+| [Open] | High     | `PlanService.applyExistingPlanSnapshot()` 빈 `catch (JsonProcessingException) {}` — 스냅샷 파싱 실패 시 카운트 0 폴백으로 잘못된 예산 보고서 산출                                                                             | `PlanService.java:133-137` (FIXME [B-H-05]), 현행화: 2026-06-14                                                           |
 | [Open] | High     | `useTiptapImageInsertion.ts` 임시 blob URL 미해제 — 이미지 업로드 실패 catch 경로 + 성공 경로 모두 `URL.revokeObjectURL()` 보장                                                                                            | `useTiptapImageInsertion.ts:60,111,135` 메모리 누수 위험                                |
 | [Open] | Medium   | `usePdfReport.ts` 한글 폰트 로드 실패 시 Roboto 폴백 — 한글 문자 깨짐 가능, 사용자 경고 토스트 추가                                                                                                                              | `usePdfReport.ts:174` 무경고 폴백                                                     |
 | [Open] | Medium   | Excalidraw/HWPX/Tiptap 실패 경로 사용자 알림 보강 — 내보내기 실패, 장면 복원 실패, 이미지 누락을 빈 결과와 구분 | `ExcalidrawWrapper.vue`, `ExcalidrawNodeView.vue`, `useHwpxExport.ts`, `hwpx-images.ts`, `useTiptapTableTools.ts` |
@@ -121,6 +121,8 @@
 | [Open] | Medium   | `council-request/[id].vue` — `saveTemp`/`saveComplete`/`submitApproval` catch 바인딩 없음. 백엔드 오류 메시지(`e.data?.message`) 대신 일반 문구만 노출. `prepare/[id].vue`의 `catch (e: unknown)` 패턴으로 통일 (TODO 주석 등록 완료) | `pages/info/council-request/[id].vue:370,407,476`, 탐지: 2026-06-12 |
 | [Open] | Medium   | `council-request/[id].vue` — `councilStatus`의 `?? '01'` 폴백이 데이터 미로드(null)를 DRAFT로 둔갑시켜 편집 가드 해제. 로드 실패 상태에서 빈 데이터 저장 위험. null 유지 + 가드 보강 (TODO 주석 등록 완료) | `pages/info/council-request/[id].vue:189`, 탐지: 2026-06-12 |
 | [Open] | Low      | `CommitteeSelector.vue`(위원 저장·기본위원 배정)·`ScheduleStatus.vue`(일정 확정) catch 바인딩 없음 — 업무 오류 메시지 미전달. `EvaluationForm.vue` 오류 추출 패턴으로 통일 | `CommitteeSelector.vue:261,295`, `ScheduleStatus.vue:159`, 탐지: 2026-06-12 |
+| [Open] | Medium   | `AdminLogService.readField()` — 클래스 계층에서 필드 미발견 시 `null` 반환에 warn 로그 없음(TODO [B-M-01] 존재). 관리자 로그 상세 화면에서 특정 컬럼이 조용히 빈값 표시, 엔티티 필드명 오타 시 탐지 불가. 반환 전 `log.warn(... entity={} field={})` 추가 | `AdminLogService.java:232-241`, 탐지: 2026-06-14 |
+| [Open] | Low      | `council-request/result/[id].vue` — `handleNotify`(통보 성공이나 수신자 null 시 무피드백)·`handleRequestApproval`·`handleStartResultWriting` catch 바인딩 없음. 백엔드 오류 메시지(`e.data?.message`) 미전달. `prepare/[id].vue`의 `catch (e: unknown)` 패턴으로 통일 | `pages/info/council-request/result/[id].vue:273,299,314`, 탐지: 2026-06-14 |
 
 ### DB / JPA 최적화
 
@@ -172,6 +174,8 @@
 | [Open] | High   | `TPRMPP_CMENUA` DEL_YN 인덱스 추가 — `findAllActive()`의 `DEL_YN='N'` 필터가 PK 외 인덱스 없이 수행. `(DEL_YN, MNU_ID)` 복합 인덱스 후보(`findActiveByMnuId`도 동시 이득) | `V20260603_007__CreateMenuTables.sql`, `CmenuaRepository`, 탐지: 2026-06-12 |
 | [Open] | Medium | `TPRMPP_CMENUM` DEL_YN 인덱스 검토 — `IDX_CMENUM_TREE` 선두 컬럼이 `SRE_TC`라 `findAllActive()`에 미활용. 소규모 테이블이므로 `EXPLAIN PLAN` 확인 후 적용 판단 | `V20260603_007__CreateMenuTables.sql`, 탐지: 2026-06-12 |
 | [Open] | Low    | `applyAthIds()` 적용 대상 최소화 — prune 이후 잔존 노드의 mnuId 집합 기준으로 권한 Map 구성 검토. 캐시 도입(위 High 항목) 후 실익 재평가 | `MenuQueryService.java:62`, 탐지: 2026-06-12 |
+| [Open] | Medium | `BprojmL` 변경로그 엔티티에 `cncdRfrNo`(`CNCD_RFR_NO`) 컬럼 누락 — 마스터 `Bprojm`은 보유(`Bprojm.java:203`)하나 미러 엔티티에 미정의. `AuditLogPersister`가 필드명 기준 복사하므로 관련프로젝트관리번호 변경이 감사로그에 미기록. `BprojmL`에 필드 추가 + `TPRMPP_BPROJL` ADD 마이그레이션 필요 | `BprojmL.java`, 탐지: 2026-06-14 |
+| [Open] | Low    | `BcostmL` JPA `@Column(length)` 속성이 실제 DDL/마스터와 불일치(`BG_NO` 32 vs 15, `IOE_C` 3 vs 7, `SVN_DPM_C` 3 vs 20). 실제 `TPRMPP_BCOSTL` 컬럼폭은 정상이라 런타임 영향 없으나(마이그레이션 기반 DDL) 엔티티 메타가 부정확 → `length` 정정 | `BcostmL.java:26,35,71`, 탐지: 2026-06-14 |
 
 ### 프론트엔드 리팩토링
 
@@ -208,6 +212,7 @@
 | [Open] | High | `result/[id].vue` `reviewProgressEnabled`의 `s >= '05'` 문자열 사전순 비교 — `'SKIPPED' >= '05'`도 true라 생략된 협의회에서 위원 검토 패널이 노출될 수 있음. 허용 상태 집합(`Set.has`) 판정으로 교체 (FIXME 주석 등록 완료) | `pages/info/council-request/result/[id].vue:147`, 탐지: 2026-06-12 |
 | [Open] | Low  | `AppSidebar.vue` 미사용 함수 `_isGroupExpanded` 제거 — 호출 0건, eslint-disable 지시어로 가려져 있음 | `AppSidebar.vue:176`, 탐지: 2026-06-12 |
 | [Open] | Low  | 위원유형 라벨 로직 중복 정리 — `ScheduleStatus.vue` 로컬 맵(`{'01':'당연',...}`)을 `useCouncilCodes().getMemberTypeLabel`로 통일하고, `CommitteeList.vue`/`CommitteeSelector.vue`의 1줄 `typeLabel` 래퍼 제거 | `ScheduleStatus.vue:167-169`, `CommitteeList.vue:34`, `CommitteeSelector.vue:310`, 탐지: 2026-06-12 |
+| [Done] | High | `utils/common.ts` 협의회 상태/심의유형 매핑 구 3자리 코드 잔재 수정 — `COUNCIL_STATUS_TAG_MAP` 키와 `getHearingTypeLabel` switch case를 2자리(`'01'`~`'13'`/`'01'`~`'05'`)로 교체. dead branch 해소(`getCouncilTagClass`/`getHearingTypeLabel` 정상 동작). `tests/unit/utils/common.test.ts` 해당 케이스 2자리로 갱신, 124 tests 통과 | `app/utils/common.ts:342-356,375-383`, 검증일: 2026-06-15 |
 
 ### 백엔드 리팩토링
 
@@ -230,6 +235,7 @@
 
 | 상태 | 일자 | 영역 | 조치 |
 |------|------|------|------|
+| [Done] | 2026-06-14 | 주석/문서/백로그 | REVIEW.md 재실행 (델타: 2026-06-12 회차 이후 BE `26a71cd..HEAD` 금액 컬럼 개편·미사용 테이블 정비·폐쇄망 빌드, FE/DB 동일 구간). **Task1**: 검증 후 stale 주석 5건 교정 — `CostRepositoryCustom`(@param 필드명)·`CostRepositoryImpl`(예시 SQL `IT_MNGC_NO`→`BG_NO`) 금액 컬럼 개편 반영, `BplanmL` IT_PRJ_RMK 주석(`IT예산비고`→`IT프로젝트비고`), `types/council.ts` 2자리 코드 주석 2건. java/ts/silent-failure 병렬 탐지는 다수 기추적·오탐 확인. **Task2/3**: 소스 통계 현행화(BE 350→347 Java/115→116 test/79→77 엔티티/36→38 컨트롤러, FE 84→83 컴포넌트·types 11→15, `@IdClass` 15→29), 감사로그 31→30 전반 반영(Bchklc 드롭, JavaDoc 예시 중복 보정), 폐쇄망 빌드는 이미 문서화 확인, Bchklc 드롭에 따른 README 트리·감사표·data-model 참조 3건 정리 + 협의회 10→9 Repository 정정. **Task4**: 신규 5건 등록 — `common.ts` 3자리 dead branch(High), `BprojmL` CNCD_RFR_NO 누락(Medium), `AdminLogService.readField` warn 누락(Medium), `BcostmL` length 불일치(Low), `result/[id].vue` catch 바인딩(Low). `PlanService` 빈 catch 라인 현행화(126-130→133-137), 메타 미등재 BCHKLC 드롭 반영. |
 | [Done] | 2026-06-12 | 주석/문서/백로그 | REVIEW.md 재실행 (델타 중심: BE 26a71cd 메뉴 athIds, FE 9dcdc68..HEAD 4커밋) — Task1: 협의회 상태코드 3→2자리 전환 미반영 주석 5건 교정(`[id].vue`, `result/[id].vue`), `MenuQueryService.getMenuTree` JavaDoc athIds 반영, `types/menu.ts` athIds TSDoc 전환, 오류삼킴 FIXME/TODO 5곳 등록. Task2/3: FE README 메뉴 표시 유틸·council 2자리 코드 반영, 루트 README 메뉴 숨김 계층(`admin:true` 플래그→DB 권한 매핑) 정정·감사로그 고정 카운트 제거, BE CLAUDE.md §5.5.5 athIds 이원 용도·메뉴 유형 HED 허용(`AdminMenuService:174` 기준) 반영, 감사로그 31쌍 재검증(검증일 부기), FE CLAUDE.md 메뉴 왕관 유틸·협의회 2자리 코드 규칙 추가(인증 코드 무변경 확인으로 보안 규칙 보강 불필요). Task4: silent-failure 4건(High 1)·메뉴 DB 4건(캐시·인덱스, High 2)·리팩토링 3건 신규 등록, `useCouncilCodes` cdvaNm·`EvalSummaryPanel` 템플릿 오류 해소 확인 → [Done] 전환. |
 | [Done] | 2026-06-09 | 주석/문서/백로그 | REVIEW.md 재실행 — Task1: java/typescript/silent-failure 병렬 탐지 결과 검증(기존 추적·false positive 다수 확인, `MenuChildrenResolver` 영문주석 지적은 이미 한글로 오탐), 신규 도메인 코드는 한글 주석 충실 → `PaymentController` 클래스 주석 1건 보강. Task2/3: 정보화사업 집행 4단계(`domain/{estimate,deliberation,contract,payment}`, `/api/project/**`)와 `infra/eai`를 BE/FE README·CLAUDE.md에 반영, 소스 통계 현행화(BE 291→350 Java/96→115 test/64→79 entity/감사로그 25→31, FE composables 52→56/pages 58→67), CLAUDE.md §5.18~5.19 집행 4단계·EAI 섹션 신설. Task3 security-reviewer: 집행 4단계 소유권 검증 누락·bbrC 필터 미적용 등 HIGH 2건 외 보안 7건 등록. Task4 database-reviewer: 시퀀스 NOCACHE·DEL_YN 복합인덱스·상세 N+1 등 DB 7건 등록. |
 | [Done] | 2026-06-05 | 주석/문서/백로그 | REVIEW.md 재실행 — DB 기반 메뉴(`domain/menu`, `useMenu`, `useAdminMenu`) 주석과 README/CLAUDE 반영, 소스 통계 현행화(백엔드 291 Java/96 test/63 entity, 프론트 84 components/52 composables/58 pages), 실시간 로그 타입 경로 정정. stale `approval/list.vue` toast 항목 [Done] 전환, `PlanService` 라인 근거 126-130으로 현행화, 프론트 silent fallback 3건과 DB N+1/실시간 로그 인덱스 후보 추가. |
@@ -341,7 +347,7 @@
 
 ## 메타 용어사전(table.csv) 정합성 후속 과제 (2026-06-11 스키마 통일 작업 잔여)
 
-- [ ] 메타 미등재 테이블 13종 등재 — `BCHKLC`(사전점검 항목), 사업집행 4단계(`BESTIM/BESTTM/BDELIM/BCONTM/BPAYMM/BPAYTM` + 각 `*L` 로그). 컬럼명은 이미 표준 명칭 사용 중.
+- [ ] 메타 미등재 테이블 12종 등재 — 사업집행 4단계(`BESTIM/BESTTM/BDELIM/BCONTM/BPAYMM/BPAYTM` + 각 `*L` 로그). 컬럼명은 이미 표준 명칭 사용 중. (`BCHKLC` 사전점검 항목은 2026-06-12 `V20260612_001`로 테이블 드롭되어 등재 불필요)
 - [x] 메타(table.csv) `CBLBCM/CBLBCL` 게시물고유ID 컬럼 정정 — DB·엔티티는 `NAC_UNQ_ID` VARCHAR2(16) 변경 완료(`V20260612_003`), table.csv도 `NAC_UNQ_ID`(16)·`DFR_DT`(지급일자) 등재 반영 확인(2026-06-12). 컬럼 순서 정합은 `V20260612_004`로 완료.
 - [ ] 메타 `BPAYTM/BPAYTL.DFR_DT` NULL여부 정정(N → Y) — 지급 회차는 지급일자 미확정(작성중) 상태로 저장될 수 있어 DB는 NULL 허용 유지(2026-06-12 결정, `V20260612_004` 헤더 참조). 운영 메타 NULL여부=N 등재가 stale — 정정 필요.
 - [ ] BPOVWM 드롭된 `PRJ_BG_AMR`(테스트 1행) 값은 `RQM_BG_AMT`로 승계되지 않음 — 운영 데이터 이관 시 소요예산금액 원천 확인 필요.

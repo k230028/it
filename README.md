@@ -18,7 +18,7 @@
 - **백엔드:** Spring Boot 4 (Java 25) + Oracle Database 21c XE + JPA/QueryDSL
 - **인증:** JWT httpOnly 쿠키 기반 (Access Token 15분 / Refresh Token 7일)
 - **외부 연동:** Gemini AI (텍스트 생성), SSO(선택적)
-- **소스 통계:** 백엔드 350개 Java 파일 + 115개 테스트 + 79개 엔티티, 프론트엔드 84개 컴포넌트 + 56개 Composable + 67개 페이지
+- **소스 통계:** 백엔드 347개 Java 파일 + 116개 테스트 + 77개 엔티티, 프론트엔드 83개 컴포넌트 + 56개 Composable + 67개 페이지
 
 ---
 
@@ -27,7 +27,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Nuxt 4 (CSR)  http://localhost:3000                        │
-│  - 67개 페이지, 84개 컴포넌트, 56개 Composable             │
+│  - 67개 페이지, 83개 컴포넌트, 56개 Composable             │
 │  - Pinia 상태관리 (인증, 사전협의)                          │
 │  - PrimeVue + Tailwind CSS 스타일링                        │
 └─────────────────────────────────────────────────────────────┘
@@ -35,9 +35,9 @@
 ┌─────────────────────────────────────────────────────────────┐
 │  Spring Boot 4  http://localhost:8080                        │
 │  - 19개 도메인 + 8개 공통 모듈                              │
-│  - 36개 컨트롤러, 350개 Java 파일                          │
+│  - 38개 컨트롤러, 347개 Java 파일                          │
 │  - JWT 인증 + RBAC + Soft Delete                            │
-│  - 변경 로그 (31개 도메인, 자동 추적)                       │
+│  - 변경 로그 (30개 도메인, 자동 추적)                       │
 └─────────────────────────────────────────────────────────────┘
                     ↕
 ┌─────────────────────────────────────────────────────────────┐
@@ -58,7 +58,7 @@ it/
 │   ├── CLAUDE.md         ← 프론트 기술 결정 & API 맵 (개발 표준)
 │   ├── app/              ← 소스 루트 (Nuxt 4 convention)
 │   │   ├── pages/        ← 파일 기반 라우팅 (67개 페이지)
-│   │   ├── components/   ← 재사용 컴포넌트 (84개)
+│   │   ├── components/   ← 재사용 컴포넌트 (83개)
 │   │   ├── composables/  ← 비즈니스 로직 & API 래퍼 (56개)
 │   │   ├── stores/       ← Pinia 상태관리 (인증, 사전협의)
 │   │   ├── types/        ← TypeScript 타입 정의 (11개)
@@ -69,14 +69,14 @@ it/
 ├── it_backend/           ← Spring Boot 4 REST API 서버
 │   ├── README.md         ← 백엔드 상세 가이드 (아키텍처, API, 환경 설정)
 │   ├── CLAUDE.md         ← 백엔드 기술 결정 & 보안 정책 (SoT)
-│   ├── src/main/java/    ← 소스 코드 (350개 파일)
+│   ├── src/main/java/    ← 소스 코드 (347개 파일)
 │   │   └── com/kdb/it/
 │   │       ├── config/   ← Spring 설정 (보안, JPA, Swagger 등)
 │   │       ├── common/   ← 공통 모듈 (인증, 게시판, 결재, 알림)
 │   │       ├── domain/   ← 비즈니스 도메인 (예산, 사업집행 4단계, 협의회, 문서, 로그)
 │   │       ├── infra/    ← 외부 연동 (파일, Gemini AI, EAI 표준전문)
 │   │       └── exception/ ← 전역 예외 처리
-│   ├── src/test/java/    ← JUnit 5 + Mockito 테스트 (115개 파일)
+│   ├── src/test/java/    ← JUnit 5 + Mockito 테스트 (116개 파일)
 │   └── build.gradle      ← Gradle 빌드 스크립트 (Spring Boot 4.0.5)
 │
 ├── it_database/          ← Oracle DB 마이그레이션 & 초기화
@@ -334,7 +334,7 @@ Press Enter to open https://github.com/login/device in your browser...
 | **예산 관리** | `budget/plan`, `status`, `work` | 계획, 현황 대시보드, 편성률 | Bplanm, Bproja, Bbugtm |
 | **사업집행 4단계** | `estimate`, `deliberation`, `contract`, `payment` | 소요예산 산정→과업심의→입찰계약→대금지급 (`/api/project/**`, 상태머신) | Bestim·Besttm, Bdelim, Bcontm, Bpaymm·Bpaymt |
 | **협의회** | `council` | 타당성검토, 위원선정, 평가, 결과 | Basctm, Bevalm, Bperfm 등 9개 |
-| **변경 로그** | `domain/log` | 자동 감사로그 (31개 도메인) | BaseLogEntity 하위 *L 엔티티 |
+| **변경 로그** | `domain/log` | 자동 감사로그 (30개 도메인) | BaseLogEntity 하위 *L 엔티티 |
 | **파일·AI·EAI** | `infra/file`, `infra/ai`, `infra/eai` | 첨부파일, Gemini API, KDB 표준전문 발송(미연동) | Cfilem |
 
 ### 6.2 프론트엔드 주요 모듈 (Nuxt 4 기반)
@@ -371,7 +371,7 @@ Press Enter to open https://github.com/login/device in your browser...
 **주요 내용:**
 - 인증: JWT httpOnly 쿠키 (15분 Access / 7일 Refresh)
 - 아키텍처: Controller → Service → Repository (QueryDSL) → Oracle DB
-- 변경 로그: JPA 리스너 기반 자동 감사 (23개 도메인)
+- 변경 로그: JPA 리스너 기반 자동 감사 (30개 도메인)
 - API 응답: 표준 JSON (success/data/message/meta)
 - 폐쇄망 빌드: 외부망에서 수집한 `C:\maven-repo`를 file:// 저장소로 사용
   (→ `it_backend/README.md` §10.1, 변환 스크립트 `it_backend/make-local-maven-repo.ps1`)
