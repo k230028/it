@@ -57,6 +57,8 @@
 | ⬜ Open | 🟡 Medium | `EnvironmentValidator`에 `eai.enabled`/`EAI_URL` 운영값 검증 추가 — `eai.enabled=false`(기본값)인 채 운영 배포 시 전문이 실제 전송되지 않고 빌드·로깅만 수행(`EaiResult.skip()`)되어 알림이 전송 성공처럼 보임. 운영 프로파일에서 경고 또는 차단 | `EaiProperties.java:36`, `EaiService.java:64`, 발견일: 2026-06-09 |
 | ⬜ Open | 🟡 Medium | `EaiService.sendEai()` 전송 실패 로그 — `e.getMessage()`가 `RestClient` 예외의 EAI URL/내부 경로를 포함할 수 있음. `e.getClass().getSimpleName()` 또는 안전 추출로 교체 | `EaiService.java:81`, 발견일: 2026-06-09 |
 | ⬜ Open | 🟢 Low | `EaiProperties` 컴팩트 생성자 — `enabled=true`이면서 `url`이 공백/null이면 `RestClient.post().uri("")`로 잘못된 발송. `if (enabled && (url==null \|\| url.isBlank())) throw ...` 가드 추가 | `EaiProperties.java:36`, 발견일: 2026-06-09 |
+| ⬜ Open | 🟡 Medium | 소유권 검증 403 표준화 — `BoardPostService`/`BoardCommentService`가 본인 게시물·댓글 수정/삭제 실패에 `CustomGeneralException`(400)을 던짐. 신규 `OwnershipVerifier.verifyOwnerOrAdmin()`(403)로 통일해 QnA와 의미 일관성 확보 (`CostService`는 이미 `AccessDeniedException` 사용) | `BoardPostService`/`BoardCommentService`, 탐지: 2026-06-22(ownership-verifier 후속) |
+| ⬜ Open | 🟢 Low | `it_backend/CLAUDE.md §5.18` 보안 규칙에 신규 공통 유틸 `OwnershipVerifier`(`common/system/security`)를 소유권 검증 표준 수단으로 명시 | `OwnershipVerifier.java`, 탐지: 2026-06-22 |
 
 ### 📦 의존성 취약점 (Snyk, 업스트림 미해결)
 
