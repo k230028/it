@@ -1,21 +1,21 @@
 # IT Portal 백로그
 
-> 기준일: 2026-06-14
+> 기준일: 2026-06-21
 > 목적: `REVIEW.md` 정비 과정에서 확인한 기술 부채, 미구현 항목, 후속 검증 과제를 추적합니다.
 
 ## 진행 중
 
-> 최종 업데이트: 2026-06-14
+> 최종 업데이트: 2026-06-21
 
 ### 보안
 
 | 상태     | 우선순위     | 과제                                                                                                                                            | 근거                                                                                    |
 | ------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| [Open] | Critical | `application.properties` 비밀값 기본값(`DB_PASSWORD`, `JWT_SECRET`) 제거 — 현재 기본값 때문에 환경변수 미설정 시에도 `EnvironmentValidator`를 통과함                        | `spring.datasource.password=${DB_PASSWORD:kdb1234!!}`, `jwt.secret=${JWT_SECRET:...}` |
+| [Done] | Critical | 베이스/운영 `application.properties` 비밀값 기본값(`DB_PASSWORD`, `JWT_SECRET`) 제거 — 빈값이면 `EnvironmentValidator`가 기동 차단. local/dev 프로파일의 개발 기본값은 운영 배포 체크리스트에서 별도 확인 | `application.properties`, `application-prod.properties` 검증일: 2026-06-21 |
 | [Done] | High     | `FileController`·`GeminiController` 등 `@PreAuthorize` 미적용 컨트롤러에 소유권 검증 또는 권한 어노테이션 추가                                                         | `FileOwnershipChecker` 적용, `GeminiController` ADMIN 전용                                |
 | [Done] | High     | 로그인 Brute-force 보호 — 연속 실패 횟수 임계값(예: 5회/10분) + 계정 잠금 또는 지연 응답 적용                                                                              | `LoginAttemptService` 구현, `AuthService.login()` 연동                                    |
 | [Done] | High     | 파일 업로드 확장자 화이트리스트 검증 추가 (`FileService.uploadFileInternal()`)                                                                                  | `FileValidator` 구현, `FileService` 연동                                                  |
-| [Open] | Medium   | 운영 프로파일에서 `app.cookie.secure=true`, `cors.allowed-origins` 실제 오리진 강제 설정 및 구동 시 검증                                                             | 기본값이 각각 `false`, `localhost`이므로 환경변수 미설정 시 보안 취약                                      |
+| [Open] | Medium   | 운영 프로파일에서 `cors.allowed-origins` 실제 오리진 강제 설정 및 구동 시 검증. `app.cookie.secure=true`는 적용됨, `SecurityConfig` fallback과 운영 CORS 값 검증은 미구현 | `application-prod.properties`, `SecurityConfig.java:73` |
 | [Open] | Medium   | `gemini.api.key` 운영 필수 여부 결정 후 `EnvironmentValidator` 검증 대상에 포함 또는 Gemini 기능 비활성 정책 명시                                                        | 현재 `EnvironmentValidator`는 `spring.datasource.password`, `jwt.secret`만 검사             |
 | [Open] | Medium   | `Authorization: Bearer` 헤더 폴백 운영 활성화 여부 결정 후 `it_backend/CLAUDE.md`에 명시                                                                       | 현재 운영에서도 동작 — XSS 탈취 토큰 헤더 전송 경로 오픈                                                   |
 | [Open] | Medium   | X-Forwarded-For 신뢰 프록시 목록 제한 — Nginx 등에서 헤더 덮어쓰기 설정 적용                                                                                        | `AuthController.getClientIp()`가 헤더 무조건 신뢰                                             |
@@ -41,6 +41,7 @@
 | [Open] | Medium   | 사번(`eno`) PII INFO 로그 정책 정립 — DEBUG 강등 또는 마스킹 처리                                                                                              | `CouncilService.java:94`, 기타 로그인 이력 출력 위치 전수 검토                                       |
 | [Open] | High     | `QnaService.updateQna()` 관리자 수정 무력화 — 권한 비교가 `"ROLE_ITPAD001"`(존재하지 않는 권한 문자열)을 사용. `CustomUserDetails`는 ITPAD001을 `ROLE_ADMIN`으로 매핑하므로 항상 false → 관리자 우회 수정 불가. `"ROLE_ADMIN"` 또는 `userDetails.isAdmin()`으로 교정 (FIXME 주석 존재) | `QnaService.java:122`, 발견일: 2026-05-29 |
 | [Open] | Medium   | `GET /api/documents/dashboard`, `/badge-count` — 클라이언트 제공 `bbrC` 신뢰로 수평적 데이터 노출. 인증 사용자가 임의 부서코드로 타 부서 집계 조회 가능. JWT 클레임 `bbrC` 또는 `isAdmin()` 기준 서비스 계층 검증 필요 | `ServiceRequestDocController.java:183,197`, 발견일: 2026-05-29 |
+| [Open] | High     | 요구사항 정의서 생성/수정/삭제/새 버전 생성 API 소유권 검증 추가 — 인증 사용자라면 문서번호 기준으로 타 문서 변경 가능 여부 검증 필요. `@AuthenticationPrincipal`을 받아 작성자·부서·관리자 기준 서비스 계층 검증 적용 | `ServiceRequestDocController.java:113,145,166`, `ServiceRequestDocService.java:190`, 탐지: 2026-06-21 |
 | [Open] | Low      | `AuthController.getClientIp()` — `X-Forwarded-For` 멀티 IP(`client, proxy1, ...`) 미분리로 전체 문자열을 IP로 저장. `ip.split(",")[0].trim()` 추가 필요. IP 기반 Brute-force 도입 시 위조 우회 벡터 | `AuthController.java:256`, 발견일: 2026-05-29 |
 | [Open] | High     | 사업집행 4단계 서비스 — 쓰기 메서드(update/delete/changeStatus/saveLines·saveResult·saveContract·savePayments)가 `CustomUserDetails user`를 받지만 소유자/관리자 검증을 하지 않음. 인증된 임의 직원이 타인의 산정·심의·계약·지급 문서를 수정·삭제·상태전이 가능. `e.getFstEnrUsid().equals(user.getEno()) \|\| user.isAdmin()` 검증 추가(공통 OwnershipVerifier 유틸 권장) | `EstimateService.java:82`, `DeliberationService.java:86`, `ContractService.java:86`, `PaymentService.java:93`, 발견일: 2026-06-09 |
 | [Open] | High     | `ContractRepositoryImpl`·`DeliberationRepositoryImpl`·`PaymentRepositoryImpl` — `bbrC` 부서 필터 MVP 미적용(쿼리 조건 없음). 서비스가 bbrC를 전달해도 Repository가 무시 → 일반 사용자가 타부서 계약·심의·지급 목록 전체 열람 가능. `EstimateRepositoryImpl`(적용됨)과 불일치. Bcontm/Bdelim/Bpaymm에 주관부서코드 컬럼 추가 또는 대상 테이블 JOIN 필요 | `ContractRepositoryImpl.java:47`, `DeliberationRepositoryImpl.java:47`, `PaymentRepositoryImpl.java:43`, 발견일: 2026-06-09 (line 309 과업심의 bbrC 항목 통합·확장) |
@@ -80,7 +81,7 @@
 | [Open] | Low      | `NotificationEvent` `infTtl`(100자)·`infCone`(300자) 길이 제한이 JavaDoc에만 명시되고 `send()` 내에서 강제 적용되지 않음 — 초과 시 `ORA-12899` 런타임 오류로 알림 유실 | `NotificationService.java:send()`, `NotificationEvent.java` |
 | [Open] | Medium   | `ChangeLogEntityListener.java:133-137` `catch (IllegalAccessException e)` — `delYn` 리플렉션 접근 실패 시 예외 변수 `e`가 버려지고 스택트레이스 없음. 논리삭제(D) 판정이 수정(U)으로 잘못 기록됨. `log.warn("[감사로그] delYn 접근 실패 — entity={}", entity.getClass().getSimpleName(), e)` 추가 필요 | `ChangeLogEntityListener.java:133-137`, 탐지: 2026-06-01 |
 | [Open] | High     | `PlanService.java:443` `catch (JsonProcessingException e)` — cause 미전달. `new ResponseStatusException(status, reason)` 2인수 생성자 사용으로 스택트레이스 손실. `new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "계획 스냅샷 직렬화에 실패했습니다.", e)` 3인수 생성자로 교체 필요. (`PlanService.java:126-130` 항목과 별개 위치) | `PlanService.java:443-446`, 탐지: 2026-06-01 |
-| [Open] | Medium   | `budget/approval.vue:458-460` PDF 생성 실패 시 `alert()` 사용 — PrimeVue `toast.error`로 교체 필요 | `pages/budget/approval.vue:458-460`, 탐지: 2026-06-01 |
+| [Done] | Medium   | `budget/approval.vue:458-460` PDF 생성 실패 시 `alert()` 사용 — PrimeVue `toast.error`로 교체 완료 | `pages/budget/approval.vue:458-459`, 검증일: 2026-06-21 |
 | [Done] | Medium   | 프론트엔드 `alert()` → PrimeVue `toast` 교체: `approval/list.vue:204` | `pages/approval/list.vue:213-221` toast 처리 확인, 검증일: 2026-06-05 |
 | [Open] | Medium   | 프론트엔드 toast 알림 누락 다발 보완 (`useCostListPage`, `projects/form.vue`, `budget/report.vue`, `terminal/[id].vue` 등)                                                                                        | catch 블록 사용자 피드백 없음 — TODO 주석 존재                                                 |
 | [Open] | High     | 사전협의 자동 저장 실패 사용자 알림 및 재시도 정책 보강                                                                                                                                                                    | `pages/info/documents/[id]/review.vue` 자동 저장 catch가 실패를 삼킴                       |
@@ -114,8 +115,8 @@
 | [Open] | Medium   | `useCostListPage.ts` 전년도/계속사업 폴백 실패 상태 표시 — 단말기 재조회, 자동완성, 전년도 상세 조회 실패가 빈 결과와 구분되지 않음. 경고 로그 또는 degraded-state 표시 추가 | `useCostListPage.ts:1324,1416,1442`, 탐지: 2026-06-05 |
 | [Open] | Medium   | `ResourceTableSection.vue` 소요자원 코드 로드 실패 사용자 피드백 보강 — `console.error`만 있고 옵션 누락 상태가 화면에 설명되지 않음 | `components/projects/ResourceTableSection.vue:279-280`, 탐지: 2026-06-05 |
 | [Open] | Medium   | `terminal/[id].vue` 삭제 실패 시 PrimeVue toast 추가 — `useToast()`는 import되어 있으나 catch가 FIXME + `console.error`만 수행 | `pages/info/cost/terminal/[id].vue:36-38`, 탐지: 2026-06-05 |
-| [Open] | High     | `budget/report.vue:170-172,249-251` — PDF 생성 실패 시 `console.error`만 출력, 데이터 로드 실패 시 PDF 버튼 활성 유지. `toast.error` 및 버튼 비활성화 처리 필요 | `pages/budget/report.vue:170-172,249-251`, 발견일: 2026-05-26 |
-| [Open] | High     | `info/projects/report.vue:164-166,199-201` — PDF 생성 실패 시 `console.error`만 출력, 프로젝트 로드 실패 시 PDF 버튼 비활성화 안됨. `toast.error` 및 버튼 비활성화 필요 | `pages/info/projects/report.vue:164-166,199-201`, 발견일: 2026-05-26 |
+| [Done] | High     | `budget/report.vue:170-172,249-251` — PDF 생성/데이터 로드 실패 toast 및 버튼 비활성화 처리 완료 | `pages/budget/report.vue:176-184,263-270,284`, 검증일: 2026-06-21 |
+| [Done] | High     | `info/projects/report.vue:164-166,199-201` — PDF 생성/프로젝트 로드 실패 toast 및 실패 상태 UI 처리 완료 | `pages/info/projects/report.vue:168-176,208-215,325`, 검증일: 2026-06-21 |
 | [Open] | High     | `info/cost/form.vue:184-186` — 비용 폼 초기 데이터 로드 실패 시 `console.error`만 출력. `toast.error` 알림 및 에러 상태 UI 처리 필요 (CLAUDE.md 4.2.1 위반) | `pages/info/cost/form.vue:184-186`, 발견일: 2026-05-26 |
 | [Open] | High     | `ResultReviewProgress.vue` — `syncReviewStatus()` 상태 전이 실패를 catch가 완전 삼킴(로그 0건). 10→11 자동 전이 실패 추적 불가. `console.warn(e)` 기록 추가 (toast 억제는 유지, FIXME 주석 등록 완료) | `components/council/result/ResultReviewProgress.vue:61`, 탐지: 2026-06-12 |
 | [Open] | Medium   | `council-request/[id].vue` — `saveTemp`/`saveComplete`/`submitApproval` catch 바인딩 없음. 백엔드 오류 메시지(`e.data?.message`) 대신 일반 문구만 노출. `prepare/[id].vue`의 `catch (e: unknown)` 패턴으로 통일 (TODO 주석 등록 완료) | `pages/info/council-request/[id].vue:370,407,476`, 탐지: 2026-06-12 |
@@ -139,6 +140,7 @@
 | [Open] | Medium | `CouncilRepository.updateProjectStatus()` `@Modifying` Native Query 후 1차 캐시 stale → `clearAutomatically=true` 또는 엔티티 기반 업데이트 | `CouncilRepository.java L67` |
 | [Open] | Medium | `ProjectRepositoryImpl`/`CostRepositoryImpl` `selectFrom` 전체 컬럼 → 목록 API용 DTO 프로젝션 (1000자 텍스트 컬럼 제외) | `ProjectRepositoryImpl.java L140`, `CostRepositoryImpl.java L163` |
 | [Open] | Medium | Native Query `Object[]` 반환 → DTO 프로젝션 또는 `@SqlResultSetMapping` 적용 | `CouncilRepository`, `ApplicationRepository`, `ServiceRequestDocRepository`, `LoginHistoryRepository`, `EvaluationRepository` |
+| [Open] | Medium | `ServiceRequestDocService.getDashboard()` 네이티브 쿼리 결과 직접 캐스트 안전 변환 적용 — Oracle JDBC/Hibernate 반환 타입 차이로 `ClassCastException` 가능. `RealtimeLogRepository`의 `toStr`/`Number` 변환 패턴 참고 | `ServiceRequestDocService.java:295,307`, 탐지: 2026-06-21 |
 | [Open] | Medium | `ProjectService.enrichProjectListBatch()` 사업별 비목 요약 N+1 제거 — BITEMM을 사업 키 묶음으로 일괄 조회 | `ProjectService.java L662, L684, L783` |
 | [Open] | Medium | `ApplicationService.getPendingCount()` full entity 조회 후 `.size()` → `count` 쿼리 전환 | `ApplicationService.java L535`, `ProjectRepositoryImpl.java L140`, `CostRepositoryImpl.java L163` |
 | [Open] | Medium | `FeasibilityService.replacePerformances()` JPQL DELETE 후 flush 없이 persist → `flush()` 명시 또는 Spring Data `deleteAll` 통일 | `FeasibilityService.java L225` |
@@ -186,6 +188,7 @@
 | [Open] | Medium | `RichEditor.client.vue` → `TiptapEditor`/`TiptapToolbar` 마이그레이션 검토 (HTML 구조 차이·HtmlSanitizer 영향 선행 검토 필요)               | PrimeVue Quill 기반 구버전 에디터               |
 | [Open] | Medium | `useProjectOptions.ts` 인라인 전환 검토 — `yearOptions` 배열만 반환하는 단순 composable                                                 | `pages/info/projects/form.vue` 1곳에서만 사용 |
 | [Open] | Low | `ReviewVersionHistory.vue` 로컬 `formatDateTime()` 유지 여부 검토 — 축약 표시가 의도라면 함수명을 도메인 전용으로 변경 | `components/review/ReviewVersionHistory.vue` |
+| [Done] | High | `stores/review.ts` 검토자 조회 `$apiFetch('/api/...')` 상대 URL 제거 — `${config.public.apiBase}`를 붙여 Nuxt origin 오호출 방지 | `stores/review.ts`, 조치일: 2026-06-21 |
 | [Open] | Medium | `info/index.vue` 정적 KPI/공지/일정 데이터를 실제 API 또는 운영 데이터 소스로 전환 | 파일 헤더가 정적 데이터/향후 API 연결 예정임을 명시 |
 | [Open] | High | 프론트 ESLint 오류 정리 — dead import, 미사용 변수, type-only import, 템플릿 파싱 오류 우선 처리 | 2026-05-14 `npm run lint` 기준 62 errors / 137 warnings. `EvalSummaryPanel.vue`, `result/[id].vue`, cost 컴포넌트 등 |
 | [Done] | High | `useCouncilCodes.ts` 코드명 필드 불일치 수정 — `statusMap`/`hearingMap`/`memberTypeMap` 모두 `c.cdvaNm` 매핑 사용, `CodeItem`에 `cNm`/`cdvaNm` 정의 확인 | 코드 확인 2026-06-12: `useCouncilCodes.ts:68,73,78` |
@@ -235,6 +238,7 @@
 
 | 상태 | 일자 | 영역 | 조치 |
 |------|------|------|------|
+| [Done] | 2026-06-21 | 주석/문서/백로그 | REVIEW.md 재실행 — 병렬 에이전트 관찰 결과와 직접 검증을 통합. **Task1**: `NotificationEvent`/`NotificationEventListener`의 AFTER_COMMIT “비동기” 주석을 실제 동기 콜백 설명으로 정정, `ApplicationService.bulkApprove()` 반환/롤백 JavaDoc 정정, `ReviewerController` `@PathVariable(name)` 명시, 프론트 `$apiFetch`/`useApiFetch` 예시 절대 URL 정정, `stores/review.ts` 검토자 조회 상대 URL을 `${config.public.apiBase}`로 수정. **Task2/3**: 루트/BE/FE README·CLAUDE에 백엔드 포트 28080, Spring Boot 4.1.0, 소스 통계(BE 349/120/74/35, FE 83/56/67/109), 보안 기본값(DB/JWT 기본값 제거, cookie secure=true), `CouncilController` 메서드 레벨 권한 예외, Playwright 3002를 반영. **Task4**: DB/JWT 기본값 제거·프론트 PDF 실패 toast 완료 항목 [Done] 전환, 요구사항 정의서 소유권 검증과 `ServiceRequestDocService` 네이티브 타입 변환 과제 신규 등록. 검증: `it_backend ./gradlew.bat compileJava`, `it_frontend npm run typecheck` 통과. |
 | [Done] | 2026-06-14 | 주석/문서/백로그 | REVIEW.md 재실행 (델타: 2026-06-12 회차 이후 BE `26a71cd..HEAD` 금액 컬럼 개편·미사용 테이블 정비·폐쇄망 빌드, FE/DB 동일 구간). **Task1**: 검증 후 stale 주석 5건 교정 — `CostRepositoryCustom`(@param 필드명)·`CostRepositoryImpl`(예시 SQL `IT_MNGC_NO`→`BG_NO`) 금액 컬럼 개편 반영, `BplanmL` IT_PRJ_RMK 주석(`IT예산비고`→`IT프로젝트비고`), `types/council.ts` 2자리 코드 주석 2건. java/ts/silent-failure 병렬 탐지는 다수 기추적·오탐 확인. **Task2/3**: 소스 통계 현행화(BE 350→347 Java/115→116 test/79→77 엔티티/36→38 컨트롤러, FE 84→83 컴포넌트·types 11→15, `@IdClass` 15→29), 감사로그 31→30 전반 반영(Bchklc 드롭, JavaDoc 예시 중복 보정), 폐쇄망 빌드는 이미 문서화 확인, Bchklc 드롭에 따른 README 트리·감사표·data-model 참조 3건 정리 + 협의회 10→9 Repository 정정. **Task4**: 신규 5건 등록 — `common.ts` 3자리 dead branch(High), `BprojmL` CNCD_RFR_NO 누락(Medium), `AdminLogService.readField` warn 누락(Medium), `BcostmL` length 불일치(Low), `result/[id].vue` catch 바인딩(Low). `PlanService` 빈 catch 라인 현행화(126-130→133-137), 메타 미등재 BCHKLC 드롭 반영. |
 | [Done] | 2026-06-12 | 주석/문서/백로그 | REVIEW.md 재실행 (델타 중심: BE 26a71cd 메뉴 athIds, FE 9dcdc68..HEAD 4커밋) — Task1: 협의회 상태코드 3→2자리 전환 미반영 주석 5건 교정(`[id].vue`, `result/[id].vue`), `MenuQueryService.getMenuTree` JavaDoc athIds 반영, `types/menu.ts` athIds TSDoc 전환, 오류삼킴 FIXME/TODO 5곳 등록. Task2/3: FE README 메뉴 표시 유틸·council 2자리 코드 반영, 루트 README 메뉴 숨김 계층(`admin:true` 플래그→DB 권한 매핑) 정정·감사로그 고정 카운트 제거, BE CLAUDE.md §5.5.5 athIds 이원 용도·메뉴 유형 HED 허용(`AdminMenuService:174` 기준) 반영, 감사로그 31쌍 재검증(검증일 부기), FE CLAUDE.md 메뉴 왕관 유틸·협의회 2자리 코드 규칙 추가(인증 코드 무변경 확인으로 보안 규칙 보강 불필요). Task4: silent-failure 4건(High 1)·메뉴 DB 4건(캐시·인덱스, High 2)·리팩토링 3건 신규 등록, `useCouncilCodes` cdvaNm·`EvalSummaryPanel` 템플릿 오류 해소 확인 → [Done] 전환. |
 | [Done] | 2026-06-09 | 주석/문서/백로그 | REVIEW.md 재실행 — Task1: java/typescript/silent-failure 병렬 탐지 결과 검증(기존 추적·false positive 다수 확인, `MenuChildrenResolver` 영문주석 지적은 이미 한글로 오탐), 신규 도메인 코드는 한글 주석 충실 → `PaymentController` 클래스 주석 1건 보강. Task2/3: 정보화사업 집행 4단계(`domain/{estimate,deliberation,contract,payment}`, `/api/project/**`)와 `infra/eai`를 BE/FE README·CLAUDE.md에 반영, 소스 통계 현행화(BE 291→350 Java/96→115 test/64→79 entity/감사로그 25→31, FE composables 52→56/pages 58→67), CLAUDE.md §5.18~5.19 집행 4단계·EAI 섹션 신설. Task3 security-reviewer: 집행 4단계 소유권 검증 누락·bbrC 필터 미적용 등 HIGH 2건 외 보안 7건 등록. Task4 database-reviewer: 시퀀스 NOCACHE·DEL_YN 복합인덱스·상세 N+1 등 DB 7건 등록. |

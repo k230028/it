@@ -33,7 +33,7 @@
 └─────────────────────────────────────────────────────────────┘
                     ↕ API (httpOnly 쿠키)
 ┌─────────────────────────────────────────────────────────────┐
-│  Spring Boot 4  http://localhost:8080                        │
+│  Spring Boot 4  http://localhost:28080                        │
 │  - 19개 도메인 + 8개 공통 모듈                              │
 │  - 38개 컨트롤러, 347개 Java 파일                          │
 │  - JWT 인증 + RBAC + Soft Delete                            │
@@ -169,8 +169,8 @@ $env:DB_PASSWORD = "your-db-password"
 $env:JWT_SECRET = "your-jwt-secret-key"
 
 ./gradlew bootRun       # Windows: .\gradlew.bat bootRun
-# → http://localhost:8080
-# → Swagger UI: http://localhost:8080/swagger-ui/index.html
+# → http://localhost:28080
+# → Swagger UI: http://localhost:28080/swagger-ui/index.html
 ```
 
 **터미널 3: Oracle DB (선택, 스키마 확인용)**
@@ -304,13 +304,13 @@ Press Enter to open https://github.com/login/device in your browser...
 | 서비스 | 개발 환경 | 운영 환경 | 설명 |
 |--------|---------|---------|------|
 | **프론트엔드** | http://localhost:3000 | https://it.kdb.co.kr:20443 | Nuxt 4 CSR (정적 생성) |
-| **백엔드 API** | http://localhost:8080 | http://localhost:8080 | Spring Boot 4 REST API |
-| **Swagger UI** | http://localhost:8080/swagger-ui/index.html | 동일 | OpenAPI 3.0 자동 문서화 |
+| **백엔드 API** | http://localhost:28080 | http://localhost:28080 | Spring Boot 4 REST API |
+| **Swagger UI** | http://localhost:28080/swagger-ui/index.html | 동일 | OpenAPI 3.0 자동 문서화 |
 | **Oracle DB** | 127.0.0.1:11521/XEPDB1 (ITPAPP) | 운영 배포 설정 | 데이터 저장소 |
 
 **포트 설정:**
 - **프론트엔드**: `nuxt.config.ts`에서 `devServer.host`, `devServer.port` 확인
-- **백엔드**: `application.properties`의 `server.port=8080` 확인
+- **백엔드**: `application.properties`의 `server.port=28080` 확인
 - **Oracle**: 11521 (로컬 XE 리스너 포트 변경 적용, 변경 절차는 `it_database/README.MD` §4 참조)
 
 ---
@@ -894,7 +894,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 
 ### 12.7 2026-05-10 정비 메모
 
-- 실제 실행 설정 기준으로 로컬 개발 URL을 프론트엔드 `http://localhost:3000`, 백엔드 `http://localhost:8080`로 정정했습니다.
+- 실제 실행 설정 기준으로 로컬 개발 URL을 프론트엔드 `http://localhost:3000`, 백엔드 `http://localhost:28080`로 정정했습니다.
 - `EnvironmentValidator`는 `spring.datasource.password`, `jwt.secret`의 해석 결과가 빈값일 때만 기동을 차단합니다. 현재 `application.properties`에는 `DB_PASSWORD`, `JWT_SECRET` 기본값이 남아 있어 기본값 제거 과제를 `TASK.md`에 다시 열어두었습니다.
 - `FileValidator`, `LoginAttemptService`, `GeminiController` 관리자 제한은 코드에 반영된 상태로 확인했습니다. `FileOwnershipChecker`는 단건 삭제에는 적용되어 있으나 다운로드·미리보기·조회·메타수정·원본 기준 일괄삭제 경로는 후속 검증 과제로 남아 있습니다.
 - 프론트엔드 `ReviewVersionHistory.vue`의 로컬 `formatDateTime`은 버전 이력 전용 축약 포맷으로 주석을 명확히 했고, 전체 화면 표준 포맷은 `utils/common.ts` 사용 규칙을 유지합니다.

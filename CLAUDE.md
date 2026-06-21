@@ -81,17 +81,19 @@ it/
 - `TASK.md` — 미구현, 기술 부채, 보안/성능/테스트 보강 과제
 
 ### 4.4 데이터베이스 마이그레이션 (Flyway)
-> **현황**: Flyway **네이밍 규칙만 채택**한 상태이며, Flyway 런타임은 아직 빌드에
-> 통합되어 있지 않습니다(`build.gradle`/`application.properties`에 의존성·설정 없음).
-> 스크립트는 현재 수동(또는 DDL apply 스크립트)으로 적용합니다. 정식 도입은
-> `it_backend/CLAUDE.md` §5.2.1 및 `TASK.md` 백로그로 추적합니다.
+> **현황**: 백엔드에 Flyway 런타임(`flyway-core`, `flyway-database-oracle`)이 통합되어 있습니다.
+> Gradle `processResources`가 `it_database/migrations/V*.sql`을 `classpath:db/migration`으로 포함하고,
+> Spring Boot 기동 시 신규 마이그레이션을 적용합니다.
 - **경로**: `it_database/migrations/`
 - **네이밍 규칙**: `V{YYYYMMDD_NNN}__{설명}.sql`
   - 예: `V20260516_001__CreateCcodemTable.sql`, `V20260516_002__AddBudgetIndexes.sql`
   - 첫 8자리 날짜 + 일련번호 3자리로 버전 정렬 (Flyway 네이밍 규칙).
   - 설명은 CamelCase, 기능/테이블/변경 의도 명확히.
 - **내용**: DDL (테이블/인덱스/시퀀스) + DML (초기화/데이터 마이그레이션).
-- **주의**: 각 스크립트는 멱등성(idempotent) 유지 — 재실행 시에도 안전해야 함. Flyway 정식 도입 후에는 적용된 스크립트 수정 금지(체크섬 추적). 도입 전까지는 신규 스크립트 추가를 원칙으로 하고 기존 스크립트 수정은 지양.
+- **기존 스키마 기준**: `spring.flyway.baseline-on-migrate=true`, `baseline-version=20260620.001`로 기존 ITPOWN 스키마를 현재 기준선으로 등록하고 이후 신규 V* 스크립트부터 자동 적용합니다.
+- **빈 스키마 기준**: schema history가 없는 빈 스키마에서는 `it_database/migrations/`의 전체 V* 스크립트를 순서대로 적용합니다.
+- **운영 계정 분리**: 애플리케이션 계정에 DDL 권한이 없으면 `FLYWAY_USER`/`FLYWAY_PASSWORD`로 Flyway 전용 DDL 계정을 지정합니다.
+- **주의**: 적용된 스크립트는 Flyway 체크섬 추적 대상이므로 수정 금지. 변경은 항상 새 버전 스크립트로 추가합니다.
 
 ## 5. AI 하네스 가이드
 
@@ -103,7 +105,7 @@ it/
 ### 5.2 QA 워크플로우
 두 서버를 모두 기동한 뒤 `/gstack qa`로 브라우저 기반 테스트를 수행합니다.
 - 테스트 대상: http://localhost:3000
-- API 서버: http://localhost:8080
+- API 서버: http://localhost:28080
 - 핵심 시나리오: 로그인, 프로젝트 조회/생성, 결재 처리
 
 ### 5.3 주요 스킬
