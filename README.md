@@ -18,7 +18,7 @@
 - **백엔드:** Spring Boot 4 (Java 25) + Oracle Database 21c XE + JPA/QueryDSL
 - **인증:** JWT httpOnly 쿠키 기반 (Access Token 15분 / Refresh Token 7일)
 - **외부 연동:** Gemini AI (텍스트 생성), SSO(선택적)
-- **소스 통계:** 백엔드 347개 Java 파일 + 116개 테스트 + 77개 엔티티, 프론트엔드 83개 컴포넌트 + 56개 Composable + 67개 페이지
+- **소스 통계:** 백엔드 353개 Java 파일 + 121개 테스트 + 74개 엔티티, 프론트엔드 83개 컴포넌트 + 58개 Composable + 67개 페이지
 
 ---
 
@@ -27,7 +27,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Nuxt 4 (CSR)  http://localhost:3000                        │
-│  - 67개 페이지, 83개 컴포넌트, 56개 Composable             │
+│  - 67개 페이지, 83개 컴포넌트, 58개 Composable             │
 │  - Pinia 상태관리 (인증, 사전협의)                          │
 │  - PrimeVue + Tailwind CSS 스타일링                        │
 └─────────────────────────────────────────────────────────────┘
@@ -35,14 +35,14 @@
 ┌─────────────────────────────────────────────────────────────┐
 │  Spring Boot 4  http://localhost:28080                        │
 │  - 19개 도메인 + 8개 공통 모듈                              │
-│  - 38개 컨트롤러, 347개 Java 파일                          │
+│  - 353개 Java 파일, 121개 테스트 파일                      │
 │  - JWT 인증 + RBAC + Soft Delete                            │
 │  - 변경 로그 (30개 도메인, 자동 추적)                       │
 └─────────────────────────────────────────────────────────────┘
                     ↕
 ┌─────────────────────────────────────────────────────────────┐
 │  Oracle Database 21c XE  XEPDB1 (ITPAPP)                   │
-│  - 63개 비즈니스 엔티티                                      │
+│  - 74개 JPA 엔티티                                           │
 │  - Flyway 마이그레이션                                      │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -59,7 +59,7 @@ it/
 │   ├── app/              ← 소스 루트 (Nuxt 4 convention)
 │   │   ├── pages/        ← 파일 기반 라우팅 (67개 페이지)
 │   │   ├── components/   ← 재사용 컴포넌트 (83개)
-│   │   ├── composables/  ← 비즈니스 로직 & API 래퍼 (56개)
+│   │   ├── composables/  ← 비즈니스 로직 & API 래퍼 (58개)
 │   │   ├── stores/       ← Pinia 상태관리 (인증, 사전협의)
 │   │   ├── types/        ← TypeScript 타입 정의 (11개)
 │   │   ├── utils/        ← 유틸리티 함수 (금액포맷, PDF/Excel/HWPX 변환)
@@ -69,28 +69,23 @@ it/
 ├── it_backend/           ← Spring Boot 4 REST API 서버
 │   ├── README.md         ← 백엔드 상세 가이드 (아키텍처, API, 환경 설정)
 │   ├── CLAUDE.md         ← 백엔드 기술 결정 & 보안 정책 (SoT)
-│   ├── src/main/java/    ← 소스 코드 (347개 파일)
+│   ├── src/main/java/    ← 소스 코드 (353개 파일)
 │   │   └── com/kdb/it/
 │   │       ├── config/   ← Spring 설정 (보안, JPA, Swagger 등)
 │   │       ├── common/   ← 공통 모듈 (인증, 게시판, 결재, 알림)
 │   │       ├── domain/   ← 비즈니스 도메인 (예산, 사업집행 4단계, 협의회, 문서, 로그)
 │   │       ├── infra/    ← 외부 연동 (파일, Gemini AI, EAI 표준전문)
 │   │       └── exception/ ← 전역 예외 처리
-│   ├── src/test/java/    ← JUnit 5 + Mockito 테스트 (116개 파일)
-│   └── build.gradle      ← Gradle 빌드 스크립트 (Spring Boot 4.0.5)
+│   ├── src/test/java/    ← JUnit 5 + Mockito 테스트 (121개 파일)
+│   └── build.gradle      ← Gradle 빌드 스크립트 (Spring Boot 4.1.0)
 │
 ├── it_database/          ← Oracle DB 마이그레이션 & 초기화
 │   ├── migrations/       ← Flyway SQL 마이그레이션 (V{YYYYMMDD_NNN} 형식)
 │   ├── seeds/            ← 초기 데이터 (공통코드, 사용자)
 │   └── connect-db.ps1    ← 로컬 DB 접속 스크립트 (PowerShell/배치)
 │
-├── docs/                 ← PDCA 문서 & 아카이브
-│   ├── 01-plan/          ← 피처 계획서
-│   ├── 02-design/        ← 설계서
-│   ├── 03-analysis/      ← 분석 보고서
-│   ├── 04-report/        ← 완료 보고서
-│   ├── archive/          ← 과거 아카이브
-│   └── superpowers/      ← 워크플로우 플랜 & 스펙
+├── docs/                 ← 문서, 리포트, 워크플로우 산출물
+│   └── superpowers/      ← Superpowers 계획·스펙·검증 산출물
 │
 ├── CLAUDE.md             ← 모노레포 공통 규약 (인증 SoT, 주석, 게시판 규칙)
 ├── TASK.md               ← 미구현 기능, 기술 부채, 보안 강화 과제
@@ -112,7 +107,7 @@ it/
 
 환경변수 세팅
 ```Bash
-C:\> setx SPRING_PROFILES_ACTIVE "local"  # local / dev / prod
+C:\> setx SPRING_PROFILES_ACTIVE "local-ext"  # local-ext / local-int / dev / prod
 C:\> setx GRADLE_USER_HOME "C:\it\.gradle"  # 운영 서버는 /sw/itpapp/.gradle
 C:\> setx DB_PASSWORD "kdb1234!!"
 C:\> setx JWT_SECRET "HFRw7fQsWNFy9FULDWhh9e1ace1QlspznnCDBXZafb64l3hIGVYjhb27IWEeZ0/J46kpq6J8NidyKNO2FT5niQ=="
@@ -161,7 +156,7 @@ npm run dev
 # → http://localhost:3000 (자동 브라우저 오픈)
 ```
 
-**터미널 2: 백엔드 (포트 8080, REST API)**
+**터미널 2: 백엔드 (포트 28080, REST API)**
 ```bash
 cd it_backend
 # 환경변수 설정 (Windows PowerShell)
@@ -426,7 +421,7 @@ npm run test:coverage
 ```bash
 cd it_backend
 
-# JUnit 5 + Mockito 테스트 실행 — 115개 테스트 파일
+# JUnit 5 + Mockito 테스트 실행 — 121개 테스트 파일
 ./gradlew test
 
 # 커버리지 리포트 생성 (JaCoCo)
@@ -454,20 +449,19 @@ cd it_backend
 
 ## 9. AI 하네스 구성
 
-본 프로젝트는 **Agentic Engineering** 기반 개발 워크플로우를 사용합니다.
+본 프로젝트는 **Superpowers를 기본 워크플로우**로 사용합니다. ECC는 프레임워크별 구현 패턴을 보강하고, gstack은 브라우저 QA·리뷰·배포 확인을 보조합니다.
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│  gstack      — 브라우저 QA·리뷰·배포 슬래시 명령어       │
-│  bkit PDCA   — 피처 단위 계획→설계→실행→검증 워크플로우 │
-│  ECC         — Spring Boot·Nuxt 패턴·스킬 라이브러리    │
-│  Superpowers — 계획·디버깅·TDD·아이디어 메타 워크플로우 │
-└──────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│  Superpowers — 아이디어 구체화, 계획, 실행, TDD, 최종 검증 │
+│  ECC         — Spring Boot·Nuxt·테스트·보안 패턴 라이브러리 │
+│  gstack      — 브라우저 QA, 조사, 리뷰, 배포 전 점검        │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### 2.1 올바른 프롬프트 지침 가이드
+### 9.1 올바른 프롬프트 지침
 
-[간단한 기능]은 프롬프트에서 대화하듯이 진행하면 됩니다.
+간단한 기능은 프롬프트에서 대화하듯이 진행하면 됩니다.
 ```
 ex1)
 > /info/cost 편집모드에서 작성 중 [취소]를 눌렀을 때 [취소 확인] 다이얼로그에서 버튼을 아래와 같이 바꿔줘
@@ -486,20 +480,21 @@ ex4)
 > [예산 현황] /budget/status 전산업무비 탭에서 [증감] 컬럼은 증가한 경우 +증가액 (붉은색), -감소액 (파란색)으로 표기해줘
 ```
 
-[복잡한 기능]은 별도 md 파일로 요구사항(prd)를 작성하여 지시하고, 항상 문서화 및 TDD(테스트 주도 개발)에 대해 강조합니다. 문서화와 TDD는 별도 REVIEW.md, TEST.md를 통해 주기적으로 현행화하지만 적시에 반영하는게 가장 정확하고 효율적입니다.
+복잡한 기능은 별도 md 파일로 요구사항(PRD)을 작성하여 지시하고, 항상 문서화 및 TDD(테스트 주도 개발)를 함께 요구합니다. 문서화와 TDD는 `REVIEW.md`, `TEST.md`를 통해 주기적으로 현행화하되, 기능 구현 직후 반영하는 것이 가장 정확합니다.
 
 > [!note] 주의사항
 > 서로 관련이 없는 많은 기능을 하나의 md 파일에 정의해서 한번에 계획 및 설계서를 작성하는 것은 아직 권고하지 않습니다. 
 
  ```
-> /pdca plan C:\it\TASK.md 이행계획 작성해줘. 이행 후 C:\it\TASK.md 현행화 계획을 포함하고, 동일한 문제가 재발하지 않도록 코딩 컨벤션 등에 반영하여 앞으로 유의해야 할 부분이 있다면 각 프로젝트 폴더 readme.md, claude.md에 반영해줘. TDD 방법론도 적용해줘.
+> /write-plan C:\it\TASK.md 이행계획 작성해줘. 이행 후 C:\it\TASK.md 현행화 계획을 포함하고, 동일한 문제가 재발하지 않도록 코딩 컨벤션 등에 반영하여 앞으로 유의해야 할 부분이 있다면 각 프로젝트 폴더 README.md, CLAUDE.md에 반영해줘. TDD 방법론도 적용해줘.
 
-1. /pdca plan {기능 요구사항}         ← bkit: 계획 수립
-2. /pdca next                       ← bkit: 구현 단계 진입
-3. /verification-before-completion  ← Superpowers: 완료 전 검증
-4. /qa                              ← gstack: 브라우저 테스트 
-5. /review                          ← gstack: 코드 리뷰
-6. /ship                            ← gstack: PR 배포
+1. /write-plan {기능 요구사항}        ← Superpowers: 계획 수립
+2. /execute-plan                    ← Superpowers: 계획 단계별 실행
+3. /test-driven-development         ← Superpowers: 테스트 우선 구현
+4. /verification-before-completion  ← Superpowers: 완료 전 검증
+5. /qa                              ← gstack: 브라우저 테스트
+6. /review                          ← gstack: 코드 리뷰
+7. /ship                            ← gstack: PR 배포
  ```
 
 [요구사항 구체화] 요구사항이 구체화되지 않았거나 조언이 필요한 경우 /brainstorming으로 시작하는게 좋습니다.
@@ -507,18 +502,67 @@ ex4)
 > /brainstorming C:\it\TEST.md 활동이 더 agents, team, rule, skill을 종합적으로 활용해서 효과적으로 동작할 수 있도록 개선할 여지가 있는지 확인해줘
 
 1. /brainstorming {기능 아이디어}     ← Superpowers: 기능 구체화
-2. /pdca plan {기능 요구사항}         ← bkit: 계획 수립
-3. /pdca next                       ← bkit: 구현 단계 진입
+2. /write-plan {기능 요구사항}        ← Superpowers: 실행 계획
+3. /execute-plan                    ← Superpowers: 구현 진행
 4. /verification-before-completion  ← Superpowers: 완료 전 검증
-5. /qa                              ← gstack: 브라우저 테스트 
+5. /qa                              ← gstack: 브라우저 테스트
 6. /review                          ← gstack: 코드 리뷰
 7. /ship                            ← gstack: PR 배포
 ```
 
 ---
-## 10. gstack — 브라우저 기반 운영 명령어
+## 10. Superpowers — 기본 워크플로우
 
-gstack은 **슬래시 명령어 형태의 전문가 팀**입니다. 두 서버가 모두 기동된 상태에서 사용합니다.
+Superpowers는 개발 방법론 수준의 워크플로우입니다. 모호한 요구사항을 구체화하고, 구현 계획을 만들고, TDD와 완료 전 검증을 강제하는 기본 경로로 사용합니다.
+
+| 스킬 | 용도 | 사용 시점 |
+|------|------|-----------|
+| `/brainstorming` | 아이디어 구체화·대안 탐색 | 요구사항이 흐릿할 때 |
+| `/write-plan` | 구조화된 구현 계획 작성 | 복잡한 기능 착수 전 |
+| `/execute-plan` | 작성된 계획 단계별 실행 | 계획 수립 후 |
+| `/systematic-debugging` | 체계적 디버깅 | 원인 불명 버그 |
+| `/test-driven-development` | RED→GREEN→REFACTOR 강제 | 새 기능·버그픽스 |
+| `/verification-before-completion` | 완료 전 최종 검증 | 리뷰·배포 전 |
+
+산출물은 `docs/superpowers/`를 우선 사용합니다. 기능 단위 계획·스펙·검증 노트는 같은 디렉토리에 모아 추적합니다.
+
+---
+
+## 11. ECC — 패턴 스킬 라이브러리
+
+ECC는 프레임워크별 Best Practice 스킬 모음입니다. Superpowers로 방향을 잡은 뒤, 구현 세부 패턴이 필요할 때 보조로 사용합니다.
+
+### 11.1 백엔드 (Spring Boot)
+
+```bash
+/springboot-patterns       # 레이어드 아키텍처, JPA, 예외처리 패턴
+/springboot-tdd            # Spring Boot TDD 워크플로우
+/springboot-verification   # 구현 완료 후 검증 체크리스트
+/backend-patterns          # API 설계, 페이지네이션, 캐싱
+/api-design                # REST API 설계 원칙
+```
+
+### 11.2 프론트엔드 (Nuxt 4)
+
+```bash
+/frontend-design           # UI/UX 컴포넌트 설계 원칙
+/frontend-patterns         # Vue 3 Composition API 패턴
+/e2e-testing               # Playwright E2E 테스트 패턴
+```
+
+### 11.3 품질·보안
+
+```bash
+/tdd-workflow              # TDD 실천 워크플로우
+/security-review           # OWASP Top 10, 보안 취약점 스캔
+/plankton-code-quality     # 코드 품질 종합 분석
+```
+
+---
+
+## 12. gstack — 브라우저 기반 운영 명령어
+
+gstack은 두 서버가 모두 기동된 상태에서 브라우저 기반 QA와 릴리즈 전 점검을 수행할 때 사용합니다.
 
 ```bash
 # 서버 기동 (각각 별도 터미널)
@@ -526,7 +570,7 @@ cd it_backend  && ./gradlew bootRun
 cd it_frontend && npm run dev
 ```
 
-### 8.1 핵심 명령어
+### 12.1 핵심 명령어
 
 | 명령어 | 용도 | 사용 시점 |
 |--------|------|-----------|
@@ -537,95 +581,17 @@ cd it_frontend && npm run dev
 | `/health` | 코드 품질 전반 점검 | 주기적 품질 관리 |
 | `/checkpoint` | 작업 상태 저장·복원 | 긴 작업 중간 저장 |
 
-### 8.2 핵심 테스트 시나리오 (`/qa`)
+### 12.2 핵심 테스트 시나리오 (`/qa`)
 
 - 테스트 결과 파일 위치: `it\.gstack\qa-reports`
 
 ---
-## 11. bkit PDCA — 피처 단위 구조화 개발
-
-bkit은 **PDCA 방법론 기반 피처 개발 워크플로우**입니다. 계획→설계→실행→검증→아카이브 순으로 진행합니다.
-
-### 9.1 기본 명령어
-
-```bash
-/pdca plan {기능 요구사항}    # 새 피처 시작 (계획 단계)
-/pdca status                  # 현재 진행 상태 확인
-/pdca next                    # 다음 단계로 이동
-```
-
-### 9.2 피처 진행 단계
-
-```
-plan → design → do → analysis → archive
- 계획     설계    실행    검증       아카이브
-```
-
-### 9.3 생성 문서 위치
-
-| 문서 | 경로 |
-|------|------|
-| 계획서 | `docs/01-plan/features/{feature}.plan.md` |
-| 설계서 | `docs/02-design/features/{feature}.design.md` |
-| 보고서 | `docs/04-report/{feature}.report.md` |
-| 상태 파일 | `.bkit/state/pdca-status.json` |
-
----
-
-## 12. ECC (Everything Claude Code) — 패턴 스킬 라이브러리
-
-ECC는 **프레임워크별 Best Practice 스킬 모음**입니다. IT Portal에 직접 연관된 스킬:
-
-### 10.1 백엔드 (Spring Boot)
-
-```bash
-/springboot-patterns       # 레이어드 아키텍처, JPA, 예외처리 패턴
-/springboot-tdd            # Spring Boot TDD 워크플로우
-/springboot-verification   # 구현 완료 후 검증 체크리스트
-/springboot-security       # Spring Security, JWT, RBAC 패턴
-/backend-patterns          # API 설계, 페이지네이션, 캐싱
-/api-design                # REST API 설계 원칙
-```
-
-### 10.2 프론트엔드 (Nuxt 4)
-
-```bash
-/nuxt4-patterns            # Nuxt 4 컴포저블, 상태관리, 라우팅 패턴
-/frontend-design           # UI/UX 컴포넌트 설계 원칙
-/frontend-patterns         # Vue 3 Composition API 패턴
-```
-
-### 10.3 품질·보안
-
-```bash
-/tdd-workflow              # TDD 실천 워크플로우
-/security-review           # OWASP Top 10, 보안 취약점 스캔
-/plankton-code-quality     # 코드 품질 종합 분석
-```
-
----
-
-## 13. Superpowers — 메타 워크플로우 스킬
-
-Superpowers는 **개발 방법론 수준의 워크플로우 스킬**입니다 (v5.0.7). 특정 작업 전 AI의 접근 방식 자체를 정의합니다.
-
-| 스킬                                | 용도            | 사용 시점       |
-| --------------------------------- | ------------- | ----------- |
-| `/brainstorming`                  | 아이디어 구체화·탐색   | 기능 구상 단계    |
-| `/write-plan`                     | 구조화된 구현 계획 작성 | 복잡한 기능 착수 전 |
-| `/execute-plan`                   | 작성된 계획 단계별 실행 | 계획 수립 후     |
-| `/systematic-debugging`           | 체계적 디버깅 워크플로우 | 원인 불명 버그    |
-| `/test-driven-development`        | TDD 강제 워크플로우  | 새 기능·버그픽스   |
-| `/verification-before-completion` | 완료 전 최종 검증    | PR 생성 직전    |
-
----
-
-## 14. IT Portal 에이전트 팀
+## 13. IT Portal 에이전트 팀
 
 에이전트는 `~/.claude/agents/`에 설치된 ECC 전문가 에이전트입니다.  
 Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에이전트로 직접 호출합니다.
 
-### 12.1 백엔드 (Spring Boot 4 · Java 25 · Oracle · JPA/QueryDSL)
+### 13.1 백엔드 (Spring Boot 4 · Java 25 · Oracle · JPA/QueryDSL)
 
 | 에이전트 | 주요 역할 | 사용 시점 |
 |---------|---------|---------|
@@ -634,7 +600,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 | `database-reviewer` | JPA 엔티티·QueryDSL 쿼리·N+1·인덱스 설계 리뷰 | 쿼리·스키마 변경 시 |
 | `security-reviewer` | JWT·Spring Security·RBAC·OWASP Top 10 취약점 스캔 | 인증/인가 코드 변경 전 커밋 |
 
-### 12.2 프론트엔드 (Nuxt 4 · TypeScript · Vue 3 · PrimeVue · Pinia)
+### 13.2 프론트엔드 (Nuxt 4 · TypeScript · Vue 3 · PrimeVue · Pinia)
 
 | 에이전트 | 주요 역할 | 사용 시점 |
 |---------|---------|---------|
@@ -642,7 +608,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 | `e2e-runner` | Playwright 기반 E2E 시나리오 생성·실행·유지 | 화면 기능 구현 완료 후 |
 | `build-error-resolver` | TypeScript·Nuxt 빌드 오류 수정 | `npx nuxt typecheck` 실패 시 |
 
-### 12.3 품질 · 보안
+### 13.3 품질 · 보안
 
 | 에이전트 | 주요 역할 | 사용 시점 |
 |---------|---------|---------|
@@ -651,7 +617,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 | `pr-test-analyzer` | PR 테스트 커버리지·행동 커버리지 평가 | PR 생성 전 |
 | `tdd-guide` | 테스트 먼저 작성(RED→GREEN→IMPROVE) 워크플로우 강제 | 새 기능·버그픽스 착수 시 |
 
-### 12.4 계획 · 설계
+### 13.4 계획 · 설계
 
 | 에이전트 | 주요 역할 | 사용 시점 |
 |---------|---------|---------|
@@ -660,7 +626,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 | `architect` | 시스템 확장성·기술 결정 분석 | 아키텍처 변경 검토 시 |
 | `performance-optimizer` | 쿼리·번들·렌더링 병목 분석·최적화 | 성능 이슈 발생 시 |
 
-### 12.5 문서 · 유지보수
+### 13.5 문서 · 유지보수
 
 | 에이전트 | 주요 역할 | 사용 시점 |
 |---------|---------|---------|
@@ -670,29 +636,30 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 
 ---
 
-## 15. 워크플로우 가이드
+## 14. 워크플로우 가이드
 
-### 13.1 새 기능 개발 (풀스택)
+### 14.1 새 기능 개발 (풀스택)
 
 **필수 단계** — 매 기능마다 실행:
 ```
 1. /brainstorming {기능 아이디어}     ← Superpowers: 기능 구체화
-2. /pdca plan {기능 요구사항}         ← bkit: 계획 수립
-3. /pdca next                       ← bkit: 구현 단계 진입
-4. /verification-before-completion  ← Superpowers: 완료 전 검증
-5. /qa                              ← gstack: 브라우저 테스트
-6. /review                          ← gstack: 코드 리뷰
-7. /ship                            ← gstack: PR 배포
+2. /write-plan {기능 요구사항}        ← Superpowers: 계획 수립
+3. /execute-plan                    ← Superpowers: 구현 단계 진입
+4. /test-driven-development         ← Superpowers: 테스트 우선 구현
+5. /verification-before-completion  ← Superpowers: 완료 전 검증
+6. /qa                              ← gstack: 브라우저 테스트
+7. /review                          ← gstack: 코드 리뷰
+8. /ship                            ← gstack: PR 배포
 ```
 
 **선택 단계** — 필요한 경우에만 실행:
 ```
 /springboot-patterns    ← 신규 도메인 착수 시 Spring Boot 컨벤션 확인
-/nuxt4-patterns         ← 신규 도메인 착수 시 Nuxt 4 컨벤션 확인
+/frontend-patterns      ← 신규 프론트 기능 착수 시 Vue/Nuxt 컨벤션 확인
 /tdd-workflow           ← TDD를 엄격히 강제하고 싶을 때 (평소엔 "테스트도 작성해줘"로 충분)
 ```
 
-### 13.2 버그 수정
+### 14.2 버그 수정
 
 ```
 1. /investigate                     ← gstack: 원인 분석
@@ -701,7 +668,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 4. /qa                              ← gstack: 회귀 테스트
 ```
 
-### 13.3 코드 품질 점검
+### 14.3 코드 품질 점검
 
 ```
 1. /health                          ← gstack: 전반적 품질
@@ -709,7 +676,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 3. /plankton-code-quality           ← ECC: 코드 품질 분석
 ```
 
-### 13.4 정기 정비
+### 14.4 정기 정비
 
 | 작업 | 시작 방법 |
 |------|-----------|
@@ -719,9 +686,9 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 
 ---
 
-## 16. 추가 핵심 도메인 및 모듈 관계 (상세)
+## 15. 추가 핵심 도메인 및 모듈 관계 (상세)
 
-### 14.1 백엔드 주요 도메인 (Spring Boot)
+### 15.1 백엔드 주요 도메인 (Spring Boot)
 
 | 도메인 | 모듈 | 설명 |
 |--------|------|------|
@@ -741,7 +708,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 | **감사로그** | `domain/log` | 자동 변경 로그 (23개 도메인 추적) |
 | **파일·AI** | `infra/` | 첨부파일, Gemini API |
 
-### 14.2 프론트엔드 주요 모듈 (Nuxt 4)
+### 15.2 프론트엔드 주요 모듈 (Nuxt 4)
 
 | 모듈 | 파일 | 설명 |
 |------|------|------|
@@ -762,9 +729,9 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 
 ---
 
-## 17. 인증 및 보안 (정책 상세)
+## 16. 인증 및 보안 (정책 상세)
 
-### 15.1 JWT httpOnly 쿠키 인증
+### 16.1 JWT httpOnly 쿠키 인증
 
 **로그인 흐름:**
 1. 사번/비밀번호 제출 → `POST /api/auth/login`
@@ -778,7 +745,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 
 **주의:** 프론트엔드가 JWT 문자열을 직접 저장/읽지 않음 (XSS 방어)
 
-### 15.2 관리자 접근 제어 (RBAC)
+### 16.2 관리자 접근 제어 (RBAC)
 
 | 계층 | 기술 | 예시 |
 |------|------|------|
@@ -788,7 +755,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 
 ---
 
-## 18. 기타 프로젝트 스킬
+## 17. 기타 프로젝트 스킬
 
 | 스킬 | 용도 |
 |------|------|
@@ -796,7 +763,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 
 ---
 
-## 19. 주요 파일 및 참조
+## 18. 주요 파일 및 참조
 
 | 항목 | 파일 | 용도 |
 |------|------|------|
@@ -810,9 +777,9 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 
 ---
 
-## 20. 개발 노트: 현재 코드베이스 구조
+## 19. 개발 노트: 현재 코드베이스 구조
 
-### 12.1 백엔드 모듈 관계
+### 19.1 백엔드 모듈 관계
 
 백엔드는 Spring Boot 4 기반 레이어드 구조입니다. `controller → service → repository → Oracle DB` 흐름을 유지하며, 복잡한 조회는 QueryDSL `RepositoryCustom`/`RepositoryImpl` 패턴으로 분리합니다.
 
@@ -828,7 +795,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 | `domain/log` | 감사 로그 | JPA 엔티티 리스너 기반 변경 로그 인프라 |
 | `infra/file`, `infra/ai` | 파일, Gemini 연동 | 업무 도메인과 분리된 외부 연동 계층 |
 
-### 12.2 프론트엔드 모듈 관계
+### 19.2 프론트엔드 모듈 관계
 
 프론트엔드는 Nuxt 4의 `app/` 소스 루트를 사용합니다. 페이지는 업무 메뉴 구조를 따르고, 반복 API 호출은 `composables/`, 전역 인증/검토 상태는 `stores/`에서 관리합니다.
 
@@ -841,7 +808,7 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 | `app/types` | 공유 타입 | 인증/RBAC, 예산작업, 협의회, 사전협의 타입 |
 | `app/utils` | 순수 유틸 | 금액/상태 표시, Excel/HWPX/PDF 생성 보조 |
 
-### 12.3 핵심 설계 결정
+### 19.3 핵심 설계 결정
 
 - 인증은 httpOnly 쿠키 방식입니다. 프론트엔드가 JWT 문자열을 직접 다루지 않고, 브라우저가 쿠키를 자동 전송합니다.
 - Access Token의 기본 유효시간은 15분입니다. 백엔드 JWT 설정과 쿠키 Max-Age를 같은 시간으로 유지해야 합니다.
@@ -850,6 +817,12 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 - `StyledDataTable`은 PrimeVue DataTable 스타일 차이를 흡수하는 표준 래퍼입니다. 신규 목록 화면은 이 컴포넌트를 우선 사용합니다.
 - 사전협의 검토 세션은 일부 UI 상태가 아직 메모리/모의 데이터에 의존합니다. 서버 영속화와 프로젝트별 검토자 조회는 `TASK.md`의 후속 과제로 관리합니다.
 - 공통 게시판은 `/board/**` 사용자 화면과 `/admin/boards` 관리자 화면으로 구성됩니다. 프론트 메뉴 필터는 UX 보조이며, 최종 권한은 백엔드 게시판 서비스에서 검증합니다.
+
+### 19.14 2026-06-22 AI 하네스 및 문서 현행화
+
+- 루트 README의 AI 하네스 기준을 Superpowers 중심으로 정리했습니다. `/brainstorming`, `/write-plan`, `/execute-plan`, `/test-driven-development`, `/verification-before-completion`을 기본 흐름으로 사용합니다.
+- ECC는 Spring Boot/Nuxt/테스트/보안 패턴 보조, gstack은 브라우저 QA·리뷰·배포 전 점검 보조로 정리했습니다.
+- 실제 파일 수 기준으로 백엔드 353개 메인 Java 파일, 121개 테스트 파일, 74개 JPA 엔티티, 프론트 83개 컴포넌트, 58개 composable, 67개 페이지로 통계를 정정했습니다.
 
 ### 18.9 2026-05-19 REVIEW 재점검
 

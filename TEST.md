@@ -275,6 +275,63 @@ cd it_frontend && npm run generate-report
 
 ---
 
+## [Task 6: 정적 점검 (Static Analysis)]
+
+테스트 커버리지와 별개로 **타입·린트·포맷·문서·컴파일 경고**를 점검하여 코드 품질 게이트를 통과시킨다.
+이 작업은 비즈니스 로직을 수정하지 않으며, 위반 발견 시 테스트 코드·주석·포맷 한정으로만 정정한다.
+
+### 점검 항목 및 명령어
+
+| 항목 | 영역 | 명령어 | 설정 SoT | 통과 기준 |
+|------|------|--------|----------|----------|
+| Type Check | FE | `cd it_frontend && npm run typecheck` | `nuxt.config.ts` (`nuxt typecheck`) | 타입 에러 0건 |
+| ESLint | FE | `cd it_frontend && npm run lint` | `eslint.config.mjs` | error 0건 (warning 최소화) |
+| Stylelint | FE | `cd it_frontend && npm run lint:css` | `eslint.config.mjs`/stylelint | error 0건 |
+| 통합 점검 | FE | `cd it_frontend && npm run check` | `typecheck && lint` 묶음 | 두 단계 모두 통과 |
+| Prettier | FE | `cd it_frontend && npx prettier --check .` | (현재 미구성 — 아래 주의 참조) | 포맷 차이 0건 |
+| Javadoc | BE | `cd it_backend && ./gradlew javadoc` | `build.gradle` `tasks.withType(Javadoc)` (UTF-8) | 오류 0건, 경고 정리 |
+| Compile Warning | BE | `cd it_backend && ./gradlew clean compileJava` | `build.gradle` `tasks.withType(JavaCompile)` | deprecation/unchecked 경고 신규 발생 0건 |
+
+### 항목별 규칙
+
+#### 1) Type Check (FE)
+- `npm run typecheck`는 `nuxt typecheck`(vue-tsc 기반)를 실행한다.
+- 테스트 코드(`tests/**`)에서 발생한 타입 에러는 **테스트 코드 측에서** 해결한다. 소스 타입 정의는 변경 금지.
+- Nuxt auto-import 미지원 환경(Vitest)에서는 `ref`/`computed`/`defineStore` 등을 명시적 import 하여 타입 누락을 방지한다(Task 2 규칙과 동일).
+
+#### 2) ESLint / Stylelint (FE)
+- `npm run lint`(=`eslint .`)와 `npm run lint:css`(=`stylelint app/assets/css/**/*.css`)를 실행한다.
+- 자동 수정은 `npx eslint . --fix`, `npx stylelint "app/assets/css/**/*.css" --fix`로 한정 적용한다.
+- 룰 자체(`eslint.config.mjs`)는 임의로 완화하지 않는다. 규칙 변경이 필요하면 별도 합의 후 진행.
+- `npm run check`로 typecheck + lint를 한 번에 검증할 수 있다.
+
+#### 3) Prettier (FE) — ⚠️ 현재 미구성
+- **현황**: `it_frontend`에 `prettier` 의존성과 설정 파일(`.prettierrc*`, `package.json#prettier`)이 **존재하지 않는다.** 따라서 현재는 ESLint 포맷 규칙이 사실상의 포맷 기준이다.
+- 포맷 일관성 점검이 필요하면 1회성으로 `npx prettier --check .`를 실행하되, 설정이 없으므로 Prettier 기본값이 적용되는 점에 주의한다.
+- Prettier를 정식 도입하려면 (별도 합의 후): `prettier` devDependency 추가 → `.prettierrc` 작성 → `eslint-config-prettier`로 ESLint와 규칙 충돌 제거 → `package.json`에 `"format": "prettier --write ."`, `"format:check": "prettier --check ."` 스크립트 추가.
+- **이 작업 범위에서는 Prettier 강제 적용으로 인한 대량 포맷 변경(diff 노이즈)을 만들지 않는다.**
+
+#### 4) Javadoc (BE)
+- `./gradlew javadoc`로 `src/main/java` 전체 Javadoc 생성을 검증한다(인코딩 UTF-8, `build.gradle`).
+- Javadoc 경고(파라미터 누락, 잘못된 `@link`, 빈 `@return` 등)는 **주석 보강으로** 해소한다. 메서드 시그니처·로직은 변경 금지.
+- 표준 양식은 `it_backend/docs/guides/comment-style.md` 기준(루트 §4.1 한글 주석 원칙 준수).
+
+#### 5) Compile Warning (BE)
+- `./gradlew clean compileJava`로 메인 소스 컴파일 경고를 확인한다(테스트 컴파일은 `compileTestJava`).
+- 현재 `build.gradle`은 `-parameters`·UTF-8만 지정하며 `-Xlint`는 비활성 상태이다. 경고를 상세히 보려면 `--warning-mode all`로 점검한다:
+  ```bash
+  cd it_backend && ./gradlew clean compileJava --warning-mode all
+  ```
+  (deprecation/unchecked까지 강제로 보려면 `build.gradle`의 `JavaCompile` 블록에 `options.compilerArgs.add('-Xlint:all')` 추가를 별도 합의 후 진행.)
+- `deprecation`·`unchecked` 경고는 **테스트 작성 과정에서 새로 유입되지 않도록** 한다. 기존 소스 경고는 기록만 하고 `TASK.md`에 등록(소스 수정 금지 원칙).
+
+### 실행 순서 (권장)
+1. FE: `npm run check` (typecheck → lint) → `npm run lint:css`
+2. BE: `./gradlew clean compileJava --warning-mode all` (경고 확인) → `./gradlew javadoc`
+3. (선택) Prettier: `npx prettier --check .` — 미구성 상태이므로 참고용
+
+---
+
 ## [검증: Verification Loop]
 
 ### 1단계 — 실질 측정 (Bash)

@@ -16,7 +16,7 @@ it/
 ├── it_frontend/        ← Nuxt 4 (UI). 상세는 it_frontend/CLAUDE.md
 ├── it_backend/         ← Spring Boot (API). 상세는 it_backend/CLAUDE.md
 ├── it_database/        ← DDL/시드/마이그레이션
-├── docs/               ← PDCA 문서 (01-plan ~ 04-report, archive)
+├── docs/               ← 문서, 리포트, Superpowers 산출물
 └── TASK.md             ← 미구현/기술부채/장기 과제
 ```
 
@@ -83,27 +83,34 @@ it/
 ### 4.4 데이터베이스 마이그레이션 (Flyway)
 > **현황**: 백엔드에 Flyway 런타임(`flyway-core`, `flyway-database-oracle`)이 통합되어 있습니다.
 > Gradle `processResources`가 `it_database/migrations/V*.sql`을 `classpath:db/migration`으로 포함하고,
-> Spring Boot 기동 시 신규 마이그레이션을 적용합니다.
+> `local-ext`/`local-int` 프로파일 기동 시 신규 마이그레이션을 적용합니다. `dev`/`prod` DB는 DBA가 적용합니다.
 - **경로**: `it_database/migrations/`
 - **네이밍 규칙**: `V{YYYYMMDD_NNN}__{설명}.sql`
   - 예: `V20260516_001__CreateCcodemTable.sql`, `V20260516_002__AddBudgetIndexes.sql`
   - 첫 8자리 날짜 + 일련번호 3자리로 버전 정렬 (Flyway 네이밍 규칙).
   - 설명은 CamelCase, 기능/테이블/변경 의도 명확히.
 - **내용**: DDL (테이블/인덱스/시퀀스) + DML (초기화/데이터 마이그레이션).
-- **기존 스키마 기준**: `spring.flyway.baseline-on-migrate=true`, `baseline-version=20260620.001`로 기존 ITPOWN 스키마를 현재 기준선으로 등록하고 이후 신규 V* 스크립트부터 자동 적용합니다.
+- **적용 프로파일**: `spring.flyway.enabled=false`가 기본값이며 `application-local-ext.properties`, `application-local-int.properties`에서만 `true`로 켭니다.
+- **기존 스키마 기준**: `spring.flyway.baseline-on-migrate=true`, `baseline-version=20260620.001`로 기존 로컬 ITPOWN 스키마를 현재 기준선으로 등록하고 이후 신규 V* 스크립트부터 자동 적용합니다.
 - **빈 스키마 기준**: schema history가 없는 빈 스키마에서는 `it_database/migrations/`의 전체 V* 스크립트를 순서대로 적용합니다.
 - **운영 계정 분리**: 애플리케이션 계정에 DDL 권한이 없으면 `FLYWAY_USER`/`FLYWAY_PASSWORD`로 Flyway 전용 DDL 계정을 지정합니다.
 - **주의**: 적용된 스크립트는 Flyway 체크섬 추적 대상이므로 수정 금지. 변경은 항상 새 버전 스크립트로 추가합니다.
 
 ## 5. AI 하네스 가이드
 
-### 5.1 bkit PDCA
-- 새 피처 시작: `/pdca plan {피처명}`
-- 상태 확인: `/pdca status`
-- 다음 단계 확인: `/pdca next`
+### 5.1 기본 워크플로우
+- 신규 기능, 구조 변경, TDD가 필요한 작업은 **Superpowers**를 기본으로 사용합니다.
+- 요구사항 구체화: `/brainstorming`
+- 구현 계획: `/write-plan`
+- 계획 실행: `/execute-plan`
+- 디버깅: `/systematic-debugging`
+- TDD: `/test-driven-development`
+- 완료 전 검증: `/verification-before-completion`
+- 산출물은 `docs/superpowers/`에 우선 보관합니다.
 
-### 5.2 QA 워크플로우
-두 서버를 모두 기동한 뒤 `/gstack qa`로 브라우저 기반 테스트를 수행합니다.
+### 5.2 보조 워크플로우
+- **ECC**: Spring Boot, Nuxt, 테스트, 보안 등 프레임워크별 패턴 확인에 사용합니다.
+- **gstack**: 두 서버를 모두 기동한 뒤 브라우저 기반 QA, 리뷰, 배포 전 점검에 사용합니다.
 - 테스트 대상: http://localhost:3000
 - API 서버: http://localhost:28080
 - 핵심 시나리오: 로그인, 프로젝트 조회/생성, 결재 처리
@@ -111,6 +118,11 @@ it/
 ### 5.3 주요 스킬
 | 스킬 | 용도 |
 |------|------|
+| `/brainstorming` | 요구사항 구체화 |
+| `/write-plan` | 구현 계획 수립 |
+| `/execute-plan` | 계획 기반 구현 |
+| `/test-driven-development` | 테스트 우선 개발 |
+| `/verification-before-completion` | 완료 전 검증 |
 | `/qa` | 화면 기능 테스트 (브라우저 자동화) |
 | `/investigate` | 버그·오류 원인 분석 |
 | `/review` | 코드 리뷰 (diff 기준) |
