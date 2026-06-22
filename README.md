@@ -81,8 +81,7 @@ it/
 │
 ├── it_database/          ← Oracle DB 마이그레이션 & 초기화
 │   ├── migrations/       ← Flyway SQL 마이그레이션 (V{YYYYMMDD_NNN} 형식)
-│   ├── seeds/            ← 초기 데이터 (공통코드, 사용자)
-│   └── connect-db.ps1    ← 로컬 DB 접속 스크립트 (PowerShell/배치)
+│   └── seeds/            ← 초기 데이터 (공통코드, 사용자)
 │
 ├── docs/                 ← 문서, 리포트, 워크플로우 산출물
 │   └── superpowers/      ← Superpowers 계획·스펙·검증 산출물
@@ -170,9 +169,7 @@ $env:JWT_SECRET = "your-jwt-secret-key"
 
 **터미널 3: Oracle DB (선택, 스키마 확인용)**
 ```bash
-cd it_database
-.\connect-db.ps1        # 또는 .\connect-db.bat
-# sqlplus ITPAPP@127.0.0.1:11521/XEPDB1 (기본 자격증명)
+sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1   # 기본 자격증명 (Spring Boot 개발 설정과 동일)
 ```
 
 ### 3.3 개발 품질 확인 (Health Stack)

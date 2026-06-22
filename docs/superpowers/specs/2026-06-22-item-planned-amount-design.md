@@ -70,7 +70,9 @@ totRqmAmt (파생, 당해예산) = max(0, ∑ AMT − ∑ MPL_AMT)
   - `ALTER TABLE TPRMPP_BPROJM DROP (TOT_RQM_AMT, MPL_CPIT_AMT, MPL_MNGC_AMT);`
   - `ALTER TABLE TPRMPP_BPROJL DROP (TOT_RQM_AMT, MPL_CPIT_AMT, MPL_MNGC_AMT);`
 
-> ⚠️ Oracle은 컬럼 **물리 위치**("AMT 다음")를 ADD 시 강제할 수 없다. 엔티티 필드 선언 순서로 의도만 문서화한다.
+> ⚠️ Oracle은 `ADD` 시 컬럼 **물리 위치**를 강제할 수 없어 MPL_AMT가 일단 맨 끝에 추가된다.
+> 물리 순서("AMT 다음")는 후속 마이그레이션 `V20260623_001__ReorderMplAmtAfterAmt.sql`이
+> INVISIBLE→VISIBLE 토글 기법으로 재배치한다(메타데이터 전용, 데이터·제약 보존).
 > 적용 프로파일: `local-ext`/`local-int`만 자동 적용. `dev`/`prod`는 DBA 검토 후 수동 적용.
 
 ## 5. 백엔드 변경
@@ -145,7 +147,7 @@ totRqmAmt (파생, 당해예산) = max(0, ∑ AMT − ∑ MPL_AMT)
 
 - **기존 AMT 환산 불일치**: 4장/3장에 기술. MPL_AMT는 지점별 AMT 처리 미러링으로 대응, 통일은 별도 과제.
 - **목록 배치 쿼리 +1**: 품목 합산을 위한 추가 조회. 허용 범위.
-- **컬럼 물리 위치**: Oracle 한계로 "AMT 다음" 강제 불가, 엔티티 순서로 문서화.
+- **컬럼 물리 위치**: `ADD`는 맨 끝에 추가되나, `V20260623_001`이 INVISIBLE→VISIBLE 토글로 "AMT 다음"에 재배치(BITEMM/BITEML 적용 완료).
 - **기존 예정금액 데이터 소실**: 백필 0 결정에 따른 의도된 동작. 운영 적용 전 이해관계자 공지 권장.
 
 ## 10. 작업 순서 (개략)

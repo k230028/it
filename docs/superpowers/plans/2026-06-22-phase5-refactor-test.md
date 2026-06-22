@@ -734,7 +734,7 @@ cd it_backend && git add build.gradle && git commit -m "fix: pin byte-buddy/conf
 
 두 경로 중 하나를 택한다(Task 12에서 막힘 원인이 정리된 전제):
 - **(A) H2 인메모리** — `build.gradle`에 `testImplementation 'com.h2database:h2'` 추가 + 전용 `application-audit-it.properties`로 JPA/`ddl-auto=create-drop` 활성화. 장점: 빠름/CI 친화. 단점: Oracle 전용 SQL(시퀀스, `CURRENT_SCHEMA`) 미재현.
-- **(B) 실 Oracle** — `@AutoConfigureTestDatabase(replace = Replace.NONE)` + 로컬 XE(`connect-db.ps1` 환경). 장점: 운영 동등. 단점: 환경 의존, CI에선 `@Disabled` 또는 태그 분리.
+- **(B) 실 Oracle** — `@AutoConfigureTestDatabase(replace = Replace.NONE)` + 로컬 XE(`sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1` 환경). 장점: 운영 동등. 단점: 환경 의존, CI에선 `@Disabled` 또는 태그 분리.
 
 감사 로그 경로는 Oracle 전용 SQL 의존이 적으므로 **(A) H2 우선**, 불가 시 (B).
 

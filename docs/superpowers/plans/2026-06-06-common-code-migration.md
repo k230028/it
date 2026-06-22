@@ -148,7 +148,7 @@ SELECT TABLE_NAME, COLUMN_NAME FROM USER_TAB_COLS WHERE COLUMN_NAME LIKE '%EDRT%
 
 - [ ] **Step 2: 실행하여 "before" 분포 캡처**
 
-Run: `.\it_database\connect-db.ps1` 또는 `sqlplus ITPAPP/<pw>@127.0.0.1:1521/XEPDB1 @it_database\migrations\_verify\code-migration-verify.sql`
+Run: `sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1` 접속 후 `@it_database\migrations\_verify\code-migration-verify.sql` 또는 `sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1 @it_database\migrations\_verify\code-migration-verify.sql`
 Expected: `BCOSTM.DFR_CLE_C='0' 19`, `BTERMM.DFR_CLE_C='0' 115`, `BTERMM.IT_PTL_TMN_SVC_TC NULL 115` 등 설계서 §4.2와 일치. CCODEL 시퀀스명·EDRT 컬럼 유무 기록.
 
 - [ ] **Step 3: Commit**

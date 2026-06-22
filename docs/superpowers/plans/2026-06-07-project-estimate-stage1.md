@@ -26,7 +26,7 @@
   - 문서번호 채번 시퀀스: `SEQ_BESTIM`
 - **감사 컬럼 타입**: 최근 정상 부팅된 메뉴 마이그레이션(`V20260603_007`)을 그대로 미러링한다 — `FST_ENR_DTM`/`LST_CHG_DTM` = `DATE`, `GUID_PRG_SNO` = `NUMBER(4,0)`, 로그 PK `LOG_HIS_TGR_SNO` = `NUMBER(18,0)`, 로그 `CHG_DTM` = `TIMESTAMP(9)`.
 - **메타 용어 고정**(설계서 부록 A): `RQM_BG_REQ_DOC_NO`(문서번호), `DOC_VRS_SNO`(버전), `LST_YN`, `BG_PRN_TC`(대상구분, 값 `100`=정보화사업), `CNCD_RFR_NO`(대상관리번호=사업 `ABUS_MNG_NO`), `IT_PTL_STS_TC`(상태), `REQ_CONE`(요청내용), `SVN_TEM_C`(담당팀), `IOE_C`(비목), `RQM_BG_AMT`(소요예산금액), `OPNN_CONE`(의견).
-- **DB 접속 검증**: `.\it_database\connect-db.ps1` 로 SELECT 검증 가능.
+- **DB 접속 검증**: `sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1` 로 SELECT 검증 가능.
 - **테스트 명령**: 백엔드 `cd it_backend && ./gradlew test`, 프론트 `cd it_frontend && npm test` / `npm run typecheck`.
 - **커밋**: 각 Task 끝에서 커밋(Conventional Commits). 단계별 PR.
 
@@ -93,7 +93,7 @@ COMMIT;
 
 - [ ] **Step 2: 실행 및 검증**
 
-`connect-db.ps1`로 접속 후 위 스크립트 실행, 이어서 SELECT 검증:
+`sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1`로 접속 후 위 스크립트 실행, 이어서 SELECT 검증:
 `SELECT CDVA_ID, CDVA_NM FROM TPRMPP_CCODEM WHERE CO_C_ID='IT_PTL_BG_PRN_TC' ORDER BY C_SQN_SNO;`
 Expected: 2행 — `100 정보화사업`, `200 전산업무비`.
 
@@ -234,7 +234,7 @@ CREATE SEQUENCE SEQ_BESTIDL START WITH 1 INCREMENT BY 1 CACHE 20 NOCYCLE;  -- �
 
 - [ ] **Step 2: 실행**
 
-`connect-db.ps1`로 접속 후 위 스크립트 실행. 또는 기존 마이그레이션과 동일 절차.
+`sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1`로 접속 후 위 스크립트 실행. 또는 기존 마이그레이션과 동일 절차.
 
 - [ ] **Step 3: 검증**
 

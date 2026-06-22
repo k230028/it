@@ -38,13 +38,13 @@ it/
 | 프론트엔드 | http://localhost:3000 | `cd it_frontend && npm run dev`        |
 | 백엔드 API | http://localhost:28080 | `cd it_backend && ./gradlew bootRun`   |
 | Swagger UI | http://localhost:28080/swagger-ui/index.html | (백엔드 기동 후) |
-| Oracle DB | 127.0.0.1:11521/XEPDB1 | `.\it_database\connect-db.ps1` |
+| Oracle DB | 127.0.0.1:11521/XEPDB1 | `sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1` |
 
 ### 3.1.1 로컬 Oracle DB 접속
-- DB 확인이 필요하면 루트에서 `.\it_database\connect-db.ps1` 또는 `.\it_database\connect-db.bat`를 실행합니다.
+- DB 확인이 필요하면 `sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1`로 직접 접속합니다.
 - 기본 접속 정보는 Spring Boot 개발 설정과 동일합니다: `ITPAPP@127.0.0.1:11521/XEPDB1`.
-- 스크립트는 `sqlplus`를 우선 사용하고, 없으면 SQLcl의 `sql` 명령을 사용합니다.
-- 접속 정보 변경이 필요하면 `-HostName`, `-Port`, `-ServiceName`, `-Username`, `-Password`, `-Client` 인자로 오버라이드합니다.
+- SQL 스크립트는 접속 후 `@경로\스크립트.sql`로 실행하거나, `sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1 @경로\스크립트.sql`로 한 번에 실행합니다.
+- `sqlplus`가 없으면 SQLcl의 `sql` 명령을 동일한 인자로 사용합니다.
 
 ## 3.2 운영 환경
 
@@ -95,6 +95,9 @@ it/
 - **빈 스키마 기준**: schema history가 없는 빈 스키마에서는 `it_database/migrations/`의 전체 V* 스크립트를 순서대로 적용합니다.
 - **운영 계정 분리**: 애플리케이션 계정에 DDL 권한이 없으면 `FLYWAY_USER`/`FLYWAY_PASSWORD`로 Flyway 전용 DDL 계정을 지정합니다.
 - **주의**: 적용된 스크립트는 Flyway 체크섬 추적 대상이므로 수정 금지. 변경은 항상 새 버전 스크립트로 추가합니다.
+
+### 4.5 런타임 로그
+- 백엔드 파일 로그는 1개월 단위 롤오버. 경로: local `c:/itp_log`, dev/prod `/log/springitp`. 상세는 `it_backend/CLAUDE.md` §5.20 (SoT).
 
 ## 5. AI 하네스 가이드
 

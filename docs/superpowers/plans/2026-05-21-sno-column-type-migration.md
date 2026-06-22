@@ -77,7 +77,7 @@ ALTER TABLE ITPAPP.TPRMPP_CLOGNH MODIFY (LGN_SNO NUMBER(22));
 - [ ] **Step 2: DB 직접 적용 및 검증**
 
 ```powershell
-.\it_database\connect-db.ps1
+sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1
 ```
 ```sql
 SELECT COLUMN_NAME, DATA_TYPE, DATA_PRECISION
@@ -1092,7 +1092,7 @@ ORDER BY TABLE_NAME;
 Oracle DBMS_METADATA로 최신 스키마 추출 후 `it_database/ddl/ddl.sql` 갱신:
 
 ```powershell
-.\it_database\connect-db.ps1
+sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1
 ```
 ```sql
 SELECT DBMS_METADATA.GET_DDL('TABLE', TABLE_NAME, 'ITPAPP')

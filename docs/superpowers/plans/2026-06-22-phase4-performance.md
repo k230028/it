@@ -1065,7 +1065,7 @@ CREATE INDEX IDX_CMENUM_DEL ON TPRMPP_CMENUM (DEL_YN);
 CREATE INDEX IDX_CMENUA_DEL ON TPRMPP_CMENUA (DEL_YN);
 ```
 
-> **실행자 검증 의무(중복 인덱스 정리):** 작성 직후 각 테이블의 PK/UK가 이미 동일 선행 컬럼 인덱스를 제공하는지 로컬에서 확인하고 중복은 제거한다. 예) `TPRMPP_BPAYTM` PK가 `(DOC_MNG_NO, DOC_VRS_SNO, ...)`로 시작하면 `IDX_BPAYTM_DOC_VRS`는 중복 → 삭제. `TPRMPP_CMENUA` PK가 `(MNU_ID, ATH_ID)`면 별도 인덱스 불요(DEL_YN 단독만 유지). `TPRMPP_BASCTM` PK가 `IT_PTL_ASCT_ID` 단일이면 부서 JOIN 인덱스는 유효. 확인 SQL: `.\it_database\connect-db.ps1` 접속 후
+> **실행자 검증 의무(중복 인덱스 정리):** 작성 직후 각 테이블의 PK/UK가 이미 동일 선행 컬럼 인덱스를 제공하는지 로컬에서 확인하고 중복은 제거한다. 예) `TPRMPP_BPAYTM` PK가 `(DOC_MNG_NO, DOC_VRS_SNO, ...)`로 시작하면 `IDX_BPAYTM_DOC_VRS`는 중복 → 삭제. `TPRMPP_CMENUA` PK가 `(MNU_ID, ATH_ID)`면 별도 인덱스 불요(DEL_YN 단독만 유지). `TPRMPP_BASCTM` PK가 `IT_PTL_ASCT_ID` 단일이면 부서 JOIN 인덱스는 유효. 확인 SQL: `sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1` 접속 후
 > `SELECT index_name, column_name, column_position FROM all_ind_columns WHERE table_owner='ITPOWN' AND table_name='TPRMPP_BPAYTM' ORDER BY index_name, column_position;`
 > 중복 인덱스는 ORA 오류는 아니나 불필요하므로 정리한다.
 

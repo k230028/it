@@ -122,7 +122,7 @@ Expected: 마이그레이션 정상 적용, 콘솔에 ORA-00955/ORA-00942 등 �
 
 - [ ] **Step 3: View 정상 동작 확인**
 
-Run (it_database/connect-db.ps1 또는 sqlplus):
+Run (sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1):
 ```sql
 SELECT COUNT(*) FROM V_ITPAPP_LOG_FEED;
 SELECT LOG_TBL, LOG_KEY, COUNT(*) FROM V_ITPAPP_LOG_FEED GROUP BY LOG_TBL, LOG_KEY ORDER BY LOG_TBL;

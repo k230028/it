@@ -97,7 +97,7 @@ sqlplus ITPAPP/****@127.0.0.1:1521/XEPDB1 @it_database\migrations\V20260606_005_
 ```
 Expected: `PL/SQL procedure successfully completed.` (오류 없이 완료). 재실행해도 동일하게 성공해야 한다(멱등).
 
-> 비밀번호는 `it_database/connect-db.ps1` 기본값과 동일. 스크립트 실행이 번거로우면 `.\it_database\connect-db.ps1`로 접속 후 `@경로`로 실행한다.
+> 비밀번호는 Spring Boot 개발 설정 기본값과 동일. `sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1`로 접속 후 `@경로`로 실행한다.
 
 - [ ] **Step 3: 커밋**
 

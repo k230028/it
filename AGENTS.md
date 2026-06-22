@@ -38,13 +38,13 @@ it/
 | 프론트엔드 | http://localhost:3000 | `cd it_frontend && npm run dev`        |
 | 백엔드 API | http://localhost:8080 | `cd it_backend && ./gradlew bootRun`   |
 | Swagger UI | http://localhost:8080/swagger-ui/index.html | (백엔드 기동 후) |
-| Oracle DB | 127.0.0.1:11521/XEPDB1 | `.\it_database\connect-db.ps1` |
+| Oracle DB | 127.0.0.1:11521/XEPDB1 | `sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1` |
 
 ### 3.1.1 로컬 Oracle DB 접속
-- DB 확인이 필요하면 루트에서 `.\it_database\connect-db.ps1` 또는 `.\it_database\connect-db.bat`를 실행합니다.
+- DB 확인이 필요하면 `sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1`로 직접 접속합니다.
 - 기본 접속 정보는 Spring Boot 개발 설정과 동일합니다: `ITPAPP@127.0.0.1:11521/XEPDB1`.
-- 스크립트는 `sqlplus`를 우선 사용하고, 없으면 SQLcl의 `sql` 명령을 사용합니다.
-- 접속 정보 변경이 필요하면 `-HostName`, `-Port`, `-ServiceName`, `-Username`, `-Password`, `-Client` 인자로 오버라이드합니다.
+- SQL 스크립트는 접속 후 `@경로\스크립트.sql`로 실행하거나, `sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1 @경로\스크립트.sql`로 한 번에 실행합니다.
+- `sqlplus`가 없으면 SQLcl의 `sql` 명령을 동일한 인자로 사용합니다.
 
 ## 3.2 운영 환경
 

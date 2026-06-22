@@ -122,7 +122,7 @@ VALUES (src.C_ID, src.C_VL, src.C_NM, src.SORT_NO, 'Y', 'N', SYSTIMESTAMP, 'SYST
 cd it_backend
 ./gradlew flywayMigrate
 ```
-Then via `.\it_database\connect-db.ps1`:
+Then via `sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1`:
 `SELECT C_ID, C_VL, C_NM FROM TPRMPP_CCODEM WHERE C_ID IN ('APF_STS','DCD_STS') OR (C_ID='INF_TP' AND C_VL='006') ORDER BY C_ID, C_VL;`
 Expected: 9건.
 
