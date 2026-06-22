@@ -24,6 +24,20 @@
 | ✅ Done | 🟠 High | 로그인 Brute-force 보호 — 연속 실패 횟수 임계값(예: 5회/10분) + 계정 잠금 또는 지연 응답 적용                                                                              | `LoginAttemptService` 구현, `AuthService.login()` 연동                                    |
 | ✅ Done | 🟠 High | 파일 업로드 확장자 화이트리스트 검증 추가 (`FileService.uploadFileInternal()`)                                                                                  | `FileValidator` 구현, `FileService` 연동                                                  |
 
+#### 🔐 2026-06-23 소유권/권한 검증 하드닝 (`feature/ownership-authorization-hardening`)
+
+> 공통 유틸 `OwnershipVerifier.verifyOwnerOrAdmin(ownerEno, user)`(`common/system/security`, 실패 시 `AccessDeniedException`→403) 표준 도입 후 쓰기·읽기 경로에 일괄 적용. 전체 백엔드 테스트 스위트 통과(`./gradlew clean test` BUILD SUCCESSFUL).
+
+| 상태 | 우선순위 | 과제 | 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | 🟠 High | `FileController` 다운로드/미리보기/단건조회/목록조회에 파일 읽기 권한 검증 적용 | `FileOwnershipChecker.checkReadAccess()`/`canRead()` 적용, 완료일: 2026-06-23 |
+| ✅ Done | 🟠 High | `FileController.updateFileMeta()`와 `deleteFilesByOrc()`에 소유권/관리자 권한 검증 추가 | updateFileMeta→소유권 검증, deleteFilesByOrc→owner-or-admin(403), 완료일: 2026-06-23 |
+| ✅ Done | 🟠 High | 요구사항 정의서 생성/수정/삭제/새 버전 생성 API 소유권 검증 추가 | `ServiceRequestDocService` update/createNewVersion/delete에 `OwnershipVerifier` 적용, 컨트롤러 `@AuthenticationPrincipal` 전달, 완료일: 2026-06-23 |
+| ✅ Done | 🟠 High | 사업집행 4단계 서비스 쓰기 메서드(update/delete/changeStatus/save*) 소유자/관리자 검증 추가 | `EstimateService`/`DeliberationService`/`ContractService`/`PaymentService`에 `OwnershipVerifier.verifyOwnerOrAdmin` 적용, 완료일: 2026-06-23 |
+| ✅ Done | 🟡 Medium | `GET /api/documents/dashboard`·`/badge-count` — 클라이언트 제공 `bbrC` 신뢰 제거, 서버측 검증 | 관리자=요청값, 비관리자=JWT 클레임 `bbrC` 서버측 강제, 완료일: 2026-06-23 |
+| ✅ Done | 🟡 Medium | 소유권 검증 403 표준화 — `BoardPostService`/`BoardCommentService` 본인 게시물·댓글 수정/삭제 실패 400→403 | `OwnershipVerifier.verifyOwnerOrAdmin()`(`AccessDeniedException`)로 통일, 완료일: 2026-06-23 |
+| ✅ Done | 🟢 Low | `it_backend/CLAUDE.md §5.18` 보안 규칙에 `OwnershipVerifier`를 소유권 검증 표준 수단으로 명시 | §5.18 보안 규칙 블록 갱신, 완료일: 2026-06-23 |
+
 ### 📦 의존성 취약점 (Snyk, 업스트림 미해결)
 
 | 상태 | 우선순위 | 과제 | 근거 |
