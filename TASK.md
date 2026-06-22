@@ -24,7 +24,6 @@
 
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
-| ⬜ Open | 🟡 Medium | 운영 프로파일에서 `cors.allowed-origins` 실제 오리진 강제 설정 및 구동 시 검증. `app.cookie.secure=true`는 적용됨, `SecurityConfig` fallback과 운영 CORS 값 검증은 미구현 | `application-prod.properties`, `SecurityConfig.java:73` |
 | ⬜ Open | 🟡 Medium | `Authorization: Bearer` 헤더 폴백 운영 활성화 여부 결정 후 `it_backend/CLAUDE.md`에 명시                                                                       | 현재 운영에서도 동작 — XSS 탈취 토큰 헤더 전송 경로 오픈                                                   |
 | ⬜ Open | 🟡 Medium | `$apiFetch` 401 갱신 후 원요청 재시도 결과가 호출자에게 반환되는지 E2E로 검증                                                                                          | `plugins/auth.ts` refresh 재시도 흐름 브라우저 회귀 필요                                           |
 | ⬜ Open | 🟡 Medium | `it-portal-user` 쿠키 변조 시 프론트 관리자 가드가 일시적으로 관리자 화면을 노출하지 않는지 E2E 검증                                                                            | 프론트 쿠키는 UX 상태이며 최종 권한은 백엔드가 판단해야 함                                                    |
@@ -35,11 +34,9 @@
 | ⬜ Open | 🟠 High | `FileController.updateFileMeta()`와 `deleteFilesByOrc()`에 소유권 또는 관리자/도메인 권한 검증 추가 | 인증 사용자라면 임의 `flMngNo` 또는 `orcDtt+orcPkVl`로 메타 수정/일괄 삭제 호출 가능 |
 | ⬜ Open | 🟡 Medium | `GET /api/documents/dashboard`, `/badge-count` — 클라이언트 제공 `bbrC` 신뢰로 수평적 데이터 노출. 인증 사용자가 임의 부서코드로 타 부서 집계 조회 가능. JWT 클레임 `bbrC` 또는 `isAdmin()` 기준 서비스 계층 검증 필요 | `ServiceRequestDocController.java:183,197`, 발견일: 2026-05-29 |
 | ⬜ Open | 🟠 High | 요구사항 정의서 생성/수정/삭제/새 버전 생성 API 소유권 검증 추가 — 인증 사용자라면 문서번호 기준으로 타 문서 변경 가능 여부 검증 필요. `@AuthenticationPrincipal`을 받아 작성자·부서·관리자 기준 서비스 계층 검증 적용 | `ServiceRequestDocController.java:113,145,166`, `ServiceRequestDocService.java:190`, 탐지: 2026-06-21 |
-| ⬜ Open | 🟢 Low | `AuthController.getClientIp()` — `X-Forwarded-For` 멀티 IP(`client, proxy1, ...`) 미분리로 전체 문자열을 IP로 저장. `ip.split(",")[0].trim()` 추가 필요. IP 기반 Brute-force 도입 시 위조 우회 벡터 | `AuthController.java:256`, 발견일: 2026-05-29 |
 | ⬜ Open | 🟠 High | 사업집행 4단계 서비스 — 쓰기 메서드(update/delete/changeStatus/saveLines·saveResult·saveContract·savePayments)가 `CustomUserDetails user`를 받지만 소유자/관리자 검증을 하지 않음. 인증된 임의 직원이 타인의 산정·심의·계약·지급 문서를 수정·삭제·상태전이 가능. `e.getFstEnrUsid().equals(user.getEno()) \|\| user.isAdmin()` 검증 추가(공통 OwnershipVerifier 유틸 권장) | `EstimateService.java:82`, `DeliberationService.java:86`, `ContractService.java:86`, `PaymentService.java:93`, 발견일: 2026-06-09 |
 | ⬜ Open | 🟠 High | `ContractRepositoryImpl`·`DeliberationRepositoryImpl`·`PaymentRepositoryImpl` — `bbrC` 부서 필터 MVP 미적용(쿼리 조건 없음). 서비스가 bbrC를 전달해도 Repository가 무시 → 일반 사용자가 타부서 계약·심의·지급 목록 전체 열람 가능. `EstimateRepositoryImpl`(적용됨)과 불일치. Bcontm/Bdelim/Bpaymm에 주관부서코드 컬럼 추가 또는 대상 테이블 JOIN 필요 | `ContractRepositoryImpl.java:47`, `DeliberationRepositoryImpl.java:47`, `PaymentRepositoryImpl.java:43`, 발견일: 2026-06-09 (line 309 과업심의 bbrC 항목 통합·확장) |
 | ⬜ Open | 🟡 Medium | 사업집행 4단계 `changeStatus` — 단방향 상태전이(인접만)는 검증하나 역할(ADMIN/작업자/신청자)별 전이 권한 분기 없음. 업무 요건(제출=본인/관리자, 완료=관리자/작업자 등) 확정 후 서비스 계층 role 분기 추가 | `EstimateService.java:115`, `DeliberationService/ContractService/PaymentService` 동일, 발견일: 2026-06-09 |
-| ⬜ Open | 🟡 Medium | 사업집행 4단계 DTO — 금융 금액 필드(`cttAmt`, `dfrAmt`) `@DecimalMin("0")` 미적용으로 null·음수 저장 가능, YN 플래그(`taskDbrOmtYn`)는 `@Pattern(regexp="^[YN]$")` 미적용 | `ContractDto.WorkRequest`, `PaymentDto.CreateRequest/UpdateRequest/LineRequest`, `DeliberationDto.ResultRequest`, 발견일: 2026-06-09 |
 | ⬜ Open | 🟡 Medium | 소유권 검증 403 표준화 — `BoardPostService`/`BoardCommentService`가 본인 게시물·댓글 수정/삭제 실패에 `CustomGeneralException`(400)을 던짐. 신규 `OwnershipVerifier.verifyOwnerOrAdmin()`(403)로 통일해 QnA와 의미 일관성 확보 (`CostService`는 이미 `AccessDeniedException` 사용) | `BoardPostService`/`BoardCommentService`, 탐지: 2026-06-22(ownership-verifier 후속) |
 | ⬜ Open | 🟢 Low | `it_backend/CLAUDE.md §5.18` 보안 규칙에 신규 공통 유틸 `OwnershipVerifier`(`common/system/security`)를 소유권 검증 표준 수단으로 명시 | `OwnershipVerifier.java`, 탐지: 2026-06-22 |
 
@@ -96,7 +93,6 @@
 
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
-| ⬜ Open | 🟠 High | `BudgetWorkService.getProjectSummary()` — BBUGTM 루프 내 `gclMngNo→prjMngNo` 개별 SELECT + `resolveProjectName()` 사업별 SELECT → IN절 일괄 조회 | `BudgetWorkService.java L600, L683` |
 | ⬜ Open | 🟠 High | `BudgetWorkService.applyRates()` — 원본 레코드별 개별 Upsert SELECT → 벌크 처리 또는 Oracle MERGE INTO 전환 | `BudgetWorkService.java L150-213` |
 | ⬜ Open | 🟠 High | `CostService.enrichCostListBatch()` 단말기 첨부 N+1 제거 — 단말기 행별 `attachTerminals()` 개별 조회를 일괄 조회로 전환 | `CostService.java L508, L531, L598` |
 | ⬜ Open | 🟡 Medium | `BudgetWorkService.applyItemRates()` 전체 연도 BBUGTM 메모리 로드 + 루프 Soft Delete → `@Modifying` 벌크 UPDATE | `BudgetWorkService.java L243-244` |
@@ -116,13 +112,7 @@
 | ⬜ Open | 🟡 Medium | `CouncilRepository.findWithDetails()` Native Query `Object[]` 전용 DTO/projection 전환 우선 처리 | 16개 컬럼 순서와 서비스 캐스팅이 강하게 결합되어 오매핑 위험 |
 | ⬜ Open | 🟡 Medium | `CinfmmRepositoryImpl.markAllReadByRcvUsid()` QueryDSL 벌크 UPDATE 후 `LST_CHG_DTM`/`LST_CHG_USID` 미갱신 — JPA Auditing 우회, 1차 캐시 stale 발생. `clearAutomatically` 또는 감사 컬럼 명시 SET 추가 | `CinfmmRepositoryImpl.java:67-78` (→ `CouncilRepository.java:67` 동일 패턴 참조) |
 | ⬜ Open | 🟡 Medium | 실시간 로그 피드 커서 폴링 인덱스/실행계획 검증 — `CHG_DTM DESC, LOG_TBL DESC, LOG_HIS_TGR_SNO DESC`, `LOG_KEY`, `CHG_DTT_YN` 필터와 5/30분 집계가 View 기반으로 충분히 지원되는지 확인 | `RealtimeLogRepository.java`, `V_ITPAPP_LOG_FEED`, 탐지: 2026-06-05 |
-| ⬜ Open | 🟠 High | 사업집행 4단계 채번 시퀀스(`SEQ_BESTIM`/`SEQ_BDELIM`/`SEQ_BCONTM`/`SEQ_BPAYMM`) `NOCACHE → CACHE 20` 변경 마이그레이션 — 3,000명 동시 신청 시 redo 경합. (`SEQ_CINFMM` 항목과 별개) | `V20260607_002:105`, `V20260607_005:80`, `V20260607_008:84`, `V20260607_011:165` 모두 `NOCACHE NOCYCLE`, 탐지: 2026-06-09 |
-| ⬜ Open | 🟠 High | 사업집행 4단계 마스터(`BESTIM`/`BDELIM`/`BCONTM`/`BPAYMM`) 목록 조회 복합 인덱스 보강 — 핵심 WHERE `DEL_YN='N' AND LST_YN='Y'`가 기존 단일 인덱스(`IDX_*_STS`)에 미포함. `(DEL_YN, LST_YN, IT_PTL_STS_TC)` 후보 | `EstimateRepositoryImpl:41-43`, `V20260607_002:32-33` 외 3개 마이그레이션, 탐지: 2026-06-09 |
-| ⬜ Open | 🟡 Medium | 사업집행 4단계 목록 정렬 컬럼 `FST_ENR_DTM DESC` 보조 인덱스 검토 — 건수 증가 시 FULL TABLE SCAN 후 정렬 발생 | `EstimateRepositoryImpl:63`, `Deliberation/Contract/PaymentRepositoryImpl` 동일, 탐지: 2026-06-09 |
 | ⬜ Open | 🟡 Medium | `Deliberation/Contract/PaymentService.get()` 상세 조회 대상명 별도 SELECT 제거 — `loadCurrent()` + `resolveTargetName()` 2쿼리를 `EstimateRepositoryImpl`처럼 BPROJM/BCOSTM LEFT JOIN 프로젝션 단일 쿼리로 통일. 목록→상세 순차 로드 시 누적 N+1 | `DeliberationService.java:148`, `ContractService.java:146`, `PaymentService.java:176`, 탐지: 2026-06-09 |
-| ⬜ Open | 🟡 Medium | `BPAYTM`(회차별 지급) `(DOC_MNG_NO, DOC_VRS_SNO, DEL_YN)` 보조 인덱스 검토 — PK에 DEL_YN 미포함으로 `findBy...AndDelYn()` 시 PK 범위 스캔 후 필터. 지급 회차 누적 시 IO 증가 | `V20260607_011:60`, `PaymentService.java:178`, 탐지: 2026-06-09 |
-| ⬜ Open | 🟠 High | `TPRMPP_CMENUA` DEL_YN 인덱스 추가 — `findAllActive()`의 `DEL_YN='N'` 필터가 PK 외 인덱스 없이 수행. `(DEL_YN, MNU_ID)` 복합 인덱스 후보(`findActiveByMnuId`도 동시 이득) | `V20260603_007__CreateMenuTables.sql`, `CmenuaRepository`, 탐지: 2026-06-12 |
-| ⬜ Open | 🟡 Medium | `TPRMPP_CMENUM` DEL_YN 인덱스 검토 — `IDX_CMENUM_TREE` 선두 컬럼이 `SRE_TC`라 `findAllActive()`에 미활용. 소규모 테이블이므로 `EXPLAIN PLAN` 확인 후 적용 판단 | `V20260603_007__CreateMenuTables.sql`, 탐지: 2026-06-12 |
 | ⬜ Open | 🟢 Low | `applyAthIds()` 적용 대상 최소화 — prune 이후 잔존 노드의 mnuId 집합 기준으로 권한 Map 구성 검토. 메뉴 권한 캐시 도입(2026-06-22 `MenuAuthMapProvider`) 완료됨 → 실익 재평가 | `MenuQueryService.java:62`, 탐지: 2026-06-12 |
 | ⬜ Open | 🟡 Medium | [후속/T13] 캐시 TTL 미적용 보완 — 현재 `ConcurrentMapCacheManager`는 TTL 미지원. `tiptapMetadata`는 프로젝트 쓰기 시 stale 가능(`ProjectService` 쓰기경로에 `@CacheEvict` 추가 또는 Caffeine 도입 필요); `NotificationService` unread-count는 60s TTL 미적용(evict-on-write로 대체됨). Caffeine 전환 또는 쓰기경로 evict 보강 결정 필요 | `ProjectService`, `TiptapVariableService`(metadata), `NotificationService`, 탐지: 2026-06-22 |
 | ⬜ Open | 🟡 Medium | [후속] `AdminMenuService.create()`/`delete()` `@Transactional` 누락(다중 쓰기) — Phase 4 캐시 evict-on-write 전제를 강화하기 위해 트랜잭션 경계 추가 권장 | `AdminMenuService`, 탐지: 2026-06-22 |
@@ -172,6 +162,8 @@
 | ⬜ Open | 🟡 Medium | [후속/T18] 통합테스트 인프라 부재로 Task13-15(감사로그 리스너 통합테스트, `EstimateRepository` 통합테스트, `CinfmmRepositoryImplTest`) 미착수 — H2(strategy A) 또는 Oracle(strategy B) DB-backed 테스트 전략 결정 필요. 현재 `application-test.properties`는 DataSource/JPA 제외, H2/Testcontainers 의존성 없음. (참고: 기존 `NoClassDefFoundError` 대량실패는 재현 안 됨 — byte-buddy 1.18.10/mockito 5.23.0 Java25 정상) | `application-test.properties`, 탐지: 2026-06-22 (기존 NoClassDefFoundError 분석 항목 대체) |
 | ⬜ Open | 🟡 Medium | [후속/T16] 목록 프로젝션 DTO 작업(`ProjectRepositoryImpl`/`CostRepositoryImpl` DTO, `@SqlResultSetMapping`, `CouncilRepository.findWithDetails`, 4단계 상세 JOIN) 별도 계획으로 분리됨 — 미착수 | `ProjectRepositoryImpl`, `CostRepositoryImpl`, `CouncilRepository`, 탐지: 2026-06-22 |
 | ⬜ Open | 🟢 Low | [후속/minor] `CodeNameMapBuilder` 위치(`domain/budget/cost/util`)가 `ProjectService`와 공유되므로 `common` 패키지로 이동 검토 | `CodeNameMapBuilder`, 탐지: 2026-06-22 |
+| ⬜ Open | 🟡 Medium | [기술부채] 품목 금액 환율 환산 규칙 통일 — `ProjectBudgetSummaryService`(amt × xcr)와 과거 `recalcCurrentYearBudget`(× 미적용)의 비대칭. MPL_AMT는 현재 AMT 규칙을 지점별로 미러링 중. 단일 규칙으로 정리 | 2026-06-22 품목 예정금액(MPL_AMT) 전환에서 분리 |
+| ⬜ Open | 🟢 Low | [후속/perf] `CouncilService.deriveCurrentYearBudget` 협의회 목록 N+1 — 행마다 `findByAbusMngNoAndDelYn` 호출. 협의회 목록 규모 증가 시 배치 prefetch로 전환 | `CouncilService`, 탐지: 2026-06-22 (품목 MPL_AMT 전환) |
 
 ## 📝 PRD_20260517 Tiptap 변수 입력 후속 과제
 
@@ -227,7 +219,6 @@
 - [ ] (선택) `NotificationDispatcher` 실연동 어댑터로 `EaiService` 연결 — 알림톡/SMS/이메일 채널 발송.
 - [ ] `EaiService` 도메인 미연동 해소 — `infra/eai` 전체가 구현·테스트 완비 상태이나 `Estimate/Deliberation/Contract/PaymentService` 어디서도 `EaiService.sendEai()`를 호출하지 않아 상태전이 시 EAI 알림이 실제 발송되지 않음. 각 `changeStatus()`에 발송 연결(부수효과, 실패 무전파) 검토. (발견일: 2026-06-09)
 - [ ] 발신채널 상수(`1588-1500`, `hrd@kdb.co.kr`)는 ePAMS(eHR) 값 — IT Portal 발신처로 교체 필요 시 프로퍼티화.
-- [ ] (코드리뷰 LOW-2) `eai.enabled=true`인데 `eai.url`이 비어 있으면 기동 시점 검증으로 차단 — `@PostConstruct` 또는 `EaiProperties` `@AssertTrue`. 현재는 첫 호출 시 `EaiResult.failure`로만 표면화되어 오설정이 조용히 누락될 수 있음.
 - [ ] (코드리뷰 LOW-4) `EaiServiceTest`에 `umsTrSno=""`/비숫자 케이스 추가 — `Integer.parseInt` `NumberFormatException` → `EaiResult.failure` 경로 명시적 커버.
 - [ ] (플러그형) GWE `RMS_SYS_C`("GWE")·`IF_ID`·`MSG_KEY` 접두("mailt") 실제 규칙 KDB 확인. GWE 발신자 상수(systemalert/관리자)·SYSTEM_CODE 운영값 확인.
 - [ ] 신규 시스템 연동 시 EaiPayload(record) + EaiPayloadSection(@Component) 1쌍 추가 패턴 따름.
