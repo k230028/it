@@ -1,6 +1,6 @@
 # 📋 IT Portal 백로그
 
-> 🗓️ **기준일:** 2026-06-21
+> 🗓️ **기준일:** 2026-06-22
 > 🎯 **목적:** `REVIEW.md` 정비 과정에서 확인한 기술 부채, 미구현 항목, 후속 검증 과제를 추적합니다.
 
 ### 🔑 범례 (Legend)
@@ -18,35 +18,21 @@
 
 ## 🚧 진행 중
 
-> 🕒 최종 업데이트: 2026-06-21
+> 🕒 최종 업데이트: 2026-06-22
 
 ### 🔒 보안
 
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
 | ⬜ Open | 🟡 Medium | 운영 프로파일에서 `cors.allowed-origins` 실제 오리진 강제 설정 및 구동 시 검증. `app.cookie.secure=true`는 적용됨, `SecurityConfig` fallback과 운영 CORS 값 검증은 미구현 | `application-prod.properties`, `SecurityConfig.java:73` |
-| ⬜ Open | 🟡 Medium | `gemini.api.key` 운영 필수 여부 결정 후 `EnvironmentValidator` 검증 대상에 포함 또는 Gemini 기능 비활성 정책 명시                                                        | 현재 `EnvironmentValidator`는 `spring.datasource.password`, `jwt.secret`만 검사             |
 | ⬜ Open | 🟡 Medium | `Authorization: Bearer` 헤더 폴백 운영 활성화 여부 결정 후 `it_backend/CLAUDE.md`에 명시                                                                       | 현재 운영에서도 동작 — XSS 탈취 토큰 헤더 전송 경로 오픈                                                   |
-| ⬜ Open | 🟡 Medium | X-Forwarded-For 신뢰 프록시 목록 제한 — Nginx 등에서 헤더 덮어쓰기 설정 적용                                                                                        | `AuthController.getClientIp()`가 헤더 무조건 신뢰                                             |
 | ⬜ Open | 🟡 Medium | `$apiFetch` 401 갱신 후 원요청 재시도 결과가 호출자에게 반환되는지 E2E로 검증                                                                                          | `plugins/auth.ts` refresh 재시도 흐름 브라우저 회귀 필요                                           |
 | ⬜ Open | 🟡 Medium | `it-portal-user` 쿠키 변조 시 프론트 관리자 가드가 일시적으로 관리자 화면을 노출하지 않는지 E2E 검증                                                                            | 프론트 쿠키는 UX 상태이며 최종 권한은 백엔드가 판단해야 함                                                    |
 | ⬜ Open | 🟡 Medium | SSO 운영 설정 검증 강화 — `app.sso.allow-direct-eno=false`, `app.frontend-url` 실제 값, 프록시 헤더 덮어쓰기 점검                                                   | `SsoController`, `AuthController.getClientIp()` 운영 안전장치                               |
-| ⬜ Open | 🟠 High | Refresh Token Rotation 도입 — `/api/auth/refresh` 호출 시 Access Token뿐 아니라 Refresh Token도 신규 발급·DB 교체                                             | `AuthService.java:206-236` 현재 Access만 재발급, 탈취 시 7일간 유효                                |
 | ⬜ Open | 🟡 Medium | Access Token Blocklist 도입 검토 — 로그아웃 시 잔존 토큰(최대 15분) 무효화 필요 여부 결정                                                                              | `AuthService.logout()` Stateless 한계, 고보안 시나리오용                                        |
-| ⬜ Open | 🟡 Medium | `SecurityConfig.CorsConfiguration#allowedHeaders` `List.of("*")` → 실제 사용 헤더(Content-Type, Authorization 등) 명시 화이트리스트                          | `SecurityConfig.java:200` 운영 헤더 제한 미적용                                                |
-| ⬜ Open | 🟡 Medium | `SecurityConfig` 관리자 URL 패턴 `/api/plan/**`을 실제 `PlanController` 경로 `/api/plans/**`와 일치하도록 정비 | 현재는 클래스 레벨 `@PreAuthorize`가 보호하지만 이중 보호 문서/코드가 불일치 |
-| ⬜ Open | 🟠 High | `cors.allowed-origins` 기본값 `*` 제거 — `@Value("${cors.allowed-origins:*}")` 기본값이 와일드카드. 환경변수 미설정 시 `allowCredentials=true`와 충돌(브라우저 거부)하거나 비브라우저 클라이언트에서 의도치 않은 허용 발생. `EnvironmentValidator`에 `cors.allowed-origins`가 `*` 또는 빈값이면 운영 프로파일에서 구동 차단 로직 추가 필요 | `SecurityConfig.java:73`, 코드 분석 2026-06-01 |
-| ⬜ Open | 🟡 Medium | `UserDto.DetailResponse`의 휴대폰/내선/이메일 노출 권한 검증 — `UserController` 본인 또는 ADMIN 한정 응답 처리 확인                                                      | `UserDto.java`, `UserController.java:72`                                              |
+| ⬜ Open | 🟡 Medium | [후속/T10] Refresh Token 재사용 탐지(토큰 패밀리/세대 카운터) 도입 — Phase 3에서 회전(rotation)만 구현되어 탈취된 구 토큰의 재사용 탐지가 없음. 회전 시 무효화된 토큰이 다시 제출되면 패밀리 전체 폐기하는 메커니즘 필요 | `AuthService`(rotation 구현부), 스파이크: `docs/superpowers/plans/2026-06-22-phase3-security-hardening-spike-blocklist.md`, 탐지: 2026-06-22 |
 | ⬜ Open | 🟠 High | `FileController` 다운로드/미리보기/단건조회/목록조회에 파일 읽기 권한 검증 적용 | `downloadFile()`/`previewFile()`이 `FileOwnershipChecker.checkReadAccess()` 없이 `fileService.downloadFile()` 직접 호출 |
 | ⬜ Open | 🟠 High | `FileController.updateFileMeta()`와 `deleteFilesByOrc()`에 소유권 또는 관리자/도메인 권한 검증 추가 | 인증 사용자라면 임의 `flMngNo` 또는 `orcDtt+orcPkVl`로 메타 수정/일괄 삭제 호출 가능 |
-| ⬜ Open | 🟡 Medium | `NotificationController` `size` 파라미터 상한 미적용 — `GET /api/notifications?size=100000` 식의 비정상 페이지 크기 방지를 위해 `@Max(100)` 또는 서비스 내 클램핑 추가 | `NotificationController.java` |
-| ⬜ Open | 🟡 Medium | Gemini 요청 DTO 검증 추가 — `@NotBlank`, `@Size`, 첨부 개수 제한 적용 | `GeminiDto.Request`, `GeminiService.generate()` |
-| ⬜ Open | 🟡 Medium | Gemini 첨부 파일 실제 크기 제한 구현 | DTO 주석의 파일당 20MB 제한과 달리 `Files.readAllBytes(filePath)` 전 크기 검사 코드 없음 |
-| ⬜ Open | 🟠 High | 리소스 미존재 시 HTTP 404 반환을 위한 전용 `NotFoundException` 도입 + `GlobalExceptionHandler` 매핑                                                             | `UserController.java:72`, `GuideDocService.java:65,129,154` — 현재 400 반환               |
-| ⬜ Open | 🟠 High | `ResponseStatusException` 전용 핸들러 추가 — 서비스에서 던진 404/500 상태가 `RuntimeException` 포괄 핸들러에 의해 400으로 바뀌지 않도록 분리 | `GlobalExceptionHandler.java`, `PlanService.java` |
-| ⬜ Open | 🟠 High | `AccessDeniedException` 전용 핸들러 추가 — 서비스/보안 계층 권한 실패가 `RuntimeException` 포괄 핸들러로 400 처리되지 않고 403으로 반환되도록 분리 | `GlobalExceptionHandler.java`, `/api/admin/realtime-logs` 비-ADMIN 접근 검증 |
-| ⬜ Open | 🟡 Medium | `CustomUserDetails` — `athIds` 클레임 타입 불일치 시 `log.warn` 추가 (권한 강등 탐지 어려움) | `JwtUtil` / `CustomUserDetails` 관련 클레임 파싱 경로 |
-| ⬜ Open | 🟡 Medium | 사번(`eno`) PII INFO 로그 정책 정립 — DEBUG 강등 또는 마스킹 처리                                                                                              | `CouncilService.java:94`, 기타 로그인 이력 출력 위치 전수 검토                                       |
 | ⬜ Open | 🟡 Medium | `GET /api/documents/dashboard`, `/badge-count` — 클라이언트 제공 `bbrC` 신뢰로 수평적 데이터 노출. 인증 사용자가 임의 부서코드로 타 부서 집계 조회 가능. JWT 클레임 `bbrC` 또는 `isAdmin()` 기준 서비스 계층 검증 필요 | `ServiceRequestDocController.java:183,197`, 발견일: 2026-05-29 |
 | ⬜ Open | 🟠 High | 요구사항 정의서 생성/수정/삭제/새 버전 생성 API 소유권 검증 추가 — 인증 사용자라면 문서번호 기준으로 타 문서 변경 가능 여부 검증 필요. `@AuthenticationPrincipal`을 받아 작성자·부서·관리자 기준 서비스 계층 검증 적용 | `ServiceRequestDocController.java:113,145,166`, `ServiceRequestDocService.java:190`, 탐지: 2026-06-21 |
 | ⬜ Open | 🟢 Low | `AuthController.getClientIp()` — `X-Forwarded-For` 멀티 IP(`client, proxy1, ...`) 미분리로 전체 문자열을 IP로 저장. `ip.split(",")[0].trim()` 추가 필요. IP 기반 Brute-force 도입 시 위조 우회 벡터 | `AuthController.java:256`, 발견일: 2026-05-29 |
@@ -54,9 +40,6 @@
 | ⬜ Open | 🟠 High | `ContractRepositoryImpl`·`DeliberationRepositoryImpl`·`PaymentRepositoryImpl` — `bbrC` 부서 필터 MVP 미적용(쿼리 조건 없음). 서비스가 bbrC를 전달해도 Repository가 무시 → 일반 사용자가 타부서 계약·심의·지급 목록 전체 열람 가능. `EstimateRepositoryImpl`(적용됨)과 불일치. Bcontm/Bdelim/Bpaymm에 주관부서코드 컬럼 추가 또는 대상 테이블 JOIN 필요 | `ContractRepositoryImpl.java:47`, `DeliberationRepositoryImpl.java:47`, `PaymentRepositoryImpl.java:43`, 발견일: 2026-06-09 (line 309 과업심의 bbrC 항목 통합·확장) |
 | ⬜ Open | 🟡 Medium | 사업집행 4단계 `changeStatus` — 단방향 상태전이(인접만)는 검증하나 역할(ADMIN/작업자/신청자)별 전이 권한 분기 없음. 업무 요건(제출=본인/관리자, 완료=관리자/작업자 등) 확정 후 서비스 계층 role 분기 추가 | `EstimateService.java:115`, `DeliberationService/ContractService/PaymentService` 동일, 발견일: 2026-06-09 |
 | ⬜ Open | 🟡 Medium | 사업집행 4단계 DTO — 금융 금액 필드(`cttAmt`, `dfrAmt`) `@DecimalMin("0")` 미적용으로 null·음수 저장 가능, YN 플래그(`taskDbrOmtYn`)는 `@Pattern(regexp="^[YN]$")` 미적용 | `ContractDto.WorkRequest`, `PaymentDto.CreateRequest/UpdateRequest/LineRequest`, `DeliberationDto.ResultRequest`, 발견일: 2026-06-09 |
-| ⬜ Open | 🟡 Medium | `EnvironmentValidator`에 `eai.enabled`/`EAI_URL` 운영값 검증 추가 — `eai.enabled=false`(기본값)인 채 운영 배포 시 전문이 실제 전송되지 않고 빌드·로깅만 수행(`EaiResult.skip()`)되어 알림이 전송 성공처럼 보임. 운영 프로파일에서 경고 또는 차단 | `EaiProperties.java:36`, `EaiService.java:64`, 발견일: 2026-06-09 |
-| ⬜ Open | 🟡 Medium | `EaiService.sendEai()` 전송 실패 로그 — `e.getMessage()`가 `RestClient` 예외의 EAI URL/내부 경로를 포함할 수 있음. `e.getClass().getSimpleName()` 또는 안전 추출로 교체 | `EaiService.java:81`, 발견일: 2026-06-09 |
-| ⬜ Open | 🟢 Low | `EaiProperties` 컴팩트 생성자 — `enabled=true`이면서 `url`이 공백/null이면 `RestClient.post().uri("")`로 잘못된 발송. `if (enabled && (url==null \|\| url.isBlank())) throw ...` 가드 추가 | `EaiProperties.java:36`, 발견일: 2026-06-09 |
 | ⬜ Open | 🟡 Medium | 소유권 검증 403 표준화 — `BoardPostService`/`BoardCommentService`가 본인 게시물·댓글 수정/삭제 실패에 `CustomGeneralException`(400)을 던짐. 신규 `OwnershipVerifier.verifyOwnerOrAdmin()`(403)로 통일해 QnA와 의미 일관성 확보 (`CostService`는 이미 `AccessDeniedException` 사용) | `BoardPostService`/`BoardCommentService`, 탐지: 2026-06-22(ownership-verifier 후속) |
 | ⬜ Open | 🟢 Low | `it_backend/CLAUDE.md §5.18` 보안 규칙에 신규 공통 유틸 `OwnershipVerifier`(`common/system/security`)를 소유권 검증 표준 수단으로 명시 | `OwnershipVerifier.java`, 탐지: 2026-06-22 |
 
@@ -77,24 +60,16 @@
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
 | ⬜ Open | 🟠 High | `NotificationEventListener.onApprovalCompleted()` — AFTER_COMMIT 페이즈 내 `applicationRepository.findById()` 호출이 외부 트랜잭션 종료 후 수행되어 Lazy 연관 접근 시 `LazyInitializationException` 발생 가능. `@Transactional(REQUIRES_NEW)` 추가 또는 `send()` 내부로 이동 필요 | `NotificationEventListener.java:57-58` |
-| ⬜ Open | 🟢 Low | `NotificationEvent` `infTtl`(100자)·`infCone`(300자) 길이 제한이 JavaDoc에만 명시되고 `send()` 내에서 강제 적용되지 않음 — 초과 시 `ORA-12899` 런타임 오류로 알림 유실 | `NotificationService.java:send()`, `NotificationEvent.java` |
-| ⬜ Open | 🟡 Medium | `ChangeLogEntityListener.java:133-137` `catch (IllegalAccessException e)` — `delYn` 리플렉션 접근 실패 시 예외 변수 `e`가 버려지고 스택트레이스 없음. 논리삭제(D) 판정이 수정(U)으로 잘못 기록됨. `log.warn("[감사로그] delYn 접근 실패 — entity={}", entity.getClass().getSimpleName(), e)` 추가 필요 | `ChangeLogEntityListener.java:133-137`, 탐지: 2026-06-01 |
-| ⬜ Open | 🟠 High | `PlanService.java:443` `catch (JsonProcessingException e)` — cause 미전달. `new ResponseStatusException(status, reason)` 2인수 생성자 사용으로 스택트레이스 손실. `new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "계획 스냅샷 직렬화에 실패했습니다.", e)` 3인수 생성자로 교체 필요. (`PlanService.java:126-130` 항목과 별개 위치) | `PlanService.java:443-446`, 탐지: 2026-06-01 |
 | ⬜ Open | 🟡 Medium | 프론트엔드 toast 알림 누락 다발 보완 (`useCostListPage`, `projects/form.vue`, `budget/report.vue`, `terminal/[id].vue` 등)                                                                                        | catch 블록 사용자 피드백 없음 — TODO 주석 존재                                                 |
 | ⬜ Open | 🟠 High | 사전협의 자동 저장 실패 사용자 알림 및 재시도 정책 보강                                                                                                                                                                    | `pages/info/documents/[id]/review.vue` 자동 저장 catch가 실패를 삼킴                       |
 | ⬜ Open | 🟡 Medium | 사전협의 버전/코멘트/검토자 API 실패 표시 보강                                                                                                                                                                        | `stores/review.ts`, `pages/info/documents/[id]/index.vue` 실패 시 빈 상태 폴백           |
 | ⬜ Open | 🟡 Medium | 전산업무비 일괄 업로드 실패 행/원인 로깅 및 결과 상세화                                                                                                                                                                    | `useCostListPage.ts` 행별 catch에서 실패 수만 증가                                         |
 | ⬜ Open | 🟡 Medium | HWPX 내보내기 이미지 누락 진단 강화                                                                                                                                                                              | `useHwpxExport.ts` 이미지 fetch 실패 시 null 반환                                        |
-| ⬜ Open | 🟡 Medium | Gemini 파일 첨부 실패 로그 보강                                                                                                                                                                               | `GeminiService.java` 파일 읽기 실패 시 skip만 반환                                         |
-| ⬜ Open | 🟡 Medium | 감사로그 `delYn` 리플렉션 실패 시 경고 로그 및 변경유형 판정 검증                                                                                                                                                           | `ChangeLogEntityListener.java` 실패 시 `U`로 폴백                                      |
 | ⬜ Open | 🟡 Medium | Java 파일 헤더 주석 전수 보강                                                                                                                                                                                 | 다수 Java 파일이 `package`로 바로 시작하며 파일 역할/흐름/연동 테이블 헤더가 없음                            |
 | ⬜ Open | 🟡 Medium | `AdminDto` 잔여 DTO JavaDoc 보강                                                                                                                                                                        | 자격등급/사용자/조직/역할/로그인 이력/토큰/첨부파일/통계 DTO는 기본 설명만 존재                                  |
 | ⬜ Open | 🔴 Critical | `ApplicationService.getApplicationsByIds()`·`ProjectService.findByIds()`·`CostService.findByIds()` — `IllegalArgumentException` catch 후 `null` 반환 + `Objects::nonNull` 필터 패턴 제거. 실패 항목 수가 호출자에게 가려짐 | `ApplicationService.java:440`, `ProjectService.java:564`, `CostService.java:351` |
-| ⬜ Open | 🟠 High | `ChangeLogEntityListener.beforeAnyOperation()` `catch (Exception e)` — 감사로그 영속화 실패 시 스택 트레이스 + 알람 필요                                                                                                | `ChangeLogEntityListener.java:75` 현재 `log.warn`만                                 |
-| ⬜ Open | 🟠 High | `GeminiService` `RestClient`에 `connectTimeout`/`readTimeout` 설정 — Gemini API 응답 지연 시 스레드 풀 고갈 가능                                                                                                    | `GeminiService.java:98` 타임아웃 미지정                                                 |
-| ⬜ Open | 🟡 Medium | `FileService.downloadFile()` `MalformedURLException` 원인 예외 보존 — `CustomGeneralException` 생성 시 cause를 포함해 파일 경로 생성 실패 스택트레이스를 남김 | `FileService.java:522`, 발견일: 2026-06-01 |
+| ⬜ Open | 🟠 High | `ChangeLogEntityListener.beforeAnyOperation()` `catch (Exception e)` — 감사로그 영속화 실패 시 알람 필요 (스택트레이스는 2026-06-22 추가됨, 알람 연동만 잔여)                                                                                                | `ChangeLogEntityListener.java:75` 현재 `log.warn`만 |
 | ⬜ Open | 🟡 Medium | `LoginAttemptService` 조회 전용 트랜잭션 경계 명시 — 클래스 레벨 `@Transactional(readOnly=true)` 적용 검토 | `LoginAttemptService.java`, 발견일: 2026-06-01 |
-| ⬜ Open | 🟠 High | `PlanService.applyExistingPlanSnapshot()` 빈 `catch (JsonProcessingException) {}` — 스냅샷 파싱 실패 시 카운트 0 폴백으로 잘못된 예산 보고서 산출                                                                             | `PlanService.java:133-137` (FIXME [B-H-05]), 현행화: 2026-06-14                                                           |
 | ⬜ Open | 🟠 High | `useTiptapImageInsertion.ts` 임시 blob URL 미해제 — 이미지 업로드 실패 catch 경로 + 성공 경로 모두 `URL.revokeObjectURL()` 보장                                                                                            | `useTiptapImageInsertion.ts:60,111,135` 메모리 누수 위험                                |
 | ⬜ Open | 🟡 Medium | `usePdfReport.ts` 한글 폰트 로드 실패 시 Roboto 폴백 — 한글 문자 깨짐 가능, 사용자 경고 토스트 추가                                                                                                                              | `usePdfReport.ts:174` 무경고 폴백                                                     |
 | ⬜ Open | 🟡 Medium | Excalidraw/HWPX/Tiptap 실패 경로 사용자 알림 보강 — 내보내기 실패, 장면 복원 실패, 이미지 누락을 빈 결과와 구분 | `ExcalidrawWrapper.vue`, `ExcalidrawNodeView.vue`, `useHwpxExport.ts`, `hwpx-images.ts`, `useTiptapTableTools.ts` |
@@ -115,7 +90,6 @@
 | ⬜ Open | 🟡 Medium | `council-request/[id].vue` — `saveTemp`/`saveComplete`/`submitApproval` catch 바인딩 없음. 백엔드 오류 메시지(`e.data?.message`) 대신 일반 문구만 노출. `prepare/[id].vue`의 `catch (e: unknown)` 패턴으로 통일 (TODO 주석 등록 완료) | `pages/info/council-request/[id].vue:370,407,476`, 탐지: 2026-06-12 |
 | ⬜ Open | 🟡 Medium | `council-request/[id].vue` — `councilStatus`의 `?? '01'` 폴백이 데이터 미로드(null)를 DRAFT로 둔갑시켜 편집 가드 해제. 로드 실패 상태에서 빈 데이터 저장 위험. null 유지 + 가드 보강 (TODO 주석 등록 완료) | `pages/info/council-request/[id].vue:189`, 탐지: 2026-06-12 |
 | ⬜ Open | 🟢 Low | `CommitteeSelector.vue`(위원 저장·기본위원 배정)·`ScheduleStatus.vue`(일정 확정) catch 바인딩 없음 — 업무 오류 메시지 미전달. `EvaluationForm.vue` 오류 추출 패턴으로 통일 | `CommitteeSelector.vue:261,295`, `ScheduleStatus.vue:159`, 탐지: 2026-06-12 |
-| ⬜ Open | 🟡 Medium | `AdminLogService.readField()` — 클래스 계층에서 필드 미발견 시 `null` 반환에 warn 로그 없음(TODO [B-M-01] 존재). 관리자 로그 상세 화면에서 특정 컬럼이 조용히 빈값 표시, 엔티티 필드명 오타 시 탐지 불가. 반환 전 `log.warn(... entity={} field={})` 추가 | `AdminLogService.java:232-241`, 탐지: 2026-06-14 |
 | ⬜ Open | 🟢 Low | `council-request/result/[id].vue` — `handleNotify`(통보 성공이나 수신자 null 시 무피드백)·`handleRequestApproval`·`handleStartResultWriting` catch 바인딩 없음. 백엔드 오류 메시지(`e.data?.message`) 미전달. `prepare/[id].vue`의 `catch (e: unknown)` 패턴으로 통일 | `pages/info/council-request/result/[id].vue:273,299,314`, 탐지: 2026-06-14 |
 
 ### 🗄️ DB / JPA 최적화
@@ -126,43 +100,33 @@
 | ⬜ Open | 🟠 High | `BudgetWorkService.applyRates()` — 원본 레코드별 개별 Upsert SELECT → 벌크 처리 또는 Oracle MERGE INTO 전환 | `BudgetWorkService.java L150-213` |
 | ⬜ Open | 🟠 High | `CostService.enrichCostListBatch()` 단말기 첨부 N+1 제거 — 단말기 행별 `attachTerminals()` 개별 조회를 일괄 조회로 전환 | `CostService.java L508, L531, L598` |
 | ⬜ Open | 🟡 Medium | `BudgetWorkService.applyItemRates()` 전체 연도 BBUGTM 메모리 로드 + 루프 Soft Delete → `@Modifying` 벌크 UPDATE | `BudgetWorkService.java L243-244` |
-| ⬜ Open | 🟡 Medium | `CouncilRepository.updateProjectStatus()` `@Modifying` Native Query 후 1차 캐시 stale → `clearAutomatically=true` 또는 엔티티 기반 업데이트 | `CouncilRepository.java L67` |
 | ⬜ Open | 🟡 Medium | `ProjectRepositoryImpl`/`CostRepositoryImpl` `selectFrom` 전체 컬럼 → 목록 API용 DTO 프로젝션 (1000자 텍스트 컬럼 제외) | `ProjectRepositoryImpl.java L140`, `CostRepositoryImpl.java L163` |
 | ⬜ Open | 🟡 Medium | Native Query `Object[]` 반환 → DTO 프로젝션 또는 `@SqlResultSetMapping` 적용 | `CouncilRepository`, `ApplicationRepository`, `ServiceRequestDocRepository`, `LoginHistoryRepository`, `EvaluationRepository` |
 | ⬜ Open | 🟡 Medium | `ProjectService.enrichProjectListBatch()` 사업별 비목 요약 N+1 제거 — BITEMM을 사업 키 묶음으로 일괄 조회 | `ProjectService.java L662, L684, L783` |
-| ⬜ Open | 🟡 Medium | `ApplicationService.getPendingCount()` full entity 조회 후 `.size()` → `count` 쿼리 전환 | `ApplicationService.java L535`, `ProjectRepositoryImpl.java L140`, `CostRepositoryImpl.java L163` |
 | ⬜ Open | 🟡 Medium | `FeasibilityService.replacePerformances()` JPQL DELETE 후 flush 없이 persist → `flush()` 명시 또는 Spring Data `deleteAll` 통일 | `FeasibilityService.java L225` |
 | ⬜ Open | 🟡 Medium | 협의회 일정/평가 사용자명 조회 N+1 제거 | `ScheduleService`, `EvaluationService`에서 사번별 `findByEno()` 반복 |
 | ⬜ Open | 🟡 Medium | 협의회 위원/상태 조회 배치화 검토 | `CommitteeService`, `CouncilService` 반복 조회 후보 |
 | ⬜ Open | 🟠 High | 결재 대기/대시보드 쿼리 인덱스 보강 검토 | `ApplicationRepository`가 `CDECIM.DCD_ENO`, `DCD_DT`, `CAPPLM.APF_STS`, `RQS_DT` 기준 조회. 후보: `CDECIM(DCD_ENO, DCD_DT, DCD_MNG_NO)`, `CAPPLM(APF_STS, RQS_DT DESC)` |
 | ⬜ Open | 🟠 High | 요구사항 정의서 대시보드 `BRDOCM`/`BRIVGM` 보조 인덱스 검토 | `ServiceRequestDocRepository`가 `FST_ENR_USID`, `DEL_YN`, `FST_ENR_DTM`, `DOC_MNG_NO`, `FSG_YN` 조건 반복 사용 |
 | ⬜ Open | 🟡 Medium | 협의회 목록 `BASCTM`/`BCMMTM` 역방향 조회 인덱스 검토 | 후보: `BASCTM(PRJ_MNG_NO, PRJ_SNO, DEL_YN)`, `BCMMTM(ENO, DEL_YN, ASCT_ID)` |
-| ⬜ Open | 🟡 Medium | `ReviewCommentService` 검토의견 작성자명 조회 N+1 제거 | 댓글 목록 행마다 `userRepository.findById()` 호출. 사번 일괄 조회 또는 조인 프로젝션 검토 |
 | ⬜ Open | 🟡 Medium | `ScheduleService` 위원 사용자명 조회 N+1 제거 — 위원별 `userRepository.findByEno` 반복을 `findByEnoIn` 일괄 조회로 전환 | `ScheduleService.java:311`, 탐지: 2026-06-05 |
-| ⬜ Open | 🟠 High | `ApplicationService.getApplications()` 결재자 목록 N+1 제거 | `applicationRepository.findAll()` 후 신청서마다 `approverRepository.findByDcdMngNoOrderByDcrSqnSnoAsc()` 반복 호출. `findByDcdMngNoIn...` 일괄 조회 또는 QueryDSL 조인/프로젝션 전환 |
-| ⬜ Open | 🟠 High | 요구사항 정의서 목록 작성자명 조회 N+1 제거 | `ServiceRequestDocService`가 `findLatestVersionsAll()` 결과마다 `cuserIRepository.findById()` 호출. 최초등록자 사번 일괄 조회 후 매핑 |
 | ⬜ Open | 🟠 High | 전산업무비 삭제 시 단말기 조회 N+1 제거 | `CostService`가 비용별 `btermmRepository.findByItMngcNoAndItMngcSno()` 반복 호출. `IT_MNGC_NO` 기준 단말기 일괄 조회 후 그룹핑 |
 | ⬜ Open | 🟡 Medium | `BRDOCM` 최신버전 목록 조회 실행계획 검증 및 복합 인덱스 검토 | `findLatestVersionsAll()`의 `DEL_YN='N'` + 상관 서브쿼리 `MAX(DOC_VRS)` + `FST_ENR_DTM DESC` 정렬. 후보: `(DEL_YN, DOC_MNG_NO, DOC_VRS, FST_ENR_DTM)` |
 | ⬜ Open | 🟡 Medium | `BRIVGM` 검토의견 목록 조회 인덱스 추가 검토 | 댓글 목록이 `(DOC_MNG_NO, DOC_VRS, DEL_YN)` 필터와 `FST_ENR_DTM ASC` 정렬을 사용. 후보: `(DOC_MNG_NO, DOC_VRS, DEL_YN, FST_ENR_DTM)` |
 | ⬜ Open | 🟡 Medium | `CouncilRepository.findWithDetails()` Native Query `Object[]` 전용 DTO/projection 전환 우선 처리 | 16개 컬럼 순서와 서비스 캐스팅이 강하게 결합되어 오매핑 위험 |
 | ⬜ Open | 🟡 Medium | `CinfmmRepositoryImpl.markAllReadByRcvUsid()` QueryDSL 벌크 UPDATE 후 `LST_CHG_DTM`/`LST_CHG_USID` 미갱신 — JPA Auditing 우회, 1차 캐시 stale 발생. `clearAutomatically` 또는 감사 컬럼 명시 SET 추가 | `CinfmmRepositoryImpl.java:67-78` (→ `CouncilRepository.java:67` 동일 패턴 참조) |
 | ⬜ Open | 🟡 Medium | 실시간 로그 피드 커서 폴링 인덱스/실행계획 검증 — `CHG_DTM DESC, LOG_TBL DESC, LOG_HIS_TGR_SNO DESC`, `LOG_KEY`, `CHG_DTT_YN` 필터와 5/30분 집계가 View 기반으로 충분히 지원되는지 확인 | `RealtimeLogRepository.java`, `V_ITPAPP_LOG_FEED`, 탐지: 2026-06-05 |
-| ⬜ Open | 🟠 High | `BudgetWorkService.getProjectSummary()` BBUGTM 루프 내 `computeIfAbsent` 개별 SELECT N+1 — BBUGTM gclMngNo 집합 선추출 후 `projectItemRepository.findByGclMngNoInAndDelYn(gclMngNos, "N")` 일괄 조회 → Map 선구성 후 순회로 전환. 또는 BBUGTM 쿼리에 BITEMM JOIN 포함 | `BudgetWorkService.java:696-699`, 탐지: 2026-06-01 |
-| ⬜ Open | 🟡 Medium | `BudgetWorkService.resolveProjectName()` 사업별 개별 SELECT N+1 — `getProjectSummary()` groupKey 집합을 BPROJM/BCOSTM으로 분류 후 IN절 일괄 조회 → prjMngNo→prjNm, itMngcNo→cttNm 맵 선구성 후 Map 참조로 전환 | `BudgetWorkService.java:782-795`, 탐지: 2026-06-01 |
-| ⬜ Open | 🟡 Medium | `GET /api/notifications/unread-count` — 사용자당 60초 폴링 × 3,000명 = 상시 DB `COUNT(*)`. `@Cacheable` (TTL 60s, per-user key) 또는 SSE 전환으로 DB 부하 경감 | `NotificationService.java:94-97` |
-| ⬜ Open | 🟡 Medium | `TiptapVariableService.resolve()` — 토큰별 개별 집계 쿼리(최대 200 토큰 × 2쿼리 = 400 DB 호출). 동일 `(year, category)` 결과를 인트라-요청 Map으로 캐시 후 배치 처리로 전환 | `TiptapVariableService.java:74-80` |
-| ⬜ Open | 🟡 Medium | `TiptapVariableService.getMetadata()` — 활성 사업 전체 목록을 매 호출마다 DB 조회. `@Cacheable` + 사업 변경 시 evict 또는 사업 코드 검색 파라미터로 온디맨드 조회 전환 | `TiptapVariableService.java:44-55` |
-| ⬜ Open | 🟢 Low | `SEQ_CINFMM NOCACHE` 설정 — 대량 알림 발송 시 시퀀스 redo 경합. `CACHE 20` 이상으로 변경하는 마이그레이션 추가 | `V20260520_001__CreateCinfmmTable.sql:78-83` |
 | ⬜ Open | 🟠 High | 사업집행 4단계 채번 시퀀스(`SEQ_BESTIM`/`SEQ_BDELIM`/`SEQ_BCONTM`/`SEQ_BPAYMM`) `NOCACHE → CACHE 20` 변경 마이그레이션 — 3,000명 동시 신청 시 redo 경합. (`SEQ_CINFMM` 항목과 별개) | `V20260607_002:105`, `V20260607_005:80`, `V20260607_008:84`, `V20260607_011:165` 모두 `NOCACHE NOCYCLE`, 탐지: 2026-06-09 |
 | ⬜ Open | 🟠 High | 사업집행 4단계 마스터(`BESTIM`/`BDELIM`/`BCONTM`/`BPAYMM`) 목록 조회 복합 인덱스 보강 — 핵심 WHERE `DEL_YN='N' AND LST_YN='Y'`가 기존 단일 인덱스(`IDX_*_STS`)에 미포함. `(DEL_YN, LST_YN, IT_PTL_STS_TC)` 후보 | `EstimateRepositoryImpl:41-43`, `V20260607_002:32-33` 외 3개 마이그레이션, 탐지: 2026-06-09 |
 | ⬜ Open | 🟡 Medium | 사업집행 4단계 목록 정렬 컬럼 `FST_ENR_DTM DESC` 보조 인덱스 검토 — 건수 증가 시 FULL TABLE SCAN 후 정렬 발생 | `EstimateRepositoryImpl:63`, `Deliberation/Contract/PaymentRepositoryImpl` 동일, 탐지: 2026-06-09 |
 | ⬜ Open | 🟡 Medium | `Deliberation/Contract/PaymentService.get()` 상세 조회 대상명 별도 SELECT 제거 — `loadCurrent()` + `resolveTargetName()` 2쿼리를 `EstimateRepositoryImpl`처럼 BPROJM/BCOSTM LEFT JOIN 프로젝션 단일 쿼리로 통일. 목록→상세 순차 로드 시 누적 N+1 | `DeliberationService.java:148`, `ContractService.java:146`, `PaymentService.java:176`, 탐지: 2026-06-09 |
 | ⬜ Open | 🟡 Medium | `BPAYTM`(회차별 지급) `(DOC_MNG_NO, DOC_VRS_SNO, DEL_YN)` 보조 인덱스 검토 — PK에 DEL_YN 미포함으로 `findBy...AndDelYn()` 시 PK 범위 스캔 후 필터. 지급 회차 누적 시 IO 증가 | `V20260607_011:60`, `PaymentService.java:178`, 탐지: 2026-06-09 |
-| ⬜ Open | 🟠 High | 메뉴 권한 매핑 `athByMenu()` 캐시 도입 — `CMENUA` 전체 조회가 모든 인증 사용자의 페이지 이동마다 실행됨(`getMenuTree`/`getAdminMenuTree` 각각 호출). 준정적 데이터이므로 `CodeService`의 `@Cacheable` 패턴 적용 + `AdminMenuService` 쓰기 경로에 `@CacheEvict`. readOnly 트랜잭션 프록시 중첩 주의(별도 캐시 빈 분리 검토) | `MenuQueryService.java:41,58`, 탐지: 2026-06-12 |
 | ⬜ Open | 🟠 High | `TPRMPP_CMENUA` DEL_YN 인덱스 추가 — `findAllActive()`의 `DEL_YN='N'` 필터가 PK 외 인덱스 없이 수행. `(DEL_YN, MNU_ID)` 복합 인덱스 후보(`findActiveByMnuId`도 동시 이득) | `V20260603_007__CreateMenuTables.sql`, `CmenuaRepository`, 탐지: 2026-06-12 |
 | ⬜ Open | 🟡 Medium | `TPRMPP_CMENUM` DEL_YN 인덱스 검토 — `IDX_CMENUM_TREE` 선두 컬럼이 `SRE_TC`라 `findAllActive()`에 미활용. 소규모 테이블이므로 `EXPLAIN PLAN` 확인 후 적용 판단 | `V20260603_007__CreateMenuTables.sql`, 탐지: 2026-06-12 |
-| ⬜ Open | 🟢 Low | `applyAthIds()` 적용 대상 최소화 — prune 이후 잔존 노드의 mnuId 집합 기준으로 권한 Map 구성 검토. 캐시 도입(위 High 항목) 후 실익 재평가 | `MenuQueryService.java:62`, 탐지: 2026-06-12 |
-| ⬜ Open | 🟢 Low | `BcostmL` JPA `@Column(length)` 속성이 실제 DDL/마스터와 불일치(`BG_NO` 32 vs 15, `IOE_C` 3 vs 7, `SVN_DPM_C` 3 vs 20). 실제 `TPRMPP_BCOSTL` 컬럼폭은 정상이라 런타임 영향 없으나(마이그레이션 기반 DDL) 엔티티 메타가 부정확 → `length` 정정 | `BcostmL.java:26,35,71`, 탐지: 2026-06-14 |
+| ⬜ Open | 🟢 Low | `applyAthIds()` 적용 대상 최소화 — prune 이후 잔존 노드의 mnuId 집합 기준으로 권한 Map 구성 검토. 메뉴 권한 캐시 도입(2026-06-22 `MenuAuthMapProvider`) 완료됨 → 실익 재평가 | `MenuQueryService.java:62`, 탐지: 2026-06-12 |
+| ⬜ Open | 🟡 Medium | [후속/T13] 캐시 TTL 미적용 보완 — 현재 `ConcurrentMapCacheManager`는 TTL 미지원. `tiptapMetadata`는 프로젝트 쓰기 시 stale 가능(`ProjectService` 쓰기경로에 `@CacheEvict` 추가 또는 Caffeine 도입 필요); `NotificationService` unread-count는 60s TTL 미적용(evict-on-write로 대체됨). Caffeine 전환 또는 쓰기경로 evict 보강 결정 필요 | `ProjectService`, `TiptapVariableService`(metadata), `NotificationService`, 탐지: 2026-06-22 |
+| ⬜ Open | 🟡 Medium | [후속] `AdminMenuService.create()`/`delete()` `@Transactional` 누락(다중 쓰기) — Phase 4 캐시 evict-on-write 전제를 강화하기 위해 트랜잭션 경계 추가 권장 | `AdminMenuService`, 탐지: 2026-06-22 |
+| ⬜ Open | 🟢 Low | [후속] `BtermmL.IND_RSN` `@Column(length=600)` — `TPRMPP_BTERML` DDL 대조해 `BcostmL`과 동일한 `@Column(length)` 드리프트 여부 확인 (BcostmL은 2026-06-22 정정 완료) | `BtermmL.java`, `TPRMPP_BTERML`, 탐지: 2026-06-22 |
 
 ### 🎨 프론트엔드 리팩토링
 
@@ -200,16 +164,14 @@
 
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
-| ⬜ Open | 🟡 Medium | `stream().collect(Collectors.toList())` → `.toList()` 전환 — 탐지된 48곳 중 주요 파일: `ApplicationDto.java:331`, `BoardCommentService.java:65`, `BoardMetaService.java:31`, `BoardPostService.java:68`, `CodeService.java:44,73`, `OrganizationService.java:49`, `UserService.java:56`, `AuthService.java:359`, `CostService.java:151,179,409,542,554,637,661`, `ReviewCommentService.java:45`, `ServiceRequestDocService.java:73,121`, `PlanService.java:86,137,162,363,378,387,404,418`, `ProjectService.java:131,164,200,619,663,674,914`, `CouncilService.java:109,116,125,251`, `EvaluationService.java:102,134,281`, `FeasibilityService.java:287,295`, `ScheduleService.java:116,128,163`, `FileService.java:242`. 주의: `.toList()`는 불변 반환이므로 소비자 코드에서 `add()`/`remove()` 호출 시 `ArrayList` 래핑 필요 — 변환 전 소비자 코드 확인 필수 | Java 25 환경, 가독성·불변성 향상, 탐지: 2026-06-01 |
-| ⬜ Open | 🟡 Medium | `buildCodeNameMap` 중복 private 메서드 추출 — `CostService`와 `ProjectService`가 동일한 코드명 맵 생성 로직을 각자 보유. 공통 유틸 또는 `CodeService`에 단일 구현 후 위임 | `CostService.java`, `ProjectService.java`, 탐지: 2026-06-01 |
-| ⬜ Open | 🟡 Medium | 사업집행 `validateTarget`+`resolveTargetName` 공통 추출 — `Deliberation/Contract/PaymentService` 3곳에 동일 private 메서드 2개(대상구분 100/200 분기로 BPROJM/BCOSTM 존재·명칭 조회)가 복사됨. `common`에 `DomainTargetResolver @Component` 추출 후 위임(line 164 N+1 과제와 병행) | `DeliberationService.java:60,157`, `ContractService.java:60,155`, `PaymentService.java:62,185`, 탐지: 2026-06-09 |
 | ⬜ Open | 🟡 Medium | 문서/내보내기 회귀 테스트 범위 확대 (HWPX/PDF/Excel) | `utils/hwpx.ts` HTML 파싱·이미지 패키징·XML 생성 통합 담당 |
 | ⬜ Open | 🟡 Medium | `domain/log` 감사로그 리스너 통합 테스트 보강 | JaCoCo 제외 대상이나 업무 감사 추적에 중요 |
-| ⬜ Open | 🟠 High | 백엔드 테스트 대량 `NoClassDefFoundError`/`ClassNotFoundException` 원인 분석 | 2026-05-17 `./gradlew test` 기준 compileJava 통과 후 194 tests 중 155 failed, Spring context/Mockito 초기화 단계에서 실패 |
 | ⬜ Open | 🟡 Medium | 소요예산 산정 `EstimateRepositoryImpl.search()` QueryDSL에 대한 통합 테스트 부재 (프로젝트에 `@DataJpaTest` 인프라 없음, 현재 Mockito 단위테스트만). 단계별 화면 안정화 후 통합 테스트 보강 | `it_backend/src/test/.../estimate/repository/EstimateRepositoryTest.java`, 탐지: 2026-06-07 |
-| ⬜ Open | 🟢 Low | `AuditLogEvent.java` → Java record 전환 | Java 25 환경, 3개 필드 + getter 구성 |
-| ⬜ Open | 🟢 Low | `BbugtmRepositoryImpl.sumCostDupBg`/`sumAssetDupBg` 공통 private 메서드 추출 | JOIN + WHERE + GROUP BY 동일 패턴, 집계 기준 컬럼만 다름 |
-| ⬜ Open | 🟢 Low | `ApplicationContextHolder.publishEvent()`/`AuditLogEvent` 잔여 이벤트 기반 감사로그 주석 정리 | 현재 감사로그는 `ChangeLogEntityListener`가 `AuditLogPersister.persist()` 직접 호출 |
+| ⬜ Open | 🟢 Low | `ApplicationContextHolder.publishEvent()` 잔여 이벤트 기반 감사로그 주석 정리 — `AuditLogEvent`는 2026-06-22 삭제됨, `ApplicationContextHolder` 측 잔여 참조/주석만 점검 | 현재 감사로그는 `ChangeLogEntityListener`가 `AuditLogPersister.persist()` 직접 호출 |
+| ⬜ Open | 🟠 High | [후속] 테스트 스텁 정합 — `CostServiceTest`에 `@Mock CodeNameMapBuilder` 주입 추가(Phase 5 `CodeNameMapBuilder` 필드 도입으로 NPE 4건); `BudgetWorkServiceTest`의 단일키 finder 스텁(`findByGclMngNoAndDelYn`/`findByAbusMngNoAndDelYn`/`findByCostBgNoAndDelYn`)을 신규 배치 메서드(`findBy...InAndDelYn`) 스텁으로 갱신(Phase 4 N+1 배치화로 호출경로 변경). 두 파일은 미커밋 작업과 겹쳐 이번 작업에서 미수정. 전체 1422 tests 중 실패 6건이 이 스텁 불일치 | `CostServiceTest`, `BudgetWorkServiceTest`, 탐지: 2026-06-22 |
+| ⬜ Open | 🟡 Medium | [후속/T18] 통합테스트 인프라 부재로 Task13-15(감사로그 리스너 통합테스트, `EstimateRepository` 통합테스트, `CinfmmRepositoryImplTest`) 미착수 — H2(strategy A) 또는 Oracle(strategy B) DB-backed 테스트 전략 결정 필요. 현재 `application-test.properties`는 DataSource/JPA 제외, H2/Testcontainers 의존성 없음. (참고: 기존 `NoClassDefFoundError` 대량실패는 재현 안 됨 — byte-buddy 1.18.10/mockito 5.23.0 Java25 정상) | `application-test.properties`, 탐지: 2026-06-22 (기존 NoClassDefFoundError 분석 항목 대체) |
+| ⬜ Open | 🟡 Medium | [후속/T16] 목록 프로젝션 DTO 작업(`ProjectRepositoryImpl`/`CostRepositoryImpl` DTO, `@SqlResultSetMapping`, `CouncilRepository.findWithDetails`, 4단계 상세 JOIN) 별도 계획으로 분리됨 — 미착수 | `ProjectRepositoryImpl`, `CostRepositoryImpl`, `CouncilRepository`, 탐지: 2026-06-22 |
+| ⬜ Open | 🟢 Low | [후속/minor] `CodeNameMapBuilder` 위치(`domain/budget/cost/util`)가 `ProjectService`와 공유되므로 `common` 패키지로 이동 검토 | `CodeNameMapBuilder`, 탐지: 2026-06-22 |
 
 ## 📝 PRD_20260517 Tiptap 변수 입력 후속 과제
 
