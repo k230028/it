@@ -18,7 +18,7 @@
 - **백엔드:** Spring Boot 4 (Java 25) + Oracle Database 21c XE + JPA/QueryDSL
 - **인증:** JWT httpOnly 쿠키 기반 (Access Token 15분 / Refresh Token 7일)
 - **외부 연동:** Gemini AI (텍스트 생성), SSO(선택적)
-- **소스 통계:** 백엔드 353개 Java 파일 + 121개 테스트 + 74개 엔티티, 프론트엔드 83개 컴포넌트 + 58개 Composable + 67개 페이지
+- **소스 통계:** 백엔드 357개 Java 파일 + 135개 테스트 + 77개 엔티티, 프론트엔드 83개 컴포넌트 + 58개 Composable + 67개 페이지
 
 ---
 
@@ -35,14 +35,14 @@
 ┌─────────────────────────────────────────────────────────────┐
 │  Spring Boot 4  http://localhost:28080                        │
 │  - 19개 도메인 + 8개 공통 모듈                              │
-│  - 353개 Java 파일, 121개 테스트 파일                      │
+│  - 357개 Java 파일, 135개 테스트 파일                      │
 │  - JWT 인증 + RBAC + Soft Delete                            │
 │  - 변경 로그 (30개 도메인, 자동 추적)                       │
 └─────────────────────────────────────────────────────────────┘
                     ↕
 ┌─────────────────────────────────────────────────────────────┐
 │  Oracle Database 21c XE  XEPDB1 (ITPAPP)                   │
-│  - 74개 JPA 엔티티                                           │
+│  - 77개 JPA 엔티티                                           │
 │  - Flyway 마이그레이션                                      │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -69,14 +69,14 @@ it/
 ├── it_backend/           ← Spring Boot 4 REST API 서버
 │   ├── README.md         ← 백엔드 상세 가이드 (아키텍처, API, 환경 설정)
 │   ├── CLAUDE.md         ← 백엔드 기술 결정 & 보안 정책 (SoT)
-│   ├── src/main/java/    ← 소스 코드 (353개 파일)
+│   ├── src/main/java/    ← 소스 코드 (357개 파일)
 │   │   └── com/kdb/it/
 │   │       ├── config/   ← Spring 설정 (보안, JPA, Swagger 등)
 │   │       ├── common/   ← 공통 모듈 (인증, 게시판, 결재, 알림)
 │   │       ├── domain/   ← 비즈니스 도메인 (예산, 사업집행 4단계, 협의회, 문서, 로그)
 │   │       ├── infra/    ← 외부 연동 (파일, Gemini AI, EAI 표준전문)
 │   │       └── exception/ ← 전역 예외 처리
-│   ├── src/test/java/    ← JUnit 5 + Mockito 테스트 (121개 파일)
+│   ├── src/test/java/    ← JUnit 5 + Mockito 테스트 (135개 파일)
 │   └── build.gradle      ← Gradle 빌드 스크립트 (Spring Boot 4.1.0)
 │
 ├── it_database/          ← Oracle DB 마이그레이션 & 초기화
@@ -427,7 +427,7 @@ npm run test:coverage
 ```bash
 cd it_backend
 
-# JUnit 5 + Mockito 테스트 실행 — 121개 테스트 파일
+# JUnit 5 + Mockito 테스트 실행 — 135개 테스트 파일
 ./gradlew test
 
 # 커버리지 리포트 생성 (JaCoCo)
@@ -823,6 +823,13 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 - `StyledDataTable`은 PrimeVue DataTable 스타일 차이를 흡수하는 표준 래퍼입니다. 신규 목록 화면은 이 컴포넌트를 우선 사용합니다.
 - 사전협의 검토 세션은 일부 UI 상태가 아직 메모리/모의 데이터에 의존합니다. 서버 영속화와 프로젝트별 검토자 조회는 `TASK.md`의 후속 과제로 관리합니다.
 - 공통 게시판은 `/board/**` 사용자 화면과 `/admin/boards` 관리자 화면으로 구성됩니다. 프론트 메뉴 필터는 UX 보조이며, 최종 권한은 백엔드 게시판 서비스에서 검증합니다.
+
+### 19.15 2026-06-24 REVIEW 현행화
+
+- `REVIEW.md` 기준으로 백엔드/프론트/실패 삼킴 경로를 재점검했습니다.
+- 실제 파일 수 기준으로 백엔드 357개 메인 Java 파일, 135개 테스트 파일, 77개 JPA 엔티티, 38개 컨트롤러, 프론트 83개 컴포넌트, 58개 composable, 67개 페이지, 116개 TypeScript 테스트 파일로 통계를 정정했습니다.
+- 사업집행 4단계의 `bbrC` 부서 필터는 `EstimateRepositoryImpl`만 실제 쿼리 조건을 적용하고, `Contract`/`Deliberation`/`PaymentRepositoryImpl`은 대상 2종 조인 고도화 전까지 미적용 상태임을 TASK.md 추적 대상으로 유지합니다.
+- 프론트 API 래퍼는 `runtimeConfig.public.apiBase` 기반 절대 URL과 `useApiFetch`/`$apiFetch` 분리 패턴을 유지합니다. `useTiptapTableTools`의 빈 catch 후보는 저장 영향 평가가 필요한 후속 에러 처리 과제로 등록했습니다.
 
 ### 19.14 2026-06-22 AI 하네스 및 문서 현행화
 

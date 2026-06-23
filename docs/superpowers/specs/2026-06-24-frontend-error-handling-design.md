@@ -2,16 +2,16 @@
 
 > 🗓️ 작성일: 2026-06-24
 > 🎯 출처: `TASK.md` §⚠️ 에러 처리 (프론트 항목)
-> 📦 범위: 현행 코드 확인 결과 **실제 미조치 5건**만 대상. 나머지 7건은 이전 세션에서 이미 조치됨(백로그 stale).
+> 📦 범위: 작성 당시 미조치 후보 5건 중 현행 재검증 결과 F1/F2/F3/F5는 조치 확인, F4(`useGlobalSearch`)만 후속 대상.
 
 ## 1. 배경 / 현행 확인 (2026-06-24)
 
-`TASK.md` 에러 처리 프론트 12건을 현행 코드와 대조한 결과, 7건은 이미 toast/정상 처리가 적용되어 있었다(백로그 미갱신). 본 사이클은 실제로 남은 5건만 처리하고, stale 7건은 `TASK_DONE.md`로 정리한다.
+`TASK.md` 에러 처리 프론트 항목을 현행 코드와 대조한 결과, F1/F2/F3/F5는 이미 toast 또는 warn 처리가 적용되어 있었다. 남은 핵심 후속은 F4 `useGlobalSearch`의 실패/빈 결과 상태 분리다.
 
 **이미 조치됨(작업 불필요, stale 정리 대상):**
 `approval/[apfMngNo].vue`, `board/[blbMngNo]/[nacMngNo]/index.vue`, `EmployeeSearchDialog.vue`, `useEmployeeSearch.ts`, `useCostListPage.ts`, `info/cost/form.vue`, `useTiptapImageInsertion.ts`.
 
-**미조치 5건(본 사이클 대상):**
+**초기 미조치 후보 5건(2026-06-24 재검증 결과 포함):**
 
 | ID | 우선순위 | 파일·위치 | 현재 | 목표 |
 | --- | --- | --- | --- | --- |
@@ -20,6 +20,8 @@
 | F3 | 🟠 High | `app/components/ExcalidrawWrapper.vue` (catch 3곳: `85-89` export, `153-156` init, `194-197` 장면복원) | 3개 catch 모두 `console.error`만, `useToast` 미import | `useToast` 추가 + 각 실패에 `toast.error` |
 | F4 | 🟠 High | `app/composables/useGlobalSearch.ts:84-89` (+ 소비처 `app/components/GlobalSearchBar.vue`) | 실패를 `suggestions.value=[]`로 둔갑(빈 결과와 구분 불가) | 인라인 오류 상태(`searchError` ref) → 드롭다운이 "검색 중 오류" 표시. toast 없음(타입어헤드 노이즈 방지) |
 | F5 | 🟠 High | `app/components/council/result/ResultReviewProgress.vue:58-61` | catch 완전 삼킴(로그 0건) | `console.warn(e)` 추가. toast 억제는 **유지**(이미/권한 사유 전이실패는 정상 흐름) |
+
+재검증 상태: F1, F2, F3, F5는 구현 확인. F4만 Open 유지.
 
 ## 2. 설계
 
