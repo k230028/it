@@ -110,9 +110,17 @@ C:\> setx SPRING_PROFILES_ACTIVE "local-ext"  # local-ext / local-int / dev / pr
 C:\> setx GRADLE_USER_HOME "C:\it\.gradle"  # 운영 서버는 /sw/itpapp/.gradle
 C:\> setx DB_PASSWORD "kdb1234!!"
 C:\> setx JWT_SECRET "HFRw7fQsWNFy9FULDWhh9e1ace1QlspznnCDBXZafb64l3hIGVYjhb27IWEeZ0/J46kpq6J8NidyKNO2FT5niQ=="
+C:\> setx APP_FRONTEND_URL "http://localhost:3000"   :: (백엔드) SSO 복귀 + CORS 허용 오리진 (이 값 하나가 둘 다 결정)
+C:\> setx NUXT_PUBLIC_API_BASE "http://localhost:28080"  :: (프론트) 백엔드 API/SSO 주소. 커밋된 .env 기본값을 덮어씀
 C:\> setx GEMINI_API_KEY "실제_API_키"      :: Gemini 사용 시
 C:\> setx EAI_URL "https://eai.kdb.internal/..."  :: EAI 운영 시
 ```
+
+> [!important] SSO/CORS — 프론트 URL 환경변수(`APP_FRONTEND_URL`)
+> - 백엔드는 이 값 **하나**로 **SSO 완료 후 복귀 대상**(`app.frontend-url`)과 **CORS 허용 오리진**(`cors.allowed-origins`)을 함께 설정합니다. 미설정 시 둘 다 비어 SSO 복귀가 백엔드로 잘못 가고 모든 `/api` 호출이 CORS로 차단됩니다.
+> - 여러 오리진이 필요할 때만 `CORS_ALLOWED_ORIGINS`(콤마 구분)로 CORS만 따로 오버라이드합니다.
+> - **반드시 프론트가 실제 접속되는 origin과 정확히 일치**(스킴·호스트·포트, 끝 슬래시 없음). 예: 로컬은 `http://localhost:3000`.
+> - **내부망에서 IP로 테스트**할 때는 프론트를 **백엔드와 같은 호스트**로 접속해야 합니다. SSO 인증 쿠키는 호스트 기준(포트 무관)이라, 백엔드가 `10.9.16.109`면 프론트도 `http://10.9.16.109:3000`으로 접속하고 `APP_FRONTEND_URL=http://10.9.16.109:3000`으로 맞춰야 인증 쿠키가 공유되어 로그인 루프가 끊깁니다(`localhost:3000`은 호스트가 달라 쿠키 미공유). 이때 프론트가 호출할 백엔드 주소도 OS 환경변수 `NUXT_PUBLIC_API_BASE=http://10.9.16.109:28080`으로 지정합니다(커밋된 `it_frontend/.env`의 localhost 기본값을 덮어씀 — **.env 파일은 수정하지 않습니다**). c12 로더가 이미 존재하는 OS 환경변수를 .env로 덮어쓰지 않으므로 환경변수가 항상 우선합니다.
 
 [참고] JWT_SECRET 생성
 ```Bash
@@ -161,6 +169,7 @@ cd it_backend
 # 환경변수 설정 (Windows PowerShell)
 $env:DB_PASSWORD = "your-db-password"
 $env:JWT_SECRET = "your-jwt-secret-key"
+$env:APP_FRONTEND_URL = "http://localhost:3000"   # SSO 복귀 + CORS 허용 오리진(둘 다 이 값)
 
 ./gradlew bootRun       # Windows: .\gradlew.bat bootRun
 # → http://localhost:28080
