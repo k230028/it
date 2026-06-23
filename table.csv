@@ -1,1380 +1,1379 @@
-테이블명,테이블한글명,컬럼명,컬럼한글명,PK여부,NULL여부,Default Value,타입,길이,소수점
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,ENO,사원번호,Y,N,,VARCHAR2,32,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,USR_ECY_PWD,사용자암호화비밀번호,,Y,,VARCHAR2,64,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,USR_NM,사용자명,,Y,,VARCHAR2,100,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,USR_WREN_NM,사용자영문명,,Y,,VARCHAR2,100,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,BBR_C,부점코드,,Y,,VARCHAR2,3,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,DTC_BBR_C,파견부점코드,,Y,,VARCHAR2,3,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,TEM_C,팀코드,,Y,,VARCHAR2,5,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,TEM_NM,팀명,,Y,,VARCHAR2,100,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,PT_C,직위코드,,Y,,VARCHAR2,5,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,PT_C_NM,직위코드명,,Y,,VARCHAR2,200,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,CADR_TPN,연락처전화번호,,Y,,VARCHAR2,20,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,CPN_TPN,회사전화번호,,Y,,VARCHAR2,20,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,INLE_NO,내선번호,,Y,,VARCHAR2,20,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,ETR_MIL_ADDR_NM,전자우편주소명,,Y,,VARCHAR2,200,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,DTS_DTL_CONE,직무상세내용,,Y,,VARCHAR2,2000,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,USE_YN,사용여부,,Y,,VARCHAR2,1,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CUSERI,프로젝트관리_공통사용자연계,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CRTOKM,프로젝트관리_공통갱신토큰기본,LGN_LOG_SNO,로그인로그일련번호,Y,N,,NUMBER,22,
-TPRMPP_CRTOKM,프로젝트관리_공통갱신토큰기본,API_TOK_CONE,API토큰내용,,N,,VARCHAR2,2000,
-TPRMPP_CRTOKM,프로젝트관리_공통갱신토큰기본,ENO,사원번호,,N,,VARCHAR2,32,
-TPRMPP_CRTOKM,프로젝트관리_공통갱신토큰기본,END_DTM,종료일시,,N,,DATE,,
-TPRMPP_CRTOKM,프로젝트관리_공통갱신토큰기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CRTOKM,프로젝트관리_공통갱신토큰기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CRTOKM,프로젝트관리_공통갱신토큰기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CRTOKM,프로젝트관리_공통갱신토큰기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CRTOKM,프로젝트관리_공통갱신토큰기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CRTOKM,프로젝트관리_공통갱신토큰기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CRTOKM,프로젝트관리_공통갱신토큰기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CROLEI,프로젝트관리_공통역할연계,ATH_ID,권한ID,Y,N,,VARCHAR2,32,
-TPRMPP_CROLEI,프로젝트관리_공통역할연계,ENO,사원번호,Y,N,,VARCHAR2,32,
-TPRMPP_CROLEI,프로젝트관리_공통역할연계,USE_YN,사용여부,,Y,,VARCHAR2,1,
-TPRMPP_CROLEI,프로젝트관리_공통역할연계,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CROLEI,프로젝트관리_공통역할연계,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CROLEI,프로젝트관리_공통역할연계,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CROLEI,프로젝트관리_공통역할연계,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CROLEI,프로젝트관리_공통역할연계,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CROLEI,프로젝트관리_공통역할연계,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CROLEI,프로젝트관리_공통역할연계,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CORGNI,프로젝트관리_공통조직연계,PRLM_OGZ_C_CONE,인사조직코드내용,Y,N,,VARCHAR2,100,
-TPRMPP_CORGNI,프로젝트관리_공통조직연계,BBR_NM,부점명,,Y,,VARCHAR2,100,
-TPRMPP_CORGNI,프로젝트관리_공통조직연계,BBR_WREN_NM,부점영문명,,Y,,VARCHAR2,100,
-TPRMPP_CORGNI,프로젝트관리_공통조직연계,ITM_SQN_SNO,항목순서일련번호,,Y,,NUMBER,9,
-TPRMPP_CORGNI,프로젝트관리_공통조직연계,PRLM_HRK_OGZ_C_CONE,인사상위조직코드내용,,Y,,VARCHAR2,100,
-TPRMPP_CORGNI,프로젝트관리_공통조직연계,USE_YN,사용여부,,Y,,VARCHAR2,1,
-TPRMPP_CORGNI,프로젝트관리_공통조직연계,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CORGNI,프로젝트관리_공통조직연계,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CORGNI,프로젝트관리_공통조직연계,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CORGNI,프로젝트관리_공통조직연계,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CORGNI,프로젝트관리_공통조직연계,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CORGNI,프로젝트관리_공통조직연계,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CORGNI,프로젝트관리_공통조직연계,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CLOGNH,프로젝트관리_공통로그인이력,LGN_LOG_SNO,로그인로그일련번호,Y,N,,NUMBER,22,
-TPRMPP_CLOGNH,프로젝트관리_공통로그인이력,ENO,사원번호,,N,,VARCHAR2,32,
-TPRMPP_CLOGNH,프로젝트관리_공통로그인이력,LGN_ERR_RSN,로그인오류사유,,Y,,VARCHAR2,600,
-TPRMPP_CLOGNH,프로젝트관리_공통로그인이력,IP_ADDR,IP주소,,Y,,VARCHAR2,20,
-TPRMPP_CLOGNH,프로젝트관리_공통로그인이력,LGN_DTM,로그인일시,,N,,DATE,,
-TPRMPP_CLOGNH,프로젝트관리_공통로그인이력,LGN_TC,로그인구분코드,,N,,VARCHAR2,1,
-TPRMPP_CLOGNH,프로젝트관리_공통로그인이력,AGT_VRS_CONE,에이전트버전내용,,Y,,VARCHAR2,100,
-TPRMPP_CLOGNH,프로젝트관리_공통로그인이력,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CLOGNH,프로젝트관리_공통로그인이력,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CLOGNH,프로젝트관리_공통로그인이력,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CLOGNH,프로젝트관리_공통로그인이력,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CLOGNH,프로젝트관리_공통로그인이력,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CLOGNH,프로젝트관리_공통로그인이력,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CLOGNH,프로젝트관리_공통로그인이력,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CINFMM,프로젝트관리_공통알림기본,INFM_MSG_NO,알림메시지번호,Y,N,,VARCHAR2,30,
-TPRMPP_CINFMM,프로젝트관리_공통알림기본,INFM_SVC_TC,알림서비스구분코드,,N,,VARCHAR2,2,
-TPRMPP_CINFMM,프로젝트관리_공통알림기본,TTL,제목,,Y,,VARCHAR2,100,
-TPRMPP_CINFMM,프로젝트관리_공통알림기본,INFM_MSG_CONE,알림메시지내용,,Y,,VARCHAR2,4000,
-TPRMPP_CINFMM,프로젝트관리_공통알림기본,INFM_RCD_URL,알림추천URL,,Y,,VARCHAR2,300,
-TPRMPP_CINFMM,프로젝트관리_공통알림기본,RMS_ENO,수신사원번호,,N,,VARCHAR2,32,
-TPRMPP_CINFMM,프로젝트관리_공통알림기본,INQ_YN,조회여부,,Y,,VARCHAR2,1,
-TPRMPP_CINFMM,프로젝트관리_공통알림기본,INQ_DTM,조회일시,,Y,,DATE,,
-TPRMPP_CINFMM,프로젝트관리_공통알림기본,SD_TC,발송구분코드,,Y,,VARCHAR2,2,
-TPRMPP_CINFMM,프로젝트관리_공통알림기본,SD_DTM,발송일시,,Y,,DATE,,
-TPRMPP_CINFMM,프로젝트관리_공통알림기본,SD_DOC_CONE,발송문서내용,,Y,,VARCHAR2,4000,
-TPRMPP_CINFMM,프로젝트관리_공통알림기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CINFMM,프로젝트관리_공통알림기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CINFMM,프로젝트관리_공통알림기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CINFMM,프로젝트관리_공통알림기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CINFMM,프로젝트관리_공통알림기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CINFMM,프로젝트관리_공통알림기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CINFMM,프로젝트관리_공통알림기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CFILEM,프로젝트관리_공통첨부파일기본,FL_MPN_ID,파일매핑ID,Y,N,,VARCHAR2,36,
-TPRMPP_CFILEM,프로젝트관리_공통첨부파일기본,FL_NM,파일명,,Y,,VARCHAR2,100,
-TPRMPP_CFILEM,프로젝트관리_공통첨부파일기본,FL_PYS_NM,파일물리명,,Y,,VARCHAR2,120,
-TPRMPP_CFILEM,프로젝트관리_공통첨부파일기본,FL_KPN_PTH,파일저장경로,,Y,,VARCHAR2,255,
-TPRMPP_CFILEM,프로젝트관리_공통첨부파일기본,FL_TP_CONE,파일유형내용,,Y,,VARCHAR2,100,
-TPRMPP_CFILEM,프로젝트관리_공통첨부파일기본,PK_COL_NM,주식별자컬럼명,,Y,,VARCHAR2,4000,
-TPRMPP_CFILEM,프로젝트관리_공통첨부파일기본,PK_CONE,주식별자내용,,Y,,VARCHAR2,4000,
-TPRMPP_CFILEM,프로젝트관리_공통첨부파일기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CFILEM,프로젝트관리_공통첨부파일기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CFILEM,프로젝트관리_공통첨부파일기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CFILEM,프로젝트관리_공통첨부파일기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CFILEM,프로젝트관리_공통첨부파일기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CFILEM,프로젝트관리_공통첨부파일기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CFILEM,프로젝트관리_공통첨부파일기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CDECIM,프로젝트관리_공통신청서결재자기본,APF_DCM_NO,신청서식별번호,Y,N,,VARCHAR2,64,
-TPRMPP_CDECIM,프로젝트관리_공통신청서결재자기본,DCR_SQN_SNO,결재자순서일련번호,Y,N,,NUMBER,9,
-TPRMPP_CDECIM,프로젝트관리_공통신청서결재자기본,DCR_ENO,결재자사원번호,,Y,,VARCHAR2,32,
-TPRMPP_CDECIM,프로젝트관리_공통신청서결재자기본,DCR_OPNN_CONE,결재자의견내용,,Y,,VARCHAR2,2000,
-TPRMPP_CDECIM,프로젝트관리_공통신청서결재자기본,DCD_TP_C,결재유형코드,,Y,,VARCHAR2,2,
-TPRMPP_CDECIM,프로젝트관리_공통신청서결재자기본,DCD_STS_C,결재상태코드,,Y,,VARCHAR2,1,
-TPRMPP_CDECIM,프로젝트관리_공통신청서결재자기본,DCD_DTM,결재일시,,Y,,DATE,,
-TPRMPP_CDECIM,프로젝트관리_공통신청서결재자기본,LST_DCD_YN,최종결재여부,,Y,,VARCHAR2,1,
-TPRMPP_CDECIM,프로젝트관리_공통신청서결재자기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CDECIM,프로젝트관리_공통신청서결재자기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CDECIM,프로젝트관리_공통신청서결재자기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CDECIM,프로젝트관리_공통신청서결재자기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CDECIM,프로젝트관리_공통신청서결재자기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CDECIM,프로젝트관리_공통신청서결재자기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CDECIM,프로젝트관리_공통신청서결재자기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CAPPLM,프로젝트관리_공통신청서기본,APF_DCM_NO,신청서식별번호,Y,N,,VARCHAR2,64,
-TPRMPP_CAPPLM,프로젝트관리_공통신청서기본,APF_PRG_STS_C,신청서진행상태코드,,N,,VARCHAR2,2,
-TPRMPP_CAPPLM,프로젝트관리_공통신청서기본,DCD_REQ_TTL,결재요청제목,,Y,,VARCHAR2,255,
-TPRMPP_CAPPLM,프로젝트관리_공통신청서기본,DCD_REQ_INF,결재요청정보,,Y,,CLOB,,
-TPRMPP_CAPPLM,프로젝트관리_공통신청서기본,DCD_REQ_DTM,결재요청일시,,Y,,DATE,,
-TPRMPP_CAPPLM,프로젝트관리_공통신청서기본,DCD_REQ_BBR_C,결재요청부점코드,,Y,,VARCHAR2,3,
-TPRMPP_CAPPLM,프로젝트관리_공통신청서기본,DCD_REQ_USID,결재요청사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_CAPPLM,프로젝트관리_공통신청서기본,RGPR_DCD_REQ_CONE,등록자결재요청내용,,Y,,VARCHAR2,300,
-TPRMPP_CAPPLM,프로젝트관리_공통신청서기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CAPPLM,프로젝트관리_공통신청서기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CAPPLM,프로젝트관리_공통신청서기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CAPPLM,프로젝트관리_공통신청서기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CAPPLM,프로젝트관리_공통신청서기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CAPPLM,프로젝트관리_공통신청서기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CAPPLM,프로젝트관리_공통신청서기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CAPPLA,프로젝트관리_공통신청서관계,APF_DCM_NO,신청서식별번호,Y,N,,VARCHAR2,64,
-TPRMPP_CAPPLA,프로젝트관리_공통신청서관계,APF_SNO,신청서일련번호,Y,N,,NUMBER,9,
-TPRMPP_CAPPLA,프로젝트관리_공통신청서관계,FNT_TB_NM,원천테이블명,,Y,,VARCHAR2,120,
-TPRMPP_CAPPLA,프로젝트관리_공통신청서관계,FNT_TB_CRY_SNO,원천테이블적재일련번호,,Y,,NUMBER,10,
-TPRMPP_CAPPLA,프로젝트관리_공통신청서관계,PK_COL_NM,주식별자컬럼명,,Y,,VARCHAR2,4000,
-TPRMPP_CAPPLA,프로젝트관리_공통신청서관계,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CAPPLA,프로젝트관리_공통신청서관계,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CAPPLA,프로젝트관리_공통신청서관계,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CAPPLA,프로젝트관리_공통신청서관계,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CAPPLA,프로젝트관리_공통신청서관계,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CAPPLA,프로젝트관리_공통신청서관계,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CAPPLA,프로젝트관리_공통신청서관계,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,APF_DCM_NO,신청서식별번호,,N,,VARCHAR2,64,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,APF_PRG_STS_C,신청서진행상태코드,,N,,VARCHAR2,2,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,DCD_REQ_TTL,결재요청제목,,Y,,VARCHAR2,255,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,DCD_REQ_INF,결재요청정보,,Y,,CLOB,,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,DCD_REQ_DTM,결재요청일시,,Y,,DATE,,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,DCD_REQ_BBR_C,결재요청부점코드,,Y,,VARCHAR2,3,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,DCD_REQ_USID,결재요청사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,RGPR_DCD_REQ_CONE,등록자결재요청내용,,Y,,VARCHAR2,300,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CAPPLL,프로젝트관리_공통신청서기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,CO_C_ID_NM,공통코드ID,Y,N,,VARCHAR2,100,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,CDVA_ID,코드값ID,Y,N,,VARCHAR2,40,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,STT_DT,시작일자,Y,N,,VARCHAR2,8,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,END_DT,종료일자,,Y,,VARCHAR2,8,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,CO_CDVA_NM,공통코드값명,,Y,,VARCHAR2,500,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,CO_C_NM,공통코드명,,Y,,VARCHAR2,100,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,CDVA_NM,코드값명,,Y,,VARCHAR2,200,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,C_SQN_SNO,코드순서일련번호,,Y,,NUMBER,9,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,CO_C_INTN_NM,공통코드인스턴스명,,Y,,VARCHAR2,200,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,CO_C_INTN_CONE,공통코드인스턴스내용,,Y,,VARCHAR2,500,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,CO_CDVA_ABV_NM,공통코드값약어명,,Y,,VARCHAR2,100,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,CO_CDVA_SPS,공통코드값적요,,Y,,VARCHAR2,2000,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,HRK_CDVA_ID,상위코드값ID,,Y,,VARCHAR2,40,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CCODEM,프로젝트관리_공통코드기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,CO_C_ID_NM,공통코드ID,,N,,VARCHAR2,100,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,CDVA_ID,코드값ID,,N,,VARCHAR2,40,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,STT_DT,시작일자,,N,,VARCHAR2,8,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,END_DT,종료일자,,Y,,VARCHAR2,8,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,CO_CDVA_NM,공통코드값명,,Y,,VARCHAR2,500,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,CO_C_NM,공통코드명,,Y,,VARCHAR2,100,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,CDVA_NM,코드값명,,Y,,VARCHAR2,200,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,C_SQN_SNO,코드순서일련번호,,Y,,NUMBER,9,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,CO_C_INTN_NM,공통코드인스턴스명,,Y,,VARCHAR2,200,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,CO_C_INTN_CONE,공통코드인스턴스내용,,Y,,VARCHAR2,500,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,CO_CDVA_ABV_NM,공통코드값약어명,,Y,,VARCHAR2,100,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,CO_CDVA_SPS,공통코드값적요,,Y,,VARCHAR2,2000,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,HRK_CDVA_ID,상위코드값ID,,Y,,VARCHAR2,40,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,CHG_DTT_YN,변경구분여부,,Y,,VARCHAR2,1,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CCODEL,프로젝트관리_공통코드기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CMENUM,프로젝트관리_공통메뉴기본,MNU_ID,메뉴ID,Y,N,,VARCHAR2,10,
-TPRMPP_CMENUM,프로젝트관리_공통메뉴기본,HRK_MNU_ID,상위메뉴ID,,Y,,VARCHAR2,10,
-TPRMPP_CMENUM,프로젝트관리_공통메뉴기본,SYS_HRK_MNU_ID,시스템상위메뉴ID,,Y,,VARCHAR2,10,
-TPRMPP_CMENUM,프로젝트관리_공통메뉴기본,MNU_NM,메뉴명,,N,,VARCHAR2,100,
-TPRMPP_CMENUM,프로젝트관리_공통메뉴기본,MNU_TP_C,메뉴유형코드,,N,,VARCHAR2,3,
-TPRMPP_CMENUM,프로젝트관리_공통메뉴기본,SRE_PTH,화면경로,,Y,,VARCHAR2,300,
-TPRMPP_CMENUM,프로젝트관리_공통메뉴기본,MNU_SOT_SQN_SNO,메뉴정렬순서일련번호,,N,,NUMBER,9,
-TPRMPP_CMENUM,프로젝트관리_공통메뉴기본,HID_YN,숨김여부,,N,,VARCHAR2,1,
-TPRMPP_CMENUM,프로젝트관리_공통메뉴기본,MNU_DEP,메뉴깊이,,N,,NUMBER,3,
-TPRMPP_CMENUM,프로젝트관리_공통메뉴기본,WHL_MNU_PTH,전체메뉴경로,,N,,VARCHAR2,500,
-TPRMPP_CMENUM,프로젝트관리_공통메뉴기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CMENUM,프로젝트관리_공통메뉴기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CMENUM,프로젝트관리_공통메뉴기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CMENUM,프로젝트관리_공통메뉴기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CMENUM,프로젝트관리_공통메뉴기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CMENUM,프로젝트관리_공통메뉴기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CMENUM,프로젝트관리_공통메뉴기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CMENUD,프로젝트관리_공통메뉴상세,SRE_PTH,화면경로,Y,N,,VARCHAR2,300,
-TPRMPP_CMENUD,프로젝트관리_공통메뉴상세,SRE_MNU_NM,화면메뉴명,,N,,VARCHAR2,100,
-TPRMPP_CMENUD,프로젝트관리_공통메뉴상세,SYS_HRK_MNU_ID,시스템상위메뉴ID,,Y,,VARCHAR2,10,
-TPRMPP_CMENUD,프로젝트관리_공통메뉴상세,USE_YN,사용여부,,N,,VARCHAR2,1,
-TPRMPP_CMENUD,프로젝트관리_공통메뉴상세,RMK,비고,,Y,,VARCHAR2,300,
-TPRMPP_CMENUD,프로젝트관리_공통메뉴상세,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CMENUD,프로젝트관리_공통메뉴상세,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CMENUD,프로젝트관리_공통메뉴상세,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CMENUD,프로젝트관리_공통메뉴상세,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CMENUD,프로젝트관리_공통메뉴상세,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CMENUD,프로젝트관리_공통메뉴상세,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CMENUD,프로젝트관리_공통메뉴상세,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CMENUA,프로젝트관리_공통메뉴관계,MNU_ID,메뉴ID,Y,N,,VARCHAR2,10,
-TPRMPP_CMENUA,프로젝트관리_공통메뉴관계,ATH_ID,권한ID,Y,N,,VARCHAR2,32,
-TPRMPP_CMENUA,프로젝트관리_공통메뉴관계,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CMENUA,프로젝트관리_공통메뉴관계,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CMENUA,프로젝트관리_공통메뉴관계,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CMENUA,프로젝트관리_공통메뉴관계,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CMENUA,프로젝트관리_공통메뉴관계,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CMENUA,프로젝트관리_공통메뉴관계,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CMENUA,프로젝트관리_공통메뉴관계,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,BG_NO,예산번호,Y,N,,VARCHAR2,15,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,BG_SNO,예산일련번호,Y,N,,NUMBER,9,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,ABUS_TC,사업구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,BG_UNT_ABUS_C,예산단위사업코드,,Y,,VARCHAR2,3,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,BSE_YY,기준연도,,Y,,VARCHAR2,4,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,TMN_YN,단말여부,,Y,,VARCHAR2,1,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,CGPR_ID,담당자ID,,Y,,VARCHAR2,14,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,CNCD_RFR_NO,관련참조번호,,Y,,VARCHAR2,30,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,CTT_NM,계약명,,Y,,VARCHAR2,100,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,CTT_OPP_NM,계약상대처명,,Y,,VARCHAR2,100,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,CUR_C,통화코드,,Y,,VARCHAR2,3,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,DFR_CLE_C,지급주기코드,,Y,,VARCHAR2,1,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,FST_DFR_DT,최초지급일자,,Y,,VARCHAR2,8,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,IND_RSN,증감사유,,Y,,VARCHAR2,200,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,IOE_C,비목코드,,Y,,VARCHAR2,7,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,LST_YN,최종여부,,Y,,VARCHAR2,1,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,SECT_SYS_UTZ_YN,보안시스템운용여부,,Y,,VARCHAR2,1,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,SVN_DPM_C,주관부서코드,,Y,,VARCHAR2,20,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,SVN_TEM_C,주관팀코드,,Y,,VARCHAR2,5,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,AMT,금액,,Y,,NUMBER,18,3
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,FC_AMT,외화금액,,Y,,NUMBER,18,3
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,XCR,환율,,Y,,NUMBER,9,4
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,XCR_BSE_DT,환율기준일자,,Y,,VARCHAR2,8,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BCOSTM,프로젝트관리_전산업무비기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,MNU_ID,메뉴ID,,N,,VARCHAR2,10,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,HRK_MNU_ID,상위메뉴ID,,Y,,VARCHAR2,10,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,SYS_HRK_MNU_ID,시스템상위메뉴ID,,Y,,VARCHAR2,10,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,MNU_NM,메뉴명,,N,,VARCHAR2,100,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,MNU_TP_C,메뉴유형코드,,N,,VARCHAR2,3,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,SRE_PTH,화면경로,,Y,,VARCHAR2,300,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,MNU_SOT_SQN_SNO,메뉴정렬순서일련번호,,N,,NUMBER,9,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,HID_YN,숨김여부,,N,,VARCHAR2,1,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,MNU_DEP,메뉴깊이,,N,,NUMBER,3,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,WHL_MNU_PTH,전체메뉴경로,,N,,VARCHAR2,500,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CMENUL,프로젝트관리_공통메뉴기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CBLBMM,프로젝트관리_공통게시판기본,BLB_ID,게시판ID,Y,N,,VARCHAR2,10,
-TPRMPP_CBLBMM,프로젝트관리_공통게시판기본,APG_FL_USE_YN,첨부파일사용여부,,Y,,VARCHAR2,1,
-TPRMPP_CBLBMM,프로젝트관리_공통게시판기본,BLB_NM,게시판명,,Y,,VARCHAR2,300,
-TPRMPP_CBLBMM,프로젝트관리_공통게시판기본,BLB_TC,게시판구분코드,,Y,,VARCHAR2,3,
-TPRMPP_CBLBMM,프로젝트관리_공통게시판기본,CMMT_USE_YN,댓글사용여부,,Y,,VARCHAR2,1,
-TPRMPP_CBLBMM,프로젝트관리_공통게시판기본,HED_TAG_USE_YN,머리말태그사용여부,,Y,,VARCHAR2,1,
-TPRMPP_CBLBMM,프로젝트관리_공통게시판기본,REP_FNC_USE_YN,답변기능사용여부,,Y,,VARCHAR2,1,
-TPRMPP_CBLBMM,프로젝트관리_공통게시판기본,RMK,비고,,Y,,VARCHAR2,300,
-TPRMPP_CBLBMM,프로젝트관리_공통게시판기본,SRE_SQN_SNO,화면순서일련번호,,Y,,NUMBER,9,
-TPRMPP_CBLBMM,프로젝트관리_공통게시판기본,USE_YN,사용여부,,Y,,VARCHAR2,1,
-TPRMPP_CBLBMM,프로젝트관리_공통게시판기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CBLBMM,프로젝트관리_공통게시판기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CBLBMM,프로젝트관리_공통게시판기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CBLBMM,프로젝트관리_공통게시판기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CBLBMM,프로젝트관리_공통게시판기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CBLBMM,프로젝트관리_공통게시판기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CBLBMM,프로젝트관리_공통게시판기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,NAC_NO,게시물번호,Y,N,,VARCHAR2,16,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,BLB_ID,게시판ID,,N,,VARCHAR2,10,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,ANC_YN,공지여부,,N,,VARCHAR2,1,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,APG_FL_NBR,첨부파일수,,N,,NUMBER,10,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,BBR_C,부점코드,,Y,,VARCHAR2,3,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,FL_APG_YN,파일첨부여부,,N,,VARCHAR2,1,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,GRP_SQN_SNO,그룹순서일련번호,,N,,NUMBER,9,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,HRK_NAC_NO,상위게시물번호,,Y,,VARCHAR2,16,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,NAC_CONE,게시물내용,,Y,,VARCHAR2,4000,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,NAC_UNQ_ID,게시물고유ID,,Y,,VARCHAR2,16,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,NAC_INQ_NBR,게시물조회수,,N,,NUMBER,10,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,NAC_LEV_MNG_SNO,게시물레벨관리일련번호,,N,,NUMBER,9,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,NAC_TTL,게시물제목,,N,,VARCHAR2,300,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,SRE_USE_YN,화면사용여부,,N,,VARCHAR2,1,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,STT_DTM,시작일시,,Y,,DATE,,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,END_DTM,종료일시,,Y,,DATE,,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CBLBCM,프로젝트관리_공통게시물기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CCMMTM,프로젝트관리_공통댓글기본,CMMT_SNO,댓글일련번호,Y,N,,NUMBER,9,
-TPRMPP_CCMMTM,프로젝트관리_공통댓글기본,NAC_NO,게시물번호,,N,,VARCHAR2,16,
-TPRMPP_CCMMTM,프로젝트관리_공통댓글기본,CMMT_CONE,댓글내용,,Y,,VARCHAR2,1000,
-TPRMPP_CCMMTM,프로젝트관리_공통댓글기본,CMMT_DEP_NBR,댓글깊이수,,N,,NUMBER,4,
-TPRMPP_CCMMTM,프로젝트관리_공통댓글기본,CMMT_SQN_SNO,댓글순서일련번호,,N,,NUMBER,9,
-TPRMPP_CCMMTM,프로젝트관리_공통댓글기본,CMMT_TGT_SNO,댓글대상일련번호,,Y,,NUMBER,9,
-TPRMPP_CCMMTM,프로젝트관리_공통댓글기본,HRK_CMMT_SNO,상위댓글일련번호,,Y,,NUMBER,9,
-TPRMPP_CCMMTM,프로젝트관리_공통댓글기본,SRE_USE_YN,화면사용여부,,N,,VARCHAR2,1,
-TPRMPP_CCMMTM,프로젝트관리_공통댓글기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CCMMTM,프로젝트관리_공통댓글기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CCMMTM,프로젝트관리_공통댓글기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CCMMTM,프로젝트관리_공통댓글기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CCMMTM,프로젝트관리_공통댓글기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CCMMTM,프로젝트관리_공통댓글기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CCMMTM,프로젝트관리_공통댓글기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,BLB_ID,게시판ID,,N,,VARCHAR2,10,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,APG_FL_USE_YN,첨부파일사용여부,,Y,,VARCHAR2,1,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,BLB_NM,게시판명,,Y,,VARCHAR2,300,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,BLB_TC,게시판구분코드,,Y,,VARCHAR2,3,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,CMMT_USE_YN,댓글사용여부,,Y,,VARCHAR2,1,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,HED_TAG_USE_YN,머리말태그사용여부,,Y,,VARCHAR2,1,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,REP_FNC_USE_YN,답변기능사용여부,,Y,,VARCHAR2,1,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,RMK,비고,,Y,,VARCHAR2,300,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,SRE_SQN_SNO,화면순서일련번호,,Y,,NUMBER,9,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,USE_YN,사용여부,,Y,,VARCHAR2,1,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CBLBML,프로젝트관리_공통게시판기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,NAC_NO,게시물번호,,N,,VARCHAR2,16,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,BLB_ID,게시판ID,,N,,VARCHAR2,10,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,ANC_YN,공지여부,,N,,VARCHAR2,1,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,APG_FL_NBR,첨부파일수,,N,,NUMBER,10,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,BBR_C,부점코드,,Y,,VARCHAR2,3,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,FL_APG_YN,파일첨부여부,,N,,VARCHAR2,1,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,GRP_SQN_SNO,그룹순서일련번호,,N,,NUMBER,9,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,HRK_NAC_NO,상위게시물번호,,Y,,VARCHAR2,16,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,NAC_CONE,게시물내용,,Y,,VARCHAR2,4000,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,NAC_UNQ_ID,게시물고유ID,,Y,,VARCHAR2,16,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,NAC_INQ_NBR,게시물조회수,,N,,NUMBER,10,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,NAC_LEV_MNG_SNO,게시물레벨관리일련번호,,N,,NUMBER,9,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,NAC_TTL,게시물제목,,N,,VARCHAR2,300,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,SRE_USE_YN,화면사용여부,,N,,VARCHAR2,1,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,STT_DTM,시작일시,,Y,,DATE,,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,END_DTM,종료일시,,Y,,DATE,,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CBLBCL,프로젝트관리_공통게시물기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,CMMT_SNO,댓글일련번호,,N,,NUMBER,9,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,NAC_NO,게시물번호,,N,,VARCHAR2,16,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,CMMT_CONE,댓글내용,,Y,,VARCHAR2,1000,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,CMMT_DEP_NBR,댓글깊이수,,N,,NUMBER,4,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,CMMT_SQN_SNO,댓글순서일련번호,,N,,NUMBER,9,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,CMMT_TGT_SNO,댓글대상일련번호,,Y,,NUMBER,9,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,HRK_CMMT_SNO,상위댓글일련번호,,Y,,NUMBER,9,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,SRE_USE_YN,화면사용여부,,N,,VARCHAR2,1,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CCMMTL,프로젝트관리_공통댓글기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_CAUTHI,프로젝트관리_공통자격등급연계,ATH_ID,권한ID,Y,N,,VARCHAR2,32,
-TPRMPP_CAUTHI,프로젝트관리_공통자격등급연계,QLF_GR_MAT,자격등급사항,,Y,,VARCHAR2,2000,
-TPRMPP_CAUTHI,프로젝트관리_공통자격등급연계,QLF_GR_NM,자격등급명,,Y,,VARCHAR2,200,
-TPRMPP_CAUTHI,프로젝트관리_공통자격등급연계,USE_YN,사용여부,,Y,,VARCHAR2,1,
-TPRMPP_CAUTHI,프로젝트관리_공통자격등급연계,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CAUTHI,프로젝트관리_공통자격등급연계,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_CAUTHI,프로젝트관리_공통자격등급연계,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_CAUTHI,프로젝트관리_공통자격등급연계,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_CAUTHI,프로젝트관리_공통자격등급연계,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_CAUTHI,프로젝트관리_공통자격등급연계,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_CAUTHI,프로젝트관리_공통자격등급연계,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BRDOCM,프로젝트관리_사전협의기본,DOC_MNG_NO,문서관리번호,Y,N,,VARCHAR2,20,
-TPRMPP_BRDOCM,프로젝트관리_사전협의기본,DOC_VRS_SNO,문서버전일련번호,Y,N,,NUMBER,9,
-TPRMPP_BRDOCM,프로젝트관리_사전협의기본,BZ_DTT_NM,업무구분명,,Y,,VARCHAR2,100,
-TPRMPP_BRDOCM,프로젝트관리_사전협의기본,REDT_CONE_INF,보고서내용정보,,Y,,CLOB,,
-TPRMPP_BRDOCM,프로젝트관리_사전협의기본,REQ_DTT_NO,요청구분번호,,Y,,VARCHAR2,2,
-TPRMPP_BRDOCM,프로젝트관리_사전협의기본,REQ_TTL,요청제목,,Y,,VARCHAR2,500,
-TPRMPP_BRDOCM,프로젝트관리_사전협의기본,RVW_FSG_TLM_DT,리뷰완료기한일자,,Y,,VARCHAR2,8,
-TPRMPP_BRDOCM,프로젝트관리_사전협의기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BRDOCM,프로젝트관리_사전협의기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BRDOCM,프로젝트관리_사전협의기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BRDOCM,프로젝트관리_사전협의기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BRDOCM,프로젝트관리_사전협의기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BRDOCM,프로젝트관리_사전협의기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BRDOCM,프로젝트관리_사전협의기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BGDOCM,프로젝트관리_사업가이드기본,DOC_MNG_NO,문서관리번호,Y,N,,VARCHAR2,20,
-TPRMPP_BGDOCM,프로젝트관리_사업가이드기본,DOC_TTL_CONE,문서제목내용,,Y,,VARCHAR2,300,
-TPRMPP_BGDOCM,프로젝트관리_사업가이드기본,NAC_TXT_INF,게시물본문정보,,Y,,CLOB,,
-TPRMPP_BGDOCM,프로젝트관리_사업가이드기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BGDOCM,프로젝트관리_사업가이드기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BGDOCM,프로젝트관리_사업가이드기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BGDOCM,프로젝트관리_사업가이드기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BGDOCM,프로젝트관리_사업가이드기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BGDOCM,프로젝트관리_사업가이드기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BGDOCM,프로젝트관리_사업가이드기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BRDOCL,프로젝트관리_사전협의기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BRDOCL,프로젝트관리_사전협의기본변경로그,DOC_MNG_NO,문서관리번호,,N,,VARCHAR2,20,
-TPRMPP_BRDOCL,프로젝트관리_사전협의기본변경로그,DOC_VRS_SNO,문서버전일련번호,,N,,NUMBER,9,
-TPRMPP_BRDOCL,프로젝트관리_사전협의기본변경로그,BZ_DTT_NM,업무구분명,,Y,,VARCHAR2,100,
-TPRMPP_BRDOCL,프로젝트관리_사전협의기본변경로그,REDT_CONE_INF,보고서내용정보,,Y,,CLOB,,
-TPRMPP_BRDOCL,프로젝트관리_사전협의기본변경로그,REQ_DTT_NO,요청구분번호,,Y,,VARCHAR2,2,
-TPRMPP_BRDOCL,프로젝트관리_사전협의기본변경로그,REQ_TTL,요청제목,,Y,,VARCHAR2,500,
-TPRMPP_BRDOCL,프로젝트관리_사전협의기본변경로그,RVW_FSG_TLM_DT,리뷰완료기한일자,,Y,,VARCHAR2,8,
-TPRMPP_BRDOCL,프로젝트관리_사전협의기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BRDOCL,프로젝트관리_사전협의기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BRDOCL,프로젝트관리_사전협의기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BRDOCL,프로젝트관리_사전협의기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BRDOCL,프로젝트관리_사전협의기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BRDOCL,프로젝트관리_사전협의기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BRDOCL,프로젝트관리_사전협의기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BRDOCL,프로젝트관리_사전협의기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BRDOCL,프로젝트관리_사전협의기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BRDOCL,프로젝트관리_사전협의기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BGDOCL,프로젝트관리_사업가이드기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BGDOCL,프로젝트관리_사업가이드기본변경로그,DOC_MNG_NO,문서관리번호,,N,,VARCHAR2,20,
-TPRMPP_BGDOCL,프로젝트관리_사업가이드기본변경로그,DOC_TTL_CONE,문서제목내용,,Y,,VARCHAR2,300,
-TPRMPP_BGDOCL,프로젝트관리_사업가이드기본변경로그,NAC_TXT_INF,게시물본문정보,,Y,,CLOB,,
-TPRMPP_BGDOCL,프로젝트관리_사업가이드기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BGDOCL,프로젝트관리_사업가이드기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BGDOCL,프로젝트관리_사업가이드기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BGDOCL,프로젝트관리_사업가이드기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BGDOCL,프로젝트관리_사업가이드기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BGDOCL,프로젝트관리_사업가이드기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BGDOCL,프로젝트관리_사업가이드기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BGDOCL,프로젝트관리_사업가이드기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BGDOCL,프로젝트관리_사업가이드기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BGDOCL,프로젝트관리_사업가이드기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BBUGTM,프로젝트관리_전산예산기본,BG_NO,예산번호,Y,N,,VARCHAR2,15,
-TPRMPP_BBUGTM,프로젝트관리_전산예산기본,SNO,일련번호,Y,N,,NUMBER,9,
-TPRMPP_BBUGTM,프로젝트관리_전산예산기본,BSE_YY,기준연도,,Y,,VARCHAR2,4,
-TPRMPP_BBUGTM,프로젝트관리_전산예산기본,FNT_TB_NM,원천테이블명,,Y,,VARCHAR2,120,
-TPRMPP_BBUGTM,프로젝트관리_전산예산기본,PK_COL_NM,주식별자컬럼명,,Y,,VARCHAR2,4000,
-TPRMPP_BBUGTM,프로젝트관리_전산예산기본,FNT_TB_CRY_SNO,원천테이블적재일련번호,,Y,,NUMBER,10,
-TPRMPP_BBUGTM,프로젝트관리_전산예산기본,IOE_C,비목코드,,Y,,VARCHAR2,7,
-TPRMPP_BBUGTM,프로젝트관리_전산예산기본,ASG_RT,배정률,,Y,,NUMBER,8,5
-TPRMPP_BBUGTM,프로젝트관리_전산예산기본,BG_DUP_AMT,예산편성금액,,Y,,NUMBER,18,3
-TPRMPP_BBUGTM,프로젝트관리_전산예산기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BBUGTM,프로젝트관리_전산예산기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BBUGTM,프로젝트관리_전산예산기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BBUGTM,프로젝트관리_전산예산기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BBUGTM,프로젝트관리_전산예산기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BBUGTM,프로젝트관리_전산예산기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BBUGTM,프로젝트관리_전산예산기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,BG_NO,예산번호,,N,,VARCHAR2,15,
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,SNO,일련번호,,N,,NUMBER,9,
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,BSE_YY,기준연도,,Y,,VARCHAR2,4,
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,FNT_TB_NM,원천테이블명,,Y,,VARCHAR2,120,
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,PK_COL_NM,주식별자컬럼명,,Y,,VARCHAR2,4000,
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,FNT_TB_CRY_SNO,원천테이블적재일련번호,,Y,,NUMBER,10,
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,IOE_C,비목코드,,Y,,VARCHAR2,7,
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,ASG_RT,배정률,,Y,,NUMBER,8,5
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,BG_DUP_AMT,예산편성금액,,Y,,NUMBER,18,3
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BBUGTL,프로젝트관리_전산예산기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BRIVGM,프로젝트관리_사전협의검토의견기본,IPM_OPNN_SNO,개선의견일련번호,Y,N,,NUMBER,9,
-TPRMPP_BRIVGM,프로젝트관리_사전협의검토의견기본,DOC_MNG_NO,문서관리번호,,N,,VARCHAR2,20,
-TPRMPP_BRIVGM,프로젝트관리_사전협의검토의견기본,DOC_VRS_SNO,문서버전일련번호,,N,,NUMBER,9,
-TPRMPP_BRIVGM,프로젝트관리_사전협의검토의견기본,FSG_YN,완료여부,,N,,VARCHAR2,1,
-TPRMPP_BRIVGM,프로젝트관리_사전협의검토의견기본,IVG_OPNN_CONE,검토의견내용,,Y,,VARCHAR2,2000,
-TPRMPP_BRIVGM,프로젝트관리_사전협의검토의견기본,RFR_CONE,참조내용,,Y,,VARCHAR2,4000,
-TPRMPP_BRIVGM,프로젝트관리_사전협의검토의견기본,RFR_ID,참조ID,,Y,,VARCHAR2,14,
-TPRMPP_BRIVGM,프로젝트관리_사전협의검토의견기본,RPL_OPNN_TC,회신의견구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BRIVGM,프로젝트관리_사전협의검토의견기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BRIVGM,프로젝트관리_사전협의검토의견기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BRIVGM,프로젝트관리_사전협의검토의견기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BRIVGM,프로젝트관리_사전협의검토의견기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BRIVGM,프로젝트관리_사전협의검토의견기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BRIVGM,프로젝트관리_사전협의검토의견기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BRIVGM,프로젝트관리_사전협의검토의견기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,IPM_OPNN_SNO,개선의견일련번호,,N,,NUMBER,9,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,DOC_MNG_NO,문서관리번호,,N,,VARCHAR2,20,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,DOC_VRS_SNO,문서버전일련번호,,N,,NUMBER,9,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,FSG_YN,완료여부,,N,,VARCHAR2,1,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,IVG_OPNN_CONE,검토의견내용,,Y,,VARCHAR2,2000,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,RFR_CONE,참조내용,,Y,,VARCHAR2,4000,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,RFR_ID,참조ID,,Y,,VARCHAR2,14,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,RPL_OPNN_TC,회신의견구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BRIVGL,프로젝트관리_사전협의검토의견기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,REQ_DOC_NO,요청문서번호,Y,N,,VARCHAR2,30,
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,BSE_YY,기준연도,,Y,,VARCHAR2,4,
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,IT_PTL_PLN_TP_C,IT포탈계획유형코드,,Y,,VARCHAR2,2,
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,ADU_TOT_AMT,합계총금액,,Y,,NUMBER,18,3
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,TOT_CPIT_AMT,총자본금액,,Y,,NUMBER,18,3
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,TOT_XP_AMT,총비용금액,,Y,,NUMBER,18,3
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,REDT_CONE_INF,보고서내용정보,,Y,,CLOB,,
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,PRJ_DVM_CONE,프로젝트개발내용,,Y,,VARCHAR2,300,
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,IT_BG_CONE,IT예산내용,,Y,,VARCHAR2,4000,
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,IT_PRJ_RMK,IT프로젝트비고,,Y,,VARCHAR2,600,
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,CPIT_BG_RMK,자본예산비고,,Y,,VARCHAR2,600,
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,MNGC_BG_RMK,관리비예산비고,,Y,,VARCHAR2,600,
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPLANM,프로젝트관리_정보기술부문계획기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,REQ_DOC_NO,요청문서번호,,N,,VARCHAR2,30,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,BSE_YY,기준연도,,Y,,VARCHAR2,4,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,IT_PTL_PLN_TP_C,IT포탈계획유형코드,,Y,,VARCHAR2,2,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,ADU_TOT_AMT,합계총금액,,Y,,NUMBER,18,3
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,TOT_CPIT_AMT,총자본금액,,Y,,NUMBER,18,3
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,TOT_XP_AMT,총비용금액,,Y,,NUMBER,18,3
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,REDT_CONE_INF,보고서내용정보,,Y,,CLOB,,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,PRJ_DVM_CONE,프로젝트개발내용,,Y,,VARCHAR2,300,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,IT_BG_CONE,IT예산내용,,Y,,VARCHAR2,4000,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,IT_PRJ_RMK,IT프로젝트비고,,Y,,VARCHAR2,600,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,CPIT_BG_RMK,자본예산비고,,Y,,VARCHAR2,600,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,MNGC_BG_RMK,관리비예산비고,,Y,,VARCHAR2,600,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPLANL,프로젝트관리_정보기술부문계획기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BPLANA,프로젝트관리_정보기술부문계획관계,ABUS_MNG_NO,사업관리번호,Y,N,,VARCHAR2,30,
-TPRMPP_BPLANA,프로젝트관리_정보기술부문계획관계,REQ_DOC_NO,요청문서번호,Y,N,,VARCHAR2,30,
-TPRMPP_BPLANA,프로젝트관리_정보기술부문계획관계,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPLANA,프로젝트관리_정보기술부문계획관계,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BPLANA,프로젝트관리_정보기술부문계획관계,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BPLANA,프로젝트관리_정보기술부문계획관계,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BPLANA,프로젝트관리_정보기술부문계획관계,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BPLANA,프로젝트관리_정보기술부문계획관계,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPLANA,프로젝트관리_정보기술부문계획관계,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,ABUS_MNG_NO,사업관리번호,Y,N,,VARCHAR2,30,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,SNO,일련번호,Y,N,,NUMBER,9,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,ABUS_NM,사업명,,Y,,VARCHAR2,100,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,ABUS_CONE,사업내용,,Y,,VARCHAR2,1000,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,ABUS_NCS_CONE,사업필요성내용,,Y,,VARCHAR2,300,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,ABUS_TC,사업구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,BSE_YY,기준연도,,Y,,VARCHAR2,4,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,BZ_DTT_NM,업무구분명,,Y,,VARCHAR2,100,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,CNCD_RFR_NO,관련참조번호,,Y,,VARCHAR2,30,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,CPN_SAF_CONE,회사현황내용,,Y,,VARCHAR2,1000,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,CST_TP_TC,고객유형구분코드,,Y,,VARCHAR2,3,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,DGOG_PPO_CONE,효과성목적내용,,Y,,VARCHAR2,4000,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,DPL_YN,중복여부,,Y,,VARCHAR2,1,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,STT_DTM,시작일시,,Y,,DATE,,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,END_DTM,종료일시,,Y,,DATE,,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,EXE_PTT_YN,실행가능성여부,,Y,,VARCHAR2,1,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,FLF_FSG_DT,이행완료일자,,Y,,VARCHAR2,8,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,HRF_PLN_CONE,향후계획내용,,Y,,VARCHAR2,300,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,LST_YN,최종여부,,Y,,VARCHAR2,1,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,MN_PRG_CONE,주요진행내용,,Y,,VARCHAR2,2000,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,TOT_RQM_AMT,총소요금액,,Y,,NUMBER,18,3
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,MPL_CPIT_AMT,예정자본금액,,Y,,NUMBER,18,3
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,MPL_MNGC_AMT,예정관리비금액,,Y,,NUMBER,18,3
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,ODN_YN,경상여부,,Y,,VARCHAR2,1,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,PLM_DES,문제설명,,Y,,VARCHAR2,4000,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,PRLM_HRK_OGZ_C_CONE,인사상위조직코드내용,,Y,,VARCHAR2,100,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,SVN_DPM_C,주관부서코드,,Y,,VARCHAR2,20,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,TLR_USID,팀장사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,USID,사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,DVM_DPM_C,개발부서코드,,Y,,VARCHAR2,20,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,DVM_TEM_C,개발팀코드,,Y,,VARCHAR2,5,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,DVM_TLR_USID,개발팀장사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,DVM_USID,개발사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,BZ_TP_C,업무유형코드,,Y,,VARCHAR2,6,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,IT_PTL_EDRT_TC,IT포탈전결권구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,IT_PTL_RPR_STS_TC,IT포탈보고상태구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,IT_PTL_TCHN_TP_TC,IT포탈기술유형구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,IT_PTL_STS_TC,IT포탈상태구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,ABUS_RNG_CONE,사업범위내용,,Y,,VARCHAR2,600,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPROJM,프로젝트관리_정보화사업기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,GCL_MNG_NO,품목관리번호,Y,N,,VARCHAR2,16,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,SNO,일련번호,Y,N,,NUMBER,9,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,ABUS_MNG_NO,사업관리번호,,Y,,VARCHAR2,30,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,FNT_TB_CRY_SNO,원천테이블적재일련번호,,Y,,NUMBER,10,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,BSE_YM,기준년월,,Y,,VARCHAR2,6,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,CNCD_FDTN_CONE,관련근거내용,,Y,,VARCHAR2,600,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,DFR_CLE_C,지급주기코드,,Y,,VARCHAR2,1,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,GCL_NM,품목명,,Y,,VARCHAR2,100,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,IOE_C,비목코드,,Y,,VARCHAR2,7,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,ITR_INFR_YN,통합인프라여부,,Y,,VARCHAR2,1,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,SECT_SYS_UTZ_YN,보안시스템운용여부,,Y,,VARCHAR2,1,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,QTY,수량,,Y,,NUMBER,10,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,AMT,금액,,Y,,NUMBER,18,3
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,FC_AMT,외화금액,,Y,,NUMBER,18,3
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,CUR_C,통화코드,,Y,,VARCHAR2,3,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,XCR,환율,,Y,,NUMBER,9,4
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,XCR_BSE_DT,환율기준일자,,Y,,VARCHAR2,8,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,LST_YN,최종여부,,Y,,VARCHAR2,1,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BITEMM,프로젝트관리_정보화사업품목기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,TMN_MNG_NO,단말관리번호,Y,N,,VARCHAR2,16,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,SNO,일련번호,Y,N,,NUMBER,9,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,BG_NO,예산번호,,Y,,VARCHAR2,15,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,BG_SNO,예산일련번호,,Y,,NUMBER,9,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,CGPR_ID,담당자ID,,Y,,VARCHAR2,14,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,DFR_CLE_C,지급주기코드,,Y,,VARCHAR2,1,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,IND_RSN,증감사유,,Y,,VARCHAR2,200,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,NSF_USG_CONE,소요자금용도내용,,Y,,VARCHAR2,200,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,RMK,비고,,Y,,VARCHAR2,300,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,SPF_TMN_NM,특정단말명,,Y,,VARCHAR2,100,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,SVN_DPM_C,주관부서코드,,Y,,VARCHAR2,20,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,SVN_TEM_C,주관팀코드,,Y,,VARCHAR2,5,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,AMT,금액,,Y,,NUMBER,18,3
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,FC_AMT,외화금액,,Y,,NUMBER,18,3
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,CUR_C,통화코드,,Y,,VARCHAR2,3,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,XCR,환율,,Y,,NUMBER,9,4
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,XCR_BSE_DT,환율기준일자,,Y,,VARCHAR2,8,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,IT_PTL_TMN_SVC_TC,IT포탈단말서비스구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,IT_PTL_TMN_KD_TC,IT포탈단말종류구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BTERMM,프로젝트관리_전산업무비단말기기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,BG_NO,예산번호,,N,,VARCHAR2,15,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,BG_SNO,예산일련번호,,N,,NUMBER,9,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,ABUS_TC,사업구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,BG_UNT_ABUS_C,예산단위사업코드,,Y,,VARCHAR2,3,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,BSE_YY,기준연도,,Y,,VARCHAR2,4,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,TMN_YN,단말여부,,Y,,VARCHAR2,1,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,CGPR_ID,담당자ID,,Y,,VARCHAR2,14,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,CNCD_RFR_NO,관련참조번호,,Y,,VARCHAR2,30,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,CTT_NM,계약명,,Y,,VARCHAR2,100,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,CTT_OPP_NM,계약상대처명,,Y,,VARCHAR2,100,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,CUR_C,통화코드,,Y,,VARCHAR2,3,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,DFR_CLE_C,지급주기코드,,Y,,VARCHAR2,1,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,FST_DFR_DT,최초지급일자,,Y,,VARCHAR2,8,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,IND_RSN,증감사유,,Y,,VARCHAR2,200,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,IOE_C,비목코드,,Y,,VARCHAR2,7,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,LST_YN,최종여부,,Y,,VARCHAR2,1,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,SECT_SYS_UTZ_YN,보안시스템운용여부,,Y,,VARCHAR2,1,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,SVN_DPM_C,주관부서코드,,Y,,VARCHAR2,20,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,SVN_TEM_C,주관팀코드,,Y,,VARCHAR2,5,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,AMT,금액,,Y,,NUMBER,18,3
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,FC_AMT,외화금액,,Y,,NUMBER,18,3
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,XCR,환율,,Y,,NUMBER,9,4
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,XCR_BSE_DT,환율기준일자,,Y,,VARCHAR2,8,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BCOSTL,프로젝트관리_전산업무비기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,TMN_MNG_NO,단말관리번호,,N,,VARCHAR2,16,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,SNO,일련번호,,N,,NUMBER,9,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,BG_NO,예산번호,,Y,,VARCHAR2,15,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,BG_SNO,예산일련번호,,Y,,NUMBER,9,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,CGPR_ID,담당자ID,,Y,,VARCHAR2,14,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,DFR_CLE_C,지급주기코드,,Y,,VARCHAR2,1,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,IND_RSN,증감사유,,Y,,VARCHAR2,200,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,NSF_USG_CONE,소요자금용도내용,,Y,,VARCHAR2,200,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,RMK,비고,,Y,,VARCHAR2,300,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,SPF_TMN_NM,특정단말명,,Y,,VARCHAR2,100,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,SVN_DPM_C,주관부서코드,,Y,,VARCHAR2,20,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,SVN_TEM_C,주관팀코드,,Y,,VARCHAR2,5,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,AMT,금액,,Y,,NUMBER,18,3
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,FC_AMT,외화금액,,Y,,NUMBER,18,3
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,CUR_C,통화코드,,Y,,VARCHAR2,3,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,XCR,환율,,Y,,NUMBER,9,4
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,XCR_BSE_DT,환율기준일자,,Y,,VARCHAR2,8,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,IT_PTL_TMN_SVC_TC,IT포탈단말서비스구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,IT_PTL_TMN_KD_TC,IT포탈단말종류구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BTERML,프로젝트관리_전산업무비단말기기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,ABUS_MNG_NO,사업관리번호,,N,,VARCHAR2,30,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,SNO,일련번호,,N,,NUMBER,9,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,ABUS_NM,사업명,,Y,,VARCHAR2,100,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,ABUS_CONE,사업내용,,Y,,VARCHAR2,1000,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,ABUS_NCS_CONE,사업필요성내용,,Y,,VARCHAR2,300,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,ABUS_TC,사업구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,BSE_YY,기준연도,,Y,,VARCHAR2,4,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,BZ_DTT_NM,업무구분명,,Y,,VARCHAR2,100,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,CNCD_RFR_NO,관련참조번호,,Y,,VARCHAR2,30,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,CPN_SAF_CONE,회사현황내용,,Y,,VARCHAR2,1000,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,CST_TP_TC,고객유형구분코드,,Y,,VARCHAR2,3,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,DGOG_PPO_CONE,효과성목적내용,,Y,,VARCHAR2,4000,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,DPL_YN,중복여부,,Y,,VARCHAR2,1,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,STT_DTM,시작일시,,Y,,DATE,,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,END_DTM,종료일시,,Y,,DATE,,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,EXE_PTT_YN,실행가능성여부,,Y,,VARCHAR2,1,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,FLF_FSG_DT,이행완료일자,,Y,,VARCHAR2,8,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,HRF_PLN_CONE,향후계획내용,,Y,,VARCHAR2,300,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,LST_YN,최종여부,,Y,,VARCHAR2,1,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,MN_PRG_CONE,주요진행내용,,Y,,VARCHAR2,2000,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,TOT_RQM_AMT,총소요금액,,Y,,NUMBER,18,3
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,MPL_CPIT_AMT,예정자본금액,,Y,,NUMBER,18,3
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,MPL_MNGC_AMT,예정관리비금액,,Y,,NUMBER,18,3
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,ODN_YN,경상여부,,Y,,VARCHAR2,1,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,PLM_DES,문제설명,,Y,,VARCHAR2,4000,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,PRLM_HRK_OGZ_C_CONE,인사상위조직코드내용,,Y,,VARCHAR2,100,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,SVN_DPM_C,주관부서코드,,Y,,VARCHAR2,20,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,TLR_USID,팀장사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,USID,사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,DVM_DPM_C,개발부서코드,,Y,,VARCHAR2,20,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,DVM_TEM_C,개발팀코드,,Y,,VARCHAR2,5,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,DVM_TLR_USID,개발팀장사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,DVM_USID,개발사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,BZ_TP_C,업무유형코드,,Y,,VARCHAR2,6,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,IT_PTL_EDRT_TC,IT포탈전결권구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,IT_PTL_RPR_STS_TC,IT포탈보고상태구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,IT_PTL_TCHN_TP_TC,IT포탈기술유형구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,IT_PTL_STS_TC,IT포탈상태구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,ABUS_RNG_CONE,사업범위내용,,Y,,VARCHAR2,600,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPROJL,프로젝트관리_정보화사업기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,GCL_MNG_NO,품목관리번호,,N,,VARCHAR2,16,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,SNO,일련번호,,N,,NUMBER,9,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,ABUS_MNG_NO,사업관리번호,,Y,,VARCHAR2,30,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,FNT_TB_CRY_SNO,원천테이블적재일련번호,,Y,,NUMBER,10,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,BSE_YM,기준년월,,Y,,VARCHAR2,6,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,CNCD_FDTN_CONE,관련근거내용,,Y,,VARCHAR2,600,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,DFR_CLE_C,지급주기코드,,Y,,VARCHAR2,1,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,GCL_NM,품목명,,Y,,VARCHAR2,100,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,IOE_C,비목코드,,Y,,VARCHAR2,7,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,ITR_INFR_YN,통합인프라여부,,Y,,VARCHAR2,1,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,SECT_SYS_UTZ_YN,보안시스템운용여부,,Y,,VARCHAR2,1,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,QTY,수량,,Y,,NUMBER,10,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,AMT,금액,,Y,,NUMBER,18,3
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,FC_AMT,외화금액,,Y,,NUMBER,18,3
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,CUR_C,통화코드,,Y,,VARCHAR2,3,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,XCR,환율,,Y,,NUMBER,9,4
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,XCR_BSE_DT,환율기준일자,,Y,,VARCHAR2,8,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,LST_YN,최종여부,,Y,,VARCHAR2,1,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BITEML,프로젝트관리_정보화사업품목기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BPQNAM,프로젝트관리_협의회사전질의응답기본,IT_PTL_ASCT_ID,IT포탈협의회ID,Y,N,,VARCHAR2,32,
-TPRMPP_BPQNAM,프로젝트관리_협의회사전질의응답기본,QTN_ID,질의ID,Y,N,,VARCHAR2,36,
-TPRMPP_BPQNAM,프로젝트관리_협의회사전질의응답기본,QTN_CONE,질의내용,,Y,,VARCHAR2,4000,
-TPRMPP_BPQNAM,프로젝트관리_협의회사전질의응답기본,QTN_DWU_USID,질의작성사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPQNAM,프로젝트관리_협의회사전질의응답기본,REP_CONE,답변내용,,Y,,VARCHAR2,2000,
-TPRMPP_BPQNAM,프로젝트관리_협의회사전질의응답기본,REP_DWU_USID,답변작성사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPQNAM,프로젝트관리_협의회사전질의응답기본,QTN_RPD_RLT_YN,질의응답결과여부,,Y,,VARCHAR2,1,
-TPRMPP_BPQNAM,프로젝트관리_협의회사전질의응답기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPQNAM,프로젝트관리_협의회사전질의응답기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BPQNAM,프로젝트관리_협의회사전질의응답기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BPQNAM,프로젝트관리_협의회사전질의응답기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BPQNAM,프로젝트관리_협의회사전질의응답기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BPQNAM,프로젝트관리_협의회사전질의응답기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPQNAM,프로젝트관리_협의회사전질의응답기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BMQNAM,프로젝트관리_협의회본회의질의응답기본,IT_PTL_ASCT_ID,IT포탈협의회ID,Y,N,,VARCHAR2,32,
-TPRMPP_BMQNAM,프로젝트관리_협의회본회의질의응답기본,QTN_ID,질의ID,Y,N,,VARCHAR2,36,
-TPRMPP_BMQNAM,프로젝트관리_협의회본회의질의응답기본,QTN_CONE,질의내용,,Y,,VARCHAR2,4000,
-TPRMPP_BMQNAM,프로젝트관리_협의회본회의질의응답기본,QTN_DWU_USID,질의작성사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BMQNAM,프로젝트관리_협의회본회의질의응답기본,REP_CONE,답변내용,,Y,,VARCHAR2,2000,
-TPRMPP_BMQNAM,프로젝트관리_협의회본회의질의응답기본,REP_DWU_USID,답변작성사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BMQNAM,프로젝트관리_협의회본회의질의응답기본,QTN_RPD_RLT_YN,질의응답결과여부,,Y,,VARCHAR2,1,
-TPRMPP_BMQNAM,프로젝트관리_협의회본회의질의응답기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BMQNAM,프로젝트관리_협의회본회의질의응답기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BMQNAM,프로젝트관리_협의회본회의질의응답기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BMQNAM,프로젝트관리_협의회본회의질의응답기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BMQNAM,프로젝트관리_협의회본회의질의응답기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BMQNAM,프로젝트관리_협의회본회의질의응답기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BMQNAM,프로젝트관리_협의회본회의질의응답기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BEVALM,프로젝트관리_협의회평가의견기본,IT_PTL_ASCT_ID,IT포탈협의회ID,Y,N,,VARCHAR2,32,
-TPRMPP_BEVALM,프로젝트관리_협의회평가의견기본,ENO,사원번호,Y,N,,VARCHAR2,32,
-TPRMPP_BEVALM,프로젝트관리_협의회평가의견기본,IT_PTL_CKG_ITM_TC,IT포탈점검항목구분코드,Y,N,,VARCHAR2,2,
-TPRMPP_BEVALM,프로젝트관리_협의회평가의견기본,QUEL_RCRD,문항점수,,Y,,NUMBER,5,
-TPRMPP_BEVALM,프로젝트관리_협의회평가의견기본,CKG_OPNN_CONE,점검의견내용,,Y,,VARCHAR2,1000,
-TPRMPP_BEVALM,프로젝트관리_협의회평가의견기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BEVALM,프로젝트관리_협의회평가의견기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BEVALM,프로젝트관리_협의회평가의견기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BEVALM,프로젝트관리_협의회평가의견기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BEVALM,프로젝트관리_협의회평가의견기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BEVALM,프로젝트관리_협의회평가의견기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BEVALM,프로젝트관리_협의회평가의견기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BASCTM,프로젝트관리_협의회협의회기본,IT_PTL_ASCT_ID,IT포탈협의회ID,Y,N,,VARCHAR2,32,
-TPRMPP_BASCTM,프로젝트관리_협의회협의회기본,IT_PTL_ASCT_PRG_STS_TC,IT포탈협의회진행상태구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BASCTM,프로젝트관리_협의회협의회기본,IT_PTL_ASCT_DBR_TC,IT포탈협의회심의구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BASCTM,프로젝트관리_협의회협의회기본,ABUS_MNG_NO,사업관리번호,,Y,,VARCHAR2,30,
-TPRMPP_BASCTM,프로젝트관리_협의회협의회기본,SNO,일련번호,,Y,,NUMBER,9,
-TPRMPP_BASCTM,프로젝트관리_협의회협의회기본,CNRC_DT,회의일자,,Y,,VARCHAR2,8,
-TPRMPP_BASCTM,프로젝트관리_협의회협의회기본,CNRC_PLC_NM,회의장소명,,Y,,VARCHAR2,100,
-TPRMPP_BASCTM,프로젝트관리_협의회협의회기본,CNRC_STT_TM,회의시작시각,,Y,,VARCHAR2,6,
-TPRMPP_BASCTM,프로젝트관리_협의회협의회기본,PRTY_IVG_OMT_YN,타당성검토생략여부,,Y,,VARCHAR2,1,
-TPRMPP_BASCTM,프로젝트관리_협의회협의회기본,PRTY_IVG_OMT_RSN,타당성검토생략사유,,Y,,VARCHAR2,200,
-TPRMPP_BASCTM,프로젝트관리_협의회협의회기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BASCTM,프로젝트관리_협의회협의회기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BASCTM,프로젝트관리_협의회협의회기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BASCTM,프로젝트관리_협의회협의회기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BASCTM,프로젝트관리_협의회협의회기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BASCTM,프로젝트관리_협의회협의회기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BASCTM,프로젝트관리_협의회협의회기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BCHKLM,프로젝트관리_협의회타당성자체점검기본,IT_PTL_ASCT_ID,IT포탈협의회ID,Y,N,,VARCHAR2,32,
-TPRMPP_BCHKLM,프로젝트관리_협의회타당성자체점검기본,IT_PTL_CKG_ITM_TC,IT포탈점검항목구분코드,Y,N,,VARCHAR2,2,
-TPRMPP_BCHKLM,프로젝트관리_협의회타당성자체점검기본,QUEL_RCRD,문항점수,,Y,,NUMBER,5,
-TPRMPP_BCHKLM,프로젝트관리_협의회타당성자체점검기본,CKG_OPNN_CONE,점검의견내용,,Y,,VARCHAR2,1000,
-TPRMPP_BCHKLM,프로젝트관리_협의회타당성자체점검기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BCHKLM,프로젝트관리_협의회타당성자체점검기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BCHKLM,프로젝트관리_협의회타당성자체점검기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BCHKLM,프로젝트관리_협의회타당성자체점검기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BCHKLM,프로젝트관리_협의회타당성자체점검기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BCHKLM,프로젝트관리_협의회타당성자체점검기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BCHKLM,프로젝트관리_협의회타당성자체점검기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BPERFM,프로젝트관리_협의회성과관리기본,IT_PTL_ASCT_ID,IT포탈협의회ID,Y,N,,VARCHAR2,32,
-TPRMPP_BPERFM,프로젝트관리_협의회성과관리기본,EVL_DTP_SNO,평가지표일련번호,Y,N,,NUMBER,9,
-TPRMPP_BPERFM,프로젝트관리_협의회성과관리기본,EVL_DTP_NM,평가지표명,,Y,,VARCHAR2,100,
-TPRMPP_BPERFM,프로젝트관리_협의회성과관리기본,EVL_DTP_DFNT_CONE,평가지표정의내용,,Y,,VARCHAR2,4000,
-TPRMPP_BPERFM,프로젝트관리_협의회성과관리기본,EVL_DTP_CLF_CONE,평가지표계산식내용,,Y,,VARCHAR2,4000,
-TPRMPP_BPERFM,프로젝트관리_협의회성과관리기본,EVL_DTP_MSM_PTM_CONE,평가지표측정시점내용,,Y,,VARCHAR2,300,
-TPRMPP_BPERFM,프로젝트관리_협의회성과관리기본,EVL_DTP_MSM_CLE_CONE,평가지표측정주기내용,,Y,,VARCHAR2,300,
-TPRMPP_BPERFM,프로젝트관리_협의회성과관리기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPERFM,프로젝트관리_협의회성과관리기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BPERFM,프로젝트관리_협의회성과관리기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BPERFM,프로젝트관리_협의회성과관리기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BPERFM,프로젝트관리_협의회성과관리기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BPERFM,프로젝트관리_협의회성과관리기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPERFM,프로젝트관리_협의회성과관리기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BRSLTM,프로젝트관리_협의회결과서기본,IT_PTL_ASCT_ID,IT포탈협의회ID,Y,N,,VARCHAR2,32,
-TPRMPP_BRSLTM,프로젝트관리_협의회결과서기본,CKG_OPNN_CONE,점검의견내용,,Y,,VARCHAR2,1000,
-TPRMPP_BRSLTM,프로젝트관리_협의회결과서기본,SYN_OPNN_CONE,종합의견내용,,Y,,VARCHAR2,6000,
-TPRMPP_BRSLTM,프로젝트관리_협의회결과서기본,FL_MPN_ID,파일매핑ID,,Y,,VARCHAR2,36,
-TPRMPP_BRSLTM,프로젝트관리_협의회결과서기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BRSLTM,프로젝트관리_협의회결과서기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BRSLTM,프로젝트관리_협의회결과서기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BRSLTM,프로젝트관리_협의회결과서기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BRSLTM,프로젝트관리_협의회결과서기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BRSLTM,프로젝트관리_협의회결과서기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BRSLTM,프로젝트관리_협의회결과서기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BCMMTM,프로젝트관리_협의회평가위원기본,IT_PTL_ASCT_ID,IT포탈협의회ID,Y,N,,VARCHAR2,32,
-TPRMPP_BCMMTM,프로젝트관리_협의회평가위원기본,IT_PTL_ASCT_MEB_TC,IT포탈협의회구성원구분코드,Y,N,,VARCHAR2,2,
-TPRMPP_BCMMTM,프로젝트관리_협의회평가위원기본,ENO,사원번호,Y,N,,VARCHAR2,32,
-TPRMPP_BCMMTM,프로젝트관리_협의회평가위원기본,CNFM_YN,확인여부,,Y,'N',VARCHAR2,1,
-TPRMPP_BCMMTM,프로젝트관리_협의회평가위원기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BCMMTM,프로젝트관리_협의회평가위원기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BCMMTM,프로젝트관리_협의회평가위원기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BCMMTM,프로젝트관리_협의회평가위원기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BCMMTM,프로젝트관리_협의회평가위원기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BCMMTM,프로젝트관리_협의회평가위원기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BCMMTM,프로젝트관리_협의회평가위원기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,IT_PTL_ASCT_ID,IT포탈협의회ID,Y,N,,VARCHAR2,32,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,ABUS_NM,사업명,,Y,,VARCHAR2,100,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,ABUS_TRM_CONE,사업기간내용,,Y,,VARCHAR2,300,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,ABUS_CONE,사업내용,,Y,,VARCHAR2,1000,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,ABUS_NCS_CONE,사업필요성내용,,Y,,VARCHAR2,300,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,DGOG_PPO_CONE,효과성목적내용,,Y,,VARCHAR2,4000,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,RQM_BG_AMT,소요예산금액,,Y,,NUMBER,18,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,IT_PTL_EDRT_TC,IT포탈전결권구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,LW_RGL_YN,법률규제여부,,Y,,VARCHAR2,1,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,LW_FDTN,법률근거,,Y,,VARCHAR2,300,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,FL_MPN_ID,파일매핑ID,,Y,,VARCHAR2,36,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,KPN_TP_TC,저장유형구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPOVWM,프로젝트관리_협의회사업개요기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BSCHDM,프로젝트관리_협의회일정기본,IT_PTL_ASCT_ID,IT포탈협의회ID,Y,N,,VARCHAR2,32,
-TPRMPP_BSCHDM,프로젝트관리_협의회일정기본,CNRC_DT,회의일자,Y,N,,VARCHAR2,8,
-TPRMPP_BSCHDM,프로젝트관리_협의회일정기본,CNRC_STT_TM,회의시작시각,Y,N,,VARCHAR2,6,
-TPRMPP_BSCHDM,프로젝트관리_협의회일정기본,ENO,사원번호,Y,N,,VARCHAR2,32,
-TPRMPP_BSCHDM,프로젝트관리_협의회일정기본,USE_PSB_YN,사용가능여부,,Y,,VARCHAR2,1,
-TPRMPP_BSCHDM,프로젝트관리_협의회일정기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BSCHDM,프로젝트관리_협의회일정기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BSCHDM,프로젝트관리_협의회일정기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BSCHDM,프로젝트관리_협의회일정기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BSCHDM,프로젝트관리_협의회일정기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BSCHDM,프로젝트관리_협의회일정기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BSCHDM,프로젝트관리_협의회일정기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,IT_PTL_ASCT_ID,IT포탈협의회ID,,N,,VARCHAR2,32,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,IT_PTL_ASCT_PRG_STS_TC,IT포탈협의회진행상태구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,IT_PTL_ASCT_DBR_TC,IT포탈협의회심의구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,ABUS_MNG_NO,사업관리번호,,Y,,VARCHAR2,30,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,SNO,일련번호,,Y,,NUMBER,9,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,CNRC_DT,회의일자,,Y,,VARCHAR2,8,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,CNRC_PLC_NM,회의장소명,,Y,,VARCHAR2,100,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,CNRC_STT_TM,회의시작시각,,Y,,VARCHAR2,6,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,PRTY_IVG_OMT_YN,타당성검토생략여부,,Y,,VARCHAR2,1,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,PRTY_IVG_OMT_RSN,타당성검토생략사유,,Y,,VARCHAR2,200,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BASCTL,프로젝트관리_협의회협의회기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,IT_PTL_ASCT_ID,IT포탈협의회ID,,N,,VARCHAR2,32,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,ABUS_NM,사업명,,Y,,VARCHAR2,100,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,ABUS_TRM_CONE,사업기간내용,,Y,,VARCHAR2,300,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,ABUS_CONE,사업내용,,Y,,VARCHAR2,1000,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,ABUS_NCS_CONE,사업필요성내용,,Y,,VARCHAR2,300,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,DGOG_PPO_CONE,효과성목적내용,,Y,,VARCHAR2,4000,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,RQM_BG_AMT,소요예산금액,,Y,,NUMBER,18,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,IT_PTL_EDRT_TC,IT포탈전결권구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,LW_RGL_YN,법률규제여부,,Y,,VARCHAR2,1,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,LW_FDTN,법률근거,,Y,,VARCHAR2,300,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,FL_MPN_ID,파일매핑ID,,Y,,VARCHAR2,36,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,KPN_TP_TC,저장유형구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPOVWL,프로젝트관리_협의회사업개요기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BCHKLL,프로젝트관리_협의회타당성자체점검기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BCHKLL,프로젝트관리_협의회타당성자체점검기본변경로그,IT_PTL_ASCT_ID,IT포탈협의회ID,,N,,VARCHAR2,32,
-TPRMPP_BCHKLL,프로젝트관리_협의회타당성자체점검기본변경로그,IT_PTL_CKG_ITM_TC,IT포탈점검항목구분코드,,N,,VARCHAR2,2,
-TPRMPP_BCHKLL,프로젝트관리_협의회타당성자체점검기본변경로그,QUEL_RCRD,문항점수,,Y,,NUMBER,5,
-TPRMPP_BCHKLL,프로젝트관리_협의회타당성자체점검기본변경로그,CKG_OPNN_CONE,점검의견내용,,Y,,VARCHAR2,1000,
-TPRMPP_BCHKLL,프로젝트관리_협의회타당성자체점검기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BCHKLL,프로젝트관리_협의회타당성자체점검기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BCHKLL,프로젝트관리_협의회타당성자체점검기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BCHKLL,프로젝트관리_협의회타당성자체점검기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BCHKLL,프로젝트관리_협의회타당성자체점검기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BCHKLL,프로젝트관리_협의회타당성자체점검기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BCHKLL,프로젝트관리_협의회타당성자체점검기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BCHKLL,프로젝트관리_협의회타당성자체점검기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BCHKLL,프로젝트관리_협의회타당성자체점검기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BCHKLL,프로젝트관리_협의회타당성자체점검기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BPERFL,프로젝트관리_협의회성과관리기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BPERFL,프로젝트관리_협의회성과관리기본변경로그,IT_PTL_ASCT_ID,IT포탈협의회ID,,N,,VARCHAR2,32,
-TPRMPP_BPERFL,프로젝트관리_협의회성과관리기본변경로그,EVL_DTP_SNO,평가지표일련번호,,N,,NUMBER,9,
-TPRMPP_BPERFL,프로젝트관리_협의회성과관리기본변경로그,EVL_DTP_NM,평가지표명,,Y,,VARCHAR2,100,
-TPRMPP_BPERFL,프로젝트관리_협의회성과관리기본변경로그,EVL_DTP_DFNT_CONE,평가지표정의내용,,Y,,VARCHAR2,4000,
-TPRMPP_BPERFL,프로젝트관리_협의회성과관리기본변경로그,EVL_DTP_CLF_CONE,평가지표계산식내용,,Y,,VARCHAR2,4000,
-TPRMPP_BPERFL,프로젝트관리_협의회성과관리기본변경로그,EVL_DTP_MSM_PTM_CONE,평가지표측정시점내용,,Y,,VARCHAR2,300,
-TPRMPP_BPERFL,프로젝트관리_협의회성과관리기본변경로그,EVL_DTP_MSM_CLE_CONE,평가지표측정주기내용,,Y,,VARCHAR2,300,
-TPRMPP_BPERFL,프로젝트관리_협의회성과관리기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BPERFL,프로젝트관리_협의회성과관리기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BPERFL,프로젝트관리_협의회성과관리기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPERFL,프로젝트관리_협의회성과관리기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPERFL,프로젝트관리_협의회성과관리기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BPERFL,프로젝트관리_협의회성과관리기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BPERFL,프로젝트관리_협의회성과관리기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BPERFL,프로젝트관리_협의회성과관리기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BPERFL,프로젝트관리_협의회성과관리기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPERFL,프로젝트관리_협의회성과관리기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BPQNAL,프로젝트관리_협의회사전질의응답기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BPQNAL,프로젝트관리_협의회사전질의응답기본변경로그,IT_PTL_ASCT_ID,IT포탈협의회ID,,N,,VARCHAR2,32,
-TPRMPP_BPQNAL,프로젝트관리_협의회사전질의응답기본변경로그,QTN_ID,질의ID,,N,,VARCHAR2,36,
-TPRMPP_BPQNAL,프로젝트관리_협의회사전질의응답기본변경로그,QTN_CONE,질의내용,,Y,,VARCHAR2,4000,
-TPRMPP_BPQNAL,프로젝트관리_협의회사전질의응답기본변경로그,QTN_DWU_USID,질의작성사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPQNAL,프로젝트관리_협의회사전질의응답기본변경로그,REP_CONE,답변내용,,Y,,VARCHAR2,2000,
-TPRMPP_BPQNAL,프로젝트관리_협의회사전질의응답기본변경로그,REP_DWU_USID,답변작성사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPQNAL,프로젝트관리_협의회사전질의응답기본변경로그,QTN_RPD_RLT_YN,질의응답결과여부,,Y,,VARCHAR2,1,
-TPRMPP_BPQNAL,프로젝트관리_협의회사전질의응답기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BPQNAL,프로젝트관리_협의회사전질의응답기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BPQNAL,프로젝트관리_협의회사전질의응답기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPQNAL,프로젝트관리_협의회사전질의응답기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPQNAL,프로젝트관리_협의회사전질의응답기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BPQNAL,프로젝트관리_협의회사전질의응답기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BPQNAL,프로젝트관리_협의회사전질의응답기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BPQNAL,프로젝트관리_협의회사전질의응답기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BPQNAL,프로젝트관리_협의회사전질의응답기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPQNAL,프로젝트관리_협의회사전질의응답기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BMQNAL,프로젝트관리_협의회본회의질의응답기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BMQNAL,프로젝트관리_협의회본회의질의응답기본변경로그,IT_PTL_ASCT_ID,IT포탈협의회ID,,N,,VARCHAR2,32,
-TPRMPP_BMQNAL,프로젝트관리_협의회본회의질의응답기본변경로그,QTN_ID,질의ID,,N,,VARCHAR2,36,
-TPRMPP_BMQNAL,프로젝트관리_협의회본회의질의응답기본변경로그,QTN_CONE,질의내용,,Y,,VARCHAR2,4000,
-TPRMPP_BMQNAL,프로젝트관리_협의회본회의질의응답기본변경로그,QTN_DWU_USID,질의작성사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BMQNAL,프로젝트관리_협의회본회의질의응답기본변경로그,REP_CONE,답변내용,,Y,,VARCHAR2,2000,
-TPRMPP_BMQNAL,프로젝트관리_협의회본회의질의응답기본변경로그,REP_DWU_USID,답변작성사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BMQNAL,프로젝트관리_협의회본회의질의응답기본변경로그,QTN_RPD_RLT_YN,질의응답결과여부,,Y,,VARCHAR2,1,
-TPRMPP_BMQNAL,프로젝트관리_협의회본회의질의응답기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BMQNAL,프로젝트관리_협의회본회의질의응답기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BMQNAL,프로젝트관리_협의회본회의질의응답기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BMQNAL,프로젝트관리_협의회본회의질의응답기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BMQNAL,프로젝트관리_협의회본회의질의응답기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BMQNAL,프로젝트관리_협의회본회의질의응답기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BMQNAL,프로젝트관리_협의회본회의질의응답기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BMQNAL,프로젝트관리_협의회본회의질의응답기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BMQNAL,프로젝트관리_협의회본회의질의응답기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BMQNAL,프로젝트관리_협의회본회의질의응답기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BCMMTL,프로젝트관리_협의회평가위원기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BCMMTL,프로젝트관리_협의회평가위원기본변경로그,IT_PTL_ASCT_ID,IT포탈협의회ID,,N,,VARCHAR2,32,
-TPRMPP_BCMMTL,프로젝트관리_협의회평가위원기본변경로그,IT_PTL_ASCT_MEB_TC,IT포탈협의회구성원구분코드,,N,,VARCHAR2,2,
-TPRMPP_BCMMTL,프로젝트관리_협의회평가위원기본변경로그,ENO,사원번호,,N,,VARCHAR2,32,
-TPRMPP_BCMMTL,프로젝트관리_협의회평가위원기본변경로그,CNFM_YN,확인여부,,Y,'N',VARCHAR2,1,
-TPRMPP_BCMMTL,프로젝트관리_협의회평가위원기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BCMMTL,프로젝트관리_협의회평가위원기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BCMMTL,프로젝트관리_협의회평가위원기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BCMMTL,프로젝트관리_협의회평가위원기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BCMMTL,프로젝트관리_협의회평가위원기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BCMMTL,프로젝트관리_협의회평가위원기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BCMMTL,프로젝트관리_협의회평가위원기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BCMMTL,프로젝트관리_협의회평가위원기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BCMMTL,프로젝트관리_협의회평가위원기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BCMMTL,프로젝트관리_협의회평가위원기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BEVALL,프로젝트관리_협의회평가의견기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BEVALL,프로젝트관리_협의회평가의견기본변경로그,IT_PTL_ASCT_ID,IT포탈협의회ID,,N,,VARCHAR2,32,
-TPRMPP_BEVALL,프로젝트관리_협의회평가의견기본변경로그,ENO,사원번호,,N,,VARCHAR2,32,
-TPRMPP_BEVALL,프로젝트관리_협의회평가의견기본변경로그,IT_PTL_CKG_ITM_TC,IT포탈점검항목구분코드,,N,,VARCHAR2,2,
-TPRMPP_BEVALL,프로젝트관리_협의회평가의견기본변경로그,QUEL_RCRD,문항점수,,Y,,NUMBER,5,
-TPRMPP_BEVALL,프로젝트관리_협의회평가의견기본변경로그,CKG_OPNN_CONE,점검의견내용,,Y,,VARCHAR2,1000,
-TPRMPP_BEVALL,프로젝트관리_협의회평가의견기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BEVALL,프로젝트관리_협의회평가의견기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BEVALL,프로젝트관리_협의회평가의견기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BEVALL,프로젝트관리_협의회평가의견기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BEVALL,프로젝트관리_협의회평가의견기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BEVALL,프로젝트관리_협의회평가의견기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BEVALL,프로젝트관리_협의회평가의견기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BEVALL,프로젝트관리_협의회평가의견기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BEVALL,프로젝트관리_협의회평가의견기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BEVALL,프로젝트관리_협의회평가의견기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BSCHDL,프로젝트관리_협의회일정기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BSCHDL,프로젝트관리_협의회일정기본변경로그,IT_PTL_ASCT_ID,IT포탈협의회ID,,N,,VARCHAR2,32,
-TPRMPP_BSCHDL,프로젝트관리_협의회일정기본변경로그,CNRC_DT,회의일자,,N,,VARCHAR2,8,
-TPRMPP_BSCHDL,프로젝트관리_협의회일정기본변경로그,CNRC_STT_TM,회의시작시각,,N,,VARCHAR2,6,
-TPRMPP_BSCHDL,프로젝트관리_협의회일정기본변경로그,ENO,사원번호,,N,,VARCHAR2,32,
-TPRMPP_BSCHDL,프로젝트관리_협의회일정기본변경로그,USE_PSB_YN,사용가능여부,,Y,,VARCHAR2,1,
-TPRMPP_BSCHDL,프로젝트관리_협의회일정기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BSCHDL,프로젝트관리_협의회일정기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BSCHDL,프로젝트관리_협의회일정기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BSCHDL,프로젝트관리_협의회일정기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BSCHDL,프로젝트관리_협의회일정기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BSCHDL,프로젝트관리_협의회일정기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BSCHDL,프로젝트관리_협의회일정기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BSCHDL,프로젝트관리_협의회일정기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BSCHDL,프로젝트관리_협의회일정기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BSCHDL,프로젝트관리_협의회일정기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BRSLTL,프로젝트관리_협의회결과서기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BRSLTL,프로젝트관리_협의회결과서기본변경로그,IT_PTL_ASCT_ID,IT포탈협의회ID,,N,,VARCHAR2,32,
-TPRMPP_BRSLTL,프로젝트관리_협의회결과서기본변경로그,CKG_OPNN_CONE,점검의견내용,,Y,,VARCHAR2,1000,
-TPRMPP_BRSLTL,프로젝트관리_협의회결과서기본변경로그,SYN_OPNN_CONE,종합의견내용,,Y,,VARCHAR2,6000,
-TPRMPP_BRSLTL,프로젝트관리_협의회결과서기본변경로그,FL_MPN_ID,파일매핑ID,,Y,,VARCHAR2,36,
-TPRMPP_BRSLTL,프로젝트관리_협의회결과서기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BRSLTL,프로젝트관리_협의회결과서기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BRSLTL,프로젝트관리_협의회결과서기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BRSLTL,프로젝트관리_협의회결과서기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BRSLTL,프로젝트관리_협의회결과서기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BRSLTL,프로젝트관리_협의회결과서기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BRSLTL,프로젝트관리_협의회결과서기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BRSLTL,프로젝트관리_협의회결과서기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BRSLTL,프로젝트관리_협의회결과서기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BRSLTL,프로젝트관리_협의회결과서기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,DOC_MNG_NO,문서관리번호,Y,N,,VARCHAR2,20,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,DOC_VRS_SNO,문서버전일련번호,Y,N,,NUMBER,9,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,LST_YN,최종여부,,N,,VARCHAR2,1,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,BG_PRN_TC,예산성격구분코드,,N,,VARCHAR2,3,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,CNCD_RFR_NO,관련참조번호,,N,,VARCHAR2,30,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,IT_PTL_STS_TC,IT포탈상태구분코드,,N,,VARCHAR2,2,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,REQ_CONE,요청내용,,Y,,VARCHAR2,300,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,CTT_MANR_C,계약방법코드,,Y,,VARCHAR2,2,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,CTT_MANR_RSN,계약방법사유,,Y,,VARCHAR2,1000,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,CTT_NM,계약명,,Y,,VARCHAR2,100,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,CTT_AMT,계약금액,,Y,,NUMBER,18,3
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,CTT_OPP_NM,계약상대처명,,Y,,VARCHAR2,100,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,CTT_DT,계약일자,,Y,,VARCHAR2,8,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BCONTM,프로젝트관리_입찰계약기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,DOC_MNG_NO,문서관리번호,,Y,,VARCHAR2,20,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,DOC_VRS_SNO,문서버전일련번호,,Y,,NUMBER,9,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,LST_YN,최종여부,,Y,,VARCHAR2,1,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,BG_PRN_TC,예산성격구분코드,,Y,,VARCHAR2,3,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,CNCD_RFR_NO,관련참조번호,,Y,,VARCHAR2,30,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,IT_PTL_STS_TC,IT포탈상태구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,REQ_CONE,요청내용,,Y,,VARCHAR2,300,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,CTT_MANR_C,계약방법코드,,Y,,VARCHAR2,2,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,CTT_MANR_RSN,계약방법사유,,Y,,VARCHAR2,1000,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,CTT_NM,계약명,,Y,,VARCHAR2,100,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,CTT_AMT,계약금액,,Y,,NUMBER,18,3
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,CTT_OPP_NM,계약상대처명,,Y,,VARCHAR2,100,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,CTT_DT,계약일자,,Y,,VARCHAR2,8,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BCONTL,프로젝트관리_입찰계약기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,DOC_MNG_NO,문서관리번호,Y,N,,VARCHAR2,20,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,DOC_VRS_SNO,문서버전일련번호,Y,N,,NUMBER,9,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,LST_YN,최종여부,,N,,VARCHAR2,1,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,BG_PRN_TC,예산성격구분코드,,N,,VARCHAR2,3,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,CNCD_RFR_NO,관련참조번호,,N,,VARCHAR2,30,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,IT_PTL_STS_TC,IT포탈상태구분코드,,N,,VARCHAR2,2,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,REQ_CONE,요청내용,,Y,,VARCHAR2,300,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,TASK_DBR_TC,과업심의구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,TASK_DBR_RLT_TC,과업심의결과구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,TASK_DBR_DT,과업심의일자,,Y,,VARCHAR2,8,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,TASK_DBR_TOD,과업심의회차,,Y,,VARCHAR2,2,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,TASK_DBR_OMT_YN,과업심의생략여부,,Y,,VARCHAR2,1,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,TASK_DBR_OMT_RSN,과업심의생략사유,,Y,,VARCHAR2,200,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,OPNN_CONE,의견내용,,Y,,VARCHAR2,6000,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,APV_TRDN_RSN_CONE,승인반려사유내용,,Y,,VARCHAR2,300,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BDELIM,프로젝트관리_과업심의기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,DOC_MNG_NO,문서관리번호,,Y,,VARCHAR2,20,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,DOC_VRS_SNO,문서버전일련번호,,Y,,NUMBER,9,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,LST_YN,최종여부,,Y,,VARCHAR2,1,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,BG_PRN_TC,예산성격구분코드,,Y,,VARCHAR2,3,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,CNCD_RFR_NO,관련참조번호,,Y,,VARCHAR2,30,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,IT_PTL_STS_TC,IT포탈상태구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,REQ_CONE,요청내용,,Y,,VARCHAR2,300,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,TASK_DBR_TC,과업심의구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,TASK_DBR_RLT_TC,과업심의결과구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,TASK_DBR_DT,과업심의일자,,Y,,VARCHAR2,8,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,TASK_DBR_TOD,과업심의회차,,Y,,VARCHAR2,2,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,TASK_DBR_OMT_YN,과업심의생략여부,,Y,,VARCHAR2,1,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,TASK_DBR_OMT_RSN,과업심의생략사유,,Y,,VARCHAR2,200,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,OPNN_CONE,의견내용,,Y,,VARCHAR2,6000,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,APV_TRDN_RSN_CONE,승인반려사유내용,,Y,,VARCHAR2,300,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BDELIL,프로젝트관리_과업심의기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BESTIM,프로젝트관리_소요예산기본,RQM_BG_REQ_DOC_NO,소요예산요청문서번호,Y,N,,VARCHAR2,30,
-TPRMPP_BESTIM,프로젝트관리_소요예산기본,DOC_VRS_SNO,문서버전일련번호,Y,N,,NUMBER,9,
-TPRMPP_BESTIM,프로젝트관리_소요예산기본,LST_YN,최종여부,,N,,VARCHAR2,1,
-TPRMPP_BESTIM,프로젝트관리_소요예산기본,BG_PRN_TC,예산성격구분코드,,N,,VARCHAR2,3,
-TPRMPP_BESTIM,프로젝트관리_소요예산기본,CNCD_RFR_NO,관련참조번호,,N,,VARCHAR2,30,
-TPRMPP_BESTIM,프로젝트관리_소요예산기본,IT_PTL_STS_TC,IT포탈상태구분코드,,N,,VARCHAR2,2,
-TPRMPP_BESTIM,프로젝트관리_소요예산기본,REQ_CONE,요청내용,,Y,,VARCHAR2,300,
-TPRMPP_BESTIM,프로젝트관리_소요예산기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BESTIM,프로젝트관리_소요예산기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BESTIM,프로젝트관리_소요예산기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BESTIM,프로젝트관리_소요예산기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BESTIM,프로젝트관리_소요예산기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BESTIM,프로젝트관리_소요예산기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BESTIM,프로젝트관리_소요예산기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BESTIL,프로젝트관리_소요예산기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BESTIL,프로젝트관리_소요예산기본변경로그,RQM_BG_REQ_DOC_NO,소요예산요청문서번호,,Y,,VARCHAR2,30,
-TPRMPP_BESTIL,프로젝트관리_소요예산기본변경로그,DOC_VRS_SNO,문서버전일련번호,,Y,,NUMBER,9,
-TPRMPP_BESTIL,프로젝트관리_소요예산기본변경로그,LST_YN,최종여부,,Y,,VARCHAR2,1,
-TPRMPP_BESTIL,프로젝트관리_소요예산기본변경로그,BG_PRN_TC,예산성격구분코드,,Y,,VARCHAR2,3,
-TPRMPP_BESTIL,프로젝트관리_소요예산기본변경로그,CNCD_RFR_NO,관련참조번호,,Y,,VARCHAR2,30,
-TPRMPP_BESTIL,프로젝트관리_소요예산기본변경로그,IT_PTL_STS_TC,IT포탈상태구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BESTIL,프로젝트관리_소요예산기본변경로그,REQ_CONE,요청내용,,Y,,VARCHAR2,300,
-TPRMPP_BESTIL,프로젝트관리_소요예산기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BESTIL,프로젝트관리_소요예산기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BESTIL,프로젝트관리_소요예산기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BESTIL,프로젝트관리_소요예산기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BESTIL,프로젝트관리_소요예산기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BESTIL,프로젝트관리_소요예산기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BESTIL,프로젝트관리_소요예산기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BESTIL,프로젝트관리_소요예산기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BESTIL,프로젝트관리_소요예산기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BESTIL,프로젝트관리_소요예산기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BESTTM,프로젝트관리_소요예산팀별검토기본,RQM_BG_REQ_DOC_NO,소요예산요청문서번호,Y,N,,VARCHAR2,30,
-TPRMPP_BESTTM,프로젝트관리_소요예산팀별검토기본,DOC_VRS_SNO,문서버전일련번호,Y,N,,NUMBER,9,
-TPRMPP_BESTTM,프로젝트관리_소요예산팀별검토기본,SVN_TEM_C,주관팀코드,,N,,VARCHAR2,5,
-TPRMPP_BESTTM,프로젝트관리_소요예산팀별검토기본,IOE_C,비목코드,,N,,VARCHAR2,7,
-TPRMPP_BESTTM,프로젝트관리_소요예산팀별검토기본,RQM_BG_AMT,소요예산금액,,Y,,NUMBER,18,
-TPRMPP_BESTTM,프로젝트관리_소요예산팀별검토기본,OPNN_CONE,의견내용,,Y,,VARCHAR2,6000,
-TPRMPP_BESTTM,프로젝트관리_소요예산팀별검토기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BESTTM,프로젝트관리_소요예산팀별검토기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BESTTM,프로젝트관리_소요예산팀별검토기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BESTTM,프로젝트관리_소요예산팀별검토기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BESTTM,프로젝트관리_소요예산팀별검토기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BESTTM,프로젝트관리_소요예산팀별검토기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BESTTM,프로젝트관리_소요예산팀별검토기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BESTTL,프로젝트관리_소요예산팀별검토기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BESTTL,프로젝트관리_소요예산팀별검토기본변경로그,RQM_BG_REQ_DOC_NO,소요예산요청문서번호,,Y,,VARCHAR2,30,
-TPRMPP_BESTTL,프로젝트관리_소요예산팀별검토기본변경로그,DOC_VRS_SNO,문서버전일련번호,,Y,,NUMBER,9,
-TPRMPP_BESTTL,프로젝트관리_소요예산팀별검토기본변경로그,SVN_TEM_C,주관팀코드,,N,,VARCHAR2,5,
-TPRMPP_BESTTL,프로젝트관리_소요예산팀별검토기본변경로그,IOE_C,비목코드,,N,,VARCHAR2,7,
-TPRMPP_BESTTL,프로젝트관리_소요예산팀별검토기본변경로그,RQM_BG_AMT,소요예산금액,,Y,,NUMBER,18,
-TPRMPP_BESTTL,프로젝트관리_소요예산팀별검토기본변경로그,OPNN_CONE,의견내용,,Y,,VARCHAR2,6000,
-TPRMPP_BESTTL,프로젝트관리_소요예산팀별검토기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BESTTL,프로젝트관리_소요예산팀별검토기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BESTTL,프로젝트관리_소요예산팀별검토기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BESTTL,프로젝트관리_소요예산팀별검토기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BESTTL,프로젝트관리_소요예산팀별검토기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BESTTL,프로젝트관리_소요예산팀별검토기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BESTTL,프로젝트관리_소요예산팀별검토기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BESTTL,프로젝트관리_소요예산팀별검토기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BESTTL,프로젝트관리_소요예산팀별검토기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BESTTL,프로젝트관리_소요예산팀별검토기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BPAYMM,프로젝트관리_대금지급기본,DOC_MNG_NO,문서관리번호,Y,N,,VARCHAR2,20,
-TPRMPP_BPAYMM,프로젝트관리_대금지급기본,DOC_VRS_SNO,문서버전일련번호,Y,N,,NUMBER,9,
-TPRMPP_BPAYMM,프로젝트관리_대금지급기본,LST_YN,최종여부,,N,,VARCHAR2,1,
-TPRMPP_BPAYMM,프로젝트관리_대금지급기본,BG_PRN_TC,예산성격구분코드,,N,,VARCHAR2,3,
-TPRMPP_BPAYMM,프로젝트관리_대금지급기본,CNCD_RFR_NO,관련참조번호,,N,,VARCHAR2,30,
-TPRMPP_BPAYMM,프로젝트관리_대금지급기본,IT_PTL_STS_TC,IT포탈상태구분코드,,N,,VARCHAR2,2,
-TPRMPP_BPAYMM,프로젝트관리_대금지급기본,REQ_CONE,요청내용,,Y,,VARCHAR2,300,
-TPRMPP_BPAYMM,프로젝트관리_대금지급기본,CTT_NM,계약명,,Y,,VARCHAR2,100,
-TPRMPP_BPAYMM,프로젝트관리_대금지급기본,CTT_AMT,계약금액,,Y,,NUMBER,18,3
-TPRMPP_BPAYMM,프로젝트관리_대금지급기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPAYMM,프로젝트관리_대금지급기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BPAYMM,프로젝트관리_대금지급기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BPAYMM,프로젝트관리_대금지급기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BPAYMM,프로젝트관리_대금지급기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BPAYMM,프로젝트관리_대금지급기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPAYMM,프로젝트관리_대금지급기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,DOC_MNG_NO,문서관리번호,,Y,,VARCHAR2,20,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,DOC_VRS_SNO,문서버전일련번호,,Y,,NUMBER,9,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,LST_YN,최종여부,,Y,,VARCHAR2,1,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,BG_PRN_TC,예산성격구분코드,,Y,,VARCHAR2,3,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,CNCD_RFR_NO,관련참조번호,,Y,,VARCHAR2,30,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,IT_PTL_STS_TC,IT포탈상태구분코드,,Y,,VARCHAR2,2,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,REQ_CONE,요청내용,,Y,,VARCHAR2,300,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,CTT_NM,계약명,,Y,,VARCHAR2,100,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,CTT_AMT,계약금액,,Y,,NUMBER,18,3
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPAYML,프로젝트관리_대금지급기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BPAYTM,프로젝트관리_대금지급처리기본,DOC_MNG_NO,문서관리번호,Y,N,,VARCHAR2,20,
-TPRMPP_BPAYTM,프로젝트관리_대금지급처리기본,DOC_VRS_SNO,문서버전일련번호,Y,N,,NUMBER,9,
-TPRMPP_BPAYTM,프로젝트관리_대금지급처리기본,DFR_TOD,지급회차,Y,N,,NUMBER,5,
-TPRMPP_BPAYTM,프로젝트관리_대금지급처리기본,DFR_AMT,지급금액,,Y,,NUMBER,18,3
-TPRMPP_BPAYTM,프로젝트관리_대금지급처리기본,DFR_MPL_DT,지급예정일자,,Y,,VARCHAR2,8,
-TPRMPP_BPAYTM,프로젝트관리_대금지급처리기본,DFR_DT,지급일자,,Y,,VARCHAR2,8,
-TPRMPP_BPAYTM,프로젝트관리_대금지급처리기본,OPNN_CONE,의견내용,,Y,,VARCHAR2,6000,
-TPRMPP_BPAYTM,프로젝트관리_대금지급처리기본,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPAYTM,프로젝트관리_대금지급처리기본,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BPAYTM,프로젝트관리_대금지급처리기본,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BPAYTM,프로젝트관리_대금지급처리기본,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BPAYTM,프로젝트관리_대금지급처리기본,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BPAYTM,프로젝트관리_대금지급처리기본,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPAYTM,프로젝트관리_대금지급처리기본,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
-TPRMPP_BPAYTL,프로젝트관리_대금지급처리기본변경로그,LOG_HIS_TGR_SNO,로그이력전문일련번호,Y,N,,NUMBER,18,
-TPRMPP_BPAYTL,프로젝트관리_대금지급처리기본변경로그,DOC_MNG_NO,문서관리번호,,Y,,VARCHAR2,20,
-TPRMPP_BPAYTL,프로젝트관리_대금지급처리기본변경로그,DOC_VRS_SNO,문서버전일련번호,,Y,,NUMBER,9,
-TPRMPP_BPAYTL,프로젝트관리_대금지급처리기본변경로그,DFR_TOD,지급회차,,Y,,NUMBER,5,
-TPRMPP_BPAYTL,프로젝트관리_대금지급처리기본변경로그,DFR_AMT,지급금액,,Y,,NUMBER,18,3
-TPRMPP_BPAYTL,프로젝트관리_대금지급처리기본변경로그,DFR_MPL_DT,지급예정일자,,Y,,VARCHAR2,8,
-TPRMPP_BPAYTL,프로젝트관리_대금지급처리기본변경로그,DFR_DT,지급일자,,Y,,VARCHAR2,8,
-TPRMPP_BPAYTL,프로젝트관리_대금지급처리기본변경로그,OPNN_CONE,의견내용,,Y,,VARCHAR2,6000,
-TPRMPP_BPAYTL,프로젝트관리_대금지급처리기본변경로그,CHG_DTT_YN,변경구분여부,,N,,VARCHAR2,1,
-TPRMPP_BPAYTL,프로젝트관리_대금지급처리기본변경로그,CHG_DTM,변경일시,,N,,DATE,,
-TPRMPP_BPAYTL,프로젝트관리_대금지급처리기본변경로그,CHG_USID,변경사용자ID,,Y,,VARCHAR2,14,
-TPRMPP_BPAYTL,프로젝트관리_대금지급처리기본변경로그,FST_ENR_USID,최초등록사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPAYTL,프로젝트관리_대금지급처리기본변경로그,FST_ENR_DTM,최초등록일시,,N,sysdate,DATE,,
-TPRMPP_BPAYTL,프로젝트관리_대금지급처리기본변경로그,DEL_YN,삭제여부,,N,'N',VARCHAR2,1,
-TPRMPP_BPAYTL,프로젝트관리_대금지급처리기본변경로그,GUID,GUID,,N,'00000000000000000000000000000000000000',VARCHAR2,38,
-TPRMPP_BPAYTL,프로젝트관리_대금지급처리기본변경로그,GUID_PRG_SNO,GUID진행일련번호,,N,0,NUMBER,4,
-TPRMPP_BPAYTL,프로젝트관리_대금지급처리기본변경로그,LST_CHG_USID,최종변경사용자ID,,N,'00000000000000',VARCHAR2,14,
-TPRMPP_BPAYTL,프로젝트관리_대금지급처리기본변경로그,LST_CHG_DTM,최종변경일시,,N,sysdate,DATE,,
+테이블명	테이블한글명	컬럼명	컬럼한글명	"PK
+여부"	"NULL
+여부"	Default Value	타입	길이	"소수
+점"
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	ENO	사원번호	Y	N		VARCHAR2	32	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	USR_ECY_PWD	사용자암호화비밀번호		Y		VARCHAR2	64	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	USR_NM	사용자명		Y		VARCHAR2	100	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	USR_WREN_NM	사용자영문명		Y		VARCHAR2	100	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	BBR_C	부점코드		Y		VARCHAR2	3	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	DTC_BBR_C	파견부점코드		Y		VARCHAR2	3	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	TEM_C	팀코드		Y		VARCHAR2	5	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	TEM_NM	팀명		Y		VARCHAR2	100	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	PT_C	직위코드		Y		VARCHAR2	5	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	PT_C_NM	직위코드명		Y		VARCHAR2	200	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	CADR_TPN	연락처전화번호		Y		VARCHAR2	20	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	CPN_TPN	회사전화번호		Y		VARCHAR2	20	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	INLE_NO	내선번호		Y		VARCHAR2	20	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	ETR_MIL_ADDR_NM	전자우편주소명		Y		VARCHAR2	200	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	DTS_DTL_CONE	직무상세내용		Y		VARCHAR2	2000	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	USE_YN	사용여부		Y		VARCHAR2	1	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CUSERI	프로젝트관리_공통사용자연계	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	LGN_LOG_SNO	로그인로그일련번호	Y	N		NUMBER	22	
+TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	API_TOK_CONE	API토큰내용		N		VARCHAR2	2000	
+TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	ENO	사원번호		N		VARCHAR2	32	
+TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	END_DTM	종료일시		N		DATE		
+TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CROLEI	프로젝트관리_공통역할연계	ATH_ID	권한ID	Y	N		VARCHAR2	32	
+TPRMPP_CROLEI	프로젝트관리_공통역할연계	ENO	사원번호	Y	N		VARCHAR2	32	
+TPRMPP_CROLEI	프로젝트관리_공통역할연계	USE_YN	사용여부		Y		VARCHAR2	1	
+TPRMPP_CROLEI	프로젝트관리_공통역할연계	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CROLEI	프로젝트관리_공통역할연계	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CROLEI	프로젝트관리_공통역할연계	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CROLEI	프로젝트관리_공통역할연계	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CROLEI	프로젝트관리_공통역할연계	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CROLEI	프로젝트관리_공통역할연계	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CROLEI	프로젝트관리_공통역할연계	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CORGNI	프로젝트관리_공통조직연계	PRLM_OGZ_C_CONE	인사조직코드내용	Y	N		VARCHAR2	100	
+TPRMPP_CORGNI	프로젝트관리_공통조직연계	BBR_NM	부점명		Y		VARCHAR2	100	
+TPRMPP_CORGNI	프로젝트관리_공통조직연계	BBR_WREN_NM	부점영문명		Y		VARCHAR2	100	
+TPRMPP_CORGNI	프로젝트관리_공통조직연계	ITM_SQN_SNO	항목순서일련번호		Y		NUMBER	9	
+TPRMPP_CORGNI	프로젝트관리_공통조직연계	PRLM_HRK_OGZ_C_CONE	인사상위조직코드내용		Y		VARCHAR2	100	
+TPRMPP_CORGNI	프로젝트관리_공통조직연계	USE_YN	사용여부		Y		VARCHAR2	1	
+TPRMPP_CORGNI	프로젝트관리_공통조직연계	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CORGNI	프로젝트관리_공통조직연계	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CORGNI	프로젝트관리_공통조직연계	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CORGNI	프로젝트관리_공통조직연계	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CORGNI	프로젝트관리_공통조직연계	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CORGNI	프로젝트관리_공통조직연계	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CORGNI	프로젝트관리_공통조직연계	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CLOGNH	프로젝트관리_공통로그인이력	LGN_LOG_SNO	로그인로그일련번호	Y	N		NUMBER	22	
+TPRMPP_CLOGNH	프로젝트관리_공통로그인이력	ENO	사원번호		N		VARCHAR2	32	
+TPRMPP_CLOGNH	프로젝트관리_공통로그인이력	LGN_ERR_RSN	로그인오류사유		Y		VARCHAR2	600	
+TPRMPP_CLOGNH	프로젝트관리_공통로그인이력	IP_ADDR	IP주소		Y		VARCHAR2	20	
+TPRMPP_CLOGNH	프로젝트관리_공통로그인이력	LGN_DTM	로그인일시		N		DATE		
+TPRMPP_CLOGNH	프로젝트관리_공통로그인이력	LGN_TC	로그인구분코드		N		VARCHAR2	1	
+TPRMPP_CLOGNH	프로젝트관리_공통로그인이력	AGT_VRS_CONE	에이전트버전내용		Y		VARCHAR2	100	
+TPRMPP_CLOGNH	프로젝트관리_공통로그인이력	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CLOGNH	프로젝트관리_공통로그인이력	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CLOGNH	프로젝트관리_공통로그인이력	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CLOGNH	프로젝트관리_공통로그인이력	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CLOGNH	프로젝트관리_공통로그인이력	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CLOGNH	프로젝트관리_공통로그인이력	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CLOGNH	프로젝트관리_공통로그인이력	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	INFM_MSG_NO	알림메시지번호	Y	N		VARCHAR2	30	
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	INFM_SVC_TC	알림서비스구분코드		N		VARCHAR2	2	
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	TTL	제목		Y		VARCHAR2	100	
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	INFM_MSG_CONE	알림메시지내용		Y		VARCHAR2	4000	
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	INFM_RCD_URL	알림추천URL		Y		VARCHAR2	300	
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	RMS_ENO	수신사원번호		N		VARCHAR2	32	
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	INQ_YN	조회여부		Y		VARCHAR2	1	
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	INQ_DTM	조회일시		Y		DATE		
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	SD_TC	발송구분코드		Y		VARCHAR2	2	
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	SD_DTM	발송일시		Y		DATE		
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	SD_DOC_CONE	발송문서내용		Y		VARCHAR2	4000	
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	FL_MPN_ID	파일매핑ID	Y	N		VARCHAR2	36	
+TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	FL_NM	파일명		Y		VARCHAR2	100	
+TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	FL_PYS_NM	파일물리명		Y		VARCHAR2	120	
+TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	FL_KPN_PTH	파일저장경로		Y		VARCHAR2	255	
+TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	FL_TP_CONE	파일유형내용		Y		VARCHAR2	100	
+TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	PK_COL_NM	주식별자컬럼명		Y		VARCHAR2	4000	
+TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	PK_CONE	주식별자내용		Y		VARCHAR2	4000	
+TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CDECIM	프로젝트관리_공통신청서결재자기본	APF_DCM_NO	신청서식별번호	Y	N		VARCHAR2	64	
+TPRMPP_CDECIM	프로젝트관리_공통신청서결재자기본	DCR_SQN_SNO	결재자순서일련번호	Y	N		NUMBER	9	
+TPRMPP_CDECIM	프로젝트관리_공통신청서결재자기본	DCR_ENO	결재자사원번호		Y		VARCHAR2	32	
+TPRMPP_CDECIM	프로젝트관리_공통신청서결재자기본	DCR_OPNN_CONE	결재자의견내용		Y		VARCHAR2	2000	
+TPRMPP_CDECIM	프로젝트관리_공통신청서결재자기본	DCD_TP_C	결재유형코드		Y		VARCHAR2	2	
+TPRMPP_CDECIM	프로젝트관리_공통신청서결재자기본	DCD_STS_C	결재상태코드		Y		VARCHAR2	1	
+TPRMPP_CDECIM	프로젝트관리_공통신청서결재자기본	DCD_DTM	결재일시		Y		DATE		
+TPRMPP_CDECIM	프로젝트관리_공통신청서결재자기본	LST_DCD_YN	최종결재여부		Y		VARCHAR2	1	
+TPRMPP_CDECIM	프로젝트관리_공통신청서결재자기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CDECIM	프로젝트관리_공통신청서결재자기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CDECIM	프로젝트관리_공통신청서결재자기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CDECIM	프로젝트관리_공통신청서결재자기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CDECIM	프로젝트관리_공통신청서결재자기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CDECIM	프로젝트관리_공통신청서결재자기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CDECIM	프로젝트관리_공통신청서결재자기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CAPPLM	프로젝트관리_공통신청서기본	APF_DCM_NO	신청서식별번호	Y	N		VARCHAR2	64	
+TPRMPP_CAPPLM	프로젝트관리_공통신청서기본	APF_PRG_STS_C	신청서진행상태코드		N		VARCHAR2	2	
+TPRMPP_CAPPLM	프로젝트관리_공통신청서기본	DCD_REQ_TTL	결재요청제목		Y		VARCHAR2	255	
+TPRMPP_CAPPLM	프로젝트관리_공통신청서기본	DCD_REQ_INF	결재요청정보		Y		CLOB		
+TPRMPP_CAPPLM	프로젝트관리_공통신청서기본	DCD_REQ_DTM	결재요청일시		Y		DATE		
+TPRMPP_CAPPLM	프로젝트관리_공통신청서기본	DCD_REQ_BBR_C	결재요청부점코드		Y		VARCHAR2	3	
+TPRMPP_CAPPLM	프로젝트관리_공통신청서기본	DCD_REQ_USID	결재요청사용자ID		Y		VARCHAR2	14	
+TPRMPP_CAPPLM	프로젝트관리_공통신청서기본	RGPR_DCD_REQ_CONE	등록자결재요청내용		Y		VARCHAR2	300	
+TPRMPP_CAPPLM	프로젝트관리_공통신청서기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CAPPLM	프로젝트관리_공통신청서기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CAPPLM	프로젝트관리_공통신청서기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CAPPLM	프로젝트관리_공통신청서기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CAPPLM	프로젝트관리_공통신청서기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CAPPLM	프로젝트관리_공통신청서기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CAPPLM	프로젝트관리_공통신청서기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CAPPLA	프로젝트관리_공통신청서관계	APF_DCM_NO	신청서식별번호	Y	N		VARCHAR2	64	
+TPRMPP_CAPPLA	프로젝트관리_공통신청서관계	APF_SNO	신청서일련번호	Y	N		NUMBER	9	
+TPRMPP_CAPPLA	프로젝트관리_공통신청서관계	FNT_TB_NM	원천테이블명		Y		VARCHAR2	120	
+TPRMPP_CAPPLA	프로젝트관리_공통신청서관계	FNT_TB_CRY_SNO	원천테이블적재일련번호		Y		NUMBER	10	
+TPRMPP_CAPPLA	프로젝트관리_공통신청서관계	PK_COL_NM	주식별자컬럼명		Y		VARCHAR2	4000	
+TPRMPP_CAPPLA	프로젝트관리_공통신청서관계	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CAPPLA	프로젝트관리_공통신청서관계	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CAPPLA	프로젝트관리_공통신청서관계	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CAPPLA	프로젝트관리_공통신청서관계	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CAPPLA	프로젝트관리_공통신청서관계	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CAPPLA	프로젝트관리_공통신청서관계	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CAPPLA	프로젝트관리_공통신청서관계	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	APF_DCM_NO	신청서식별번호		N		VARCHAR2	64	
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	APF_PRG_STS_C	신청서진행상태코드		N		VARCHAR2	2	
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	DCD_REQ_TTL	결재요청제목		Y		VARCHAR2	255	
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	DCD_REQ_INF	결재요청정보		Y		CLOB		
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	DCD_REQ_DTM	결재요청일시		Y		DATE		
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	DCD_REQ_BBR_C	결재요청부점코드		Y		VARCHAR2	3	
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	DCD_REQ_USID	결재요청사용자ID		Y		VARCHAR2	14	
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	RGPR_DCD_REQ_CONE	등록자결재요청내용		Y		VARCHAR2	300	
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CAPPLL	프로젝트관리_공통신청서기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	CO_C_ID_NM	공통코드ID명	Y	N		VARCHAR2	100	
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	CDVA_ID	코드값ID	Y	N		VARCHAR2	40	
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	STT_DT	시작일자	Y	N		VARCHAR2	8	
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	END_DT	종료일자		Y		VARCHAR2	8	
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	CO_CDVA_NM	공통코드값명		Y		VARCHAR2	500	
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	CO_C_NM	공통코드명		Y		VARCHAR2	100	
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	CDVA_NM	코드값명		Y		VARCHAR2	200	
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	C_SQN_SNO	코드순서일련번호		Y		NUMBER	9	
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	CO_C_INTN_NM	공통코드인스턴스명		Y		VARCHAR2	200	
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	CO_C_INTN_CONE	공통코드인스턴스내용		Y		VARCHAR2	500	
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	CO_CDVA_ABV_NM	공통코드값약어명		Y		VARCHAR2	100	
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	CO_CDVA_SPS	공통코드값적요		Y		VARCHAR2	2000	
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	HRK_CDVA_ID	상위코드값ID		Y		VARCHAR2	40	
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CCODEM	프로젝트관리_공통코드기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	CO_C_ID_NM	공통코드ID명		N		VARCHAR2	100	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	CDVA_ID	코드값ID		N		VARCHAR2	40	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	STT_DT	시작일자		N		VARCHAR2	8	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	END_DT	종료일자		Y		VARCHAR2	8	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	CO_CDVA_NM	공통코드값명		Y		VARCHAR2	500	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	CO_C_NM	공통코드명		Y		VARCHAR2	100	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	CDVA_NM	코드값명		Y		VARCHAR2	200	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	C_SQN_SNO	코드순서일련번호		Y		NUMBER	9	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	CO_C_INTN_NM	공통코드인스턴스명		Y		VARCHAR2	200	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	CO_C_INTN_CONE	공통코드인스턴스내용		Y		VARCHAR2	500	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	CO_CDVA_ABV_NM	공통코드값약어명		Y		VARCHAR2	100	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	CO_CDVA_SPS	공통코드값적요		Y		VARCHAR2	2000	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	HRK_CDVA_ID	상위코드값ID		Y		VARCHAR2	40	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	CHG_DTT_YN	변경구분여부		Y		VARCHAR2	1	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CCODEL	프로젝트관리_공통코드기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CMENUM	프로젝트관리_공통메뉴기본	MNU_ID	메뉴ID	Y	N		VARCHAR2	10	
+TPRMPP_CMENUM	프로젝트관리_공통메뉴기본	HRK_MNU_ID	상위메뉴ID		Y		VARCHAR2	10	
+TPRMPP_CMENUM	프로젝트관리_공통메뉴기본	SYS_HRK_MNU_ID	시스템상위메뉴ID		Y		VARCHAR2	10	
+TPRMPP_CMENUM	프로젝트관리_공통메뉴기본	MNU_NM	메뉴명		N		VARCHAR2	100	
+TPRMPP_CMENUM	프로젝트관리_공통메뉴기본	MNU_TP_C	메뉴유형코드		N		VARCHAR2	3	
+TPRMPP_CMENUM	프로젝트관리_공통메뉴기본	SRE_PTH	화면경로		Y		VARCHAR2	300	
+TPRMPP_CMENUM	프로젝트관리_공통메뉴기본	MNU_SOT_SQN_SNO	메뉴정렬순서일련번호		N		NUMBER	9	
+TPRMPP_CMENUM	프로젝트관리_공통메뉴기본	HID_YN	숨김여부		N		VARCHAR2	1	
+TPRMPP_CMENUM	프로젝트관리_공통메뉴기본	MNU_DEP	메뉴깊이		N		NUMBER	3	
+TPRMPP_CMENUM	프로젝트관리_공통메뉴기본	WHL_MNU_PTH	전체메뉴경로		N		VARCHAR2	500	
+TPRMPP_CMENUM	프로젝트관리_공통메뉴기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CMENUM	프로젝트관리_공통메뉴기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CMENUM	프로젝트관리_공통메뉴기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CMENUM	프로젝트관리_공통메뉴기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CMENUM	프로젝트관리_공통메뉴기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CMENUM	프로젝트관리_공통메뉴기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CMENUM	프로젝트관리_공통메뉴기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CMENUD	프로젝트관리_공통메뉴상세	SRE_PTH	화면경로	Y	N		VARCHAR2	300	
+TPRMPP_CMENUD	프로젝트관리_공통메뉴상세	SRE_MNU_NM	화면메뉴명		N		VARCHAR2	100	
+TPRMPP_CMENUD	프로젝트관리_공통메뉴상세	SYS_HRK_MNU_ID	시스템상위메뉴ID		Y		VARCHAR2	10	
+TPRMPP_CMENUD	프로젝트관리_공통메뉴상세	USE_YN	사용여부		N		VARCHAR2	1	
+TPRMPP_CMENUD	프로젝트관리_공통메뉴상세	RMK	비고		Y		VARCHAR2	300	
+TPRMPP_CMENUD	프로젝트관리_공통메뉴상세	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CMENUD	프로젝트관리_공통메뉴상세	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CMENUD	프로젝트관리_공통메뉴상세	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CMENUD	프로젝트관리_공통메뉴상세	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CMENUD	프로젝트관리_공통메뉴상세	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CMENUD	프로젝트관리_공통메뉴상세	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CMENUD	프로젝트관리_공통메뉴상세	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CMENUA	프로젝트관리_공통메뉴관계	MNU_ID	메뉴ID	Y	N		VARCHAR2	10	
+TPRMPP_CMENUA	프로젝트관리_공통메뉴관계	ATH_ID	권한ID	Y	N		VARCHAR2	32	
+TPRMPP_CMENUA	프로젝트관리_공통메뉴관계	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CMENUA	프로젝트관리_공통메뉴관계	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CMENUA	프로젝트관리_공통메뉴관계	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CMENUA	프로젝트관리_공통메뉴관계	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CMENUA	프로젝트관리_공통메뉴관계	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CMENUA	프로젝트관리_공통메뉴관계	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CMENUA	프로젝트관리_공통메뉴관계	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	BG_NO	예산번호	Y	N		VARCHAR2	15	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	BG_SNO	예산일련번호	Y	N		NUMBER	9	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	ABUS_TC	사업구분코드		Y		VARCHAR2	2	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	BG_UNT_ABUS_C	예산단위사업코드		Y		VARCHAR2	3	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	BSE_YY	기준연도		Y		VARCHAR2	4	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	TMN_YN	단말여부		Y		VARCHAR2	1	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	CGPR_ID	담당자ID		Y		VARCHAR2	14	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	CNCD_RFR_NO	관련참조번호		Y		VARCHAR2	30	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	CTT_NM	계약명		Y		VARCHAR2	100	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	CTT_OPP_NM	계약상대처명		Y		VARCHAR2	100	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	CUR_C	통화코드		Y		VARCHAR2	3	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	DFR_CLE_C	지급주기코드		Y		VARCHAR2	1	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	FST_DFR_DT	최초지급일자		Y		VARCHAR2	8	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	IND_RSN	증감사유		Y		VARCHAR2	200	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	IOE_C	비목코드		Y		VARCHAR2	7	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	LST_YN	최종여부		Y		VARCHAR2	1	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	SECT_SYS_UTZ_YN	보안시스템운용여부		Y		VARCHAR2	1	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	SVN_DPM_C	주관부서코드		Y		VARCHAR2	20	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	SVN_TEM_C	주관팀코드		Y		VARCHAR2	5	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	AMT	금액		Y		NUMBER	18	3
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	FC_AMT	외화금액		Y		NUMBER	18	3
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	XCR	환율		Y		NUMBER	9	4
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	XCR_BSE_DT	환율기준일자		Y		VARCHAR2	8	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	MNU_ID	메뉴ID		N		VARCHAR2	10	
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	HRK_MNU_ID	상위메뉴ID		Y		VARCHAR2	10	
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	SYS_HRK_MNU_ID	시스템상위메뉴ID		Y		VARCHAR2	10	
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	MNU_NM	메뉴명		N		VARCHAR2	100	
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	MNU_TP_C	메뉴유형코드		N		VARCHAR2	3	
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	SRE_PTH	화면경로		Y		VARCHAR2	300	
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	MNU_SOT_SQN_SNO	메뉴정렬순서일련번호		N		NUMBER	9	
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	HID_YN	숨김여부		N		VARCHAR2	1	
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	MNU_DEP	메뉴깊이		N		NUMBER	3	
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	WHL_MNU_PTH	전체메뉴경로		N		VARCHAR2	500	
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CMENUL	프로젝트관리_공통메뉴기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CBLBMM	프로젝트관리_공통게시판기본	BLB_ID	게시판ID	Y	N		VARCHAR2	10	
+TPRMPP_CBLBMM	프로젝트관리_공통게시판기본	APG_FL_USE_YN	첨부파일사용여부		Y		VARCHAR2	1	
+TPRMPP_CBLBMM	프로젝트관리_공통게시판기본	BLB_NM	게시판명		Y		VARCHAR2	300	
+TPRMPP_CBLBMM	프로젝트관리_공통게시판기본	BLB_TC	게시판구분코드		Y		VARCHAR2	3	
+TPRMPP_CBLBMM	프로젝트관리_공통게시판기본	CMMT_USE_YN	댓글사용여부		Y		VARCHAR2	1	
+TPRMPP_CBLBMM	프로젝트관리_공통게시판기본	HED_TAG_USE_YN	머리말태그사용여부		Y		VARCHAR2	1	
+TPRMPP_CBLBMM	프로젝트관리_공통게시판기본	REP_FNC_USE_YN	답변기능사용여부		Y		VARCHAR2	1	
+TPRMPP_CBLBMM	프로젝트관리_공통게시판기본	RMK	비고		Y		VARCHAR2	300	
+TPRMPP_CBLBMM	프로젝트관리_공통게시판기본	SRE_SQN_SNO	화면순서일련번호		Y		NUMBER	9	
+TPRMPP_CBLBMM	프로젝트관리_공통게시판기본	USE_YN	사용여부		Y		VARCHAR2	1	
+TPRMPP_CBLBMM	프로젝트관리_공통게시판기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CBLBMM	프로젝트관리_공통게시판기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CBLBMM	프로젝트관리_공통게시판기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CBLBMM	프로젝트관리_공통게시판기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CBLBMM	프로젝트관리_공통게시판기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CBLBMM	프로젝트관리_공통게시판기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CBLBMM	프로젝트관리_공통게시판기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	NAC_NO	게시물번호	Y	N		VARCHAR2	16	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	BLB_ID	게시판ID		N		VARCHAR2	10	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	ANC_YN	공지여부		N		VARCHAR2	1	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	APG_FL_NBR	첨부파일수		N		NUMBER	10	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	BBR_C	부점코드		Y		VARCHAR2	3	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	FL_APG_YN	파일첨부여부		N		VARCHAR2	1	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	GRP_SQN_SNO	그룹순서일련번호		N		NUMBER	9	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	HRK_NAC_NO	상위게시물번호		Y		VARCHAR2	16	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	NAC_CONE	게시물내용		Y		VARCHAR2	4000	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	NAC_UNQ_ID	게시물고유ID		Y		VARCHAR2	16	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	NAC_INQ_NBR	게시물조회수		N		NUMBER	10	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	NAC_LEV_MNG_SNO	게시물레벨관리일련번호		N		NUMBER	9	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	NAC_TTL	게시물제목		N		VARCHAR2	300	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	SRE_USE_YN	화면사용여부		N		VARCHAR2	1	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	STT_DTM	시작일시		Y		DATE		
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	END_DTM	종료일시		Y		DATE		
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CBLBCM	프로젝트관리_공통게시물기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CCMMTM	프로젝트관리_공통댓글기본	CMMT_SNO	댓글일련번호	Y	N		NUMBER	9	
+TPRMPP_CCMMTM	프로젝트관리_공통댓글기본	NAC_NO	게시물번호		N		VARCHAR2	16	
+TPRMPP_CCMMTM	프로젝트관리_공통댓글기본	CMMT_CONE	댓글내용		Y		VARCHAR2	1000	
+TPRMPP_CCMMTM	프로젝트관리_공통댓글기본	CMMT_DEP_NBR	댓글깊이수		N		NUMBER	4	
+TPRMPP_CCMMTM	프로젝트관리_공통댓글기본	CMMT_SQN_SNO	댓글순서일련번호		N		NUMBER	9	
+TPRMPP_CCMMTM	프로젝트관리_공통댓글기본	CMMT_TGT_SNO	댓글대상일련번호		Y		NUMBER	9	
+TPRMPP_CCMMTM	프로젝트관리_공통댓글기본	HRK_CMMT_SNO	상위댓글일련번호		Y		NUMBER	9	
+TPRMPP_CCMMTM	프로젝트관리_공통댓글기본	SRE_USE_YN	화면사용여부		N		VARCHAR2	1	
+TPRMPP_CCMMTM	프로젝트관리_공통댓글기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CCMMTM	프로젝트관리_공통댓글기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CCMMTM	프로젝트관리_공통댓글기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CCMMTM	프로젝트관리_공통댓글기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CCMMTM	프로젝트관리_공통댓글기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CCMMTM	프로젝트관리_공통댓글기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CCMMTM	프로젝트관리_공통댓글기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	BLB_ID	게시판ID		N		VARCHAR2	10	
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	APG_FL_USE_YN	첨부파일사용여부		Y		VARCHAR2	1	
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	BLB_NM	게시판명		Y		VARCHAR2	300	
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	BLB_TC	게시판구분코드		Y		VARCHAR2	3	
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	CMMT_USE_YN	댓글사용여부		Y		VARCHAR2	1	
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	HED_TAG_USE_YN	머리말태그사용여부		Y		VARCHAR2	1	
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	REP_FNC_USE_YN	답변기능사용여부		Y		VARCHAR2	1	
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	RMK	비고		Y		VARCHAR2	300	
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	SRE_SQN_SNO	화면순서일련번호		Y		NUMBER	9	
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	USE_YN	사용여부		Y		VARCHAR2	1	
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CBLBML	프로젝트관리_공통게시판기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	NAC_NO	게시물번호		N		VARCHAR2	16	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	BLB_ID	게시판ID		N		VARCHAR2	10	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	ANC_YN	공지여부		N		VARCHAR2	1	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	APG_FL_NBR	첨부파일수		N		NUMBER	10	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	BBR_C	부점코드		Y		VARCHAR2	3	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	FL_APG_YN	파일첨부여부		N		VARCHAR2	1	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	GRP_SQN_SNO	그룹순서일련번호		N		NUMBER	9	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	HRK_NAC_NO	상위게시물번호		Y		VARCHAR2	16	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	NAC_CONE	게시물내용		Y		VARCHAR2	4000	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	NAC_UNQ_ID	게시물고유ID		Y		VARCHAR2	16	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	NAC_INQ_NBR	게시물조회수		N		NUMBER	10	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	NAC_LEV_MNG_SNO	게시물레벨관리일련번호		N		NUMBER	9	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	NAC_TTL	게시물제목		N		VARCHAR2	300	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	SRE_USE_YN	화면사용여부		N		VARCHAR2	1	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	STT_DTM	시작일시		Y		DATE		
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	END_DTM	종료일시		Y		DATE		
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CBLBCL	프로젝트관리_공통게시물기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	CMMT_SNO	댓글일련번호		N		NUMBER	9	
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	NAC_NO	게시물번호		N		VARCHAR2	16	
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	CMMT_CONE	댓글내용		Y		VARCHAR2	1000	
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	CMMT_DEP_NBR	댓글깊이수		N		NUMBER	4	
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	CMMT_SQN_SNO	댓글순서일련번호		N		NUMBER	9	
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	CMMT_TGT_SNO	댓글대상일련번호		Y		NUMBER	9	
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	HRK_CMMT_SNO	상위댓글일련번호		Y		NUMBER	9	
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	SRE_USE_YN	화면사용여부		N		VARCHAR2	1	
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CCMMTL	프로젝트관리_공통댓글기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CAUTHI	프로젝트관리_공통자격등급연계	ATH_ID	권한ID	Y	N		VARCHAR2	32	
+TPRMPP_CAUTHI	프로젝트관리_공통자격등급연계	QLF_GR_MAT	자격등급사항		Y		VARCHAR2	2000	
+TPRMPP_CAUTHI	프로젝트관리_공통자격등급연계	QLF_GR_NM	자격등급명		Y		VARCHAR2	200	
+TPRMPP_CAUTHI	프로젝트관리_공통자격등급연계	USE_YN	사용여부		Y		VARCHAR2	1	
+TPRMPP_CAUTHI	프로젝트관리_공통자격등급연계	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CAUTHI	프로젝트관리_공통자격등급연계	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CAUTHI	프로젝트관리_공통자격등급연계	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CAUTHI	프로젝트관리_공통자격등급연계	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CAUTHI	프로젝트관리_공통자격등급연계	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CAUTHI	프로젝트관리_공통자격등급연계	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CAUTHI	프로젝트관리_공통자격등급연계	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BRDOCM	프로젝트관리_사전협의기본	DOC_MNG_NO	문서관리번호	Y	N		VARCHAR2	20	
+TPRMPP_BRDOCM	프로젝트관리_사전협의기본	DOC_VRS_SNO	문서버전일련번호	Y	N		NUMBER	9	
+TPRMPP_BRDOCM	프로젝트관리_사전협의기본	BZ_DTT_NM	업무구분명		Y		VARCHAR2	100	
+TPRMPP_BRDOCM	프로젝트관리_사전협의기본	REDT_CONE_INF	보고서내용정보		Y		CLOB		
+TPRMPP_BRDOCM	프로젝트관리_사전협의기본	REQ_DTT_NO	요청구분번호		Y		VARCHAR2	2	
+TPRMPP_BRDOCM	프로젝트관리_사전협의기본	REQ_TTL	요청제목		Y		VARCHAR2	500	
+TPRMPP_BRDOCM	프로젝트관리_사전협의기본	RVW_FSG_TLM_DT	리뷰완료기한일자		Y		VARCHAR2	8	
+TPRMPP_BRDOCM	프로젝트관리_사전협의기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BRDOCM	프로젝트관리_사전협의기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BRDOCM	프로젝트관리_사전협의기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BRDOCM	프로젝트관리_사전협의기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BRDOCM	프로젝트관리_사전협의기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BRDOCM	프로젝트관리_사전협의기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BRDOCM	프로젝트관리_사전협의기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BGDOCM	프로젝트관리_사업가이드기본	DOC_MNG_NO	문서관리번호	Y	N		VARCHAR2	20	
+TPRMPP_BGDOCM	프로젝트관리_사업가이드기본	DOC_TTL_CONE	문서제목내용		Y		VARCHAR2	300	
+TPRMPP_BGDOCM	프로젝트관리_사업가이드기본	NAC_TXT_INF	게시물본문정보		Y		CLOB		
+TPRMPP_BGDOCM	프로젝트관리_사업가이드기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BGDOCM	프로젝트관리_사업가이드기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BGDOCM	프로젝트관리_사업가이드기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BGDOCM	프로젝트관리_사업가이드기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BGDOCM	프로젝트관리_사업가이드기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BGDOCM	프로젝트관리_사업가이드기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BGDOCM	프로젝트관리_사업가이드기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	DOC_MNG_NO	문서관리번호		N		VARCHAR2	20	
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	DOC_VRS_SNO	문서버전일련번호		N		NUMBER	9	
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	BZ_DTT_NM	업무구분명		Y		VARCHAR2	100	
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	REDT_CONE_INF	보고서내용정보		Y		CLOB		
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	REQ_DTT_NO	요청구분번호		Y		VARCHAR2	2	
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	REQ_TTL	요청제목		Y		VARCHAR2	500	
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	RVW_FSG_TLM_DT	리뷰완료기한일자		Y		VARCHAR2	8	
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	DOC_MNG_NO	문서관리번호		N		VARCHAR2	20	
+TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	DOC_TTL_CONE	문서제목내용		Y		VARCHAR2	300	
+TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	NAC_TXT_INF	게시물본문정보		Y		CLOB		
+TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BBUGTM	프로젝트관리_전산예산기본	BG_NO	예산번호	Y	N		VARCHAR2	15	
+TPRMPP_BBUGTM	프로젝트관리_전산예산기본	SNO	일련번호	Y	N		NUMBER	9	
+TPRMPP_BBUGTM	프로젝트관리_전산예산기본	BSE_YY	기준연도		Y		VARCHAR2	4	
+TPRMPP_BBUGTM	프로젝트관리_전산예산기본	FNT_TB_NM	원천테이블명		Y		VARCHAR2	120	
+TPRMPP_BBUGTM	프로젝트관리_전산예산기본	PK_COL_NM	주식별자컬럼명		Y		VARCHAR2	4000	
+TPRMPP_BBUGTM	프로젝트관리_전산예산기본	FNT_TB_CRY_SNO	원천테이블적재일련번호		Y		NUMBER	10	
+TPRMPP_BBUGTM	프로젝트관리_전산예산기본	IOE_C	비목코드		Y		VARCHAR2	7	
+TPRMPP_BBUGTM	프로젝트관리_전산예산기본	ASG_RT	배정률		Y		NUMBER	8	5
+TPRMPP_BBUGTM	프로젝트관리_전산예산기본	BG_DUP_AMT	예산편성금액		Y		NUMBER	18	3
+TPRMPP_BBUGTM	프로젝트관리_전산예산기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BBUGTM	프로젝트관리_전산예산기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BBUGTM	프로젝트관리_전산예산기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BBUGTM	프로젝트관리_전산예산기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BBUGTM	프로젝트관리_전산예산기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BBUGTM	프로젝트관리_전산예산기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BBUGTM	프로젝트관리_전산예산기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	BG_NO	예산번호		N		VARCHAR2	15	
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	SNO	일련번호		N		NUMBER	9	
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	BSE_YY	기준연도		Y		VARCHAR2	4	
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	FNT_TB_NM	원천테이블명		Y		VARCHAR2	120	
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	PK_COL_NM	주식별자컬럼명		Y		VARCHAR2	4000	
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	FNT_TB_CRY_SNO	원천테이블적재일련번호		Y		NUMBER	10	
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	IOE_C	비목코드		Y		VARCHAR2	7	
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	ASG_RT	배정률		Y		NUMBER	8	5
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	BG_DUP_AMT	예산편성금액		Y		NUMBER	18	3
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BBUGTL	프로젝트관리_전산예산기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BRIVGM	프로젝트관리_사전협의검토의견기본	IPM_OPNN_SNO	개선의견일련번호	Y	N		NUMBER	9	
+TPRMPP_BRIVGM	프로젝트관리_사전협의검토의견기본	DOC_MNG_NO	문서관리번호		N		VARCHAR2	20	
+TPRMPP_BRIVGM	프로젝트관리_사전협의검토의견기본	DOC_VRS_SNO	문서버전일련번호		N		NUMBER	9	
+TPRMPP_BRIVGM	프로젝트관리_사전협의검토의견기본	FSG_YN	완료여부		N		VARCHAR2	1	
+TPRMPP_BRIVGM	프로젝트관리_사전협의검토의견기본	IVG_OPNN_CONE	검토의견내용		Y		VARCHAR2	2000	
+TPRMPP_BRIVGM	프로젝트관리_사전협의검토의견기본	RFR_CONE	참조내용		Y		VARCHAR2	4000	
+TPRMPP_BRIVGM	프로젝트관리_사전협의검토의견기본	RFR_ID	참조ID		Y		VARCHAR2	14	
+TPRMPP_BRIVGM	프로젝트관리_사전협의검토의견기본	RPL_OPNN_TC	회신의견구분코드		Y		VARCHAR2	2	
+TPRMPP_BRIVGM	프로젝트관리_사전협의검토의견기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BRIVGM	프로젝트관리_사전협의검토의견기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BRIVGM	프로젝트관리_사전협의검토의견기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BRIVGM	프로젝트관리_사전협의검토의견기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BRIVGM	프로젝트관리_사전협의검토의견기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BRIVGM	프로젝트관리_사전협의검토의견기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BRIVGM	프로젝트관리_사전협의검토의견기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	IPM_OPNN_SNO	개선의견일련번호		N		NUMBER	9	
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	DOC_MNG_NO	문서관리번호		N		VARCHAR2	20	
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	DOC_VRS_SNO	문서버전일련번호		N		NUMBER	9	
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	FSG_YN	완료여부		N		VARCHAR2	1	
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	IVG_OPNN_CONE	검토의견내용		Y		VARCHAR2	2000	
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	RFR_CONE	참조내용		Y		VARCHAR2	4000	
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	RFR_ID	참조ID		Y		VARCHAR2	14	
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	RPL_OPNN_TC	회신의견구분코드		Y		VARCHAR2	2	
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BRIVGL	프로젝트관리_사전협의검토의견기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	REQ_DOC_NO	요청문서번호	Y	N		VARCHAR2	30	
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	BSE_YY	기준연도		Y		VARCHAR2	4	
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	IT_PTL_PLN_TP_C	IT포탈계획유형코드		Y		VARCHAR2	2	
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	ADU_TOT_AMT	합계총금액		Y		NUMBER	18	3
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	TOT_CPIT_AMT	총자본금액		Y		NUMBER	18	3
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	TOT_XP_AMT	총비용금액		Y		NUMBER	18	3
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	REDT_CONE_INF	보고서내용정보		Y		CLOB		
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	PRJ_DVM_CONE	프로젝트개발내용		Y		VARCHAR2	300	
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	IT_BG_CONE	IT예산내용		Y		VARCHAR2	4000	
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	IT_PRJ_RMK	IT프로젝트비고		Y		VARCHAR2	600	
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	CPIT_BG_RMK	자본예산비고		Y		VARCHAR2	600	
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	MNGC_BG_RMK	관리비예산비고		Y		VARCHAR2	600	
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPLANM	프로젝트관리_정보기술부문계획기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	REQ_DOC_NO	요청문서번호		N		VARCHAR2	30	
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	BSE_YY	기준연도		Y		VARCHAR2	4	
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	IT_PTL_PLN_TP_C	IT포탈계획유형코드		Y		VARCHAR2	2	
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	ADU_TOT_AMT	합계총금액		Y		NUMBER	18	3
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	TOT_CPIT_AMT	총자본금액		Y		NUMBER	18	3
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	TOT_XP_AMT	총비용금액		Y		NUMBER	18	3
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	REDT_CONE_INF	보고서내용정보		Y		CLOB		
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	PRJ_DVM_CONE	프로젝트개발내용		Y		VARCHAR2	300	
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	IT_BG_CONE	IT예산내용		Y		VARCHAR2	4000	
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	IT_PRJ_RMK	IT프로젝트비고		Y		VARCHAR2	600	
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	CPIT_BG_RMK	자본예산비고		Y		VARCHAR2	600	
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	MNGC_BG_RMK	관리비예산비고		Y		VARCHAR2	600	
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPLANL	프로젝트관리_정보기술부문계획기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BPLANA	프로젝트관리_정보기술부문계획관계	ABUS_MNG_NO	사업관리번호	Y	N		VARCHAR2	30	
+TPRMPP_BPLANA	프로젝트관리_정보기술부문계획관계	REQ_DOC_NO	요청문서번호	Y	N		VARCHAR2	30	
+TPRMPP_BPLANA	프로젝트관리_정보기술부문계획관계	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPLANA	프로젝트관리_정보기술부문계획관계	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BPLANA	프로젝트관리_정보기술부문계획관계	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BPLANA	프로젝트관리_정보기술부문계획관계	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BPLANA	프로젝트관리_정보기술부문계획관계	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BPLANA	프로젝트관리_정보기술부문계획관계	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPLANA	프로젝트관리_정보기술부문계획관계	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_MNG_NO	사업관리번호	Y	N		VARCHAR2	30	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	SNO	일련번호	Y	N		NUMBER	9	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_NM	사업명		Y		VARCHAR2	100	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_CONE	사업내용		Y		VARCHAR2	1000	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_NCS_CONE	사업필요성내용		Y		VARCHAR2	300	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_TC	사업구분코드		Y		VARCHAR2	2	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	BSE_YY	기준연도		Y		VARCHAR2	4	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	BZ_DTT_NM	업무구분명		Y		VARCHAR2	100	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	CNCD_RFR_NO	관련참조번호		Y		VARCHAR2	30	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	CPN_SAF_CONE	회사현황내용		Y		VARCHAR2	1000	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	CST_TP_TC	고객유형구분코드		Y		VARCHAR2	3	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	DGOG_PPO_CONE	효과성목적내용		Y		VARCHAR2	4000	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	DPL_YN	중복여부		Y		VARCHAR2	1	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	STT_DTM	시작일시		Y		DATE		
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	END_DTM	종료일시		Y		DATE		
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	EXE_PTT_YN	실행가능성여부		Y		VARCHAR2	1	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	FLF_FSG_DT	이행완료일자		Y		VARCHAR2	8	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	HRF_PLN_CONE	향후계획내용		Y		VARCHAR2	300	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	LST_YN	최종여부		Y		VARCHAR2	1	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	MN_PRG_CONE	주요진행내용		Y		VARCHAR2	2000	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ODN_YN	경상여부		Y		VARCHAR2	1	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	PLM_DES	문제설명		Y		VARCHAR2	4000	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	PRLM_HRK_OGZ_C_CONE	인사상위조직코드내용		Y		VARCHAR2	100	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	SVN_DPM_C	주관부서코드		Y		VARCHAR2	20	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	TLR_USID	팀장사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	USID	사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	DVM_DPM_C	개발부서코드		Y		VARCHAR2	20	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	DVM_TEM_C	개발팀코드		Y		VARCHAR2	5	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	DVM_TLR_USID	개발팀장사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	DVM_USID	개발사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	BZ_TP_C	업무유형코드		Y		VARCHAR2	6	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	IT_PTL_EDRT_TC	IT포탈전결권구분코드		Y		VARCHAR2	2	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	IT_PTL_RPR_STS_TC	IT포탈보고상태구분코드		Y		VARCHAR2	2	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	IT_PTL_TCHN_TP_TC	IT포탈기술유형구분코드		Y		VARCHAR2	2	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	IT_PTL_STS_TC	IT포탈상태구분코드		Y		VARCHAR2	2	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_RNG_CONE	사업범위내용		Y		VARCHAR2	600	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	GCL_MNG_NO	품목관리번호	Y	N		VARCHAR2	16	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	SNO	일련번호	Y	N		NUMBER	9	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	ABUS_MNG_NO	사업관리번호		Y		VARCHAR2	30	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	FNT_TB_CRY_SNO	원천테이블적재일련번호		Y		NUMBER	10	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	BSE_YM	기준년월		Y		VARCHAR2	6	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	CNCD_FDTN_CONE	관련근거내용		Y		VARCHAR2	600	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	DFR_CLE_C	지급주기코드		Y		VARCHAR2	1	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	GCL_NM	품목명		Y		VARCHAR2	100	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	IOE_C	비목코드		Y		VARCHAR2	7	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	ITR_INFR_YN	통합인프라여부		Y		VARCHAR2	1	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	SECT_SYS_UTZ_YN	보안시스템운용여부		Y		VARCHAR2	1	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	QTY	수량		Y		NUMBER	10	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	AMT	금액		Y		NUMBER	18	3
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	MPL_AMT	예정금액		Y		NUMBER	18	3
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	FC_AMT	외화금액		Y		NUMBER	18	3
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	CUR_C	통화코드		Y		VARCHAR2	3	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	XCR	환율		Y		NUMBER	9	4
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	XCR_BSE_DT	환율기준일자		Y		VARCHAR2	8	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	LST_YN	최종여부		Y		VARCHAR2	1	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	TMN_MNG_NO	단말관리번호	Y	N		VARCHAR2	16	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	SNO	일련번호	Y	N		NUMBER	9	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	BG_NO	예산번호		Y		VARCHAR2	15	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	BG_SNO	예산일련번호		Y		NUMBER	9	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	CGPR_ID	담당자ID		Y		VARCHAR2	14	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	DFR_CLE_C	지급주기코드		Y		VARCHAR2	1	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	IND_RSN	증감사유		Y		VARCHAR2	200	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	NSF_USG_CONE	소요자금용도내용		Y		VARCHAR2	200	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	RMK	비고		Y		VARCHAR2	300	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	SPF_TMN_NM	특정단말명		Y		VARCHAR2	100	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	SVN_DPM_C	주관부서코드		Y		VARCHAR2	20	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	SVN_TEM_C	주관팀코드		Y		VARCHAR2	5	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	AMT	금액		Y		NUMBER	18	3
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	FC_AMT	외화금액		Y		NUMBER	18	3
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	CUR_C	통화코드		Y		VARCHAR2	3	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	XCR	환율		Y		NUMBER	9	4
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	XCR_BSE_DT	환율기준일자		Y		VARCHAR2	8	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	IT_PTL_TMN_SVC_TC	IT포탈단말서비스구분코드		Y		VARCHAR2	2	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	IT_PTL_TMN_KD_TC	IT포탈단말종류구분코드		Y		VARCHAR2	2	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	BG_NO	예산번호		N		VARCHAR2	15	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	BG_SNO	예산일련번호		N		NUMBER	9	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	ABUS_TC	사업구분코드		Y		VARCHAR2	2	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	BG_UNT_ABUS_C	예산단위사업코드		Y		VARCHAR2	3	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	BSE_YY	기준연도		Y		VARCHAR2	4	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	TMN_YN	단말여부		Y		VARCHAR2	1	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	CGPR_ID	담당자ID		Y		VARCHAR2	14	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	CNCD_RFR_NO	관련참조번호		Y		VARCHAR2	30	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	CTT_NM	계약명		Y		VARCHAR2	100	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	CTT_OPP_NM	계약상대처명		Y		VARCHAR2	100	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	CUR_C	통화코드		Y		VARCHAR2	3	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	DFR_CLE_C	지급주기코드		Y		VARCHAR2	1	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	FST_DFR_DT	최초지급일자		Y		VARCHAR2	8	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	IND_RSN	증감사유		Y		VARCHAR2	200	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	IOE_C	비목코드		Y		VARCHAR2	7	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	LST_YN	최종여부		Y		VARCHAR2	1	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	SECT_SYS_UTZ_YN	보안시스템운용여부		Y		VARCHAR2	1	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	SVN_DPM_C	주관부서코드		Y		VARCHAR2	20	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	SVN_TEM_C	주관팀코드		Y		VARCHAR2	5	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	AMT	금액		Y		NUMBER	18	3
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	FC_AMT	외화금액		Y		NUMBER	18	3
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	XCR	환율		Y		NUMBER	9	4
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	XCR_BSE_DT	환율기준일자		Y		VARCHAR2	8	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	TMN_MNG_NO	단말관리번호		N		VARCHAR2	16	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	SNO	일련번호		N		NUMBER	9	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	BG_NO	예산번호		Y		VARCHAR2	15	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	BG_SNO	예산일련번호		Y		NUMBER	9	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	CGPR_ID	담당자ID		Y		VARCHAR2	14	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	DFR_CLE_C	지급주기코드		Y		VARCHAR2	1	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	IND_RSN	증감사유		Y		VARCHAR2	200	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	NSF_USG_CONE	소요자금용도내용		Y		VARCHAR2	200	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	RMK	비고		Y		VARCHAR2	300	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	SPF_TMN_NM	특정단말명		Y		VARCHAR2	100	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	SVN_DPM_C	주관부서코드		Y		VARCHAR2	20	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	SVN_TEM_C	주관팀코드		Y		VARCHAR2	5	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	AMT	금액		Y		NUMBER	18	3
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	FC_AMT	외화금액		Y		NUMBER	18	3
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	CUR_C	통화코드		Y		VARCHAR2	3	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	XCR	환율		Y		NUMBER	9	4
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	XCR_BSE_DT	환율기준일자		Y		VARCHAR2	8	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	IT_PTL_TMN_SVC_TC	IT포탈단말서비스구분코드		Y		VARCHAR2	2	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	IT_PTL_TMN_KD_TC	IT포탈단말종류구분코드		Y		VARCHAR2	2	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ABUS_MNG_NO	사업관리번호		N		VARCHAR2	30	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	SNO	일련번호		N		NUMBER	9	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ABUS_NM	사업명		Y		VARCHAR2	100	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ABUS_CONE	사업내용		Y		VARCHAR2	1000	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ABUS_NCS_CONE	사업필요성내용		Y		VARCHAR2	300	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ABUS_TC	사업구분코드		Y		VARCHAR2	2	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	BSE_YY	기준연도		Y		VARCHAR2	4	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	BZ_DTT_NM	업무구분명		Y		VARCHAR2	100	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	CNCD_RFR_NO	관련참조번호		Y		VARCHAR2	30	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	CPN_SAF_CONE	회사현황내용		Y		VARCHAR2	1000	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	CST_TP_TC	고객유형구분코드		Y		VARCHAR2	3	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	DGOG_PPO_CONE	효과성목적내용		Y		VARCHAR2	4000	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	DPL_YN	중복여부		Y		VARCHAR2	1	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	STT_DTM	시작일시		Y		DATE		
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	END_DTM	종료일시		Y		DATE		
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	EXE_PTT_YN	실행가능성여부		Y		VARCHAR2	1	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	FLF_FSG_DT	이행완료일자		Y		VARCHAR2	8	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	HRF_PLN_CONE	향후계획내용		Y		VARCHAR2	300	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	LST_YN	최종여부		Y		VARCHAR2	1	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	MN_PRG_CONE	주요진행내용		Y		VARCHAR2	2000	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ODN_YN	경상여부		Y		VARCHAR2	1	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	PLM_DES	문제설명		Y		VARCHAR2	4000	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	PRLM_HRK_OGZ_C_CONE	인사상위조직코드내용		Y		VARCHAR2	100	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	SVN_DPM_C	주관부서코드		Y		VARCHAR2	20	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	TLR_USID	팀장사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	USID	사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	DVM_DPM_C	개발부서코드		Y		VARCHAR2	20	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	DVM_TEM_C	개발팀코드		Y		VARCHAR2	5	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	DVM_TLR_USID	개발팀장사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	DVM_USID	개발사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	BZ_TP_C	업무유형코드		Y		VARCHAR2	6	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	IT_PTL_EDRT_TC	IT포탈전결권구분코드		Y		VARCHAR2	2	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	IT_PTL_RPR_STS_TC	IT포탈보고상태구분코드		Y		VARCHAR2	2	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	IT_PTL_TCHN_TP_TC	IT포탈기술유형구분코드		Y		VARCHAR2	2	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	IT_PTL_STS_TC	IT포탈상태구분코드		Y		VARCHAR2	2	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ABUS_RNG_CONE	사업범위내용		Y		VARCHAR2	600	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	GCL_MNG_NO	품목관리번호		N		VARCHAR2	16	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	SNO	일련번호		N		NUMBER	9	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	ABUS_MNG_NO	사업관리번호		Y		VARCHAR2	30	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	FNT_TB_CRY_SNO	원천테이블적재일련번호		Y		NUMBER	10	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	BSE_YM	기준년월		Y		VARCHAR2	6	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	CNCD_FDTN_CONE	관련근거내용		Y		VARCHAR2	600	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	DFR_CLE_C	지급주기코드		Y		VARCHAR2	1	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	GCL_NM	품목명		Y		VARCHAR2	100	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	IOE_C	비목코드		Y		VARCHAR2	7	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	ITR_INFR_YN	통합인프라여부		Y		VARCHAR2	1	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	SECT_SYS_UTZ_YN	보안시스템운용여부		Y		VARCHAR2	1	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	QTY	수량		Y		NUMBER	10	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	AMT	금액		Y		NUMBER	18	3
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	MPL_AMT	예정금액		Y		NUMBER	18	3
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	FC_AMT	외화금액		Y		NUMBER	18	3
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	CUR_C	통화코드		Y		VARCHAR2	3	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	XCR	환율		Y		NUMBER	9	4
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	XCR_BSE_DT	환율기준일자		Y		VARCHAR2	8	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	LST_YN	최종여부		Y		VARCHAR2	1	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BPQNAM	프로젝트관리_협의회사전질의응답기본	IT_PTL_ASCT_ID	IT포탈협의회ID	Y	N		VARCHAR2	32	
+TPRMPP_BPQNAM	프로젝트관리_협의회사전질의응답기본	QTN_ID	질의ID	Y	N		VARCHAR2	36	
+TPRMPP_BPQNAM	프로젝트관리_협의회사전질의응답기본	QTN_CONE	질의내용		Y		VARCHAR2	4000	
+TPRMPP_BPQNAM	프로젝트관리_협의회사전질의응답기본	QTN_DWU_USID	질의작성사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPQNAM	프로젝트관리_협의회사전질의응답기본	REP_CONE	답변내용		Y		VARCHAR2	2000	
+TPRMPP_BPQNAM	프로젝트관리_협의회사전질의응답기본	REP_DWU_USID	답변작성사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPQNAM	프로젝트관리_협의회사전질의응답기본	QTN_RPD_RLT_YN	질의응답결과여부		Y		VARCHAR2	1	
+TPRMPP_BPQNAM	프로젝트관리_협의회사전질의응답기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPQNAM	프로젝트관리_협의회사전질의응답기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BPQNAM	프로젝트관리_협의회사전질의응답기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BPQNAM	프로젝트관리_협의회사전질의응답기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BPQNAM	프로젝트관리_협의회사전질의응답기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BPQNAM	프로젝트관리_협의회사전질의응답기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPQNAM	프로젝트관리_협의회사전질의응답기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BMQNAM	프로젝트관리_협의회본회의질의응답기본	IT_PTL_ASCT_ID	IT포탈협의회ID	Y	N		VARCHAR2	32	
+TPRMPP_BMQNAM	프로젝트관리_협의회본회의질의응답기본	QTN_ID	질의ID	Y	N		VARCHAR2	36	
+TPRMPP_BMQNAM	프로젝트관리_협의회본회의질의응답기본	QTN_CONE	질의내용		Y		VARCHAR2	4000	
+TPRMPP_BMQNAM	프로젝트관리_협의회본회의질의응답기본	QTN_DWU_USID	질의작성사용자ID		Y		VARCHAR2	14	
+TPRMPP_BMQNAM	프로젝트관리_협의회본회의질의응답기본	REP_CONE	답변내용		Y		VARCHAR2	2000	
+TPRMPP_BMQNAM	프로젝트관리_협의회본회의질의응답기본	REP_DWU_USID	답변작성사용자ID		Y		VARCHAR2	14	
+TPRMPP_BMQNAM	프로젝트관리_협의회본회의질의응답기본	QTN_RPD_RLT_YN	질의응답결과여부		Y		VARCHAR2	1	
+TPRMPP_BMQNAM	프로젝트관리_협의회본회의질의응답기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BMQNAM	프로젝트관리_협의회본회의질의응답기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BMQNAM	프로젝트관리_협의회본회의질의응답기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BMQNAM	프로젝트관리_협의회본회의질의응답기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BMQNAM	프로젝트관리_협의회본회의질의응답기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BMQNAM	프로젝트관리_협의회본회의질의응답기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BMQNAM	프로젝트관리_협의회본회의질의응답기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BEVALM	프로젝트관리_협의회평가의견기본	IT_PTL_ASCT_ID	IT포탈협의회ID	Y	N		VARCHAR2	32	
+TPRMPP_BEVALM	프로젝트관리_협의회평가의견기본	ENO	사원번호	Y	N		VARCHAR2	32	
+TPRMPP_BEVALM	프로젝트관리_협의회평가의견기본	IT_PTL_CKG_ITM_TC	IT포탈점검항목구분코드	Y	N		VARCHAR2	2	
+TPRMPP_BEVALM	프로젝트관리_협의회평가의견기본	QUEL_RCRD	문항점수		Y		NUMBER	5	
+TPRMPP_BEVALM	프로젝트관리_협의회평가의견기본	CKG_OPNN_CONE	점검의견내용		Y		VARCHAR2	1000	
+TPRMPP_BEVALM	프로젝트관리_협의회평가의견기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BEVALM	프로젝트관리_협의회평가의견기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BEVALM	프로젝트관리_협의회평가의견기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BEVALM	프로젝트관리_협의회평가의견기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BEVALM	프로젝트관리_협의회평가의견기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BEVALM	프로젝트관리_협의회평가의견기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BEVALM	프로젝트관리_협의회평가의견기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BASCTM	프로젝트관리_협의회협의회기본	IT_PTL_ASCT_ID	IT포탈협의회ID	Y	N		VARCHAR2	32	
+TPRMPP_BASCTM	프로젝트관리_협의회협의회기본	IT_PTL_ASCT_PRG_STS_TC	IT포탈협의회진행상태구분코드		Y		VARCHAR2	2	
+TPRMPP_BASCTM	프로젝트관리_협의회협의회기본	IT_PTL_ASCT_DBR_TC	IT포탈협의회심의구분코드		Y		VARCHAR2	2	
+TPRMPP_BASCTM	프로젝트관리_협의회협의회기본	ABUS_MNG_NO	사업관리번호		Y		VARCHAR2	30	
+TPRMPP_BASCTM	프로젝트관리_협의회협의회기본	SNO	일련번호		Y		NUMBER	9	
+TPRMPP_BASCTM	프로젝트관리_협의회협의회기본	CNRC_DT	회의일자		Y		VARCHAR2	8	
+TPRMPP_BASCTM	프로젝트관리_협의회협의회기본	CNRC_PLC_NM	회의장소명		Y		VARCHAR2	100	
+TPRMPP_BASCTM	프로젝트관리_협의회협의회기본	CNRC_STT_TM	회의시작시각		Y		VARCHAR2	6	
+TPRMPP_BASCTM	프로젝트관리_협의회협의회기본	PRTY_IVG_OMT_YN	타당성검토생략여부		Y		VARCHAR2	1	
+TPRMPP_BASCTM	프로젝트관리_협의회협의회기본	PRTY_IVG_OMT_RSN	타당성검토생략사유		Y		VARCHAR2	200	
+TPRMPP_BASCTM	프로젝트관리_협의회협의회기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BASCTM	프로젝트관리_협의회협의회기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BASCTM	프로젝트관리_협의회협의회기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BASCTM	프로젝트관리_협의회협의회기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BASCTM	프로젝트관리_협의회협의회기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BASCTM	프로젝트관리_협의회협의회기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BASCTM	프로젝트관리_협의회협의회기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BCHKLM	프로젝트관리_협의회타당성자체점검기본	IT_PTL_ASCT_ID	IT포탈협의회ID	Y	N		VARCHAR2	32	
+TPRMPP_BCHKLM	프로젝트관리_협의회타당성자체점검기본	IT_PTL_CKG_ITM_TC	IT포탈점검항목구분코드	Y	N		VARCHAR2	2	
+TPRMPP_BCHKLM	프로젝트관리_협의회타당성자체점검기본	QUEL_RCRD	문항점수		Y		NUMBER	5	
+TPRMPP_BCHKLM	프로젝트관리_협의회타당성자체점검기본	CKG_OPNN_CONE	점검의견내용		Y		VARCHAR2	1000	
+TPRMPP_BCHKLM	프로젝트관리_협의회타당성자체점검기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BCHKLM	프로젝트관리_협의회타당성자체점검기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BCHKLM	프로젝트관리_협의회타당성자체점검기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BCHKLM	프로젝트관리_협의회타당성자체점검기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BCHKLM	프로젝트관리_협의회타당성자체점검기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BCHKLM	프로젝트관리_협의회타당성자체점검기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BCHKLM	프로젝트관리_협의회타당성자체점검기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BPERFM	프로젝트관리_협의회성과관리기본	IT_PTL_ASCT_ID	IT포탈협의회ID	Y	N		VARCHAR2	32	
+TPRMPP_BPERFM	프로젝트관리_협의회성과관리기본	EVL_DTP_SNO	평가지표일련번호	Y	N		NUMBER	9	
+TPRMPP_BPERFM	프로젝트관리_협의회성과관리기본	EVL_DTP_NM	평가지표명		Y		VARCHAR2	100	
+TPRMPP_BPERFM	프로젝트관리_협의회성과관리기본	EVL_DTP_DFNT_CONE	평가지표정의내용		Y		VARCHAR2	4000	
+TPRMPP_BPERFM	프로젝트관리_협의회성과관리기본	EVL_DTP_CLF_CONE	평가지표계산식내용		Y		VARCHAR2	4000	
+TPRMPP_BPERFM	프로젝트관리_협의회성과관리기본	EVL_DTP_MSM_PTM_CONE	평가지표측정시점내용		Y		VARCHAR2	300	
+TPRMPP_BPERFM	프로젝트관리_협의회성과관리기본	EVL_DTP_MSM_CLE_CONE	평가지표측정주기내용		Y		VARCHAR2	300	
+TPRMPP_BPERFM	프로젝트관리_협의회성과관리기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPERFM	프로젝트관리_협의회성과관리기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BPERFM	프로젝트관리_협의회성과관리기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BPERFM	프로젝트관리_협의회성과관리기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BPERFM	프로젝트관리_협의회성과관리기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BPERFM	프로젝트관리_협의회성과관리기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPERFM	프로젝트관리_협의회성과관리기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BRSLTM	프로젝트관리_협의회결과서기본	IT_PTL_ASCT_ID	IT포탈협의회ID	Y	N		VARCHAR2	32	
+TPRMPP_BRSLTM	프로젝트관리_협의회결과서기본	CKG_OPNN_CONE	점검의견내용		Y		VARCHAR2	1000	
+TPRMPP_BRSLTM	프로젝트관리_협의회결과서기본	SYN_OPNN_CONE	종합의견내용		Y		VARCHAR2	6000	
+TPRMPP_BRSLTM	프로젝트관리_협의회결과서기본	FL_MPN_ID	파일매핑ID		Y		VARCHAR2	36	
+TPRMPP_BRSLTM	프로젝트관리_협의회결과서기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BRSLTM	프로젝트관리_협의회결과서기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BRSLTM	프로젝트관리_협의회결과서기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BRSLTM	프로젝트관리_협의회결과서기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BRSLTM	프로젝트관리_협의회결과서기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BRSLTM	프로젝트관리_협의회결과서기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BRSLTM	프로젝트관리_협의회결과서기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BCMMTM	프로젝트관리_협의회평가위원기본	IT_PTL_ASCT_ID	IT포탈협의회ID	Y	N		VARCHAR2	32	
+TPRMPP_BCMMTM	프로젝트관리_협의회평가위원기본	IT_PTL_ASCT_MEB_TC	IT포탈협의회구성원구분코드	Y	N		VARCHAR2	2	
+TPRMPP_BCMMTM	프로젝트관리_협의회평가위원기본	ENO	사원번호	Y	N		VARCHAR2	32	
+TPRMPP_BCMMTM	프로젝트관리_협의회평가위원기본	CNFM_YN	확인여부		Y	'N'	VARCHAR2	1	
+TPRMPP_BCMMTM	프로젝트관리_협의회평가위원기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BCMMTM	프로젝트관리_협의회평가위원기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BCMMTM	프로젝트관리_협의회평가위원기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BCMMTM	프로젝트관리_협의회평가위원기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BCMMTM	프로젝트관리_협의회평가위원기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BCMMTM	프로젝트관리_협의회평가위원기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BCMMTM	프로젝트관리_협의회평가위원기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	IT_PTL_ASCT_ID	IT포탈협의회ID	Y	N		VARCHAR2	32	
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	ABUS_NM	사업명		Y		VARCHAR2	100	
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	ABUS_TRM_CONE	사업기간내용		Y		VARCHAR2	300	
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	ABUS_CONE	사업내용		Y		VARCHAR2	1000	
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	ABUS_NCS_CONE	사업필요성내용		Y		VARCHAR2	300	
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	DGOG_PPO_CONE	효과성목적내용		Y		VARCHAR2	4000	
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	RQM_BG_AMT	소요예산금액		Y		NUMBER	18	
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	IT_PTL_EDRT_TC	IT포탈전결권구분코드		Y		VARCHAR2	2	
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	LW_RGL_YN	법률규제여부		Y		VARCHAR2	1	
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	LW_FDTN	법률근거		Y		VARCHAR2	300	
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	FL_MPN_ID	파일매핑ID		Y		VARCHAR2	36	
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	KPN_TP_TC	저장유형구분코드		Y		VARCHAR2	2	
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BSCHDM	프로젝트관리_협의회일정기본	IT_PTL_ASCT_ID	IT포탈협의회ID	Y	N		VARCHAR2	32	
+TPRMPP_BSCHDM	프로젝트관리_협의회일정기본	CNRC_DT	회의일자	Y	N		VARCHAR2	8	
+TPRMPP_BSCHDM	프로젝트관리_협의회일정기본	CNRC_STT_TM	회의시작시각	Y	N		VARCHAR2	6	
+TPRMPP_BSCHDM	프로젝트관리_협의회일정기본	ENO	사원번호	Y	N		VARCHAR2	32	
+TPRMPP_BSCHDM	프로젝트관리_협의회일정기본	USE_PSB_YN	사용가능여부		Y		VARCHAR2	1	
+TPRMPP_BSCHDM	프로젝트관리_협의회일정기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BSCHDM	프로젝트관리_협의회일정기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BSCHDM	프로젝트관리_협의회일정기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BSCHDM	프로젝트관리_협의회일정기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BSCHDM	프로젝트관리_협의회일정기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BSCHDM	프로젝트관리_협의회일정기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BSCHDM	프로젝트관리_협의회일정기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	IT_PTL_ASCT_ID	IT포탈협의회ID		N		VARCHAR2	32	
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	IT_PTL_ASCT_PRG_STS_TC	IT포탈협의회진행상태구분코드		Y		VARCHAR2	2	
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	IT_PTL_ASCT_DBR_TC	IT포탈협의회심의구분코드		Y		VARCHAR2	2	
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	ABUS_MNG_NO	사업관리번호		Y		VARCHAR2	30	
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	SNO	일련번호		Y		NUMBER	9	
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	CNRC_DT	회의일자		Y		VARCHAR2	8	
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	CNRC_PLC_NM	회의장소명		Y		VARCHAR2	100	
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	CNRC_STT_TM	회의시작시각		Y		VARCHAR2	6	
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	PRTY_IVG_OMT_YN	타당성검토생략여부		Y		VARCHAR2	1	
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	PRTY_IVG_OMT_RSN	타당성검토생략사유		Y		VARCHAR2	200	
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BASCTL	프로젝트관리_협의회협의회기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	IT_PTL_ASCT_ID	IT포탈협의회ID		N		VARCHAR2	32	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	ABUS_NM	사업명		Y		VARCHAR2	100	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	ABUS_TRM_CONE	사업기간내용		Y		VARCHAR2	300	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	ABUS_CONE	사업내용		Y		VARCHAR2	1000	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	ABUS_NCS_CONE	사업필요성내용		Y		VARCHAR2	300	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	DGOG_PPO_CONE	효과성목적내용		Y		VARCHAR2	4000	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	RQM_BG_AMT	소요예산금액		Y		NUMBER	18	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	IT_PTL_EDRT_TC	IT포탈전결권구분코드		Y		VARCHAR2	2	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	LW_RGL_YN	법률규제여부		Y		VARCHAR2	1	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	LW_FDTN	법률근거		Y		VARCHAR2	300	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	FL_MPN_ID	파일매핑ID		Y		VARCHAR2	36	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	KPN_TP_TC	저장유형구분코드		Y		VARCHAR2	2	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BCHKLL	프로젝트관리_협의회타당성자체점검기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BCHKLL	프로젝트관리_협의회타당성자체점검기본변경로그	IT_PTL_ASCT_ID	IT포탈협의회ID		N		VARCHAR2	32	
+TPRMPP_BCHKLL	프로젝트관리_협의회타당성자체점검기본변경로그	IT_PTL_CKG_ITM_TC	IT포탈점검항목구분코드		N		VARCHAR2	2	
+TPRMPP_BCHKLL	프로젝트관리_협의회타당성자체점검기본변경로그	QUEL_RCRD	문항점수		Y		NUMBER	5	
+TPRMPP_BCHKLL	프로젝트관리_협의회타당성자체점검기본변경로그	CKG_OPNN_CONE	점검의견내용		Y		VARCHAR2	1000	
+TPRMPP_BCHKLL	프로젝트관리_협의회타당성자체점검기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BCHKLL	프로젝트관리_협의회타당성자체점검기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BCHKLL	프로젝트관리_협의회타당성자체점검기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BCHKLL	프로젝트관리_협의회타당성자체점검기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BCHKLL	프로젝트관리_협의회타당성자체점검기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BCHKLL	프로젝트관리_협의회타당성자체점검기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BCHKLL	프로젝트관리_협의회타당성자체점검기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BCHKLL	프로젝트관리_협의회타당성자체점검기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BCHKLL	프로젝트관리_협의회타당성자체점검기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BCHKLL	프로젝트관리_협의회타당성자체점검기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BPERFL	프로젝트관리_협의회성과관리기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BPERFL	프로젝트관리_협의회성과관리기본변경로그	IT_PTL_ASCT_ID	IT포탈협의회ID		N		VARCHAR2	32	
+TPRMPP_BPERFL	프로젝트관리_협의회성과관리기본변경로그	EVL_DTP_SNO	평가지표일련번호		N		NUMBER	9	
+TPRMPP_BPERFL	프로젝트관리_협의회성과관리기본변경로그	EVL_DTP_NM	평가지표명		Y		VARCHAR2	100	
+TPRMPP_BPERFL	프로젝트관리_협의회성과관리기본변경로그	EVL_DTP_DFNT_CONE	평가지표정의내용		Y		VARCHAR2	4000	
+TPRMPP_BPERFL	프로젝트관리_협의회성과관리기본변경로그	EVL_DTP_CLF_CONE	평가지표계산식내용		Y		VARCHAR2	4000	
+TPRMPP_BPERFL	프로젝트관리_협의회성과관리기본변경로그	EVL_DTP_MSM_PTM_CONE	평가지표측정시점내용		Y		VARCHAR2	300	
+TPRMPP_BPERFL	프로젝트관리_협의회성과관리기본변경로그	EVL_DTP_MSM_CLE_CONE	평가지표측정주기내용		Y		VARCHAR2	300	
+TPRMPP_BPERFL	프로젝트관리_협의회성과관리기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BPERFL	프로젝트관리_협의회성과관리기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BPERFL	프로젝트관리_협의회성과관리기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPERFL	프로젝트관리_협의회성과관리기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPERFL	프로젝트관리_협의회성과관리기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BPERFL	프로젝트관리_협의회성과관리기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BPERFL	프로젝트관리_협의회성과관리기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BPERFL	프로젝트관리_협의회성과관리기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BPERFL	프로젝트관리_협의회성과관리기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPERFL	프로젝트관리_협의회성과관리기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BPQNAL	프로젝트관리_협의회사전질의응답기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BPQNAL	프로젝트관리_협의회사전질의응답기본변경로그	IT_PTL_ASCT_ID	IT포탈협의회ID		N		VARCHAR2	32	
+TPRMPP_BPQNAL	프로젝트관리_협의회사전질의응답기본변경로그	QTN_ID	질의ID		N		VARCHAR2	36	
+TPRMPP_BPQNAL	프로젝트관리_협의회사전질의응답기본변경로그	QTN_CONE	질의내용		Y		VARCHAR2	4000	
+TPRMPP_BPQNAL	프로젝트관리_협의회사전질의응답기본변경로그	QTN_DWU_USID	질의작성사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPQNAL	프로젝트관리_협의회사전질의응답기본변경로그	REP_CONE	답변내용		Y		VARCHAR2	2000	
+TPRMPP_BPQNAL	프로젝트관리_협의회사전질의응답기본변경로그	REP_DWU_USID	답변작성사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPQNAL	프로젝트관리_협의회사전질의응답기본변경로그	QTN_RPD_RLT_YN	질의응답결과여부		Y		VARCHAR2	1	
+TPRMPP_BPQNAL	프로젝트관리_협의회사전질의응답기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BPQNAL	프로젝트관리_협의회사전질의응답기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BPQNAL	프로젝트관리_협의회사전질의응답기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPQNAL	프로젝트관리_협의회사전질의응답기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPQNAL	프로젝트관리_협의회사전질의응답기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BPQNAL	프로젝트관리_협의회사전질의응답기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BPQNAL	프로젝트관리_협의회사전질의응답기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BPQNAL	프로젝트관리_협의회사전질의응답기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BPQNAL	프로젝트관리_협의회사전질의응답기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPQNAL	프로젝트관리_협의회사전질의응답기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BMQNAL	프로젝트관리_협의회본회의질의응답기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BMQNAL	프로젝트관리_협의회본회의질의응답기본변경로그	IT_PTL_ASCT_ID	IT포탈협의회ID		N		VARCHAR2	32	
+TPRMPP_BMQNAL	프로젝트관리_협의회본회의질의응답기본변경로그	QTN_ID	질의ID		N		VARCHAR2	36	
+TPRMPP_BMQNAL	프로젝트관리_협의회본회의질의응답기본변경로그	QTN_CONE	질의내용		Y		VARCHAR2	4000	
+TPRMPP_BMQNAL	프로젝트관리_협의회본회의질의응답기본변경로그	QTN_DWU_USID	질의작성사용자ID		Y		VARCHAR2	14	
+TPRMPP_BMQNAL	프로젝트관리_협의회본회의질의응답기본변경로그	REP_CONE	답변내용		Y		VARCHAR2	2000	
+TPRMPP_BMQNAL	프로젝트관리_협의회본회의질의응답기본변경로그	REP_DWU_USID	답변작성사용자ID		Y		VARCHAR2	14	
+TPRMPP_BMQNAL	프로젝트관리_협의회본회의질의응답기본변경로그	QTN_RPD_RLT_YN	질의응답결과여부		Y		VARCHAR2	1	
+TPRMPP_BMQNAL	프로젝트관리_협의회본회의질의응답기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BMQNAL	프로젝트관리_협의회본회의질의응답기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BMQNAL	프로젝트관리_협의회본회의질의응답기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BMQNAL	프로젝트관리_협의회본회의질의응답기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BMQNAL	프로젝트관리_협의회본회의질의응답기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BMQNAL	프로젝트관리_협의회본회의질의응답기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BMQNAL	프로젝트관리_협의회본회의질의응답기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BMQNAL	프로젝트관리_협의회본회의질의응답기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BMQNAL	프로젝트관리_협의회본회의질의응답기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BMQNAL	프로젝트관리_협의회본회의질의응답기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BCMMTL	프로젝트관리_협의회평가위원기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BCMMTL	프로젝트관리_협의회평가위원기본변경로그	IT_PTL_ASCT_ID	IT포탈협의회ID		N		VARCHAR2	32	
+TPRMPP_BCMMTL	프로젝트관리_협의회평가위원기본변경로그	IT_PTL_ASCT_MEB_TC	IT포탈협의회구성원구분코드		N		VARCHAR2	2	
+TPRMPP_BCMMTL	프로젝트관리_협의회평가위원기본변경로그	ENO	사원번호		N		VARCHAR2	32	
+TPRMPP_BCMMTL	프로젝트관리_협의회평가위원기본변경로그	CNFM_YN	확인여부		Y	'N'	VARCHAR2	1	
+TPRMPP_BCMMTL	프로젝트관리_협의회평가위원기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BCMMTL	프로젝트관리_협의회평가위원기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BCMMTL	프로젝트관리_협의회평가위원기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BCMMTL	프로젝트관리_협의회평가위원기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BCMMTL	프로젝트관리_협의회평가위원기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BCMMTL	프로젝트관리_협의회평가위원기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BCMMTL	프로젝트관리_협의회평가위원기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BCMMTL	프로젝트관리_협의회평가위원기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BCMMTL	프로젝트관리_협의회평가위원기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BCMMTL	프로젝트관리_협의회평가위원기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BEVALL	프로젝트관리_협의회평가의견기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BEVALL	프로젝트관리_협의회평가의견기본변경로그	IT_PTL_ASCT_ID	IT포탈협의회ID		N		VARCHAR2	32	
+TPRMPP_BEVALL	프로젝트관리_협의회평가의견기본변경로그	ENO	사원번호		N		VARCHAR2	32	
+TPRMPP_BEVALL	프로젝트관리_협의회평가의견기본변경로그	IT_PTL_CKG_ITM_TC	IT포탈점검항목구분코드		N		VARCHAR2	2	
+TPRMPP_BEVALL	프로젝트관리_협의회평가의견기본변경로그	QUEL_RCRD	문항점수		Y		NUMBER	5	
+TPRMPP_BEVALL	프로젝트관리_협의회평가의견기본변경로그	CKG_OPNN_CONE	점검의견내용		Y		VARCHAR2	1000	
+TPRMPP_BEVALL	프로젝트관리_협의회평가의견기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BEVALL	프로젝트관리_협의회평가의견기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BEVALL	프로젝트관리_협의회평가의견기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BEVALL	프로젝트관리_협의회평가의견기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BEVALL	프로젝트관리_협의회평가의견기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BEVALL	프로젝트관리_협의회평가의견기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BEVALL	프로젝트관리_협의회평가의견기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BEVALL	프로젝트관리_협의회평가의견기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BEVALL	프로젝트관리_협의회평가의견기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BEVALL	프로젝트관리_협의회평가의견기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BSCHDL	프로젝트관리_협의회일정기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BSCHDL	프로젝트관리_협의회일정기본변경로그	IT_PTL_ASCT_ID	IT포탈협의회ID		N		VARCHAR2	32	
+TPRMPP_BSCHDL	프로젝트관리_협의회일정기본변경로그	CNRC_DT	회의일자		N		VARCHAR2	8	
+TPRMPP_BSCHDL	프로젝트관리_협의회일정기본변경로그	CNRC_STT_TM	회의시작시각		N		VARCHAR2	6	
+TPRMPP_BSCHDL	프로젝트관리_협의회일정기본변경로그	ENO	사원번호		N		VARCHAR2	32	
+TPRMPP_BSCHDL	프로젝트관리_협의회일정기본변경로그	USE_PSB_YN	사용가능여부		Y		VARCHAR2	1	
+TPRMPP_BSCHDL	프로젝트관리_협의회일정기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BSCHDL	프로젝트관리_협의회일정기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BSCHDL	프로젝트관리_협의회일정기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BSCHDL	프로젝트관리_협의회일정기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BSCHDL	프로젝트관리_협의회일정기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BSCHDL	프로젝트관리_협의회일정기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BSCHDL	프로젝트관리_협의회일정기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BSCHDL	프로젝트관리_협의회일정기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BSCHDL	프로젝트관리_협의회일정기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BSCHDL	프로젝트관리_협의회일정기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BRSLTL	프로젝트관리_협의회결과서기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BRSLTL	프로젝트관리_협의회결과서기본변경로그	IT_PTL_ASCT_ID	IT포탈협의회ID		N		VARCHAR2	32	
+TPRMPP_BRSLTL	프로젝트관리_협의회결과서기본변경로그	CKG_OPNN_CONE	점검의견내용		Y		VARCHAR2	1000	
+TPRMPP_BRSLTL	프로젝트관리_협의회결과서기본변경로그	SYN_OPNN_CONE	종합의견내용		Y		VARCHAR2	6000	
+TPRMPP_BRSLTL	프로젝트관리_협의회결과서기본변경로그	FL_MPN_ID	파일매핑ID		Y		VARCHAR2	36	
+TPRMPP_BRSLTL	프로젝트관리_협의회결과서기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BRSLTL	프로젝트관리_협의회결과서기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BRSLTL	프로젝트관리_협의회결과서기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BRSLTL	프로젝트관리_협의회결과서기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BRSLTL	프로젝트관리_협의회결과서기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BRSLTL	프로젝트관리_협의회결과서기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BRSLTL	프로젝트관리_협의회결과서기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BRSLTL	프로젝트관리_협의회결과서기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BRSLTL	프로젝트관리_협의회결과서기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BRSLTL	프로젝트관리_협의회결과서기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	DOC_MNG_NO	문서관리번호	Y	N		VARCHAR2	20	
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	DOC_VRS_SNO	문서버전일련번호	Y	N		NUMBER	9	
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	LST_YN	최종여부		N		VARCHAR2	1	
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	BG_PRN_TC	예산성격구분코드		N		VARCHAR2	3	
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	CNCD_RFR_NO	관련참조번호		N		VARCHAR2	30	
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	IT_PTL_STS_TC	IT포탈상태구분코드		N		VARCHAR2	2	
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	REQ_CONE	요청내용		Y		VARCHAR2	300	
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	CTT_MANR_C	계약방법코드		Y		VARCHAR2	2	
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	CTT_MANR_RSN	계약방법사유		Y		VARCHAR2	1000	
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	CTT_NM	계약명		Y		VARCHAR2	100	
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	CTT_AMT	계약금액		Y		NUMBER	18	3
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	CTT_OPP_NM	계약상대처명		Y		VARCHAR2	100	
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	CTT_DT	계약일자		Y		VARCHAR2	8	
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BCONTM	프로젝트관리_입찰계약기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	DOC_MNG_NO	문서관리번호		Y		VARCHAR2	20	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	DOC_VRS_SNO	문서버전일련번호		Y		NUMBER	9	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	LST_YN	최종여부		Y		VARCHAR2	1	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	BG_PRN_TC	예산성격구분코드		Y		VARCHAR2	3	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	CNCD_RFR_NO	관련참조번호		Y		VARCHAR2	30	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	IT_PTL_STS_TC	IT포탈상태구분코드		Y		VARCHAR2	2	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	REQ_CONE	요청내용		Y		VARCHAR2	300	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	CTT_MANR_C	계약방법코드		Y		VARCHAR2	2	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	CTT_MANR_RSN	계약방법사유		Y		VARCHAR2	1000	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	CTT_NM	계약명		Y		VARCHAR2	100	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	CTT_AMT	계약금액		Y		NUMBER	18	3
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	CTT_OPP_NM	계약상대처명		Y		VARCHAR2	100	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	CTT_DT	계약일자		Y		VARCHAR2	8	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BCONTL	프로젝트관리_입찰계약기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	DOC_MNG_NO	문서관리번호	Y	N		VARCHAR2	20	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	DOC_VRS_SNO	문서버전일련번호	Y	N		NUMBER	9	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	LST_YN	최종여부		N		VARCHAR2	1	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	BG_PRN_TC	예산성격구분코드		N		VARCHAR2	3	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	CNCD_RFR_NO	관련참조번호		N		VARCHAR2	30	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	IT_PTL_STS_TC	IT포탈상태구분코드		N		VARCHAR2	2	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	REQ_CONE	요청내용		Y		VARCHAR2	300	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	TASK_DBR_TC	과업심의구분코드		Y		VARCHAR2	2	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	TASK_DBR_RLT_TC	과업심의결과구분코드		Y		VARCHAR2	2	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	TASK_DBR_DT	과업심의일자		Y		VARCHAR2	8	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	TASK_DBR_TOD	과업심의회차		Y		VARCHAR2	2	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	TASK_DBR_OMT_YN	과업심의생략여부		Y		VARCHAR2	1	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	TASK_DBR_OMT_RSN	과업심의생략사유		Y		VARCHAR2	200	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	OPNN_CONE	의견내용		Y		VARCHAR2	6000	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	APV_TRDN_RSN_CONE	승인반려사유내용		Y		VARCHAR2	300	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BDELIM	프로젝트관리_과업심의기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	DOC_MNG_NO	문서관리번호		Y		VARCHAR2	20	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	DOC_VRS_SNO	문서버전일련번호		Y		NUMBER	9	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	LST_YN	최종여부		Y		VARCHAR2	1	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	BG_PRN_TC	예산성격구분코드		Y		VARCHAR2	3	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	CNCD_RFR_NO	관련참조번호		Y		VARCHAR2	30	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	IT_PTL_STS_TC	IT포탈상태구분코드		Y		VARCHAR2	2	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	REQ_CONE	요청내용		Y		VARCHAR2	300	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	TASK_DBR_TC	과업심의구분코드		Y		VARCHAR2	2	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	TASK_DBR_RLT_TC	과업심의결과구분코드		Y		VARCHAR2	2	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	TASK_DBR_DT	과업심의일자		Y		VARCHAR2	8	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	TASK_DBR_TOD	과업심의회차		Y		VARCHAR2	2	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	TASK_DBR_OMT_YN	과업심의생략여부		Y		VARCHAR2	1	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	TASK_DBR_OMT_RSN	과업심의생략사유		Y		VARCHAR2	200	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	OPNN_CONE	의견내용		Y		VARCHAR2	6000	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	APV_TRDN_RSN_CONE	승인반려사유내용		Y		VARCHAR2	300	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BDELIL	프로젝트관리_과업심의기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BESTIM	프로젝트관리_소요예산기본	RQM_BG_REQ_DOC_NO	소요예산요청문서번호	Y	N		VARCHAR2	30	
+TPRMPP_BESTIM	프로젝트관리_소요예산기본	DOC_VRS_SNO	문서버전일련번호	Y	N		NUMBER	9	
+TPRMPP_BESTIM	프로젝트관리_소요예산기본	LST_YN	최종여부		N		VARCHAR2	1	
+TPRMPP_BESTIM	프로젝트관리_소요예산기본	BG_PRN_TC	예산성격구분코드		N		VARCHAR2	3	
+TPRMPP_BESTIM	프로젝트관리_소요예산기본	CNCD_RFR_NO	관련참조번호		N		VARCHAR2	30	
+TPRMPP_BESTIM	프로젝트관리_소요예산기본	IT_PTL_STS_TC	IT포탈상태구분코드		N		VARCHAR2	2	
+TPRMPP_BESTIM	프로젝트관리_소요예산기본	REQ_CONE	요청내용		Y		VARCHAR2	300	
+TPRMPP_BESTIM	프로젝트관리_소요예산기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BESTIM	프로젝트관리_소요예산기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BESTIM	프로젝트관리_소요예산기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BESTIM	프로젝트관리_소요예산기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BESTIM	프로젝트관리_소요예산기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BESTIM	프로젝트관리_소요예산기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BESTIM	프로젝트관리_소요예산기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BESTIL	프로젝트관리_소요예산기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BESTIL	프로젝트관리_소요예산기본변경로그	RQM_BG_REQ_DOC_NO	소요예산요청문서번호		Y		VARCHAR2	30	
+TPRMPP_BESTIL	프로젝트관리_소요예산기본변경로그	DOC_VRS_SNO	문서버전일련번호		Y		NUMBER	9	
+TPRMPP_BESTIL	프로젝트관리_소요예산기본변경로그	LST_YN	최종여부		Y		VARCHAR2	1	
+TPRMPP_BESTIL	프로젝트관리_소요예산기본변경로그	BG_PRN_TC	예산성격구분코드		Y		VARCHAR2	3	
+TPRMPP_BESTIL	프로젝트관리_소요예산기본변경로그	CNCD_RFR_NO	관련참조번호		Y		VARCHAR2	30	
+TPRMPP_BESTIL	프로젝트관리_소요예산기본변경로그	IT_PTL_STS_TC	IT포탈상태구분코드		Y		VARCHAR2	2	
+TPRMPP_BESTIL	프로젝트관리_소요예산기본변경로그	REQ_CONE	요청내용		Y		VARCHAR2	300	
+TPRMPP_BESTIL	프로젝트관리_소요예산기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BESTIL	프로젝트관리_소요예산기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BESTIL	프로젝트관리_소요예산기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BESTIL	프로젝트관리_소요예산기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BESTIL	프로젝트관리_소요예산기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BESTIL	프로젝트관리_소요예산기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BESTIL	프로젝트관리_소요예산기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BESTIL	프로젝트관리_소요예산기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BESTIL	프로젝트관리_소요예산기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BESTIL	프로젝트관리_소요예산기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BESTTM	프로젝트관리_소요예산팀별검토기본	RQM_BG_REQ_DOC_NO	소요예산요청문서번호	Y	N		VARCHAR2	30	
+TPRMPP_BESTTM	프로젝트관리_소요예산팀별검토기본	DOC_VRS_SNO	문서버전일련번호	Y	N		NUMBER	9	
+TPRMPP_BESTTM	프로젝트관리_소요예산팀별검토기본	SVN_TEM_C	주관팀코드		N		VARCHAR2	5	
+TPRMPP_BESTTM	프로젝트관리_소요예산팀별검토기본	IOE_C	비목코드		N		VARCHAR2	7	
+TPRMPP_BESTTM	프로젝트관리_소요예산팀별검토기본	RQM_BG_AMT	소요예산금액		Y		NUMBER	18	
+TPRMPP_BESTTM	프로젝트관리_소요예산팀별검토기본	OPNN_CONE	의견내용		Y		VARCHAR2	6000	
+TPRMPP_BESTTM	프로젝트관리_소요예산팀별검토기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BESTTM	프로젝트관리_소요예산팀별검토기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BESTTM	프로젝트관리_소요예산팀별검토기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BESTTM	프로젝트관리_소요예산팀별검토기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BESTTM	프로젝트관리_소요예산팀별검토기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BESTTM	프로젝트관리_소요예산팀별검토기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BESTTM	프로젝트관리_소요예산팀별검토기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BESTTL	프로젝트관리_소요예산팀별검토기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BESTTL	프로젝트관리_소요예산팀별검토기본변경로그	RQM_BG_REQ_DOC_NO	소요예산요청문서번호		Y		VARCHAR2	30	
+TPRMPP_BESTTL	프로젝트관리_소요예산팀별검토기본변경로그	DOC_VRS_SNO	문서버전일련번호		Y		NUMBER	9	
+TPRMPP_BESTTL	프로젝트관리_소요예산팀별검토기본변경로그	SVN_TEM_C	주관팀코드		N		VARCHAR2	5	
+TPRMPP_BESTTL	프로젝트관리_소요예산팀별검토기본변경로그	IOE_C	비목코드		N		VARCHAR2	7	
+TPRMPP_BESTTL	프로젝트관리_소요예산팀별검토기본변경로그	RQM_BG_AMT	소요예산금액		Y		NUMBER	18	
+TPRMPP_BESTTL	프로젝트관리_소요예산팀별검토기본변경로그	OPNN_CONE	의견내용		Y		VARCHAR2	6000	
+TPRMPP_BESTTL	프로젝트관리_소요예산팀별검토기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BESTTL	프로젝트관리_소요예산팀별검토기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BESTTL	프로젝트관리_소요예산팀별검토기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BESTTL	프로젝트관리_소요예산팀별검토기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BESTTL	프로젝트관리_소요예산팀별검토기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BESTTL	프로젝트관리_소요예산팀별검토기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BESTTL	프로젝트관리_소요예산팀별검토기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BESTTL	프로젝트관리_소요예산팀별검토기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BESTTL	프로젝트관리_소요예산팀별검토기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BESTTL	프로젝트관리_소요예산팀별검토기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BPAYMM	프로젝트관리_대금지급기본	DOC_MNG_NO	문서관리번호	Y	N		VARCHAR2	20	
+TPRMPP_BPAYMM	프로젝트관리_대금지급기본	DOC_VRS_SNO	문서버전일련번호	Y	N		NUMBER	9	
+TPRMPP_BPAYMM	프로젝트관리_대금지급기본	LST_YN	최종여부		N		VARCHAR2	1	
+TPRMPP_BPAYMM	프로젝트관리_대금지급기본	BG_PRN_TC	예산성격구분코드		N		VARCHAR2	3	
+TPRMPP_BPAYMM	프로젝트관리_대금지급기본	CNCD_RFR_NO	관련참조번호		N		VARCHAR2	30	
+TPRMPP_BPAYMM	프로젝트관리_대금지급기본	IT_PTL_STS_TC	IT포탈상태구분코드		N		VARCHAR2	2	
+TPRMPP_BPAYMM	프로젝트관리_대금지급기본	REQ_CONE	요청내용		Y		VARCHAR2	300	
+TPRMPP_BPAYMM	프로젝트관리_대금지급기본	CTT_NM	계약명		Y		VARCHAR2	100	
+TPRMPP_BPAYMM	프로젝트관리_대금지급기본	CTT_AMT	계약금액		Y		NUMBER	18	3
+TPRMPP_BPAYMM	프로젝트관리_대금지급기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPAYMM	프로젝트관리_대금지급기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BPAYMM	프로젝트관리_대금지급기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BPAYMM	프로젝트관리_대금지급기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BPAYMM	프로젝트관리_대금지급기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BPAYMM	프로젝트관리_대금지급기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPAYMM	프로젝트관리_대금지급기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	DOC_MNG_NO	문서관리번호		Y		VARCHAR2	20	
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	DOC_VRS_SNO	문서버전일련번호		Y		NUMBER	9	
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	LST_YN	최종여부		Y		VARCHAR2	1	
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	BG_PRN_TC	예산성격구분코드		Y		VARCHAR2	3	
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	CNCD_RFR_NO	관련참조번호		Y		VARCHAR2	30	
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	IT_PTL_STS_TC	IT포탈상태구분코드		Y		VARCHAR2	2	
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	REQ_CONE	요청내용		Y		VARCHAR2	300	
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	CTT_NM	계약명		Y		VARCHAR2	100	
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	CTT_AMT	계약금액		Y		NUMBER	18	3
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPAYML	프로젝트관리_대금지급기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BPAYTM	프로젝트관리_대금지급처리기본	DOC_MNG_NO	문서관리번호	Y	N		VARCHAR2	20	
+TPRMPP_BPAYTM	프로젝트관리_대금지급처리기본	DOC_VRS_SNO	문서버전일련번호	Y	N		NUMBER	9	
+TPRMPP_BPAYTM	프로젝트관리_대금지급처리기본	DFR_TOD	지급회차	Y	N		NUMBER	5	
+TPRMPP_BPAYTM	프로젝트관리_대금지급처리기본	DFR_AMT	지급금액		Y		NUMBER	18	3
+TPRMPP_BPAYTM	프로젝트관리_대금지급처리기본	DFR_MPL_DT	지급예정일자		Y		VARCHAR2	8	
+TPRMPP_BPAYTM	프로젝트관리_대금지급처리기본	DFR_DT	지급일자		Y		VARCHAR2	8	
+TPRMPP_BPAYTM	프로젝트관리_대금지급처리기본	OPNN_CONE	의견내용		Y		VARCHAR2	6000	
+TPRMPP_BPAYTM	프로젝트관리_대금지급처리기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPAYTM	프로젝트관리_대금지급처리기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BPAYTM	프로젝트관리_대금지급처리기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BPAYTM	프로젝트관리_대금지급처리기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BPAYTM	프로젝트관리_대금지급처리기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BPAYTM	프로젝트관리_대금지급처리기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPAYTM	프로젝트관리_대금지급처리기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BPAYTL	프로젝트관리_대금지급처리기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
+TPRMPP_BPAYTL	프로젝트관리_대금지급처리기본변경로그	DOC_MNG_NO	문서관리번호		Y		VARCHAR2	20	
+TPRMPP_BPAYTL	프로젝트관리_대금지급처리기본변경로그	DOC_VRS_SNO	문서버전일련번호		Y		NUMBER	9	
+TPRMPP_BPAYTL	프로젝트관리_대금지급처리기본변경로그	DFR_TOD	지급회차		Y		NUMBER	5	
+TPRMPP_BPAYTL	프로젝트관리_대금지급처리기본변경로그	DFR_AMT	지급금액		Y		NUMBER	18	3
+TPRMPP_BPAYTL	프로젝트관리_대금지급처리기본변경로그	DFR_MPL_DT	지급예정일자		Y		VARCHAR2	8	
+TPRMPP_BPAYTL	프로젝트관리_대금지급처리기본변경로그	DFR_DT	지급일자		Y		VARCHAR2	8	
+TPRMPP_BPAYTL	프로젝트관리_대금지급처리기본변경로그	OPNN_CONE	의견내용		Y		VARCHAR2	6000	
+TPRMPP_BPAYTL	프로젝트관리_대금지급처리기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
+TPRMPP_BPAYTL	프로젝트관리_대금지급처리기본변경로그	CHG_DTM	변경일시		N		DATE		
+TPRMPP_BPAYTL	프로젝트관리_대금지급처리기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPAYTL	프로젝트관리_대금지급처리기본변경로그	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPAYTL	프로젝트관리_대금지급처리기본변경로그	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BPAYTL	프로젝트관리_대금지급처리기본변경로그	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BPAYTL	프로젝트관리_대금지급처리기본변경로그	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BPAYTL	프로젝트관리_대금지급처리기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BPAYTL	프로젝트관리_대금지급처리기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPAYTL	프로젝트관리_대금지급처리기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
