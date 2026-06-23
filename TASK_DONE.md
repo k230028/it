@@ -38,6 +38,16 @@
 | ✅ Done | 🟡 Medium | 소유권 검증 403 표준화 — `BoardPostService`/`BoardCommentService` 본인 게시물·댓글 수정/삭제 실패 400→403 | `OwnershipVerifier.verifyOwnerOrAdmin()`(`AccessDeniedException`)로 통일, 완료일: 2026-06-23 |
 | ✅ Done | 🟢 Low | `it_backend/CLAUDE.md §5.18` 보안 규칙에 `OwnershipVerifier`를 소유권 검증 표준 수단으로 명시 | §5.18 보안 규칙 블록 갱신, 완료일: 2026-06-23 |
 
+### ⚠️ 에러 처리 (백엔드 Critical+High, `feature/error-handling-backend`)
+
+> `TASK.md` "에러 처리" 백엔드 3건 해소. 전체 백엔드 테스트 스위트 `./gradlew test` BUILD SUCCESSFUL, 프론트 `npm run typecheck` 통과. 설계/계획: `docs/superpowers/specs/2026-06-23-backend-error-handling-design.md`, `docs/superpowers/plans/2026-06-23-backend-error-handling.md`. (프론트 에러 처리 sweep 12건은 `TASK.md`에 잔존)
+
+| 상태 | 우선순위 | 과제 | 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | 🔴 Critical | `ApplicationService.getApplicationsByIds()`·`ProjectService.getProjectsByIds()`·`CostService.getCostsByIds()` — `null` 반환 + `Objects::nonNull` 필터 제거, 부분 성공 래퍼 `*Dto.BulkResponse{items, failedIds}` 반환 + 실패 ID `log.warn`. 컨트롤러 3곳·프론트 `useProjects`/`useCost` 언랩(failedIds 시 toast 경고)까지 반영 | `BulkResponse` 도입, 완료일: 2026-06-24 |
+| ✅ Done | 🟠 High | `NotificationEventListener.onApprovalCompleted()`·`onApprovalRecalled()` — AFTER_COMMIT 핸들러에 `@Transactional(REQUIRES_NEW)` 추가(§5.16, `NotificationService.send()`와 동일 근거) | `NotificationEventListener.java`, 완료일: 2026-06-24 |
+| ✅ Done | 🟠 High | `ChangeLogEntityListener.persistLog()` 감사로그 실패 로그 `log.warn`→`log.error` 승격(모니터링 알람 노출) + 운영 알람 확장점 주석 | `ChangeLogEntityListener.java`, 완료일: 2026-06-24 |
+
 ### 📦 의존성 취약점 (Snyk, 업스트림 미해결)
 
 | 상태 | 우선순위 | 과제 | 근거 |
