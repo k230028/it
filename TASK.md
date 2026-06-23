@@ -1,6 +1,6 @@
 # 📋 IT Portal 백로그
 
-> 🗓️ **기준일:** 2026-06-22
+> 🗓️ **기준일:** 2026-06-24
 > 🎯 **목적:** `REVIEW.md` 정비 과정에서 확인한 기술 부채, 미구현 항목, 후속 검증 과제를 추적합니다.
 
 ### 🔑 범례 (Legend)
@@ -18,7 +18,7 @@
 
 ## 🚧 진행 중
 
-> 🕒 최종 업데이트: 2026-06-22
+> 🕒 최종 업데이트: 2026-06-24
 
 ### 🔒 보안
 
@@ -29,7 +29,9 @@
 | ⬜ Open | 🟡 Medium | `it-portal-user` 쿠키 변조 시 프론트 관리자 가드가 일시적으로 관리자 화면을 노출하지 않는지 E2E 검증                                                                            | 프론트 쿠키는 UX 상태이며 최종 권한은 백엔드가 판단해야 함                                                    |
 | ⬜ Open | 🟡 Medium | SSO 운영 설정 검증 강화 — `app.sso.allow-direct-eno=false`, `app.frontend-url` 실제 값, 프록시 헤더 덮어쓰기 점검                                                   | `SsoController`, `AuthController.getClientIp()` 운영 안전장치                               |
 | ⬜ Open | 🟡 Medium | Access Token Blocklist 도입 검토 — 로그아웃 시 잔존 토큰(최대 15분) 무효화 필요 여부 결정                                                                              | `AuthService.logout()` Stateless 한계, 고보안 시나리오용                                        |
+| ⬜ Open | 🟠 High | 게시판 멘션·결재 알림 진단 로그 운영 노출 정리 — 사번 목록, 작성자, 본문 snippet이 INFO 로그에 남지 않도록 삭제 또는 DEBUG 강등 | `BoardPostService.java:254`, `ApplicationService.java:201`, 탐지: 2026-06-24 |
 | ⬜ Open | 🟡 Medium | [후속/T10] Refresh Token 재사용 탐지(토큰 패밀리/세대 카운터) 도입 — Phase 3에서 회전(rotation)만 구현되어 탈취된 구 토큰의 재사용 탐지가 없음. 회전 시 무효화된 토큰이 다시 제출되면 패밀리 전체 폐기하는 메커니즘 필요 | `AuthService`(rotation 구현부), 스파이크: `docs/superpowers/plans/2026-06-22-phase3-security-hardening-spike-blocklist.md`, 탐지: 2026-06-22 |
+| ⬜ Open | 🟡 Medium | Tiptap 변수 metadata 프로젝트 카탈로그 권한 필터링 — 현재 인증 사용자 공통 프로젝트 목록을 반환하므로 사용자 권한/부서 기준 목록 제한 필요 | `TiptapVariableController.java`, `TiptapVariableService.java:51`, 탐지: 2026-06-24 |
 | ⬜ Open | 🟠 High | `ContractRepositoryImpl`·`DeliberationRepositoryImpl`·`PaymentRepositoryImpl` — `bbrC` 부서 필터 MVP 미적용(쿼리 조건 없음). 서비스가 bbrC를 전달해도 Repository가 무시 → 일반 사용자가 타부서 계약·심의·지급 목록 전체 열람 가능. `EstimateRepositoryImpl`(적용됨)과 불일치. Bcontm/Bdelim/Bpaymm에 주관부서코드 컬럼 추가 또는 대상 테이블 JOIN 필요 | `ContractRepositoryImpl.java:47`, `DeliberationRepositoryImpl.java:47`, `PaymentRepositoryImpl.java:43`, 발견일: 2026-06-09 (line 309 과업심의 bbrC 항목 통합·확장) |
 | ⬜ Open | 🟡 Medium | 사업집행 4단계 `changeStatus` — 단방향 상태전이(인접만)는 검증하나 역할(ADMIN/작업자/신청자)별 전이 권한 분기 없음. 업무 요건(제출=본인/관리자, 완료=관리자/작업자 등) 확정 후 서비스 계층 role 분기 추가 | `EstimateService.java:115`, `DeliberationService/ContractService/PaymentService` 동일, 발견일: 2026-06-09 |
 
@@ -50,30 +52,33 @@
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
 | ⬜ Open | 🟡 Medium | 프론트엔드 toast 알림 누락 다발 보완 (`useCostListPage`, `projects/form.vue`, `budget/report.vue`, `terminal/[id].vue` 등)                                                                                        | catch 블록 사용자 피드백 없음 — TODO 주석 존재                                                 |
-| ⬜ Open | 🟠 High | 사전협의 자동 저장 실패 사용자 알림 및 재시도 정책 보강                                                                                                                                                                    | `pages/info/documents/[id]/review.vue` 자동 저장 catch가 실패를 삼킴                       |
+| ✅ Done | 🟢 Low | [완료 2026-06-24] 사전협의 자동 저장 실패 사용자 알림 및 재시도 정책 보강 — `console.warn`과 경고 toast 적용 확인                                                                                                      | `pages/info/documents/[id]/review.vue:180`, 조치일: 2026-06-24                       |
 | ⬜ Open | 🟡 Medium | 사전협의 버전/코멘트/검토자 API 실패 표시 보강                                                                                                                                                                        | `stores/review.ts`, `pages/info/documents/[id]/index.vue` 실패 시 빈 상태 폴백           |
 | ⬜ Open | 🟡 Medium | 전산업무비 일괄 업로드 실패 행/원인 로깅 및 결과 상세화                                                                                                                                                                    | `useCostListPage.ts` 행별 catch에서 실패 수만 증가                                         |
 | ⬜ Open | 🟡 Medium | HWPX 내보내기 이미지 누락 진단 강화                                                                                                                                                                              | `useHwpxExport.ts` 이미지 fetch 실패 시 null 반환                                        |
 | ⬜ Open | 🟡 Medium | Java 파일 헤더 주석 전수 보강                                                                                                                                                                                 | 다수 Java 파일이 `package`로 바로 시작하며 파일 역할/흐름/연동 테이블 헤더가 없음                            |
 | ⬜ Open | 🟡 Medium | `AdminDto` 잔여 DTO JavaDoc 보강                                                                                                                                                                        | 자격등급/사용자/조직/역할/로그인 이력/토큰/첨부파일/통계 DTO는 기본 설명만 존재                                  |
 | ⬜ Open | 🟡 Medium | `LoginAttemptService` 조회 전용 트랜잭션 경계 명시 — 클래스 레벨 `@Transactional(readOnly=true)` 적용 검토 | `LoginAttemptService.java`, 발견일: 2026-06-01 |
-| ⬜ Open | 🟠 High | `useTiptapImageInsertion.ts` 임시 blob URL 미해제 — 이미지 업로드 실패 catch 경로 + 성공 경로 모두 `URL.revokeObjectURL()` 보장                                                                                            | `useTiptapImageInsertion.ts:60,111,135` 메모리 누수 위험                                |
+| ⬜ Open | 🟡 Medium | `PlanService` 클래스 레벨 `@Transactional(readOnly=true)` 적용 — 조회 위주 서비스에서 메서드별 트랜잭션 누락 방지, 쓰기 메서드는 `@Transactional` 오버라이드 | `PlanService.java:43`, 탐지: 2026-06-24 |
+| ⬜ Open | 🟡 Medium | mutating 컨트롤러 요청 본문 `@Valid` 누락 점검 및 보강 — 협의회/게시판 POST·PUT 요청 DTO 검증 일관성 회복 | `CouncilController.java`, `BoardPostController.java`, 탐지: 2026-06-24 |
+| ✔️ Resolved | 🟠 High | [확인 2026-06-24] `useTiptapImageInsertion.ts` blob URL 해제 — 성공/실패 경로 모두 `URL.revokeObjectURL()` 보장 확인(기조치) | `useTiptapImageInsertion.ts` 현행 코드 확인, 2026-06-24 |
 | ⬜ Open | 🟡 Medium | `usePdfReport.ts` 한글 폰트 로드 실패 시 Roboto 폴백 — 한글 문자 깨짐 가능, 사용자 경고 토스트 추가                                                                                                                              | `usePdfReport.ts:174` 무경고 폴백                                                     |
-| ⬜ Open | 🟡 Medium | Excalidraw/HWPX/Tiptap 실패 경로 사용자 알림 보강 — 내보내기 실패, 장면 복원 실패, 이미지 누락을 빈 결과와 구분 | `ExcalidrawWrapper.vue`, `ExcalidrawNodeView.vue`, `useHwpxExport.ts`, `hwpx-images.ts`, `useTiptapTableTools.ts` |
+| ⬜ Open | 🟡 Medium | HWPX/Tiptap 실패 경로 사용자 알림 보강 — 이미지 누락·표 동기화 실패를 빈 결과와 구분 | `ExcalidrawNodeView.vue`, `useHwpxExport.ts`, `hwpx-images.ts`, `useTiptapTableTools.ts` |
+| ⬜ Open | 🟡 Medium | `useTiptapTableTools.syncColumnWidths` 빈 catch 보강 — 표 너비 동기화 실패 시 최소 warn 로그와 저장 영향 여부를 구분하는 상태 추가 검토 | `useTiptapTableTools.ts:681`, 탐지: 2026-06-24 |
 | ⬜ Open | 🟡 Medium | 손상된 `it-portal-user` 쿠키와 구버전 `localStorage.user` 파싱 실패 시 warn 로그 및 정리 정책 추가 | `stores/auth.ts` |
-| ⬜ Open | 🔴 Critical | `info/projects/form.vue:604-606` — 편집 모드 데이터 로드 실패 시 빈 폼 표시, 사용자가 저장하면 기존 프로젝트 전체 데이터 덮어쓰기 위험. 실패 즉시 `toast.error` 후 목록 리다이렉트 필수 | `pages/info/projects/form.vue:604-606`, 발견일: 2026-05-26 |
-| ⬜ Open | 🟠 High | `approval/[apfMngNo].vue:48-49` — 결재 상세 로드 실패 시 빈 화면 노출. `toast.error` 알림 및 목록 리다이렉트 필요 | `pages/approval/[apfMngNo].vue:48-49`, 발견일: 2026-05-26 |
-| ⬜ Open | 🟠 High | `board/[blbMngNo]/[nacMngNo]/index.vue:38` — `catch {}` 완전 빈 블록, 에러 변수·로그·toast 모두 없음. 빈 게시글 페이지 노출 | `pages/board/[blbMngNo]/[nacMngNo]/index.vue:38`, 발견일: 2026-05-26 |
-| ⬜ Open | 🟠 High | `EmployeeSearchDialog.vue:88-91,204-210` — 조직도 트리 로드 실패 및 부서원 목록 실패 시 `console.error`만 출력. `toast.error` 알림 추가 필요 | `components/common/EmployeeSearchDialog.vue`, 발견일: 2026-05-26 |
-| ⬜ Open | 🟠 High | `ExcalidrawWrapper.vue:85-89,150-153` — `exportData()` 실패 시 `null` 반환으로 다이어그램 저장 silently 실패, 초기화 실패 시 빈 에디터 노출. 예외 전파 또는 `toast.error` 필요 | `components/ExcalidrawWrapper.vue`, 발견일: 2026-05-26 |
-| ⬜ Open | 🟠 High | `useEmployeeSearch.ts:75-77` — 직원 검색 API 실패 시 `console.error`만 출력. `toast.error` 알림 및 실패/결과 없음 상태 구분 필요 (CLAUDE.md 4.2.1 위반) | `composables/useEmployeeSearch.ts:75-77`, 발견일: 2026-05-26 |
-| ⬜ Open | 🟠 High | `useGlobalSearch.ts:75-79` — 글로벌 검색 실패 시 `suggestions.value = []` silent fallback. 경고 로그 및 인라인 오류 표시 검토 필요 | `composables/useGlobalSearch.ts:75-79`, 발견일: 2026-05-26 |
-| ⬜ Open | 🟠 High | `useCostListPage.ts:366-368` — 코드 로드 실패 시 `console.error`만 출력. `toast.error` 알림 추가 필요 (CLAUDE.md 4.2.1 위반) | `composables/useCostListPage.ts:366-368`, 발견일: 2026-05-26 |
+| ✅ Done | 🟢 Low | [완료 2026-06-24] `info/projects/form.vue` 편집 모드 데이터 로드 실패 시 toast 후 목록 리다이렉트 적용 확인 | `pages/info/projects/form.vue:712`, 조치일: 2026-06-24 |
+| ✔️ Resolved | 🟠 High | [확인 2026-06-24] `approval/[apfMngNo].vue` 결재 상세 로드 실패 — `toast.error` + `/approval/list` 리다이렉트 적용 확인(기조치) | `pages/approval/[apfMngNo].vue` 현행 코드 확인, 2026-06-24 |
+| ✔️ Resolved | 🟠 High | [확인 2026-06-24] `board/[blbMngNo]/[nacMngNo]/index.vue` 삭제 실패 — `console.error` + `toast.error` 적용 확인(기조치) | `pages/board/[blbMngNo]/[nacMngNo]/index.vue` 현행 코드 확인, 2026-06-24 |
+| ✔️ Resolved | 🟠 High | [확인 2026-06-24] `EmployeeSearchDialog.vue` 조직도·부서원 목록 로드 실패 — 양쪽 경로 `toast.error` 적용 확인(기조치) | `components/common/EmployeeSearchDialog.vue` 현행 코드 확인, 2026-06-24 |
+| ✅ Done | 🟢 Low | [완료 2026-06-24] `ExcalidrawWrapper.vue` 내보내기·초기화·장면 복원 실패 toast 적용 확인 | `components/ExcalidrawWrapper.vue:92`, `components/ExcalidrawWrapper.vue:160`, `components/ExcalidrawWrapper.vue:201`, 조치일: 2026-06-24 |
+| ✔️ Resolved | 🟠 High | [확인 2026-06-24] `useEmployeeSearch.ts` 직원 검색 실패 — warn toast + 빈 목록 처리 적용 확인(기조치) | `composables/useEmployeeSearch.ts` 현행 코드 확인, 2026-06-24 |
+| ✅ Done | 🟠 High | [완료 2026-06-24] `useGlobalSearch` 실패를 빈 결과와 구분 — `console.warn` + `searchError` ref 인라인 오류 상태, `GlobalSearchBar`가 "검색 중 오류" 표시(타입어헤드 노이즈 방지로 toast 미사용). 단위 테스트 추가 | `composables/useGlobalSearch.ts`, `components/GlobalSearchBar.vue`, 조치일: 2026-06-24 |
+| ✔️ Resolved | 🟠 High | [확인 2026-06-24] `useCostListPage.ts` 공통코드 로드 실패 — `toast.error` 적용 확인(기조치) | `composables/useCostListPage.ts` 현행 코드 확인, 2026-06-24 |
 | ⬜ Open | 🟡 Medium | `useCostListPage.ts` 전년도/계속사업 폴백 실패 상태 표시 — 단말기 재조회, 자동완성, 전년도 상세 조회 실패가 빈 결과와 구분되지 않음. 경고 로그 또는 degraded-state 표시 추가 | `useCostListPage.ts:1324,1416,1442`, 탐지: 2026-06-05 |
 | ⬜ Open | 🟡 Medium | `ResourceTableSection.vue` 소요자원 코드 로드 실패 사용자 피드백 보강 — `console.error`만 있고 옵션 누락 상태가 화면에 설명되지 않음 | `components/projects/ResourceTableSection.vue:279-280`, 탐지: 2026-06-05 |
 | ⬜ Open | 🟡 Medium | `terminal/[id].vue` 삭제 실패 시 PrimeVue toast 추가 — `useToast()`는 import되어 있으나 catch가 FIXME + `console.error`만 수행 | `pages/info/cost/terminal/[id].vue:36-38`, 탐지: 2026-06-05 |
-| ⬜ Open | 🟠 High | `info/cost/form.vue:184-186` — 비용 폼 초기 데이터 로드 실패 시 `console.error`만 출력. `toast.error` 알림 및 에러 상태 UI 처리 필요 (CLAUDE.md 4.2.1 위반) | `pages/info/cost/form.vue:184-186`, 발견일: 2026-05-26 |
-| ⬜ Open | 🟠 High | `ResultReviewProgress.vue` — `syncReviewStatus()` 상태 전이 실패를 catch가 완전 삼킴(로그 0건). 10→11 자동 전이 실패 추적 불가. `console.warn(e)` 기록 추가 (toast 억제는 유지, FIXME 주석 등록 완료) | `components/council/result/ResultReviewProgress.vue:61`, 탐지: 2026-06-12 |
+| ✔️ Resolved | 🟠 High | [확인 2026-06-24] `info/cost/form.vue` 초기 데이터 로드 실패 — `toast.error` 적용 확인(기조치) | `pages/info/cost/form.vue` 현행 코드 확인, 2026-06-24 |
+| ✅ Done | 🟢 Low | [완료 2026-06-24] `ResultReviewProgress.vue` 상태 전이 실패 `console.warn` 기록 추가 확인 (toast 억제 유지) | `components/council/result/ResultReviewProgress.vue:60`, 조치일: 2026-06-24 |
 | ⬜ Open | 🟡 Medium | `council-request/[id].vue` — `saveTemp`/`saveComplete`/`submitApproval` catch 바인딩 없음. 백엔드 오류 메시지(`e.data?.message`) 대신 일반 문구만 노출. `prepare/[id].vue`의 `catch (e: unknown)` 패턴으로 통일 (TODO 주석 등록 완료) | `pages/info/council-request/[id].vue:370,407,476`, 탐지: 2026-06-12 |
 | ⬜ Open | 🟡 Medium | `council-request/[id].vue` — `councilStatus`의 `?? '01'` 폴백이 데이터 미로드(null)를 DRAFT로 둔갑시켜 편집 가드 해제. 로드 실패 상태에서 빈 데이터 저장 위험. null 유지 + 가드 보강 (TODO 주석 등록 완료) | `pages/info/council-request/[id].vue:189`, 탐지: 2026-06-12 |
 | ⬜ Open | 🟢 Low | `CommitteeSelector.vue`(위원 저장·기본위원 배정)·`ScheduleStatus.vue`(일정 확정) catch 바인딩 없음 — 업무 오류 메시지 미전달. `EvaluationForm.vue` 오류 추출 패턴으로 통일 | `CommitteeSelector.vue:261,295`, `ScheduleStatus.vue:159`, 탐지: 2026-06-12 |
@@ -105,7 +110,7 @@
 | ⬜ Open | 🟡 Medium | `Deliberation/Contract/PaymentService.get()` 상세 조회 대상명 별도 SELECT 제거 — `loadCurrent()` + `resolveTargetName()` 2쿼리를 `EstimateRepositoryImpl`처럼 BPROJM/BCOSTM LEFT JOIN 프로젝션 단일 쿼리로 통일. 목록→상세 순차 로드 시 누적 N+1 | `DeliberationService.java:148`, `ContractService.java:146`, `PaymentService.java:176`, 탐지: 2026-06-09 |
 | ⬜ Open | 🟢 Low | `applyAthIds()` 적용 대상 최소화 — prune 이후 잔존 노드의 mnuId 집합 기준으로 권한 Map 구성 검토. 메뉴 권한 캐시 도입(2026-06-22 `MenuAuthMapProvider`) 완료됨 → 실익 재평가 | `MenuQueryService.java:62`, 탐지: 2026-06-12 |
 | ⬜ Open | 🟡 Medium | [후속/T13] 캐시 TTL 미적용 보완 — 현재 `ConcurrentMapCacheManager`는 TTL 미지원. `tiptapMetadata`는 프로젝트 쓰기 시 stale 가능(`ProjectService` 쓰기경로에 `@CacheEvict` 추가 또는 Caffeine 도입 필요); `NotificationService` unread-count는 60s TTL 미적용(evict-on-write로 대체됨). Caffeine 전환 또는 쓰기경로 evict 보강 결정 필요 | `ProjectService`, `TiptapVariableService`(metadata), `NotificationService`, 탐지: 2026-06-22 |
-| ⬜ Open | 🟡 Medium | [후속] `AdminMenuService.create()`/`delete()` `@Transactional` 누락(다중 쓰기) — Phase 4 캐시 evict-on-write 전제를 강화하기 위해 트랜잭션 경계 추가 권장 | `AdminMenuService`, 탐지: 2026-06-22 |
+| ✅ Done | 🟢 Low | [완료 2026-06-24] `AdminMenuService.create()`/`delete()` 트랜잭션 경계 재검증 — 클래스 레벨 `@Transactional` 적용 확인 | `AdminMenuService.java:24`, 탐지: 2026-06-22, 조치일: 2026-06-24 |
 | ⬜ Open | 🟢 Low | [후속] `BtermmL.IND_RSN` `@Column(length=600)` — `TPRMPP_BTERML` DDL 대조해 `BcostmL`과 동일한 `@Column(length)` 드리프트 여부 확인 (BcostmL은 2026-06-22 정정 완료) | `BtermmL.java`, `TPRMPP_BTERML`, 탐지: 2026-06-22 |
 
 ### 🎨 프론트엔드 리팩토링
@@ -154,6 +159,7 @@
 | ⬜ Open | 🟢 Low | [후속/minor] `CodeNameMapBuilder` 위치(`domain/budget/cost/util`)가 `ProjectService`와 공유되므로 `common` 패키지로 이동 검토 | `CodeNameMapBuilder`, 탐지: 2026-06-22 |
 | ⬜ Open | 🟡 Medium | [기술부채] 품목 금액 환율 환산 규칙 통일 — `ProjectBudgetSummaryService`(amt × xcr)와 과거 `recalcCurrentYearBudget`(× 미적용)의 비대칭. MPL_AMT는 현재 AMT 규칙을 지점별로 미러링 중. 단일 규칙으로 정리 | 2026-06-22 품목 예정금액(MPL_AMT) 전환에서 분리 |
 | ⬜ Open | 🟢 Low | [후속/perf] `CouncilService.deriveCurrentYearBudget` 협의회 목록 N+1 — 행마다 `findByAbusMngNoAndDelYn` 호출. 협의회 목록 규모 증가 시 배치 prefetch로 전환 | `CouncilService`, 탐지: 2026-06-22 (품목 MPL_AMT 전환) |
+| ⬜ Open | 🟡 Medium | EAI HostAddressProvider 로컬 IP/MAC 조회 실패 진단 보강 — 원인 예외 없이 info만 남아 전문 공통부 공백 원인 추적 곤란 | `HostAddressProvider.java:34`, `HostAddressProvider.java:57`, 탐지: 2026-06-24 |
 
 ## 📝 PRD_20260517 Tiptap 변수 입력 후속 과제
 
