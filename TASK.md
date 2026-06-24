@@ -117,25 +117,10 @@
 
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
-| ⬜ Open | 🟡 Medium | `useProjectOptions.ts` 인라인 전환 검토 — `yearOptions` 배열만 반환하는 단순 composable                                                 | `pages/info/projects/form.vue` 1곳에서만 사용 |
-| ⬜ Open | 🟢 Low | `ReviewVersionHistory.vue` 로컬 `formatDateTime()` 유지 여부 검토 — 축약 표시가 의도라면 함수명을 도메인 전용으로 변경 | `components/review/ReviewVersionHistory.vue` |
-| ⬜ Open | 🟡 Medium | `info/index.vue` 정적 KPI/공지/일정 데이터를 실제 API 또는 운영 데이터 소스로 전환 | 파일 헤더가 정적 데이터/향후 API 연결 예정임을 명시 |
-| ⬜ Open | 🟡 Medium | `budget/list.vue` 탭 제거 후 잔여 dead code 정리 | 미사용 import/filter/pageSize/download 함수 다수 |
-| ⬜ Open | 🟢 Low | `ResultForm.vue` emit/type 선언 단순화 | `ResultData` 미사용, `'saved' | 'confirmed'` 단일 시그니처로 축약 가능 |
-| ⬜ Open | 🟢 Low | `useTableColumnResize.ts` 숫자 파싱/배열 초기화 스타일 정리 | `Number.parseInt/parseFloat`, `Array.from` 등 일관 스타일 후보 |
-| ⬜ Open | 🟡 Medium | 공통 `useDeptFilter` composable 구현 또는 규칙 폐기 결정 | 기존 CLAUDE 규칙과 달리 `app/composables/useDeptFilter.ts`가 없음 |
-| ⬜ Open | 🟡 Medium | Tiptap 표 도구 계약 문서화 및 주석 보강 | `useTiptapTableTools.ts`, `TiptapTableFloatingToolbar.vue`가 복잡도 대비 계약 설명 부족 |
-| ⬜ Open | 🟡 Medium | 정보기술부문 예산 조회/비교 화면 목업 데이터 API 연동 | `pages/budget/summary.vue`, `pages/budget/comparison.vue`의 `MOCK_ROWS`/`MOCK_FSS_ROWS`/`MOCK_YOY_ROWS` TODO |
-| ⬜ Open | 🟡 Medium | 관리자 화면 `사용여부` 옵션/태그 로직 중복 제거 | `pages/admin/auth-grades.vue`, `pages/admin/roles.vue`가 동일한 `useYnOptions`와 표시 로직을 각각 보유 |
-| ⬜ Open | 🟡 Medium | `/admin/boards` 관리자 레이아웃 적용 여부 결정 | 페이지는 `middleware: 'admin'`만 선언하며, 다른 `/admin/**` 페이지와 달리 `layout: 'admin'`이 없음 |
-| ⬜ Open | 🟡 Medium | `useNotifications` 모듈 스코프 싱글턴 상태(`unreadCount`, `items`, `loading`, `pollHandle`) — 테스트 간 누출·SSR 전역 공유 위험. Pinia 스토어(`stores/notification.ts`) 전환 또는 `useState()` 기반 SSR-safe ref 검토 | `composables/useNotifications.ts:17-21` |
-| ⬜ Open | 🟢 Low | `useNotifications.refresh()` 명시적 호출 경로(드롭다운 열기 등)에 호출자 catch+toast 보장 여부 확인 — composable 계약상 에러 전파이나 AppHeader 등 실제 호출부에 toast 핸들링이 없을 수 있음 | `composables/useNotifications.ts` |
-| ⬜ Open | 🟢 Low | 사업집행 3개 목록 페이지 대상구분 선택 Dialog 로직 공통화 — `deliberation/contract/payment/index.vue`가 `selectedTgt`/`selectedProject`/`selectedCost`/`hasTarget`/`selectedCncdRfrNo`/`resetSelection` 패턴을 중복 보유. `useProjectCostSelector()` composable 추출 | `pages/project/{deliberation,contract,payment}/index.vue:56~`, 탐지: 2026-06-09 |
-| ⬜ Open | 🟢 Low | 사업집행 4개 composable `changeStatus(docNo, stsTc)` 중복 — URL만 다르고 구현 동일. 중장기 `useDocumentApi(baseUrl)` 팩토리 도입 시 일괄 처리 후보 | `useEstimates.ts:115`, `useDeliberations.ts:115`, `useContracts.ts:115`, `usePayments.ts:117`, 탐지: 2026-06-09 |
-| ⬜ Open | 🟢 Low | `contract/index.vue` 빈 `/* ── 상태 표시 ── */` 주석 잔재 제거 — `estimate/index.vue`의 statusLabel 헬퍼 자리이나 contract에서는 함수 없이 주석만 남음 | `pages/project/contract/index.vue:57`, 탐지: 2026-06-09 |
-| ⬜ Open | 🟠 High | `result/[id].vue` `reviewProgressEnabled`의 `s >= '05'` 문자열 사전순 비교 — `'SKIPPED' >= '05'`도 true라 생략된 협의회에서 위원 검토 패널이 노출될 수 있음. 허용 상태 집합(`Set.has`) 판정으로 교체 (FIXME 주석 등록 완료) | `pages/info/council-request/result/[id].vue:147`, 탐지: 2026-06-12 |
-| ⬜ Open | 🟢 Low | `AppSidebar.vue` 미사용 함수 `_isGroupExpanded` 제거 — 호출 0건, eslint-disable 지시어로 가려져 있음 | `AppSidebar.vue:176`, 탐지: 2026-06-12 |
-| ⬜ Open | 🟢 Low | 위원유형 라벨 로직 중복 정리 — `ScheduleStatus.vue` 로컬 맵(`{'01':'당연',...}`)을 `useCouncilCodes().getMemberTypeLabel`로 통일하고, `CommitteeList.vue`/`CommitteeSelector.vue`의 1줄 `typeLabel` 래퍼 제거 | `ScheduleStatus.vue:167-169`, `CommitteeList.vue:34`, `CommitteeSelector.vue:310`, 탐지: 2026-06-12 |
+> 🗓️ 2026-06-24 리팩토링 일괄 처리 — Phase 0~4 17건 완료/종료(거짓양성·이미반영 포함)는 [`TASK_DONE.md`](TASK_DONE.md) §🎨 참조. 아래는 백엔드 신규 엔드포인트가 필요한 Mock→API 연동(별도 기능 spec 예정) 잔여분.
+
+| ⬜ Open | 🟡 Medium | `info/index.vue` 정적 KPI/공지/일정 데이터를 실제 API 또는 운영 데이터 소스로 전환 | 파일 헤더가 정적 데이터/향후 API 연결 예정임을 명시. 백엔드 엔드포인트 필요 |
+| ⬜ Open | 🟡 Medium | 정보기술부문 예산 조회/비교 화면 목업 데이터 API 연동 | `pages/budget/summary.vue`, `pages/budget/comparison.vue`의 `MOCK_ROWS`/`MOCK_FSS_ROWS`/`MOCK_YOY_ROWS` TODO. 백엔드 엔드포인트 필요 |
 
 ### ⚙️ 백엔드 리팩토링
 

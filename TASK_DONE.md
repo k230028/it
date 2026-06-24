@@ -95,6 +95,26 @@
 | ✅ Done | 🟠 High | `formatDateTime` 중복 구현 통합 — `utils/common.ts`, `pages/guide/index.vue`, `pages/info/documents/[id]/index.vue` 3개 상이한 구현 | `utils/common.ts` 단일 구현으로 통합             |
 | ✅ Done | 🟠 High | `stores/review.ts` 검토자 조회 `$apiFetch('/api/...')` 상대 URL 제거 — `${config.public.apiBase}`를 붙여 Nuxt origin 오호출 방지 | `stores/review.ts`, 조치일: 2026-06-21 |
 | ✅ Done | 🟠 High | `useCouncilCodes.ts` 코드명 필드 불일치 수정 — `statusMap`/`hearingMap`/`memberTypeMap` 모두 `c.cdvaNm` 매핑 사용, `CodeItem`에 `cNm`/`cdvaNm` 정의 확인 | 코드 확인 2026-06-12: `useCouncilCodes.ts:68,73,78` |
+
+#### 2026-06-24 프론트엔드 리팩토링 일괄 처리 (Phase 0~4, spec/plan: `docs/superpowers/specs|plans/2026-06-24-frontend-refactoring*`)
+
+| ✅ Done | 🟠 High | `result/[id].vue` `reviewProgressEnabled` `s >= '05'` 사전순 비교 버그 수정 — `app/utils/councilStatus.ts`의 `isReviewProgressEnabled`(허용 상태 Set.has) 순수 함수 추출 + 단위테스트. `'SKIPPED'` 오노출 차단 | 조치일: 2026-06-24, `84581e2`/`dd3d8e4` |
+| ✅ Done | 🟢 Low | `AppSidebar.vue` 미사용 `_isGroupExpanded` 제거 | 조치일: 2026-06-24, `c7e0fd9` |
+| ✅ Done | 🟢 Low | `contract/index.vue` 빈 `/* ── 상태 표시 ── */` 잔재 주석 제거 | 조치일: 2026-06-24, `b06c309` |
+| ✅ Done | 🟡 Medium | `budget/list.vue` 탭 제거 후 dead code 정리 — 미사용 filter/pageSize/download/computed 다수 제거(참조 0건 검증) | 조치일: 2026-06-24, `7b9aebb` |
+| ✅ Done | 🟢 Low | 사업집행 4개 composable `changeStatus` 중복 → `useDocumentStatusApi.ts`의 `createChangeStatus(apiFetch, baseUrl)` 팩토리로 통합(공개 시그니처 유지) + 단위테스트 | 조치일: 2026-06-24, `274b15d` |
+| ✅ Done | 🟡 Medium | `useProjectOptions.ts` 단일 사용 확인 후 `projects/form.vue`에 인라인, composable·테스트 제거 | 조치일: 2026-06-24, `b4eaca1` |
+| ✅ Done | 🟢 Low | 사업집행 3개 페이지 대상선택 상태 → `useProjectCostSelector.ts` 공통화(watch/hasTarget/selectedCncdRfrNo/resetSelection 동작 보존) | 조치일: 2026-06-24, `509dd0f` |
+| ✅ Done | 🟡 Medium | 관리자 `사용여부` 옵션/태그 중복 → `useYnOptions.ts`(ynOptions/getYnLabel/getYnSeverity) 공통화, auth-grades·roles 적용 | 조치일: 2026-06-24, `4c28a26` |
+| ✅ Done | 🟢 Low | `ResultForm.vue` emit/type 단순화 — 이미 목표 상태(emit 단일 union, `ResultData` 미import) 확인 | 검증일: 2026-06-24 (코드 변경 불요) |
+| ✅ Done | 🟢 Low | `useTableColumnResize.ts` 숫자 파싱/배열 스타일 — 이미 `Number.parseInt`/`Array.from` 일관 적용 확인 | 검증일: 2026-06-24 (코드 변경 불요) |
+| ✔️ Resolved | 🟢 Low | 위원유형 라벨 중복 — `CommitteeList.vue`/`CommitteeSelector.vue`는 이미 `getMemberTypeLabel` 사용. `ScheduleStatus.vue`는 좁은 `구분` 컬럼용 축약 라벨('당연'/'소집')을 의도적으로 유지(전체 라벨 '당연위원'과 다름, 동작 보존) | 검증일: 2026-06-24 (의도된 차이 수용) |
+| ✅ Done | 🟡 Medium | `useDeptFilter` — 공통 composable 미도입 폐기 결정, `it_frontend/CLAUDE.md` §4.7.1.3 반영(YAGNI) | 조치일: 2026-06-24 |
+| ✅ Done | 🟡 Medium | `/admin/boards` 관리자 레이아웃 적용 — `definePageMeta`에 `layout: 'admin'` 추가 | 조치일: 2026-06-24, `be537ec` |
+| ✅ Done | 🟢 Low | `ReviewVersionHistory.vue` 로컬 `formatDateTime`을 축약 전용 `formatVersionTimestamp`로 개명(공통 함수와 혼동 방지) | 조치일: 2026-06-24, `6494b6a` |
+| ✅ Done | 🟡 Medium | `useNotifications` 모듈 싱글턴 상태(`unreadCount`/`items`/`loading`)를 `useState` SSR-safe로 전환(계약·공개 API 보존), CLAUDE.md §4.7.3 반영, 테스트 갱신 | 조치일: 2026-06-24, `3ab412b` |
+| ✔️ Resolved | 🟢 Low | `useNotifications.refresh()` 호출부 toast — `NotificationBell`/`NotificationDropdown` 사용자 호출 경로 모두 try-catch+toast 보유 확인 | 검증일: 2026-06-24 (이미 충족) |
+| ✅ Done | 🟡 Medium | Tiptap 표 도구 계약 문서화 — `useTiptapTableTools.ts` TSDoc 보강 + `docs/guides/tiptap-table-tools.md` 신규(syncTableWidths swallowed-catch/저장영향 명시) | 조치일: 2026-06-24, `0f773c8` |
 | ✅ Done | 🟠 High | 협의회 평가 요약 템플릿 닫힘 구조 정리 | ESLint 단독 실행 2026-06-12: `EvalSummaryPanel.vue` 오류 0건 (847a947 개선 반영) |
 | ✅ Done | 🟠 High | `utils/common.ts` 협의회 상태/심의유형 매핑 구 3자리 코드 잔재 수정 — `COUNCIL_STATUS_TAG_MAP` 키와 `getHearingTypeLabel` switch case를 2자리(`'01'`~`'13'`/`'01'`~`'05'`)로 교체. dead branch 해소(`getCouncilTagClass`/`getHearingTypeLabel` 정상 동작). `tests/unit/utils/common.test.ts` 해당 케이스 2자리로 갱신, 124 tests 통과 | `app/utils/common.ts:342-356,375-383`, 검증일: 2026-06-15 |
 | ✅ Done | 🟠 High | [완료 2026-06-24] 프론트 build health 6항목 stale 정리 — lint 0 errors/2 warnings, typecheck 0 errors, RichEditor 컴포넌트/참조 부재 확인. ESLint 62/73 errors, typecheck 4건, 단일 template root, 전산업무비 prop, plan/[id] 타입, RichEditor 마이그레이션 모두 해소. cost 컴포넌트 type-only import 정리도 lint 0 errors로 동반 해소(7행째 이관) | 2026-06-24 build 검증 |
