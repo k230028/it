@@ -643,7 +643,6 @@ TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_PPO_CONE	사업목�
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	IT_PTL_EDRT_TC	IT포탈전결권구분코드		Y		VARCHAR2	2	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	IT_PTL_RPR_STS_TC	IT포탈보고상태구분코드		Y		VARCHAR2	2	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	SKL_FLD_NM	기술분야명		Y		VARCHAR2	500	
-TPRMPP_BPROJM	프로젝트관리_정보화사업기본	IT_PTL_STS_TC	IT포탈상태구분코드		Y		VARCHAR2	2	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_RNG_CONE	사업범위내용		Y		VARCHAR2	600	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
@@ -803,7 +802,6 @@ TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ABUS_PPO_CONE
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	IT_PTL_EDRT_TC	IT포탈전결권구분코드		Y		VARCHAR2	2	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	IT_PTL_RPR_STS_TC	IT포탈보고상태구분코드		Y		VARCHAR2	2	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	SKL_FLD_NM	기술분야명		Y		VARCHAR2	500	
-TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	IT_PTL_STS_TC	IT포탈상태구분코드		Y		VARCHAR2	2	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ABUS_RNG_CONE	사업범위내용		Y		VARCHAR2	600	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	CHG_DTM	변경일시		N		DATE		
@@ -815,6 +813,16 @@ TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	GUID	GUID		N	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_BPROJA	프로젝트관리_정보화사업관계	ABUS_MNG_NO	사업관리번호	Y	N		VARCHAR2	30	
+TPRMPP_BPROJA	프로젝트관리_정보화사업관계	CNCD_RFR_NO	관련참조번호(단계 원본문서 key)	Y	N		VARCHAR2	30	
+TPRMPP_BPROJA	프로젝트관리_정보화사업관계	IT_PTL_STS_TC	IT포탈상태구분코드		Y		VARCHAR2	2	
+TPRMPP_BPROJA	프로젝트관리_정보화사업관계	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPROJA	프로젝트관리_정보화사업관계	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_BPROJA	프로젝트관리_정보화사업관계	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_BPROJA	프로젝트관리_정보화사업관계	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_BPROJA	프로젝트관리_정보화사업관계	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_BPROJA	프로젝트관리_정보화사업관계	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_BPROJA	프로젝트관리_정보화사업관계	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
 TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
 TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	GCL_MNG_NO	품목관리번호		N		VARCHAR2	16	
 TPRMPP_BITEML	프로젝트관리_정보화사업품목기본변경로그	SNO	일련번호		N		NUMBER	9	
