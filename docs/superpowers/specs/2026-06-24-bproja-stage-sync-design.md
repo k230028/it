@@ -2,7 +2,12 @@
 
 > 작성일: 2026-06-24
 > 선행: 1차 `docs/superpowers/specs/2026-06-24-bproja-status-relation-design.md` (BPROJA 신설 + 읽기 경로 완료).
-> 범위: **2차 — 각 단계 서비스가 문서 생성/상태변경/삭제 시 BPROJA를 upsert/softDelete**. 사전협의(Brdocm)는 제외(아래 §7).
+> 범위: **2차 — 각 단계 서비스가 문서 생성/상태변경/삭제 시 BPROJA를 upsert/softDelete**.
+>
+> **재스코프(2026-06-24, 조사 결과 반영):**
+> - **2차-A(본 계획 대상, 6단계)**: `BprojaSyncService` + 실행 4단계(소요예산/과업심의/입찰계약/대금지급) + 예산편성 + 계획.
+> - **2차-B(별도)**: 타당성/협의회(Basctm) 통합 + **CouncilRepository 런타임 회귀 수정** + 협의회 "신청 대상" 판정 재설계. 별도 brainstorm 필요 (아래 §4.2, §12).
+> - 사전협의(Brdocm)는 프로젝트 연결 경로 부재로 계속 제외(아래 §7).
 
 ## 1. 목적 / 배경
 
@@ -86,22 +91,21 @@ class BprojaSyncService {
 - changeStatus의 `to`는 `req.stsTc()`(42/49, 52/59, 62/69, 72/79). native=통합이라 그대로 전달.
 - delete는 상태를 바꾸지 않고 **softDelete**(BPROJA 행 DEL_YN='Y') 호출.
 
-### 4.2 타당성검토 (CouncilService, 엔티티 Basctm)
-프로젝트 = `abusMngNo`(엔티티 직접 컬럼), 단계 key = `itPtlAsctId`, 상태 = `itPtlAsctPrgStsTc`를
-아래 매핑으로 변환.
+### 4.2 타당성검토 (CouncilService, 엔티티 Basctm) — **2차-B로 분리(본 계획 제외)**
+타당성/협의회 통합은 깨진 협의회 코드와 얽혀 있어 별도 작업으로 분리한다. 참고용으로 통합 방향만 기록.
 
-협의회상태(01–13) → 타당성 통합코드:
-- `01,02,03,04` → **31**(작성중)
-- `05,06,07,08,09,10,11,12` → **32**(진행중)
-- `13` → **39**(완료)
+- 프로젝트 = `abusMngNo`, 단계 key = `itPtlAsctId`, 상태 = `itPtlAsctPrgStsTc`를 매핑:
+  협의회상태(01–13) → 타당성 통합코드: `01–04`→**31**, `05–12`→**32**, `13`→**39**.
+- 통합 지점(예정): `createCouncil`(save 직후)·`changeStatus`(전이 직후)에서 `sync.upsert(...)`.
 
-매핑은 `BprojaSyncService` 외부의 작은 헬퍼(예: `CouncilStatusMapper.toPortalStatus(String)`),
-또는 CouncilService 내부 private 메서드로 구현(단순 분기). 통합 지점:
-- `createCouncil` (`councilRepository.save(council)` 직후): `sync.upsert(request.prjMngNo(), asctId, map("01"))` → 31.
-- `changeStatus(asctId, targetSts)` (`council.changeStatus(targetSts)` 직후):
-  `sync.upsert(council.getAbusMngNo(), asctId, map(targetSts))`.
-  (모든 상태 전이가 이 메서드를 거치므로 단일 주입으로 충분.)
-- `Basctm` 소프트삭제 공개 메서드는 현재 없음 → 추가 작업 없음. (도입 시 softDelete 호출.)
+**선결 회귀(2차-B에서 반드시 수반):** `CouncilRepository`의 네이티브 SQL이 1차에서 DROP된
+`BPROJM.IT_PTL_STS_TC`와 코드값명 전환에서 rename된 `BPROJM.BZ_TP_C`를 참조해 **현재 런타임에 깨져
+있다**(ORA-00904, 라이브 ITPOWN 스키마 확인). 구체:
+- `updateProjectStatus`(`UPDATE TPRMPP_BPROJM SET IT_PTL_STS_TC=...`, line 92) — `createCouncil`(190),
+  완료 경로(310, 364)에서 호출. → BPROJA upsert로 대체하고 메서드 제거.
+- `findProjectsForCouncilAll`/`findProjectsForCouncilByDepartment`(151~, 203~) — `p.IT_PTL_STS_TC`,
+  `p.BZ_TP_C` 참조. → `BZ_TP_C`는 `ABUS_PPO_CONE`로, 단일 상태 게이트('09'/'32')는 BPROJA 대표상태
+  기반으로 **재설계**(예산편성 완료=신청자격 개념을 BPROJA 모델로 재정의해야 하므로 설계 결정 필요).
 
 ### 4.3 예산편성 (BudgetWorkService, 엔티티 Bbugtm)
 상태 컬럼 없음. 프로젝트 = `item.orcPkVl()` (단, `"BPROJM".equals(item.orcTb())`일 때만), 단계
@@ -168,10 +172,19 @@ key = `bbugtm.getBgNo()`, 상태 = 고정 **21(진행중)**.
 - 각 단계 서비스: create/changeStatus/delete 후 BprojaSyncService 호출 인자 검증(목 기반) — 특히
   `bgPrnTc='200'` 시 미호출, 예산편성 `orcTb≠'BPROJM'` 시 미호출.
 
-## 11. 파일 영향 요약
+## 11. 파일 영향 요약 (2차-A)
 
-- **신규**: `BprojaSyncService.java`, (선택) `CouncilStatusMapper.java`.
+- **신규**: `BprojaSyncService.java`.
 - **변경(주입+호출)**: `EstimateService`, `DeliberationService`, `ContractService`, `PaymentService`,
-  `CouncilService`, `BudgetWorkService`, `PlanService`.
+  `BudgetWorkService`, `PlanService`. (CouncilService는 2차-B.)
 - **무변경**: `ProjectService`/`ProjectRepositoryImpl`(1차 읽기 경로 그대로), 엔티티(필요 메서드 기보유),
   DB(BPROJA 1차 생성됨, 신규 마이그레이션 없음).
+
+## 12. 2차-B (별도 작업, 본 계획 제외)
+
+타당성/협의회(Basctm) 통합은 아래 회귀 수정 + 재설계를 수반하므로 별도 brainstorm으로 진행한다.
+- `CouncilRepository`의 `updateProjectStatus`(BPROJM 단일 상태 UPDATE) 제거 → `BprojaSyncService.upsert`로 대체.
+- `findProjectsForCouncilAll`/`ByDepartment`의 `IT_PTL_STS_TC`·`BZ_TP_C` 의존 수정(컬럼 rename 반영 +
+  신청 대상 판정을 BPROJA 대표상태 기반으로 재정의).
+- Basctm create/changeStatus에 협의회상태→통합코드(31/32/39) 매핑 upsert 추가(§4.2).
+> 비고: BZ_TP_C 깨짐은 코드값명 전환에서 비롯한 선행 회귀로, 1차 이전부터 존재했을 가능성이 큼.
