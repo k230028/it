@@ -25,10 +25,10 @@ BPROJA에 `(프로젝트 ABUS_MNG_NO, 단계 자기 key, 통합 IT_PTL_STS_TC)` 
 
 | 코드대역 | 단계 |
 |---|---|
-| 01–09 | 사전협의 (이번 범위 제외) |
+| 01–09 | 예산편성 |
 | 11–19 | 정보기술부문계획 |
-| 21–22 | 예산편성 |
-| 23–24 | 요구사항 구체화 |
+| 21–22 | 사전협의 (이번 범위 제외) |
+| 28–29 | 요구사항 구체화 |
 | 31–39 | 타당성검토 |
 | 41–49 | 소요예산 |
 | 51–59 | 과업심의 |
@@ -109,11 +109,11 @@ class BprojaSyncService {
 
 ### 4.3 예산편성 (BudgetWorkService, 엔티티 Bbugtm)
 상태 컬럼 없음. 프로젝트 = `item.orcPkVl()` (단, `"BPROJM".equals(item.orcTb())`일 때만), 단계
-key = `bbugtm.getBgNo()`, 상태 = 고정 **21(진행중)**.
+key = `bbugtm.getBgNo()`, 상태 = 고정 **03(작업 진행중)**.
 - `applyItemRates`의 BPROJM 분기에서 `bbugtmRepository.save(bbugtm)` 직후:
-  `sync.upsert(item.orcPkVl(), bbugtm.getBgNo(), "21")`.
-- **완료(22) 전이**: 현재 BudgetWorkService에 편성 확정/승인 액션이 없어 **이번 범위에서는 진행중까지만**
-  기록한다. 편성 확정 액션이 도입되면 동일 패턴으로 `upsert(..., "22")`를 추가한다(§8 후속).
+  `sync.upsert(item.orcPkVl(), bbugtm.getBgNo(), "03")`.
+- **완료(09) 전이**: 현재 BudgetWorkService에 편성 확정/승인 액션이 없어 **이번 범위에서는 진행중까지만**
+  기록한다. 편성 확정 액션이 도입되면 동일 패턴으로 `upsert(..., "09")`를 추가한다(§8 후속).
 
 ### 4.4 정보기술부문계획 (PlanService, 엔티티 Bplanm + 연관 Bplana)
 상태 컬럼 없음. 계획은 N:M(한 계획 ↔ 여러 프로젝트)으로 `Bplana`(reqDocNo↔prjMngNo) fan-out.
@@ -152,8 +152,8 @@ key = `bbugtm.getBgNo()`, 상태 = 고정 **21(진행중)**.
 
 ## 8. 후속(이번 범위 아님)
 
-- 예산편성 완료(22)·계획 완료(19) 전이: 각 도메인에 확정/제출 액션이 도입될 때 upsert 추가.
-- 사전협의(01–09) 적재: 프로젝트 연결 경로 확정 후.
+- 예산편성 완료(09)·계획 완료(19) 전이: 각 도메인에 확정/제출 액션이 도입될 때 upsert 추가.
+- 사전협의(21–22) 적재: 프로젝트 연결 경로 확정 후.
 - 정산/완료(81–89) 단계: 해당 도메인 존재 시.
 
 ## 9. 컴포넌트 경계 / 책임

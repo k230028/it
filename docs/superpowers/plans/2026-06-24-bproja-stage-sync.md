@@ -4,7 +4,7 @@
 
 **Goal:** 6개 단계 서비스(소요예산/과업심의/입찰계약/대금지급/예산편성/계획)가 문서 생성·상태변경·삭제 시 공통 `BprojaSyncService`를 통해 `TPRMPP_BPROJA`에 `(프로젝트 ABUS_MNG_NO, 단계 자기 key, 통합 IT_PTL_STS_TC)`를 upsert/softDelete 하도록 통합한다.
 
-**Architecture:** 신규 `BprojaSyncService`(upsert/softDelete 단일 진입점, 멱등·방어적, 호출자 트랜잭션 참여)를 만들고, 각 단계 서비스에 의존성 주입 후 create/changeStatus/delete 끝에 호출 1–2줄을 추가한다. 실행 4단계는 native 상태(41–79)가 이미 통합코드라 항등 주입하되 `bgPrnTc='100'`일 때만 기록한다. 예산편성·계획은 상태 컬럼이 없어 생성 시 진행중(21/11)만 기록한다. 읽기 경로(대표상태 MAX)는 1차 구현이 그대로 동작하므로 변경 없음.
+**Architecture:** 신규 `BprojaSyncService`(upsert/softDelete 단일 진입점, 멱등·방어적, 호출자 트랜잭션 참여)를 만들고, 각 단계 서비스에 의존성 주입 후 create/changeStatus/delete 끝에 호출 1–2줄을 추가한다. 실행 4단계는 native 상태(41–79)가 이미 통합코드라 항등 주입하되 `bgPrnTc='100'`일 때만 기록한다. 예산편성·계획은 상태 컬럼이 없어 생성 시 진행중(03/11)만 기록한다. 읽기 경로(대표상태 MAX)는 1차 구현이 그대로 동작하므로 변경 없음.
 
 **Tech Stack:** Spring Boot 4 / Java 25 / JPA / QueryDSL, Oracle. 대상 repo: 중첩 git repo `C:\it\it_backend`(branch `main`).
 
@@ -346,7 +346,7 @@ cd C:/it/it_backend && git add src/main/java/com/kdb/it/domain/payment/service/P
 **Files:**
 - Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/work/service/BudgetWorkService.java`
 
-상태 컬럼이 없는 단계. 프로젝트 = `item.orcPkVl()` (단, `"BPROJM".equals(item.orcTb())`), 단계 key = `bbugtm.getBgNo()`, 상태 = 고정 진행중 `"21"`. 완료(22)는 본 계획 제외(스펙 §4.3, §8).
+상태 컬럼이 없는 단계. 프로젝트 = `item.orcPkVl()` (단, `"BPROJM".equals(item.orcTb())`), 단계 key = `bbugtm.getBgNo()`, 상태 = 고정 진행중 `"03"`. 완료(09)는 본 계획 제외(스펙 §4.3, §8).
 
 - [ ] **Step 1: 의존성 주입**
 
@@ -359,7 +359,7 @@ cd C:/it/it_backend && git add src/main/java/com/kdb/it/domain/payment/service/P
 `applyItemRates(...)`의 `if ("BPROJM".equals(item.orcTb())) { ... }` 블록에서, 해당 `Bbugtm` 저장(`bbugtmRepository.save(bbugtm);`) 바로 다음에 추가:
 
 ```java
-            bprojaSyncService.upsert(item.orcPkVl(), bbugtm.getBgNo(), "21"); // 예산편성 진행중
+            bprojaSyncService.upsert(item.orcPkVl(), bbugtm.getBgNo(), "03"); // 예산편성 작업 진행중
 ```
 
 > 위치 특정: BPROJM 분기 내부의 `bbugtmRepository.save(bbugtm)` 호출 직후. `item.orcPkVl()`은 그 분기에서 프로젝트 ABUS_MNG_NO이며, `bbugtm`은 방금 저장한 엔티티. 변수명이 다르면(예: 저장 대상이 `bbugtm`이 아닌 다른 지역변수) 실제 변수명으로 맞춘다.
@@ -435,7 +435,7 @@ cd C:/it/it_backend && git add src/main/java/com/kdb/it/domain/budget/plan/servi
 
 ## Self-Review
 
-- **Spec 커버리지(2차-A)**: BprojaSyncService(§3)=Task 1 ✓; 실행4 upsert/softDelete + '100' 가드(§4.1)=Task 2–5 ✓; 예산편성 진행중 21 + BPROJM 분기(§4.3)=Task 6 ✓; 계획 진행중 11 + fan-out + 삭제 softDelete(§4.4)=Task 7 ✓; 읽기 경로 무변경(§5)=변경 없음 ✓; 타당성/협의회(§4.2)·완료 트리거(§8)는 의도적 제외(2차-B) ✓.
+- **Spec 커버리지(2차-A)**: BprojaSyncService(§3)=Task 1 ✓; 실행4 upsert/softDelete + '100' 가드(§4.1)=Task 2–5 ✓; 예산편성 진행중 03 + BPROJM 분기(§4.3)=Task 6 ✓; 계획 진행중 11 + fan-out + 삭제 softDelete(§4.4)=Task 7 ✓; 읽기 경로 무변경(§5)=변경 없음 ✓; 타당성/협의회(§4.2)·완료 트리거(§8)는 의도적 제외(2차-B) ✓.
 - **Placeholder 스캔**: 모든 코드 스텝에 실제 코드 포함. 라인 번호는 "내용으로 특정" 명시. EstimateService create의 `bgPrnTc()` 유무 분기는 구현 시 확인하도록 구체 지시(placeholder 아님).
 - **타입 일관성**: `BprojaSyncService.upsert(String,String,String)`/`softDelete(String,String)` 시그니처는 Task 1 정의 → Task 2–7에서 동일 사용 ✓. `BprojaId(abusMngNo, cncdRfrNo)`·`Bproja.builder()`·`changeStatus`/`restore`/`delete`는 1차 산출물과 일치 ✓.
 - **위험**: (1) 실행 4단계 `CreateRequest.bgPrnTc()` 존재 여부 — Estimate는 100 전용일 수 있어 Task 2에 분기 지시. (2) 트랜잭션 참여로 BPROJA 실패 시 단계 작업 롤백(의도). (3) test worker 이슈로 compileJava 검증.
