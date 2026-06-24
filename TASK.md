@@ -117,22 +117,14 @@
 
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
-| ⬜ Open | 🟡 Medium | `RichEditor.client.vue` → `TiptapEditor`/`TiptapToolbar` 마이그레이션 검토 (HTML 구조 차이·HtmlSanitizer 영향 선행 검토 필요)               | PrimeVue Quill 기반 구버전 에디터               |
 | ⬜ Open | 🟡 Medium | `useProjectOptions.ts` 인라인 전환 검토 — `yearOptions` 배열만 반환하는 단순 composable                                                 | `pages/info/projects/form.vue` 1곳에서만 사용 |
 | ⬜ Open | 🟢 Low | `ReviewVersionHistory.vue` 로컬 `formatDateTime()` 유지 여부 검토 — 축약 표시가 의도라면 함수명을 도메인 전용으로 변경 | `components/review/ReviewVersionHistory.vue` |
 | ⬜ Open | 🟡 Medium | `info/index.vue` 정적 KPI/공지/일정 데이터를 실제 API 또는 운영 데이터 소스로 전환 | 파일 헤더가 정적 데이터/향후 API 연결 예정임을 명시 |
-| ⬜ Open | 🟠 High | 프론트 ESLint 오류 정리 — dead import, 미사용 변수, type-only import, 템플릿 파싱 오류 우선 처리 | 2026-05-14 `npm run lint` 기준 62 errors / 137 warnings. `EvalSummaryPanel.vue`, `result/[id].vue`, cost 컴포넌트 등 |
-| ⬜ Open | 🟠 High | 전산업무비 컴포넌트 지급주기 prop 이름 정합화 — `dfrCleCOptions`와 호출부 `dfr-cle-options` 불일치 해소 | 2026-05-19 `npm run typecheck` 실패. `TerminalTableSection.vue`, `CostFormTableSection.vue`, `TerminalFormDialog.vue`, `pages/info/cost/form.vue` |
-| ⬜ Open | 🟠 High | 협의회 결과 페이지 단일 template root 복구 | `pages/info/council-request/result/[id].vue`의 `EmployeeSearchDialog`가 루트 밖에 남아 `vue/no-multiple-template-root` 발생 |
 | ⬜ Open | 🟡 Medium | `budget/list.vue` 탭 제거 후 잔여 dead code 정리 | 미사용 import/filter/pageSize/download 함수 다수 |
-| ⬜ Open | 🟡 Medium | cost 컴포넌트 type-only import 및 미사용 환율 함수 정리 | `TerminalFormDialog.vue`, `CostFormTableSection.vue`, `TerminalTableSection.vue` lint 유형 |
 | ⬜ Open | 🟢 Low | `ResultForm.vue` emit/type 선언 단순화 | `ResultData` 미사용, `'saved' | 'confirmed'` 단일 시그니처로 축약 가능 |
 | ⬜ Open | 🟢 Low | `useTableColumnResize.ts` 숫자 파싱/배열 초기화 스타일 정리 | `Number.parseInt/parseFloat`, `Array.from` 등 일관 스타일 후보 |
 | ⬜ Open | 🟡 Medium | 공통 `useDeptFilter` composable 구현 또는 규칙 폐기 결정 | 기존 CLAUDE 규칙과 달리 `app/composables/useDeptFilter.ts`가 없음 |
 | ⬜ Open | 🟡 Medium | Tiptap 표 도구 계약 문서화 및 주석 보강 | `useTiptapTableTools.ts`, `TiptapTableFloatingToolbar.vue`가 복잡도 대비 계약 설명 부족 |
-| ⬜ Open | 🟠 High | `pages/info/plan/[id].vue` 타입체크 실패 수정 — ExcelJS 컬럼 타입과 TiptapEditor `model-value` string 폴백 정리 | `npm run typecheck` 실패: `ws.columns`, `planData.*Cone` `string \| undefined` |
-| ⬜ Open | 🟠 High | 프론트 typecheck 실패 현행화 — Nitro SSO 미들웨어 event 타입, color-scheme 플러그인 cookie decode 타입, vue-router/volar `sfc-route-blocks` export 호환성 확인 | 2026-06-01 `npm run typecheck` 실패: `server/middleware/sso-auth-redirect.ts`, `server/plugins/color-scheme.ts`, `vue-router/volar/sfc-route-blocks` |
-| ⬜ Open | 🟠 High | 프론트 ESLint 오류 현행화 — 운영 코드 `any`, `ResultForm` emit overload, `useTableColumnResize` 배열 초기화, `result/[id].vue` 단일 template root, 테스트 mock 타입 정리 | 2026-06-01 `npm run lint -- --quiet` 기준 73 errors |
 | ⬜ Open | 🟡 Medium | 정보기술부문 예산 조회/비교 화면 목업 데이터 API 연동 | `pages/budget/summary.vue`, `pages/budget/comparison.vue`의 `MOCK_ROWS`/`MOCK_FSS_ROWS`/`MOCK_YOY_ROWS` TODO |
 | ⬜ Open | 🟡 Medium | 관리자 화면 `사용여부` 옵션/태그 로직 중복 제거 | `pages/admin/auth-grades.vue`, `pages/admin/roles.vue`가 동일한 `useYnOptions`와 표시 로직을 각각 보유 |
 | ⬜ Open | 🟡 Medium | `/admin/boards` 관리자 레이아웃 적용 여부 결정 | 페이지는 `middleware: 'admin'`만 선언하며, 다른 `/admin/**` 페이지와 달리 `layout: 'admin'`이 없음 |
