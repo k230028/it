@@ -153,6 +153,21 @@
 | ✅ Done | 🟠 High | `utils/common.ts` 협의회 상태/심의유형 매핑 구 3자리 코드 잔재 수정 — `COUNCIL_STATUS_TAG_MAP` 키와 `getHearingTypeLabel` switch case를 2자리(`'01'`~`'13'`/`'01'`~`'05'`)로 교체. dead branch 해소(`getCouncilTagClass`/`getHearingTypeLabel` 정상 동작). `tests/unit/utils/common.test.ts` 해당 케이스 2자리로 갱신, 124 tests 통과 | `app/utils/common.ts:342-356,375-383`, 검증일: 2026-06-15 |
 | ✅ Done | 🟠 High | [완료 2026-06-24] 프론트 build health 6항목 stale 정리 — lint 0 errors/2 warnings, typecheck 0 errors, RichEditor 컴포넌트/참조 부재 확인. ESLint 62/73 errors, typecheck 4건, 단일 template root, 전산업무비 prop, plan/[id] 타입, RichEditor 마이그레이션 모두 해소. cost 컴포넌트 type-only import 정리도 lint 0 errors로 동반 해소(7행째 이관) | 2026-06-24 build 검증 |
 
+### 🟠 2026-06-27 High 잔여 조치 (Batch 1~3, `feature/task-high-remediation`)
+
+> `TASK.md` 🟠 High 잔여 6건 조치. 설계/계획: `docs/superpowers/specs/2026-06-27-task-high-remediation-design.md`, `docs/superpowers/plans/2026-06-27-task-high-remediation.md`.
+> 변경 영역 테스트 통과(`CostServiceTest` 40건, `BudgetWorkServiceTest` 전건). 전체 스위트 `./gradlew clean test`의 잔여 실패 8건(`FrontendUrlPropertyResolutionTest`·`ProjectServiceXcrLookupTest`·`CommitteeServiceTest`)은 베이스 커밋 `6a4b0f9`에서도 동일 재현되는 **기존 실패**로, 본 조치와 무관함을 워크트리 대조로 확인(2026-06-27).
+> 커밋: it_backend `439023c`/`607092b`/`f988b35`/`af5135b`/`ba9f740`/`b8c8fc4`, it_database `a863dd2`, 루트 문서 `34fd26f`.
+
+| 상태 | 우선순위 | 과제 | 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | 🟠 High | 게시판 멘션·결재 알림 진단 로그 운영 노출 정리 — `BoardPostService` 멘션 진단 6건, `ApplicationService` 결재요청 알림 진단(결재자 사번) INFO→DEBUG 강등 (PII 운영 로그 미노출) | `BoardPostService.java`(439023c), `ApplicationService.java`(607092b), 조치일: 2026-06-27 |
+| ✅ Done | 🟠 High | `BudgetWorkService.applyRates()` 원본 레코드별 개별 Upsert SELECT N+1 제거 — BCOSTM/BITEMM 테이블별 키맵 일괄 조회로 전환(동일런 dedup 동등성 보존) | `BudgetWorkService.java`(ba9f740/b8c8fc4), `BbugtmRepository.findByBseYyAndFntTbNmAndDelYn`, 조치일: 2026-06-27 |
+| ✅ Done | 🟠 High | `CostService.enrichCostListBatch()` 단말기 첨부 N+1 제거 — `tmnYn='Y'` 행 단말기를 IN 일괄 조회 후 그룹핑 | `CostService.java`(f988b35), `BtermmRepository.findByTermBgNoInAndDelYn`, 조치일: 2026-06-27 |
+| ✅ Done | 🟠 High | 전산업무비 삭제(`CostService.deleteCost`) 단말기 조회 N+1 제거 — 비용별 반복 조회를 IN 일괄 조회로 전환(`DEL_YN='N'`만 대상, 멱등) | `CostService.java`(f988b35/af5135b), 조치일: 2026-06-27 |
+| ✅ Done | 🟠 High | 결재 대기/대시보드 쿼리 인덱스 보강 — 실제 쿼리 술어 기준으로 `IX_CDECIM_PENDING(DCR_ENO, DCD_STS_C, APF_DCM_NO)`·`IX_CAPPLM_USER_STS(DCD_REQ_USID, APF_PRG_STS_C, DCD_REQ_DTM)` 추가(멱등 가드) | `V20260627_001__AddDashboardListIndexes.sql`(a863dd2), 조치일: 2026-06-27 |
+| ✅ Done | 🟠 High | 요구사항 정의서 대시보드 `BRDOCM`/`BRIVGM` 보조 인덱스 — `IX_BRDOCM_ENR_DEL(FST_ENR_USID, DEL_YN)`·`IX_BRIVGM_DOC_DEL_FSG(DOC_MNG_NO, DEL_YN, FSG_YN)` 추가(멱등 가드) | `V20260627_001__AddDashboardListIndexes.sql`(a863dd2), 조치일: 2026-06-27 |
+
 ### 🔎 2026-06-22 코드 대조 검증 완료 (백엔드)
 
 > 백엔드 4개 섹션 ⬜ Open 항목을 라이브 IDE 진단 + 코드 광범위 대조로 검증, 완료 확정분.

@@ -18,7 +18,7 @@
 
 ## 🚧 진행 중
 
-> 🕒 최종 업데이트: 2026-06-27 (완료 항목 28건 `TASK_DONE.md` 이관, High 잔여 7건 코드 검증·조치 계획 수립)
+> 🕒 최종 업데이트: 2026-06-27 (High 잔여 6건 조치 완료 후 `TASK_DONE.md` 이관 — PII 진단 로그 강등, 대시보드 인덱스, N+1 제거. High 잔여 2건: bbrC 부서필터 / 사전협의 서버 영속화는 별도 spec 예정)
 
 ### 🔒 보안
 
@@ -29,7 +29,6 @@
 | ⬜ Open | 🟡 Medium | `it-portal-user` 쿠키 변조 시 프론트 관리자 가드가 일시적으로 관리자 화면을 노출하지 않는지 E2E 검증                                                                            | 프론트 쿠키는 UX 상태이며 최종 권한은 백엔드가 판단해야 함                                                    |
 | ⬜ Open | 🟡 Medium | SSO 운영 설정 검증 강화 — `app.sso.allow-direct-eno=false`, `app.frontend-url` 실제 값, 프록시 헤더 덮어쓰기 점검                                                   | `SsoController`, `AuthController.getClientIp()` 운영 안전장치                               |
 | ⬜ Open | 🟡 Medium | Access Token Blocklist 도입 검토 — 로그아웃 시 잔존 토큰(최대 15분) 무효화 필요 여부 결정                                                                              | `AuthService.logout()` Stateless 한계, 고보안 시나리오용                                        |
-| ⬜ Open | 🟠 High | 게시판 멘션·결재 알림 진단 로그 운영 노출 정리 — 사번 목록, 작성자, 본문 snippet이 INFO 로그에 남지 않도록 삭제 또는 DEBUG 강등 | `BoardPostService.java:254`, `ApplicationService.java:201`, 탐지: 2026-06-24 |
 | ⬜ Open | 🟡 Medium | [후속/T10] Refresh Token 재사용 탐지(토큰 패밀리/세대 카운터) 도입 — Phase 3에서 회전(rotation)만 구현되어 탈취된 구 토큰의 재사용 탐지가 없음. 회전 시 무효화된 토큰이 다시 제출되면 패밀리 전체 폐기하는 메커니즘 필요 | `AuthService`(rotation 구현부), 스파이크: `docs/superpowers/plans/2026-06-22-phase3-security-hardening-spike-blocklist.md`, 탐지: 2026-06-22 |
 | ⬜ Open | 🟡 Medium | Tiptap 변수 metadata 프로젝트 카탈로그 권한 필터링 — 현재 인증 사용자 공통 프로젝트 목록을 반환하므로 사용자 권한/부서 기준 목록 제한 필요 | `TiptapVariableController.java`, `TiptapVariableService.java:51`, 탐지: 2026-06-24 |
 | ⬜ Open | 🟠 High | `ContractRepositoryImpl`·`DeliberationRepositoryImpl`·`PaymentRepositoryImpl` — `bbrC` 부서 필터 MVP 미적용(쿼리 조건 없음). 서비스가 bbrC를 전달해도 Repository가 무시 → 일반 사용자가 타부서 계약·심의·지급 목록 전체 열람 가능. `EstimateRepositoryImpl`(적용됨)과 불일치. Bcontm/Bdelim/Bpaymm에 주관부서코드 컬럼 추가 또는 대상 테이블 JOIN 필요 | `ContractRepositoryImpl.java:47`, `DeliberationRepositoryImpl.java:47`, `PaymentRepositoryImpl.java:43`, 발견일: 2026-06-09 (line 309 과업심의 bbrC 항목 통합·확장) |
@@ -64,8 +63,6 @@
 
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
-| ⬜ Open | 🟠 High | `BudgetWorkService.applyRates()` — 원본 레코드별 개별 Upsert SELECT → 벌크 처리 또는 Oracle MERGE INTO 전환 | `BudgetWorkService.java L150-213` |
-| ⬜ Open | 🟠 High | `CostService.enrichCostListBatch()` 단말기 첨부 N+1 제거 — 단말기 행별 `attachTerminals()` 개별 조회를 일괄 조회로 전환 | `CostService.java L508, L531, L598` |
 | ⬜ Open | 🟡 Medium | `BudgetWorkService.applyItemRates()` 전체 연도 BBUGTM 메모리 로드 + 루프 Soft Delete → `@Modifying` 벌크 UPDATE | `BudgetWorkService.java L243-244` |
 | ⬜ Open | 🟡 Medium | `ProjectRepositoryImpl`/`CostRepositoryImpl` `selectFrom` 전체 컬럼 → 목록 API용 DTO 프로젝션 (1000자 텍스트 컬럼 제외) | `ProjectRepositoryImpl.java L140`, `CostRepositoryImpl.java L163` |
 | ⬜ Open | 🟡 Medium | Native Query `Object[]` 반환 → DTO 프로젝션 또는 `@SqlResultSetMapping` 적용 | `CouncilRepository`, `ApplicationRepository`, `ServiceRequestDocRepository`, `LoginHistoryRepository`, `EvaluationRepository` |
@@ -73,11 +70,8 @@
 | ⬜ Open | 🟡 Medium | `FeasibilityService.replacePerformances()` JPQL DELETE 후 flush 없이 persist → `flush()` 명시 또는 Spring Data `deleteAll` 통일 | `FeasibilityService.java L225` |
 | ⬜ Open | 🟡 Medium | 협의회 일정/평가 사용자명 조회 N+1 제거 | `ScheduleService`, `EvaluationService`에서 사번별 `findByEno()` 반복 |
 | ⬜ Open | 🟡 Medium | 협의회 위원/상태 조회 배치화 검토 | `CommitteeService`, `CouncilService` 반복 조회 후보 |
-| ⬜ Open | 🟠 High | 결재 대기/대시보드 쿼리 인덱스 보강 검토 | `ApplicationRepository`가 `CDECIM.DCD_ENO`, `DCD_DT`, `CAPPLM.APF_STS`, `RQS_DT` 기준 조회. 후보: `CDECIM(DCD_ENO, DCD_DT, DCD_MNG_NO)`, `CAPPLM(APF_STS, RQS_DT DESC)` |
-| ⬜ Open | 🟠 High | 요구사항 정의서 대시보드 `BRDOCM`/`BRIVGM` 보조 인덱스 검토 | `ServiceRequestDocRepository`가 `FST_ENR_USID`, `DEL_YN`, `FST_ENR_DTM`, `DOC_MNG_NO`, `FSG_YN` 조건 반복 사용 |
 | ⬜ Open | 🟡 Medium | 협의회 목록 `BASCTM`/`BCMMTM` 역방향 조회 인덱스 검토 | 후보: `BASCTM(PRJ_MNG_NO, PRJ_SNO, DEL_YN)`, `BCMMTM(ENO, DEL_YN, ASCT_ID)` |
 | ⬜ Open | 🟡 Medium | `ScheduleService` 위원 사용자명 조회 N+1 제거 — 위원별 `userRepository.findByEno` 반복을 `findByEnoIn` 일괄 조회로 전환 | `ScheduleService.java:311`, 탐지: 2026-06-05 |
-| ⬜ Open | 🟠 High | 전산업무비 삭제 시 단말기 조회 N+1 제거 | `CostService`가 비용별 `btermmRepository.findByItMngcNoAndItMngcSno()` 반복 호출. `IT_MNGC_NO` 기준 단말기 일괄 조회 후 그룹핑 |
 | ⬜ Open | 🟡 Medium | `BRDOCM` 최신버전 목록 조회 실행계획 검증 및 복합 인덱스 검토 | `findLatestVersionsAll()`의 `DEL_YN='N'` + 상관 서브쿼리 `MAX(DOC_VRS)` + `FST_ENR_DTM DESC` 정렬. 후보: `(DEL_YN, DOC_MNG_NO, DOC_VRS, FST_ENR_DTM)` |
 | ⬜ Open | 🟡 Medium | `BRIVGM` 검토의견 목록 조회 인덱스 추가 검토 | 댓글 목록이 `(DOC_MNG_NO, DOC_VRS, DEL_YN)` 필터와 `FST_ENR_DTM ASC` 정렬을 사용. 후보: `(DOC_MNG_NO, DOC_VRS, DEL_YN, FST_ENR_DTM)` |
 | ⬜ Open | 🟡 Medium | `CouncilRepository.findWithDetails()` Native Query `Object[]` 전용 DTO/projection 전환 우선 처리 | 16개 컬럼 순서와 서비스 캐스팅이 강하게 결합되어 오매핑 위험 |
