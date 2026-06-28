@@ -170,6 +170,16 @@
 | ✅ Done | 🟠 High | 결재 대기/대시보드 쿼리 인덱스 보강 — 실제 쿼리 술어 기준으로 `IX_CDECIM_PENDING(DCR_ENO, DCD_STS_C, APF_DCM_NO)`·`IX_CAPPLM_USER_STS(DCD_REQ_USID, APF_PRG_STS_C, DCD_REQ_DTM)` 추가(멱등 가드) | `V20260627_001__AddDashboardListIndexes.sql`(a863dd2), 조치일: 2026-06-27 |
 | ✅ Done | 🟠 High | 요구사항 정의서 대시보드 `BRDOCM`/`BRIVGM` 보조 인덱스 — `IX_BRDOCM_ENR_DEL(FST_ENR_USID, DEL_YN)`·`IX_BRIVGM_DOC_DEL_FSG(DOC_MNG_NO, DEL_YN, FSG_YN)` 추가(멱등 가드) | `V20260627_001__AddDashboardListIndexes.sql`(a863dd2), 조치일: 2026-06-27 |
 
+### 🔍 2026-06-28 코드 대조 검증 — stale Open 이관
+
+> `TASK.md` 전체 ⬜ Open 항목을 6개 병렬 에이전트로 코드베이스 대조 검증(read-only) 후, 실제 이미 해소된 stale 3건만 이관. 대부분 항목은 정상 추적(STILL_OPEN) 재확인. spot-check로 에이전트 오판 2건 정정 — `ApplicationContextHolder.publishEvent()`는 구 이벤트 기반 감사로그 JavaDoc(38-53행)이 잔존해 Open 유지, `BRIVGM` 인덱스는 06-27 추가분(`IX_BRIVGM_DOC_DEL_FSG`)이 대시보드용 별개라 검토의견 목록 쿼리는 미커버로 Open 유지. 검증 기록·잔여 로드맵·보안 High 2건 상세 설계: `docs/superpowers/specs/2026-06-28-task-remediation-design.md`.
+
+| 상태 | 우선순위 | 과제 | 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | 🟡 Medium | `ProjectService.enrichProjectListBatch()` 사업별 비목 요약 N+1 제거 — BBUGTM을 사업 키 묶음으로 일괄 조회 | `ProjectService.java:715`(enrich)·`:678` `bbugtmRepository.sumDupBgByPrjMngNos()` 배치, `BbugtmRepositoryImpl.java:262` 집계, 검증일: 2026-06-28 |
+| ✔️ Resolved | 🟢 Low | `applyAthIds()` 적용 대상 최소화 — prune된 트리에만 적용 + `MenuAuthMapProvider` 캐시(2026-06-22)로 권한Map 조회비용 해소 → 추가 최적화 실익 낮음, 현행 유지 | `MenuQueryService.java:47-49,61-68`, 검증일: 2026-06-28 |
+| ✅ Done | 🟡 Medium | 메타 미등재 테이블 12종(사업집행 4단계 `BESTIM/BESTTM/BDELIM/BCONTM/BPAYMM/BPAYTM` + 각 `*L` 로그) 등재 — 컬럼명은 이미 표준 명칭 사용 | `meta/table.csv` 해당 12테이블 등재 확인, 검증일: 2026-06-28 |
+
 ### 🔎 2026-06-22 코드 대조 검증 완료 (백엔드)
 
 > 백엔드 4개 섹션 ⬜ Open 항목을 라이브 IDE 진단 + 코드 광범위 대조로 검증, 완료 확정분.
@@ -260,6 +270,7 @@
 
 | 상태 | 일자 | 영역 | 조치 |
 | :--: | :--: | :--: | --- |
+| ✅ Done | 2026-06-28 | 백로그 | TASK.md 코드 대조 검증 — 6개 병렬 에이전트로 전체 ⬜ Open 항목을 코드베이스 대조(read-only). 실제 해소된 stale 3건 이관(`ProjectService` 비목 N+1 제거, `applyAthIds` 실익 낮음 종료, 메타 12종 등재). spot-check로 `ApplicationContextHolder` 잔여 JavaDoc·`BRIVGM` 검토의견 인덱스는 Open 유지로 정정. 잔여 항목을 Wave 1~4 실행 로드맵으로 재정리, 보안 High 2건(bbrC 부서필터·사전협의 서버영속화) 상세 설계 문서화(`docs/superpowers/specs/2026-06-28-task-remediation-design.md`). |
 | ✅ Done | 2026-06-27 | 백엔드 | 테스트 스텁 정합(후속/T) 검증 종료 — 백로그가 "실패 6건"으로 추적하던 `CostServiceTest`(`@Mock CodeNameMapBuilder` 누락)·`BudgetWorkServiceTest`(단일키→배치 finder 스텁) 항목을 `./gradlew test --tests *CostServiceTest --tests *BudgetWorkServiceTest`로 재검증 → **BUILD SUCCESSFUL**. CostServiceTest는 `@Mock CodeNameMapBuilder`+`@BeforeEach` 기본값 적용 완료, BudgetWorkServiceTest는 배치 finder 스텁 반영 완료. 06-22 이후 커밋에서 해소된 stale 백로그로 확정·종료. |
 | ✅ Done | 2026-06-27 | 백로그 | TASK.md 완료 항목 아카이빙 — "에러 처리" 프론트 sweep 26건(2026-06-24)을 dated 서브섹션으로 이관, `AdminMenuService` DB/JPA 1건 이관, 테스트 스텁 stale 항목 종료. TASK.md는 잔여 ⬜ Open만 유지. High 잔여 7건 코드 검증 후 조치 계획 수립(`docs/superpowers/specs/2026-06-27-task-high-remediation-design.md`). |
 | ✅ Done | 2026-06-22 | 백엔드 로드맵 | 백엔드 개선 로드맵 Phase 2~5 실행(브랜치 `backend-roadmap-phase2-5`, 코드리뷰 완료). **Phase 2**: `NotFoundException`(404)+`ResponseStatusException` 핸들러, 에러 로깅 표준화 9곳, `GeminiService` 타임아웃+첨부 크기 사전검사, 입력검증(`@Valid`/`@Max`/Bean Validation + Tiptap FORBIDDEN). **Phase 3**: `EnvironmentValidator` 운영 필수키 검증(gemini/eai/cors), CORS allowedHeaders 명시·기본값 제거·blank 가드, `/api/plans` 라우트 정합, `ClientIpResolver`, Refresh Token Rotation, `UserService` PII 한정, eno/bbrC 로그 DEBUG 강등, `EaiService` safeMessage·blank-url 가드. **Phase 4**: N+1 배치화(ServiceRequestDoc/ReviewComment/Application/BudgetWork), 캐시(notification unread-count·tiptap metadata·MenuAuthMap, evict-on-write), 인덱스 `V20260622_003`·시퀀스 CACHE 20 `V20260622_004`, `CouncilRepository.updateProjectStatus` clear/flush. **Phase 5**: `CodeNameMapBuilder` 공통 추출, `sumDupBg` 통합, `AuditLogEvent` 삭제, `BcostmL` length 12건 정정, `.toList()` 50/51 전환, dead code 정리. 후속(테스트 스텁·통합테스트 인프라·프로젝션 DTO·토큰 재사용 탐지·캐시 TTL 등)은 TASK.md 신규 등록. |

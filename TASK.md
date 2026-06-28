@@ -16,9 +16,23 @@
 
 ---
 
+## 🗺️ 실행 로드맵 (2026-06-28 코드 대조 검증 기준)
+
+> 잔여 ⬜ Open 항목을 조치 우선순위로 묶은 웨이브 요약. 상세 항목은 아래 영역별 표/체크리스트 참조. 코드 대조 검증 결과와 보안 High 2건 상세 설계는 [`docs/superpowers/specs/2026-06-28-task-remediation-design.md`](docs/superpowers/specs/2026-06-28-task-remediation-design.md).
+
+| Wave | 성격 | 주요 항목 | 산출물 |
+| :--: | --- | --- | --- |
+| **W1** 🔴 보안 High | 즉시 조치 | ① `bbrC` 부서필터(`Contract/Deliberation/PaymentRepositoryImpl` + 과업심의 목록) ② 사전협의 검토상태/세션 서버 영속화 | spec→plan→TDD 구현 |
+| **W2** 🟡 코드부채 | 단독 수정 가능 | `@Valid` 보강(Council/BoardPost), 클래스레벨 `@Transactional(readOnly)`(Plan/LoginAttempt), N+1 제거(ScheduleService·`CouncilService.deriveCurrentYearBudget`·Deliberation/Contract/Payment.get), `CinfmmRepositoryImpl` 감사컬럼, `BtermmL` length 정정, SSO eno 로그 강등, `changeStatus` role 분기, 환율 규칙 통일, `HostAddressProvider` 진단, `ApplicationContextHolder` 주석 정리, council-request/result catch 바인딩 | 묶음 PR(들) |
+| **W3** 🧩 기능 spec 필요 | 백엔드 신규 엔드포인트/스키마 동반 | Mock→API(`info/index`, budget summary·comparison), 사전협의 `authorTeam`·첨부 매핑, 게시판 서버 페이지네이션·첨부 UI·다운로드 카운트·댓글 첨부, Tiptap 변수 prop 확대·권한 필터링, 실시간로그 드릴다운·필터 저장 | 기능별 spec→plan |
+| **W4** 🏛️ 외부/운영 의존 | KDB·DBA·운영 협의 | EAI IF_ID/UMS 발급·도메인 연동, 실시간로그 EXPLAIN/인덱스/보존정책, 메타 PK 정합(BBUGTM/BRDOCM), BPOVWM 데이터 이관, 인덱스 적용(BASCTM/BCMMTM/BRDOCM/BRIVGM/실시간로그) | 체크리스트 추적 |
+| **Backlog** 🟢 선택 | 성능/확장/품질 | SSE/WebSocket 전환, 조회수 Redis, Oracle Text 검색, 목록 프로젝션 DTO(T16), 통합테스트 인프라(T18), Java 헤더주석/`AdminDto` JavaDoc 보강, `CodeNameMapBuilder` 이동, 토큰 재사용 탐지(T10)/Blocklist | 여유 시 |
+
+---
+
 ## 🚧 진행 중
 
-> 🕒 최종 업데이트: 2026-06-27 (High 잔여 6건 조치 완료 후 `TASK_DONE.md` 이관 — PII 진단 로그 강등, 대시보드 인덱스, N+1 제거. High 잔여 2건: bbrC 부서필터 / 사전협의 서버 영속화는 별도 spec 예정)
+> 🕒 최종 업데이트: 2026-06-28 (전체 Open 항목 코드 대조 검증 → stale 3건 `TASK_DONE.md` 이관, 실행 로드맵 Wave 1~4 신설. 보안 High 2건: bbrC 부서필터 / 사전협의 서버 영속화 상세 설계는 `docs/superpowers/specs/2026-06-28-task-remediation-design.md`, 후속 `/write-plan`으로 실행계획화 예정)
 
 ### 🔒 보안
 
@@ -67,19 +81,17 @@
 | ⬜ Open | 🟡 Medium | `BudgetWorkService.applyItemRates()` 전체 연도 BBUGTM 메모리 로드 + 루프 Soft Delete → `@Modifying` 벌크 UPDATE | `BudgetWorkService.java L243-244` |
 | ⬜ Open | 🟡 Medium | `ProjectRepositoryImpl`/`CostRepositoryImpl` `selectFrom` 전체 컬럼 → 목록 API용 DTO 프로젝션 (1000자 텍스트 컬럼 제외) | `ProjectRepositoryImpl.java L140`, `CostRepositoryImpl.java L163` |
 | ⬜ Open | 🟡 Medium | Native Query `Object[]` 반환 → DTO 프로젝션 또는 `@SqlResultSetMapping` 적용 | `CouncilRepository`, `ApplicationRepository`, `ServiceRequestDocRepository`, `LoginHistoryRepository`, `EvaluationRepository` |
-| ⬜ Open | 🟡 Medium | `ProjectService.enrichProjectListBatch()` 사업별 비목 요약 N+1 제거 — BITEMM을 사업 키 묶음으로 일괄 조회 | `ProjectService.java L662, L684, L783` |
 | ⬜ Open | 🟡 Medium | `FeasibilityService.replacePerformances()` JPQL DELETE 후 flush 없이 persist → `flush()` 명시 또는 Spring Data `deleteAll` 통일 | `FeasibilityService.java L225` |
 | ⬜ Open | 🟡 Medium | 협의회 일정/평가 사용자명 조회 N+1 제거 | `ScheduleService`, `EvaluationService`에서 사번별 `findByEno()` 반복 |
 | ⬜ Open | 🟡 Medium | 협의회 위원/상태 조회 배치화 검토 | `CommitteeService`, `CouncilService` 반복 조회 후보 |
 | ⬜ Open | 🟡 Medium | 협의회 목록 `BASCTM`/`BCMMTM` 역방향 조회 인덱스 검토 | 후보: `BASCTM(PRJ_MNG_NO, PRJ_SNO, DEL_YN)`, `BCMMTM(ENO, DEL_YN, ASCT_ID)` |
 | ⬜ Open | 🟡 Medium | `ScheduleService` 위원 사용자명 조회 N+1 제거 — 위원별 `userRepository.findByEno` 반복을 `findByEnoIn` 일괄 조회로 전환 | `ScheduleService.java:311`, 탐지: 2026-06-05 |
 | ⬜ Open | 🟡 Medium | `BRDOCM` 최신버전 목록 조회 실행계획 검증 및 복합 인덱스 검토 | `findLatestVersionsAll()`의 `DEL_YN='N'` + 상관 서브쿼리 `MAX(DOC_VRS)` + `FST_ENR_DTM DESC` 정렬. 후보: `(DEL_YN, DOC_MNG_NO, DOC_VRS, FST_ENR_DTM)` |
-| ⬜ Open | 🟡 Medium | `BRIVGM` 검토의견 목록 조회 인덱스 추가 검토 | 댓글 목록이 `(DOC_MNG_NO, DOC_VRS, DEL_YN)` 필터와 `FST_ENR_DTM ASC` 정렬을 사용. 후보: `(DOC_MNG_NO, DOC_VRS, DEL_YN, FST_ENR_DTM)` |
+| ⬜ Open | 🟡 Medium | `BRIVGM` 검토의견 목록 조회 인덱스 추가 검토 | 댓글 목록이 `(DOC_MNG_NO, DOC_VRS, DEL_YN)` 필터와 `FST_ENR_DTM ASC` 정렬을 사용. 후보: `(DOC_MNG_NO, DOC_VRS, DEL_YN, FST_ENR_DTM)`. (2026-06-28 재검증: 06-27 추가 `IX_BRIVGM_DOC_DEL_FSG`는 대시보드 미완료 검토용 별개 인덱스로 본 정렬 쿼리 미커버 → Open 유지) |
 | ⬜ Open | 🟡 Medium | `CouncilRepository.findWithDetails()` Native Query `Object[]` 전용 DTO/projection 전환 우선 처리 | 16개 컬럼 순서와 서비스 캐스팅이 강하게 결합되어 오매핑 위험 |
 | ⬜ Open | 🟡 Medium | `CinfmmRepositoryImpl.markAllReadByRcvUsid()` QueryDSL 벌크 UPDATE 후 `LST_CHG_DTM`/`LST_CHG_USID` 미갱신 — JPA Auditing 우회, 1차 캐시 stale 발생. `clearAutomatically` 또는 감사 컬럼 명시 SET 추가 | `CinfmmRepositoryImpl.java:67-78` (→ `CouncilRepository.java:67` 동일 패턴 참조) |
 | ⬜ Open | 🟡 Medium | 실시간 로그 피드 커서 폴링 인덱스/실행계획 검증 — `CHG_DTM DESC, LOG_TBL DESC, LOG_HIS_TGR_SNO DESC`, `LOG_KEY`, `CHG_DTT_YN` 필터와 5/30분 집계가 View 기반으로 충분히 지원되는지 확인 | `RealtimeLogRepository.java`, `V_ITPAPP_LOG_FEED`, 탐지: 2026-06-05 |
 | ⬜ Open | 🟡 Medium | `Deliberation/Contract/PaymentService.get()` 상세 조회 대상명 별도 SELECT 제거 — `loadCurrent()` + `resolveTargetName()` 2쿼리를 `EstimateRepositoryImpl`처럼 BPROJM/BCOSTM LEFT JOIN 프로젝션 단일 쿼리로 통일. 목록→상세 순차 로드 시 누적 N+1 | `DeliberationService.java:148`, `ContractService.java:146`, `PaymentService.java:176`, 탐지: 2026-06-09 |
-| ⬜ Open | 🟢 Low | `applyAthIds()` 적용 대상 최소화 — prune 이후 잔존 노드의 mnuId 집합 기준으로 권한 Map 구성 검토. 메뉴 권한 캐시 도입(2026-06-22 `MenuAuthMapProvider`) 완료됨 → 실익 재평가 | `MenuQueryService.java:62`, 탐지: 2026-06-12 |
 | ⬜ Open | 🟡 Medium | [후속/T13] 캐시 TTL 미적용 보완 — 현재 `ConcurrentMapCacheManager`는 TTL 미지원. `tiptapMetadata`는 프로젝트 쓰기 시 stale 가능(`ProjectService` 쓰기경로에 `@CacheEvict` 추가 또는 Caffeine 도입 필요); `NotificationService` unread-count는 60s TTL 미적용(evict-on-write로 대체됨). Caffeine 전환 또는 쓰기경로 evict 보강 결정 필요 | `ProjectService`, `TiptapVariableService`(metadata), `NotificationService`, 탐지: 2026-06-22 |
 | ⬜ Open | 🟢 Low | [후속] `BtermmL.IND_RSN` `@Column(length=600)` — `TPRMPP_BTERML` DDL 대조해 `BcostmL`과 동일한 `@Column(length)` 드리프트 여부 확인 (BcostmL은 2026-06-22 정정 완료) | `BtermmL.java`, `TPRMPP_BTERML`, 탐지: 2026-06-22 |
 
@@ -99,7 +111,7 @@
 | ⬜ Open | 🟡 Medium | 문서/내보내기 회귀 테스트 범위 확대 (HWPX/PDF/Excel) | `utils/hwpx.ts` HTML 파싱·이미지 패키징·XML 생성 통합 담당 |
 | ⬜ Open | 🟡 Medium | `domain/log` 감사로그 리스너 통합 테스트 보강 | JaCoCo 제외 대상이나 업무 감사 추적에 중요 |
 | ⬜ Open | 🟡 Medium | 소요예산 산정 `EstimateRepositoryImpl.search()` QueryDSL에 대한 통합 테스트 부재 (프로젝트에 `@DataJpaTest` 인프라 없음, 현재 Mockito 단위테스트만). 단계별 화면 안정화 후 통합 테스트 보강 | `it_backend/src/test/.../estimate/repository/EstimateRepositoryTest.java`, 탐지: 2026-06-07 |
-| ⬜ Open | 🟢 Low | `ApplicationContextHolder.publishEvent()` 잔여 이벤트 기반 감사로그 주석 정리 — `AuditLogEvent`는 2026-06-22 삭제됨, `ApplicationContextHolder` 측 잔여 참조/주석만 점검 | 현재 감사로그는 `ChangeLogEntityListener`가 `AuditLogPersister.persist()` 직접 호출 |
+| ⬜ Open | 🟢 Low | `ApplicationContextHolder.publishEvent()` 잔여 이벤트 기반 감사로그 주석 정리 — `AuditLogEvent`는 2026-06-22 삭제됨, `ApplicationContextHolder` 측 잔여 참조/주석만 점검 | 현재 감사로그는 `ChangeLogEntityListener`가 `AuditLogPersister.persist()` 직접 호출. (2026-06-28 재검증: `ApplicationContextHolder.java:38-53` `publishEvent()` JavaDoc이 구 `@TransactionalEventListener(BEFORE_COMMIT)` 방식을 그대로 설명 + 메서드 미사용 → 주석 정리/미사용 메서드 제거 필요, Open 유지) |
 | ⬜ Open | 🟡 Medium | [후속/T18] 통합테스트 인프라 부재로 Task13-15(감사로그 리스너 통합테스트, `EstimateRepository` 통합테스트, `CinfmmRepositoryImplTest`) 미착수 — H2(strategy A) 또는 Oracle(strategy B) DB-backed 테스트 전략 결정 필요. 현재 `application-test.properties`는 DataSource/JPA 제외, H2/Testcontainers 의존성 없음. (참고: 기존 `NoClassDefFoundError` 대량실패는 재현 안 됨 — byte-buddy 1.18.10/mockito 5.23.0 Java25 정상) | `application-test.properties`, 탐지: 2026-06-22 (기존 NoClassDefFoundError 분석 항목 대체) |
 | ⬜ Open | 🟡 Medium | [후속/T16] 목록 프로젝션 DTO 작업(`ProjectRepositoryImpl`/`CostRepositoryImpl` DTO, `@SqlResultSetMapping`, `CouncilRepository.findWithDetails`, 4단계 상세 JOIN) 별도 계획으로 분리됨 — 미착수 | `ProjectRepositoryImpl`, `CostRepositoryImpl`, `CouncilRepository`, 탐지: 2026-06-22 |
 | ⬜ Open | 🟢 Low | [후속/minor] `CodeNameMapBuilder` 위치(`domain/budget/cost/util`)가 `ProjectService`와 공유되므로 `common` 패키지로 이동 검토 | `CodeNameMapBuilder`, 탐지: 2026-06-22 |
@@ -171,7 +183,6 @@
 
 ## 📒 메타 용어사전(table.csv) 정합성 후속 과제 (2026-06-11 스키마 통일 작업 잔여)
 
-- [ ] 메타 미등재 테이블 12종 등재 — 사업집행 4단계(`BESTIM/BESTTM/BDELIM/BCONTM/BPAYMM/BPAYTM` + 각 `*L` 로그). 컬럼명은 이미 표준 명칭 사용 중. (`BCHKLC` 사전점검 항목은 2026-06-12 `V20260612_001`로 테이블 드롭되어 등재 불필요)
 - [ ] 메타 `BPAYTM/BPAYTL.DFR_DT` NULL여부 정정(N → Y) — 지급 회차는 지급일자 미확정(작성중) 상태로 저장될 수 있어 DB는 NULL 허용 유지(2026-06-12 결정, `V20260612_004` 헤더 참조). 운영 메타 NULL여부=N 등재가 stale — 정정 필요.
 - [ ] BPOVWM 드롭된 `PRJ_BG_AMR`(테스트 1행) 값은 `RQM_BG_AMT`로 승계되지 않음 — 운영 데이터 이관 시 소요예산금액 원천 확인 필요.
 - [ ] `TPRMPP_BBUGTM` PK 정합 보류 — 운영(table.csv)은 PK(`BG_NO`) 단일이나 로컬은 PK(`BG_NO`,`SNO`)이고 `BG_NO` 중복 20건 존재. 운영 PK 정의 재확인(메타 stale 가능성) 또는 로컬 데이터 중복 정리 후 `V20260612_002` 재실행 시 자동 정합 (2026-06-12 전면 정합 작업 잔여).
