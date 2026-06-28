@@ -22,9 +22,9 @@
 
 | Wave | 성격 | 주요 항목 | 산출물 |
 | :--: | --- | --- | --- |
-| **W1** 🔴 보안 High | 즉시 조치 | ① `bbrC` 부서필터(`Contract/Deliberation/PaymentRepositoryImpl` + 과업심의 목록) ② 사전협의 검토상태/세션 서버 영속화 | spec→plan→TDD 구현 |
+| **W1** 🔴 보안 High | 즉시 조치 | `bbrC` 부서필터(`Contract/Deliberation/PaymentRepositoryImpl` + 과업심의 목록) — plan 완료 [`2026-06-28-bbrc-dept-filter.md`](docs/superpowers/plans/2026-06-28-bbrc-dept-filter.md) | TDD 구현 대기 |
 | **W2** 🟡 코드부채 | 단독 수정 가능 | `@Valid` 보강(Council/BoardPost), 클래스레벨 `@Transactional(readOnly)`(Plan/LoginAttempt), N+1 제거(ScheduleService·`CouncilService.deriveCurrentYearBudget`·Deliberation/Contract/Payment.get), `CinfmmRepositoryImpl` 감사컬럼, `BtermmL` length 정정, SSO eno 로그 강등, `changeStatus` role 분기, 환율 규칙 통일, `HostAddressProvider` 진단, `ApplicationContextHolder` 주석 정리, council-request/result catch 바인딩 | 묶음 PR(들) |
-| **W3** 🧩 기능 spec 필요 | 백엔드 신규 엔드포인트/스키마 동반 | Mock→API(`info/index`, budget summary·comparison), 사전협의 `authorTeam`·첨부 매핑, 게시판 서버 페이지네이션·첨부 UI·다운로드 카운트·댓글 첨부, Tiptap 변수 prop 확대·권한 필터링, 실시간로그 드릴다운·필터 저장 | 기능별 spec→plan |
+| **W3** 🧩 기능 spec 필요 | 백엔드 신규 엔드포인트/스키마 동반 | Mock→API(`info/index`, budget summary·comparison), 사전협의 검토자/세션 status 영속화(선행: 검토플로우 실제 인증연동)·`authorTeam`·첨부 매핑, 게시판 서버 페이지네이션·첨부 UI·다운로드 카운트·댓글 첨부, Tiptap 변수 prop 확대·권한 필터링, 실시간로그 드릴다운·필터 저장 | 기능별 spec→plan |
 | **W4** 🏛️ 외부/운영 의존 | KDB·DBA·운영 협의 | EAI IF_ID/UMS 발급·도메인 연동, 실시간로그 EXPLAIN/인덱스/보존정책, 메타 PK 정합(BBUGTM/BRDOCM), BPOVWM 데이터 이관, 인덱스 적용(BASCTM/BCMMTM/BRDOCM/BRIVGM/실시간로그) | 체크리스트 추적 |
 | **Backlog** 🟢 선택 | 성능/확장/품질 | SSE/WebSocket 전환, 조회수 Redis, Oracle Text 검색, 목록 프로젝션 DTO(T16), 통합테스트 인프라(T18), Java 헤더주석/`AdminDto` JavaDoc 보강, `CodeNameMapBuilder` 이동, 토큰 재사용 탐지(T10)/Blocklist | 여유 시 |
 
@@ -32,7 +32,7 @@
 
 ## 🚧 진행 중
 
-> 🕒 최종 업데이트: 2026-06-28 (전체 Open 항목 코드 대조 검증 → stale 3건 `TASK_DONE.md` 이관, 실행 로드맵 Wave 1~4 신설. 보안 High 2건: bbrC 부서필터 / 사전협의 서버 영속화 상세 설계는 `docs/superpowers/specs/2026-06-28-task-remediation-design.md`, 후속 `/write-plan`으로 실행계획화 예정)
+> 🕒 최종 업데이트: 2026-06-28 (전체 Open 항목 코드 대조 검증 → stale 3건 `TASK_DONE.md` 이관, 실행 로드맵 Wave 1~4 신설. W1 보안 High = bbrC 부서필터 1건으로 확정, plan 작성 완료(`docs/superpowers/plans/2026-06-28-bbrc-dept-filter.md`). 사전협의 영속화는 재검토 결과 코멘트는 이미 영속·검토자상태는 Phase-1 미성숙으로 시기상조 → Medium·W3로 재범위)
 
 ### 🔒 보안
 
@@ -57,7 +57,7 @@
 
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
-| ⬜ Open | 🟠 High | 사전협의 세션/코멘트 상태를 서버 영속화로 전환 | `stores/review.ts`가 세션 상태를 메모리 전용으로 보관 |
+| ⬜ Open | 🟡 Medium | 사전협의 검토자/세션 status 서버 영속화 — **선행조건: 검토 플로우 실제 인증 연동**. (2026-06-28 재검토: 코멘트 상태는 이미 서버 영속 — `useReviewCommentApi` createComment/resolveComment + BRIVGM `FSG_YN`. 휘발 갭은 검토자별 검토상태/세션 status뿐인데, `review.vue:101` currentUser가 모의 고정값이고 `ReviewToolbar.vue:75` 검토완료가 수동 검토자 picker라 다중검토자 워크플로우가 Phase-1 미성숙 → 영속화 시기상조. BRIVGM 재사용은 grain 불일치(코멘트 1건/행 vs 검토자-완료 1건/검토자)로 부적합) | `stores/review.ts`(completeReview/submitForReview 메모리 전용), `review.vue:101`(모의 currentUser), `ReviewToolbar.vue:75` |
 | ⬜ Open | 🟡 Medium | 검토의견 응답에 작성자 팀명(`authorTeam`) 필드 추가 | `ReviewCommentDto.Response`와 `useReviewCommentApi.ts` 임시값 사용 |
 | ⬜ Open | 🟡 Medium | 검토의견 첨부파일 응답 매핑 추가 | `useReviewCommentApi.ts`가 `attachments`를 빈 배열로 고정 |
 

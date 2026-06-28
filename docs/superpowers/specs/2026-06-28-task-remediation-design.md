@@ -54,7 +54,7 @@
 
 `TASK.md` 상단에 동일 표를 신설했다. 웨이브 정의는 다음과 같다.
 
-- **W1 (보안 High)**: 즉시 조치. bbrC 부서필터, 사전협의 서버 영속화. → §6 상세 설계, 후속 `/write-plan`.
+- **W1 (보안 High)**: 즉시 조치. bbrC 부서필터(plan 완료). 사전협의 영속화는 재검토 후 W3·Medium로 재범위(§6.2). → §6 상세.
 - **W2 (코드부채)**: 단독 수정 가능한 Medium/Low 다수. 묶음 PR로 처리.
 - **W3 (기능 spec 필요)**: 백엔드 신규 엔드포인트/스키마가 동반되는 Mock→API 및 기능 확장. 기능별 별도 spec.
 - **W4 (외부/운영 의존)**: KDB EAI 발급, DBA 인덱스/EXPLAIN, 메타 PK 정합 등.
@@ -83,26 +83,26 @@
 
 **검증(TDD)**: CLAUDE.md §5.14 의무 — `bbrC` 지정/null 케이스 + `bgPrnTc` 100/200 혼재 케이스 Repository/Service 테스트.
 
-### 6.2 [W1-②] 사전협의 검토상태/세션 서버 영속화
+### 6.2 [재범위 → W3] 사전협의 검토자/세션 status 영속화
 
-**문제**: `stores/review.ts`의 사전협의 세션 상태가 메모리 전용이라 새로고침 시 초기화.
+> **2026-06-28 재검토 결론: 지금 영속화는 시기상조. 새 테이블/BRIVGM 재사용 모두 부적합·불필요 → High에서 Medium·W3로 재범위.**
 
-**현황 분석**: 다음은 **이미 서버 영속**된다 — 버전 이력(`useDocuments.fetchVersionHistory`), 코멘트 본문/해결상태(`useReviewCommentApi`, BRIVGM `rslvYn`), 검토자 목록(`/api/reviews/{docMngNo}/reviewers`). 따라서 "코멘트 상태"는 대부분 충족.
+**문제(원항목)**: `stores/review.ts`의 사전협의 세션 상태가 메모리 전용이라 새로고침 시 초기화.
 
-**실제 미영속 갭**:
-- `session.status`(draft/reviewing/completed) — 메모리 전용.
-- `reviewer.status`(검토자별 pending/completed) + `completedAt` — `completeReview()`가 메모리만 변경(`review.ts:278-289`).
-- 검토요청 버전 스냅샷 — `submitForReview()`가 "서버 API 연동 없음, 새로고침 시 초기화"(`review.ts:206-236`).
+**현황 분석**: 다음은 **이미 서버 영속**된다 — 버전 이력(`useDocuments.fetchVersionHistory`), 코멘트 본문/해결상태(`useReviewCommentApi.createComment/resolveComment`, BRIVGM `FSG_YN`), 검토자 목록(`/api/reviews/{docMngNo}/reviewers`). 항목 제목의 "**코멘트 상태**"는 이미 충족 — 새로고침에도 코멘트는 유지된다.
 
-**설계 방향**: 검토 워크플로우 상태(검토자별 검토상태 + 세션 상태)를 서버 영속화.
-- **스키마**: 문서/버전·검토자 단위 검토상태 테이블(예: `docMngNo + docVrs + reviewerEno → status, completedAt`). plan 단계에서 기존 검토자/BRIVGM 스키마와의 관계 확인 후 신규 테이블 또는 기존 확장 결정.
-- **API**: 검토상태 조회(loadSession 시) + 갱신(completeReview/submitForReview 시).
-- **스토어 통합**: `loadSession()`에서 검토상태를 서버 조회로 채우고, `completeReview()`/`submitForReview()`가 서버 반영하도록 전환. CLAUDE.md §4.8.1(스토어 toast 금지)·§4.7.0(스토어 직접 `$apiFetch`) 준수.
+**실제 미영속 갭**: 검토자별 검토상태(`completeReview`, `review.ts:278-289`), 세션 status, 검토요청 버전 스냅샷(`submitForReview`, `review.ts:211-236`) — 모두 메모리 전용.
 
-**plan 단계 선행 조사**: ① 기존 검토자 엔티티/테이블(`ReviewerService` 근거) ② BRIVGM과 검토상태의 관계 ③ "세션 status"가 문서 상태(`Brdocm`)로 파생 가능한지 vs 별도 저장 필요.
+**재검토 결과 — 영속화 보류 근거**:
+1. **BRIVGM 재사용 부적합(grain 불일치)**: BRIVGM은 코멘트 1건=1행이며 `findByDocMngNoAndDocVrsSnoAndDelYnOrderByFstEnrDtmAsc`가 전 행을 코멘트로 반환. `FSG_YN`은 "코멘트 해결"이지 "검토자 검토완료"가 아님. 검토자-완료는 (문서버전×검토자) grain — BRIVGM에 표식 행을 끼우면 모든 코멘트 조회를 오염시키는 취약한 해킹이 됨.
+2. **Phase-1 미성숙(영속화 시기상조)**: `review.vue:101-106` currentUser가 모의 고정값(`R003 이철수`), `ReviewToolbar.vue:75-93` 검토완료가 로그인 본인이 아닌 **수동 검토자 picker** 다이얼로그. 다중검토자 워크플로우가 실제 인증과 미연동. 이 상태에서 검토자 상태를 영속화하면 모의/수동 데이터를 저장하고 스키마를 미성숙 단계에 고정.
+
+**선행조건**: 검토 플로우를 실제 로그인 사용자와 연동(currentUser 모의값 제거) + 다중검토자 요건 확정. 이후 영속화 스키마 설계(신규 테이블 또는 Brdocm 상태컬럼)를 별도 spec으로 진행.
+
+**재범위**: 🟠 High → 🟡 Medium, W1 → W3. 본 시점에 빌드 plan은 작성하지 않는다.
 
 ## 7. 후속 단계
 
-- 본 spec 커밋 후 사용자 검토.
-- 승인 시 `/write-plan`(writing-plans)으로 W1 2건의 실행 계획 작성 — 각 plan은 위 "선행 조사" 태스크를 포함한다.
+- W1은 **bbrC 부서필터 1건**으로 확정 — 실행계획 [`2026-06-28-bbrc-dept-filter.md`](../plans/2026-06-28-bbrc-dept-filter.md) 작성 완료. subagent-driven 또는 inline 실행으로 진행.
+- 사전협의 영속화(구 W1-②)는 위 재검토로 W3·Medium 재범위 — 검토플로우 인증 연동 선행 후 별도 spec.
 - W2는 묶음 PR, W3는 기능별 spec, W4는 체크리스트 추적으로 별도 진행.
