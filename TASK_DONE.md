@@ -170,6 +170,17 @@
 | ✅ Done | 🟠 High | 결재 대기/대시보드 쿼리 인덱스 보강 — 실제 쿼리 술어 기준으로 `IX_CDECIM_PENDING(DCR_ENO, DCD_STS_C, APF_DCM_NO)`·`IX_CAPPLM_USER_STS(DCD_REQ_USID, APF_PRG_STS_C, DCD_REQ_DTM)` 추가(멱등 가드) | `V20260627_001__AddDashboardListIndexes.sql`(a863dd2), 조치일: 2026-06-27 |
 | ✅ Done | 🟠 High | 요구사항 정의서 대시보드 `BRDOCM`/`BRIVGM` 보조 인덱스 — `IX_BRDOCM_ENR_DEL(FST_ENR_USID, DEL_YN)`·`IX_BRIVGM_DOC_DEL_FSG(DOC_MNG_NO, DEL_YN, FSG_YN)` 추가(멱등 가드) | `V20260627_001__AddDashboardListIndexes.sql`(a863dd2), 조치일: 2026-06-27 |
 
+### 🟠 2026-06-29 bbrC 부서 필터 적용 (보안 High W1, it_backend main 통합)
+
+> `TASK.md` W1 보안 High. subagent-driven 실행(implementer→spec 리뷰→코드품질 리뷰). 설계/계획: `docs/superpowers/specs/2026-06-28-task-remediation-design.md` §6.1, `docs/superpowers/plans/2026-06-28-bbrc-dept-filter.md`.
+> 커밋(it_backend main): `88e1419`/`8f0151e`/`f0c9f8b`(3 RepositoryImpl) + `2ff2399`(코드리뷰 반영) + `4ee3ebd`(§5.18 문서).
+> 검증: `compileJava` BUILD SUCCESSFUL, 전체 `test`는 기존 실패 8건(`FrontendUrlPropertyResolutionTest`·`ProjectServiceXcrLookupTest`·`CommitteeServiceTest`)만 — 베이스 main에서 동일 재현 확인(본 변경 무파손). **런타임 기능검증(로컬 Oracle 2부서 시드 후 관리자/일반사용자 응답 차이)은 환경 의존으로 미수행 — 후속 수동 검증 권장(plan Task 5).**
+
+| 상태 | 우선순위 | 과제 | 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | 🟠 High | 사업집행 ②과업심의·③계약·④지급 목록 `bbrC` 부서 필터 적용 — 대상구분 100=`Bprojm.svnDpmC`/200=`Bcostm.costSvnDpmC`를 `cncdRfrNo` 키로 LEFT JOIN(최신 `lstYn='Y'`) 후 `Expressions.anyOf(allOf(...))` 분기 비교 + `.distinct()` 가드. `EstimateRepositoryImpl` 패턴을 2대상으로 확장. 일반 사용자 타부서 열람 차단 | `DeliberationRepositoryImpl`/`ContractRepositoryImpl`/`PaymentRepositoryImpl`, `it_backend/CLAUDE.md §5.18`, 통합일: 2026-06-29 |
+| ✅ Done | 🟠 High | 과업심의 목록 부서(bbrC) 필터 미적용 — 위 작업으로 동일 해소(과업심의=Deliberation 목록 동일 RepositoryImpl) | 별도 항목이었으나 통합 해소 |
+
 ### 🔍 2026-06-28 코드 대조 검증 — stale Open 이관
 
 > `TASK.md` 전체 ⬜ Open 항목을 6개 병렬 에이전트로 코드베이스 대조 검증(read-only) 후, 실제 이미 해소된 stale 3건만 이관. 대부분 항목은 정상 추적(STILL_OPEN) 재확인. spot-check로 에이전트 오판 2건 정정 — `ApplicationContextHolder.publishEvent()`는 구 이벤트 기반 감사로그 JavaDoc(38-53행)이 잔존해 Open 유지, `BRIVGM` 인덱스는 06-27 추가분(`IX_BRIVGM_DOC_DEL_FSG`)이 대시보드용 별개라 검토의견 목록 쿼리는 미커버로 Open 유지. 검증 기록·잔여 로드맵·보안 High 2건 상세 설계: `docs/superpowers/specs/2026-06-28-task-remediation-design.md`.

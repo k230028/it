@@ -22,7 +22,7 @@
 
 | Wave | 성격 | 주요 항목 | 산출물 |
 | :--: | --- | --- | --- |
-| **W1** 🔴 보안 High | 즉시 조치 | `bbrC` 부서필터(`Contract/Deliberation/PaymentRepositoryImpl` + 과업심의 목록) — plan 완료 [`2026-06-28-bbrc-dept-filter.md`](docs/superpowers/plans/2026-06-28-bbrc-dept-filter.md) | TDD 구현 대기 |
+| **W1** ✅ 완료 | — | `bbrC` 부서필터(`Contract/Deliberation/PaymentRepositoryImpl` + 과업심의 목록) — 구현·it_backend main 통합(2026-06-29). plan [`2026-06-28-bbrc-dept-filter.md`](docs/superpowers/plans/2026-06-28-bbrc-dept-filter.md). **런타임 기능검증(로컬 Oracle) 잔여** | TASK_DONE 이관 |
 | **W2** 🟡 코드부채 | 단독 수정 가능 | `@Valid` 보강(Council/BoardPost), 클래스레벨 `@Transactional(readOnly)`(Plan/LoginAttempt), N+1 제거(ScheduleService·`CouncilService.deriveCurrentYearBudget`·Deliberation/Contract/Payment.get), `CinfmmRepositoryImpl` 감사컬럼, `BtermmL` length 정정, SSO eno 로그 강등, `changeStatus` role 분기, 환율 규칙 통일, `HostAddressProvider` 진단, `ApplicationContextHolder` 주석 정리, council-request/result catch 바인딩 | 묶음 PR(들) |
 | **W3** 🧩 기능 spec 필요 | 백엔드 신규 엔드포인트/스키마 동반 | Mock→API(`info/index`, budget summary·comparison), 사전협의 검토자/세션 status 영속화(선행: 검토플로우 실제 인증연동)·`authorTeam`·첨부 매핑, 게시판 서버 페이지네이션·첨부 UI·다운로드 카운트·댓글 첨부, Tiptap 변수 prop 확대·권한 필터링, 실시간로그 드릴다운·필터 저장 | 기능별 spec→plan |
 | **W4** 🏛️ 외부/운영 의존 | KDB·DBA·운영 협의 | EAI IF_ID/UMS 발급·도메인 연동, 실시간로그 EXPLAIN/인덱스/보존정책, 메타 PK 정합(BBUGTM/BRDOCM), BPOVWM 데이터 이관, 인덱스 적용(BASCTM/BCMMTM/BRDOCM/BRIVGM/실시간로그) | 체크리스트 추적 |
@@ -46,7 +46,6 @@
 | ⬜ Open | 🟡 Medium | [후속/T10] Refresh Token 재사용 탐지(토큰 패밀리/세대 카운터) 도입 — Phase 3에서 회전(rotation)만 구현되어 탈취된 구 토큰의 재사용 탐지가 없음. 회전 시 무효화된 토큰이 다시 제출되면 패밀리 전체 폐기하는 메커니즘 필요 | `AuthService`(rotation 구현부), 스파이크: `docs/superpowers/plans/2026-06-22-phase3-security-hardening-spike-blocklist.md`, 탐지: 2026-06-22 |
 | ⬜ Open | 🟡 Medium | Tiptap 변수 metadata 프로젝트 카탈로그 권한 필터링 — 현재 인증 사용자 공통 프로젝트 목록을 반환하므로 사용자 권한/부서 기준 목록 제한 필요 | `TiptapVariableController.java`, `TiptapVariableService.java:51`, 탐지: 2026-06-24 |
 | ⬜ Open | 🟡 Medium | SSO 인증 흐름 INFO 로그에 사번(eno) 평문 노출 — 성공 경로 routine INFO 로그가 PII를 운영 로그에 남김. 알림/게시판 PII 강등(2026-06-27)과 동일 정책으로 INFO→DEBUG 강등 검토 | `SsoController.java:321,373`, 탐지: 2026-06-27 |
-| ⬜ Open | 🟠 High | `ContractRepositoryImpl`·`DeliberationRepositoryImpl`·`PaymentRepositoryImpl` — `bbrC` 부서 필터 MVP 미적용(쿼리 조건 없음). 서비스가 bbrC를 전달해도 Repository가 무시 → 일반 사용자가 타부서 계약·심의·지급 목록 전체 열람 가능. `EstimateRepositoryImpl`(적용됨)과 불일치. Bcontm/Bdelim/Bpaymm에 주관부서코드 컬럼 추가 또는 대상 테이블 JOIN 필요 | `ContractRepositoryImpl.java:47`, `DeliberationRepositoryImpl.java:47`, `PaymentRepositoryImpl.java:43`, 발견일: 2026-06-09 (line 309 과업심의 bbrC 항목 통합·확장) |
 | ⬜ Open | 🟡 Medium | 사업집행 4단계 `changeStatus` — 단방향 상태전이(인접만)는 검증하나 역할(ADMIN/작업자/신청자)별 전이 권한 분기 없음. 업무 요건(제출=본인/관리자, 완료=관리자/작업자 등) 확정 후 서비스 계층 role 분기 추가 | `EstimateService.java:115`, `DeliberationService/ContractService/PaymentService` 동일, 발견일: 2026-06-09 |
 
 ### 📦 의존성 취약점 (Snyk, 업스트림 미해결)
@@ -179,7 +178,6 @@
 
 ## 🏛️ 과업심의위원회 (Stage ②) 후속 과제
 
-- [ ] 과업심의 목록 부서(bbrC) 필터 미적용 — 대상이 사업/전산업무비 2종이라 단일 join 곤란. 후속 고도화.
 
 ## 📒 메타 용어사전(table.csv) 정합성 후속 과제 (2026-06-11 스키마 통일 작업 잔여)
 
