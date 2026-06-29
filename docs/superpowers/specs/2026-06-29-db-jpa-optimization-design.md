@@ -59,8 +59,10 @@
 ### 3.2 설계
 - **의존성** (`build.gradle`, testImplementation): `org.testcontainers:junit-jupiter`, `org.testcontainers:oracle-free`. 이미지는 라이선스 부담 없는 **`gvenzl/oracle-free:slim-faststart`** 사용(공식 이미지 대비 경량·고속 기동).
 - **싱글톤 컨테이너 패턴**: static `@Container` + `withReuse(true)`(로컬). 테스트 클래스마다 재기동하지 않도록 베이스에서 1회 기동, 클래스 간 공유.
-- **세션 스키마 정합**: 운영과 동일하게 `ALTER SESSION SET CURRENT_SCHEMA=ITPOWN`을 HikariCP `connection-init-sql`로 적용(§CLAUDE 2). 컨테이너 안에 `ITPOWN` 스키마 생성.
-- **스키마 시드**: 컨테이너 기동 후 **Flyway로 `it_database/migrations/V*.sql` 적용**(baseline 없이 빈 스키마 전체 적용 경로, §4.4). 이로써 테스트 DDL이 실제 마이그레이션과 동일하게 유지된다.
+- **스키마 시드 — Hibernate `ddl-auto=create-drop`** (결정 2026-06-29): `it_database/migrations/`에는 **베이스 테이블 DDL이 없고**(baseline `20260620.001` 위의 ALTER 증분만 존재), `ITPOWN_DDL_live.sql`은 3659줄 `DBMS_METADATA` 덤프(`"ITPOWN".` 하드코딩 + `COLLATE` 절)라 JDBC로 statement 단위 재생이 취약하다. 따라서 테스트 스키마는 **Hibernate가 JPA 엔티티에서 생성**(`spring.jpa.hibernate.ddl-auto=create-drop`)한다. `@DataJpaTest` 표준 경로이며 빠르고 견고하다.
+  - **네이티브 쿼리 영향(P3)**: `findProjectsForCouncil*` 등 native `Object[]` 쿼리는 **테이블 기반**이므로 Hibernate가 엔티티에서 생성한 동일 테이블/컬럼에 그대로 실행된다(컬럼명은 `@Column(name=...)` 매핑과 일치).
+  - **뷰 의존 항목 제외**: 실시간 로그 피드(#11)는 `V_ITPAPP_LOG_FEED` **뷰** 의존이라 Hibernate 생성 대상이 아니다 → 이 항목과 P4 전체(EXPLAIN/인덱스)는 **실제 로컬 Oracle**(`ITPAPP@127.0.0.1:11521/XEPDB1`, §CLAUDE 3.1.1)에서 검증한다(Testcontainers 비대상).
+- **Flyway 비활성**: 테스트 프로파일은 `spring.flyway.enabled=false`(Hibernate가 스키마 생성). 마이그레이션 자체 검증은 별도 로컬 Oracle 경로.
 - **베이스 클래스** `AbstractOracleRepositoryTest`:
   - `@DataJpaTest` + `@AutoConfigureTestDatabase(replace = NONE)`(내장 DB 치환 비활성) + `@Import(QuerydslConfig.class)`로 `JPAQueryFactory` 빈 주입.
   - `@DynamicPropertySource`로 컨테이너 JDBC URL/계정 주입.
