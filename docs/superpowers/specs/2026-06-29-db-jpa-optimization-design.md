@@ -108,8 +108,7 @@
 공통 패턴: per-row `findByEno`/count 루프 → 키 집합 추출 후 `findBy...In` 또는 GROUP BY 1회 조회 → `Map` 선구성(roadmap T12, `ScheduleService`가 동일 패턴으로 선완료).
 
 ### 5.1 #3 사용자명 N+1 (`EvaluationService`, `CommitteeService.buildUserMap`)
-- 대상 사번 집합 수집 → `userRepository.findByEnoIn(enos)` 1회 → `Map<eno,name>`로 치환.
-- `CommitteeService.buildUserMap`은 이미 Map 구성 메서드명이 있으므로 내부 조회만 일괄로 교체.
+- **정정(2026-06-29 P2 계획 작성 중 확인): #3은 이미 구현됨** — `UserRepository.findByEnoIn`이 존재하고 `EvaluationService`·`CommitteeService.buildUserMap`·`ScheduleService.buildUserMap` 모두 일괄조회 패턴 사용 중. → 회귀 테스트(배치 1회 호출·per-row 미호출 검증)만 추가해 고정.
 
 ### 5.2 #4 `CouncilService:298` per-evaluator count
 - 평가자별 count 쿼리 반복 → 단일 GROUP BY COUNT(`SELECT asctId, COUNT(*) ... GROUP BY asctId`)로 `Map<asctId, count>` 선구성 후 조회. 별도 배치 리포지토리 메서드 추가.
@@ -146,12 +145,16 @@
 4. **`dev`/`prod` 적용은 DBA 위임** — 스크립트는 `local-ext`/`local-int` Flyway로만 자동 적용. 결과는 본 문서 부록 또는 별도 `EXPLAIN` 기록 문서에 남긴다.
 
 ### 7.2 후보 인덱스 (TASK 근거)
-| # | 테이블/쿼리 | 후보 인덱스 |
+> ⚠️ 컬럼명 정정(2026-06-29 P4 계획 작성 중 실제 엔티티 대조): 아래는 **물리 컬럼명**으로 교정한 값이다(당초 메타용어 표기 오류 — `PRJ_MNG_NO/PRJ_SNO`→`ABUS_MNG_NO/SNO`, `ASCT_ID`→`IT_PTL_ASCT_ID`, `DOC_VRS`→`DOC_VRS_SNO`). 검증된 최종 DDL은 [`2026-06-29-db-jpa-p4-indexes.md`](../plans/2026-06-29-db-jpa-p4-indexes.md)를 SoT로 따른다.
+
+| # | 테이블/쿼리 | 후보 인덱스 (물리 컬럼명) |
 | :--: | --- | --- |
-| 8 | `BASCTM`/`BCMMTM` 역방향 조회 | `BASCTM(PRJ_MNG_NO, PRJ_SNO, DEL_YN)`, `BCMMTM(ENO, DEL_YN, ASCT_ID)` |
-| 9 | `BRDOCM.findLatestVersionsAll()` (DEL_YN='N' + 상관서브쿼리 `MAX(DOC_VRS)` + `FST_ENR_DTM DESC`) | `(DEL_YN, DOC_MNG_NO, DOC_VRS, FST_ENR_DTM)` |
-| 10 | `BRIVGM` 검토의견 목록 (`(DOC_MNG_NO,DOC_VRS,DEL_YN)` 필터 + `FST_ENR_DTM ASC`) | `(DOC_MNG_NO, DOC_VRS, DEL_YN, FST_ENR_DTM)` (기존 `IX_BRIVGM_DOC_DEL_FSG`는 대시보드용 별개 — 본 정렬 미커버) |
+| 8 | `TPRMPP_BASCTM`/`TPRMPP_BCMMTM` 역방향 조회 | `BASCTM(ABUS_MNG_NO, SNO, DEL_YN)`, `BCMMTM(ENO, DEL_YN, IT_PTL_ASCT_ID)` |
+| 9 | `TPRMPP_BRDOCM` `findLatestVersionsAll()` (DEL_YN='N' + 상관서브쿼리 `MAX(DOC_VRS_SNO)` + `FST_ENR_DTM DESC`) | `(DEL_YN, DOC_MNG_NO, DOC_VRS_SNO, FST_ENR_DTM)` |
+| 10 | `TPRMPP_BRIVGM` 검토의견 목록 (`(DOC_MNG_NO, DOC_VRS_SNO, DEL_YN)` 필터 + `FST_ENR_DTM ASC`) | `(DOC_MNG_NO, DOC_VRS_SNO, DEL_YN, FST_ENR_DTM)` (기존 `IX_BRIVGM_DOC_DEL_FSG`는 대시보드용 별개 — 본 정렬 미커버) |
 | 11 | 실시간 로그 피드 `V_ITPAPP_LOG_FEED` (`CHG_DTM DESC, LOG_TBL DESC, LOG_HIS_TGR_SNO DESC` + `LOG_KEY`/`CHG_DTT_YN` 필터 + 5/30분 집계) | View 기반 EXPLAIN 후 하위 로그 테이블에 커서/집계 커버 인덱스 검토 |
+
+> 마이그레이션은 독립 레포 `C:/it/it_database`의 `it_database/migrations/`에 `V20260629_002~005`로 추가하며, 적용은 `SPRING_PROFILES_ACTIVE=local-ext ./gradlew bootRun`(Flyway Gradle 플러그인 없음)으로 로컬 검증 후 dev/prod는 DBA 위임.
 
 ---
 
@@ -161,7 +164,7 @@
 - `CacheConfig`는 `ConcurrentMapCacheManager`(TTL 미지원). `tiptapMetadata`는 프로젝트 쓰기 시 stale 가능, unread-count는 60s TTL 미적용(현재 evict-on-write로 대체).
 
 ### 8.2 설계
-- **의존성**: `com.github.ben-manes.caffeine:caffeine`.
+- **의존성**: `com.github.ben-manes.caffeine:caffeine`(Spring Boot 4.1 BOM이 3.2.4 관리). ⚠️ **전제 게이트(2026-06-29 확인)**: 이 머신에서 Caffeine이 **오프라인 해석 불가**(`C:/maven-repo` 부재 + gradle 캐시 미보유). `caffeine-3.2.4.jar` + 전이의존(checker-qual, error_prone_annotations) 반입/Nexus 확인 전까지 P5 코드 작업 보류(P0 Docker와 동일 성격).
 - `CacheConfig`에서 `CacheManager`를 **`CaffeineCacheManager`**로 교체. per-cache TTL/최대크기 지정.
 - **캐시별 정책**:
   | 캐시 | TTL | 비고 |
