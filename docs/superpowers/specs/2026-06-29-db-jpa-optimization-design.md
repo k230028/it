@@ -65,7 +65,7 @@
   - `@DataJpaTest` + `@AutoConfigureTestDatabase(replace = NONE)`(내장 DB 치환 비활성) + `@Import(QuerydslConfig.class)`로 `JPAQueryFactory` 빈 주입.
   - `@DynamicPropertySource`로 컨테이너 JDBC URL/계정 주입.
   - 전용 프로파일 `application-test-it.properties`(DataSource/JPA 활성)로 분리해 기존 `application-test.properties`(슬라이스 단위 테스트용)와 공존.
-- **CI 영향**: Docker 필요. 이미지 풀/기동 시간(수십 초) 발생 — CI 잡에 Docker-in-Docker 또는 호스트 Docker 소켓 전제. `@Tag("it")`로 통합 테스트를 분리해 `./gradlew test`(단위)와 `./gradlew integrationTest`(통합)로 게이트를 나눈다.
+- **로컬 전용 게이트 (결정 2026-06-29)**: 통합 테스트는 **로컬 전용**으로 둔다(CI Docker 비의존). `@Tag("it")`로 분리하고 별도 `integrationTest` 태스크를 만들어, 기본 `./gradlew test`(단위, CI 게이트)에서는 **제외**(`useJUnitPlatform { excludeTags 'it' }`)한다. 개발자가 로컬에서 Docker 기동 후 `./gradlew integrationTest`로 실행한다. Docker 미존재 시 통합 테스트는 `@EnabledIfDockerAvailable`(Testcontainers `@Testcontainers(disabledWithoutDocker = true)`)로 자동 스킵해 로컬에서도 Docker 없이 단위 빌드가 깨지지 않게 한다.
 
 ### 3.3 산출물
 - `build.gradle` 의존성, `application-test-it.properties`, `AbstractOracleRepositoryTest`, 스모크 테스트 1건(임의 리포지토리 save/find 라운드트립).
@@ -93,7 +93,7 @@
 - **⚠️ DECISION — 감사로그 트레이드오프**: `@Modifying` 벌크는 `@PreUpdate`→`ChangeLogEntityListener`(§5.12.1)를 **우회**하므로 이 선정리 구간의 행별 `BbugtmL` 변경로그가 생성되지 않는다. 본 구간은 직후 전량 재삽입되는 **과도적 선정리**라 행별 로그 가치가 낮다고 보고:
   - **권장안**: 벌크 UPDATE 채택 + UPDATE문에 감사컬럼(`LST_CHG_USID/DTM`) 수동 세팅. 선정리 구간의 행별 *L 로그 손실은 **수용**.
   - **대안(보수)**: 행별 로그가 업무 감사상 필수면 루프 `delete()` 유지(현행). → 이 경우 #1은 "감내"로 종료.
-  - 이 결정은 P1 착수 전 확정한다.
+  - **결정(2026-06-29): 권장안 채택** — 벌크 UPDATE + 감사컬럼 수동 세팅, 선정리 구간 행별 *L 로그 손실 수용.
 - **검증**: 과거 BBUGTM 잔존 상태에서 applyItemRates 후 (a) 과거 행 전량 `DEL_YN='Y'`, (b) 신규 행만 활성, (c) 단일 UPDATE 쿼리 1회(N+1 제거) 확인.
 
 ---
@@ -175,7 +175,7 @@
 | --- | --- |
 | 벌크 UPDATE가 감사로그 리스너 우회(#1) | §4.2 DECISION — 선정리 구간 행별 로그 손실 수용(권장) 또는 현행 유지 |
 | native 프로젝션 컬럼 순서 결합(#5,#6) | `fromRow` 단일 팩토리로 집중 + §5.5.4 타입 헬퍼 강제, 동등성 테스트 |
-| Testcontainers Oracle 이미지/CI 비용(P0) | `gvenzl/oracle-free:slim-faststart` + 싱글톤 reuse, `@Tag("it")`로 단위/통합 분리 |
+| Testcontainers Oracle 이미지/CI 비용(P0) | 통합 테스트 **로컬 전용**(CI 제외), `gvenzl/oracle-free:slim-faststart` + 싱글톤 reuse, `@Tag("it")` 분리 + Docker 미존재 시 자동 스킵 |
 | Flyway 체크섬 불변(P4) | 인덱스는 항상 신규 V* 스크립트로만 추가, 기존 수정 금지 |
 | 인덱스 운영 적용 권한 | `dev`/`prod`는 DBA 위임, 본 계획은 검증+스크립트 작성까지 |
 | CacheManager 교체 회귀(P5) | 공통코드(§5.5.1) 등 기존 캐시 동작 회귀 테스트로 보호 |
