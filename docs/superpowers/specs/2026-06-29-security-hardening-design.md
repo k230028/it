@@ -48,10 +48,10 @@ W2b 완료 후 잔여 보안 7건 + 에러처리 1건을 "모두 조치"하기�
 ### 4.2 #5 [T10] Refresh Token 재사용 탐지
 - **현황**: refresh token 엔티티 `Crtokm`(repo `RefreshTokenRepository`). `AuthService.refreshAccessToken`(L231-271)은 회전 시 구 토큰을 **삭제**하고 신규 저장 — 회전된 구 토큰 재제출 시 `findByTokCone` 미발견으로 단순 실패(`Refresh Token을 찾을 수 없습니다`). 탈취 후 재사용을 "정상 만료"와 구분 못 하고, 패밀리 폐기도 없음.
 - **설계**:
-  - **스키마(Flyway)**: `TPRMPP_CRTOKM`에 `FMLY_ID`(패밀리 식별자, 로그인 1회=1패밀리) + 상태 표식(`RVK_YN` 또는 `STS_C`: ACTIVE/ROTATED) 컬럼 추가. `it_database/migrations/V*.sql` 신규(체크섬 추적 — 기존 스크립트 수정 금지).
-  - **회전 로직 재작업**: 로그인 시 새 `FMLY_ID` 부여. 회전 시 구 토큰을 삭제 대신 **ROTATED 표식 유지**, 신규 토큰을 동일 `FMLY_ID`로 저장. refresh 시:
-    - 제출 토큰 ACTIVE → 정상 회전.
-    - 제출 토큰 ROTATED(이미 회전됨) → **재사용 탐지 → 해당 `FMLY_ID` 전체 폐기**(로그 경고). 공격자·정상 사용자 모두 재인증 요구.
+  - **스키마(Flyway)**: `TPRMPP_CRTOKM`에 `ATR_GRP_ID`(속성그룹ID=토큰패밀리, 로그인 1회=1패밀리, VARCHAR2(50)) + `USE_YN`(사용여부, VARCHAR2(1): Y=활성 토큰 / N=회전된 구토큰) 컬럼 추가. `it_database/migrations/V*.sql` 신규(체크섬 추적 — 기존 스크립트 수정 금지).
+  - **회전 로직 재작업**: 로그인 시 새 `ATR_GRP_ID` 부여(`USE_YN='Y'`). 회전 시 구 토큰을 삭제 대신 **`USE_YN='N'`(회전됨) 표식 유지**, 신규 토큰을 동일 `ATR_GRP_ID`·`USE_YN='Y'`로 저장. refresh 시:
+    - 제출 토큰 `USE_YN='Y'`(활성) → 정상 회전.
+    - 제출 토큰 `USE_YN='N'`(이미 회전됨) → **재사용 탐지 → 해당 패밀리(`ATR_GRP_ID`/eno) 전체 폐기**(로그 경고). 공격자·정상 사용자 모두 재인증 요구.
     - 미발견/만료 → 기존 처리.
   - **저장 증가 관리**: ROTATED 토큰 보존으로 행 증가 → 만료 경과분 정리(만료 시 또는 로그아웃 시 패밀리 일괄 삭제, 선택적 정리 배치). "1인 1 패밀리"로 동시 패밀리 수 제한.
   - **Repository**: `findByTokCone`(유지) + `deleteByFmlyId`/`findByFmlyId`/만료정리 메서드 추가.

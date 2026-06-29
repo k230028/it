@@ -192,7 +192,7 @@ git commit -m "feat: Authorization Bearer 헤더 폴백 운영 비활성화 게�
 `V20260627_001` 가드 패턴 차용. 신규 파일:
 ```sql
 -- V20260629_001__AddRefreshTokenFamily.sql
--- Refresh Token 재사용 탐지(T10)용 컬럼 추가: FMLY_ID(패밀리=로그인 1회), RTT_YN(회전됨 표식).
+-- Refresh Token 재사용 탐지(T10)용 컬럼 추가: ATR_GRP_ID(속성그룹=토큰패밀리, 로그인 1회), USE_YN(사용여부; N=회전된 구토큰).
 -- 가산형(추가만)·멱등: 동일 컬럼 존재 시 건너뜀.
 DECLARE
     FUNCTION col_exists(p_tab VARCHAR2, p_col VARCHAR2) RETURN BOOLEAN IS
@@ -204,44 +204,44 @@ DECLARE
         RETURN n > 0;
     END;
 BEGIN
-    IF NOT col_exists('TPRMPP_CRTOKM', 'FMLY_ID') THEN
-        EXECUTE IMMEDIATE 'ALTER TABLE TPRMPP_CRTOKM ADD (FMLY_ID VARCHAR2(64 CHAR) DEFAULT ''LEGACY'' NOT NULL)';
-        EXECUTE IMMEDIATE 'COMMENT ON COLUMN TPRMPP_CRTOKM.FMLY_ID IS ''토큰패밀리ID(로그인 1회=1패밀리, 재사용 탐지용)''';
+    IF NOT col_exists('TPRMPP_CRTOKM', 'ATR_GRP_ID') THEN
+        EXECUTE IMMEDIATE 'ALTER TABLE TPRMPP_CRTOKM ADD (ATR_GRP_ID VARCHAR2(50 CHAR) DEFAULT ''LEGACY'' NOT NULL)';
+        EXECUTE IMMEDIATE 'COMMENT ON COLUMN TPRMPP_CRTOKM.ATR_GRP_ID IS ''속성그룹ID(토큰패밀리=로그인 1회, 재사용 탐지용)''';
     END IF;
-    IF NOT col_exists('TPRMPP_CRTOKM', 'RTT_YN') THEN
-        EXECUTE IMMEDIATE 'ALTER TABLE TPRMPP_CRTOKM ADD (RTT_YN VARCHAR2(1 CHAR) DEFAULT ''N'' NOT NULL)';
-        EXECUTE IMMEDIATE 'COMMENT ON COLUMN TPRMPP_CRTOKM.RTT_YN IS ''회전여부(Y=이미 회전된 구토큰, 재제출 시 재사용 탐지)''';
+    IF NOT col_exists('TPRMPP_CRTOKM', 'USE_YN') THEN
+        EXECUTE IMMEDIATE 'ALTER TABLE TPRMPP_CRTOKM ADD (USE_YN VARCHAR2(1 CHAR) DEFAULT ''Y'' NOT NULL)';
+        EXECUTE IMMEDIATE 'COMMENT ON COLUMN TPRMPP_CRTOKM.USE_YN IS ''사용여부(Y=활성 토큰, N=회전된 구토큰 → 재제출 시 재사용 탐지)''';
     END IF;
 END;
 /
 ```
-(컬럼명 `FMLY_ID`/`RTT_YN`은 메타표준 부재 — 의미 주석 명시. `DEFAULT 'LEGACY'`/`'N'`으로 기존 행 백필. local-ext/local-int 기동 시 자동 적용.)
+(메타표준 컬럼명: `ATR_GRP_ID`=속성그룹ID(50), `USE_YN`=사용여부(1). `DEFAULT 'LEGACY'`/`'Y'`(기존 행=활성)으로 백필. local-ext/local-int 기동 시 자동 적용.)
 
 - [ ] **Step 2: Crtokm 엔티티 필드 + 회전 표식 메서드 추가**
 
 `Crtokm.java`에 `endDtm` 필드(L80-81) 아래 추가:
 ```java
-    /** 토큰패밀리ID — 로그인 1회=1패밀리. 재사용 탐지 시 패밀리 단위 폐기 기준 */
-    @Column(name = "FMLY_ID", nullable = false, length = 64, comment = "토큰패밀리ID")
-    private String fmlyId;
+    /** 속성그룹ID — 토큰패밀리(로그인 1회=1패밀리). 재사용 탐지 시 패밀리 단위 폐기 기준 */
+    @Column(name = "ATR_GRP_ID", nullable = false, length = 50, comment = "속성그룹ID")
+    private String atrGrpId;
 
-    /** 회전여부 — 'Y'이면 이미 회전된 구 토큰. 재제출되면 재사용(탈취)으로 판단 */
-    @Column(name = "RTT_YN", nullable = false, length = 1, comment = "회전여부")
-    private String rttYn;
+    /** 사용여부 — 'Y'=활성 토큰, 'N'=회전된 구 토큰. 'N' 토큰이 재제출되면 재사용(탈취)으로 판단 */
+    @Column(name = "USE_YN", nullable = false, length = 1, comment = "사용여부")
+    private String useYn;
 ```
 `isExpired()`(L88-90) 아래에 표식 메서드 추가:
 ```java
-    /** 회전 표식 — 신규 토큰 발급 후 이 토큰을 '회전됨'으로 표시(삭제 대신 유지하여 재사용 탐지) */
+    /** 회전 표식 — 신규 토큰 발급 후 이 토큰을 '회전됨(비활성)'으로 표시(삭제 대신 유지하여 재사용 탐지) */
     public void markRotated() {
-        this.rttYn = "Y";
+        this.useYn = "N";
     }
 
-    /** 회전된(이미 사용된) 토큰인지 */
+    /** 회전된(이미 사용된) 토큰인지 — USE_YN='N' */
     public boolean isRotated() {
-        return "Y".equals(this.rttYn);
+        return "N".equals(this.useYn);
     }
 ```
-(`@SuperBuilder`이므로 빌더에 `.fmlyId(...).rttYn("N")` 사용 가능. `@Getter`가 `getFmlyId()`/`getRttYn()` 생성.)
+(`@SuperBuilder`이므로 빌더에 `.atrGrpId(...).useYn("Y")` 사용 가능. `@Getter`가 `getAtrGrpId()`/`getUseYn()` 생성. 신규 토큰은 `useYn="Y"`(활성), 회전된 구토큰은 `markRotated()`로 `"N"`.)
 
 - [ ] **Step 3: 컴파일 확인**
 
@@ -274,14 +274,14 @@ cd it_backend && git grep -n "refreshTokenRepository.findByEno\|\.findByEno(" --
 
 - [ ] **Step 1: 실패 테스트 — 재사용 탐지 + 회전 유지**
 
-`AuthServiceTest`에 추가(기존 `refreshAccessToken_회전` L248 패턴 미러). 재사용 탐지: 회전된(RTT_YN=Y) 토큰 재제출 → `deleteByEno`(패밀리 폐기) 호출 + 예외:
+`AuthServiceTest`에 추가(기존 `refreshAccessToken_회전` L248 패턴 미러). 재사용 탐지: 회전된(USE_YN=N) 토큰 재제출 → `deleteByEno`(패밀리 폐기) 호출 + 예외:
 ```java
     @Test
     @DisplayName("refreshAccessToken - 재사용 탐지: 이미 회전된 토큰 재제출 시 패밀리 폐기 후 예외")
     void refreshAccessToken_재사용탐지_패밀리폐기() {
         String reused = "rotated-old-token";
         Crtokm rotated = Crtokm.builder()
-                .tokCone(reused).eno("10001").fmlyId("FAM-1").rttYn("Y")
+                .tokCone(reused).eno("10001").atrGrpId("FAM-1").useYn("N")
                 .endDtm(LocalDateTime.now().plusDays(7))
                 .build();
         given(jwtUtil.validateToken(reused)).willReturn(true);
@@ -299,7 +299,7 @@ cd it_backend && git grep -n "refreshTokenRepository.findByEno\|\.findByEno(" --
     void refreshAccessToken_정상회전_구토큰유지() {
         String oldRefresh = "active-token";
         Crtokm stored = Crtokm.builder()
-                .tokCone(oldRefresh).eno("10001").fmlyId("FAM-1").rttYn("N")
+                .tokCone(oldRefresh).eno("10001").atrGrpId("FAM-1").useYn("Y")
                 .endDtm(LocalDateTime.now().plusDays(7))
                 .build();
         given(jwtUtil.validateToken(oldRefresh)).willReturn(true);
@@ -338,8 +338,8 @@ Expected: FAIL.
         String value = jwtUtil.generateRefreshToken(eno);
         Crtokm token = Crtokm.builder()
                 .tokCone(value).eno(eno)
-                .fmlyId(java.util.UUID.randomUUID().toString())
-                .rttYn("N")
+                .atrGrpId(java.util.UUID.randomUUID().toString())
+                .useYn("Y")
                 .endDtm(LocalDateTime.now().plus(Duration.ofMillis(refreshTokenValidityMs)))
                 .build();
         refreshTokenRepository.save(token);
@@ -352,9 +352,9 @@ Expected: FAIL.
         Crtokm refreshToken = refreshTokenRepository.findByTokCone(refreshTokenValue)
                 .orElseThrow(() -> new RuntimeException("Refresh Token을 찾을 수 없습니다."));
 
-        // 재사용 탐지: 이미 회전된 구 토큰이 재제출되면 탈취로 간주 → 패밀리 전체 폐기
+        // 재사용 탐지: 이미 회전된(USE_YN='N') 구 토큰이 재제출되면 탈취로 간주 → 패밀리 전체 폐기
         if (refreshToken.isRotated()) {
-            log.warn("Refresh Token 재사용 탐지 — 패밀리 폐기: eno={}, fmlyId={}", refreshToken.getEno(), refreshToken.getFmlyId());
+            log.warn("Refresh Token 재사용 탐지 — 패밀리 폐기: eno={}, atrGrpId={}", refreshToken.getEno(), refreshToken.getAtrGrpId());
             refreshTokenRepository.deleteByEno(refreshToken.getEno());
             throw new RuntimeException("토큰 재사용이 탐지되어 세션이 폐기되었습니다. 다시 로그인하세요.");
         }
@@ -376,8 +376,8 @@ Expected: FAIL.
         String newRefreshTokenValue = jwtUtil.generateRefreshToken(eno);
         Crtokm rotated = Crtokm.builder()
                 .tokCone(newRefreshTokenValue).eno(eno)
-                .fmlyId(refreshToken.getFmlyId())
-                .rttYn("N")
+                .atrGrpId(refreshToken.getAtrGrpId())
+                .useYn("Y")
                 .endDtm(LocalDateTime.now().plus(Duration.ofMillis(refreshTokenValidityMs)))
                 .build();
         refreshTokenRepository.save(rotated);
@@ -391,7 +391,7 @@ Expected: FAIL.
 
 - [ ] **Step 4: 기존 회전 테스트 갱신 + 전체 통과**
 
-기존 `refreshAccessToken_회전_새RefreshToken발급`(L248-274)의 단언을 새 동작에 맞춤: `verify(...).delete(stored)` 제거, `verify(...).save(any())`를 `times(2)`로(구 표식 + 신규), `stored` 빌더에 `.fmlyId("FAM-1").rttYn("N")` 추가, 응답 토큰 단언 유지. `refreshAccessToken_DB토큰없음_예외발생`(L355)은 그대로 유지(미발견은 여전히 거부).
+기존 `refreshAccessToken_회전_새RefreshToken발급`(L248-274)의 단언을 새 동작에 맞춤: `verify(...).delete(stored)` 제거, `verify(...).save(any())`를 `times(2)`로(구 표식 + 신규), `stored` 빌더에 `.atrGrpId("FAM-1").useYn("Y")` 추가, 응답 토큰 단언 유지. `refreshAccessToken_DB토큰없음_예외발생`(L355)은 그대로 유지(미발견은 여전히 거부).
 Run: `cd it_backend && ./gradlew test --tests "com.kdb.it.common.system.service.AuthServiceTest"`
 Expected: PASS (신규 2 + 갱신 + 기존 login/logout 등).
 
@@ -728,6 +728,6 @@ git commit -m "test: 관리자 API JWT 경계 검증 — 위조 it-portal-user �
 
 ## 최종 검증
 - [ ] **백엔드**: `cd it_backend && ./gradlew --stop && rm -rf build/test-results/test/binary 2>/dev/null; ./gradlew test` → 신규 실패 0건 (기존 8건 — CORS 속성해석 5·XCR Ccodem 2·Committee 상태전이 1 — 무관, `task_00754fe5`).
-- [ ] **Flyway**: `local-ext`/`local-int` 프로파일 기동 시 `V20260629_001` 적용 확인(`TPRMPP_CRTOKM`에 FMLY_ID/RTT_YN 생성).
+- [ ] **Flyway**: `local-ext`/`local-int` 프로파일 기동 시 `V20260629_001` 적용 확인(`TPRMPP_CRTOKM`에 ATR_GRP_ID/USE_YN 생성).
 - [ ] **프론트(해당 시)**: `cd it_frontend && npm run typecheck && npm run lint`.
 - [ ] **TASK.md**: 보안 §에서 조치 6건 → 완료 표시/이관, #4 ☑️ Accepted, 에러처리 § 정리 확인.
