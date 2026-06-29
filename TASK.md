@@ -25,14 +25,16 @@
 | **W1** ✅ 완료 | — | `bbrC` 부서필터(`Contract/Deliberation/PaymentRepositoryImpl` + 과업심의 목록) — 구현·it_backend main 통합·**런타임 검증 완료**(로컬 Oracle 실데이터, 2026-06-29). plan [`2026-06-28-bbrc-dept-filter.md`](docs/superpowers/plans/2026-06-28-bbrc-dept-filter.md) | TASK_DONE 이관 완료 |
 | **W2** ✅ 완료 | — | 영향도 낮은 코드부채 13건 묶음 처리(4 PR) — `@Valid` 보강(Council/BoardPost), 클래스레벨 `@Transactional(readOnly)`(Plan/LoginAttempt), N+1 제거(ScheduleService·`CouncilService.deriveCurrentYearBudget`·Deliberation/Contract/Payment.get), `CinfmmRepositoryImpl` 감사컬럼, `BtermmL` length 정정, SSO eno 로그 강등, `HostAddressProvider` 진단, `ApplicationContextHolder` 주석 정리, `CodeNameMapBuilder` 이동, council-request/result catch 바인딩. plan [`2026-06-29-low-impact-task-bundling.md`](docs/superpowers/plans/2026-06-29-low-impact-task-bundling.md)·design [`2026-06-29-low-impact-task-bundling-design.md`](docs/superpowers/specs/2026-06-29-low-impact-task-bundling-design.md). **카브아웃 2건(`changeStatus` role 분기·환율 규칙 통일)은 결정 선행 필요로 W3 재범위** | TASK_DONE 이관 완료 |
 | **W3** 🧩 기능 spec/결정 필요 | 백엔드 신규 엔드포인트/스키마 또는 업무요건 결정 동반 | Mock→API(`info/index` 엔드포인트 필요; budget summary·comparison은 `ItBudgetController`·`useItBudget` 준비됨 → 페이지 wiring만 잔여), 사전협의 검토자/세션 status 영속화(선행: 검토플로우 실제 인증연동)·`authorTeam`·첨부 매핑, 게시판 서버 페이지네이션·첨부 UI·다운로드 카운트·댓글 첨부·본문 최대크기 정책(DECISION), Tiptap 변수 prop 확대·권한 필터링, 실시간로그 드릴다운·필터 저장, **(W2 카브아웃) 사업집행 4단계 `changeStatus` role 분기(업무요건 확정 선행)·품목 금액 환율 환산 규칙 통일(`BudgetWorkService` no-xcr vs `ProjectBudgetSummaryService` ×xcr 활성 충돌, DECISION 선행)** | 기능별 spec→plan |
-| **W4** 🏛️ 외부/운영 의존 | KDB·DBA·운영 협의 | EAI IF_ID/UMS 발급·도메인 연동, 실시간로그 EXPLAIN/인덱스/보존정책, 메타 PK 정합(BBUGTM/BRDOCM), BPOVWM 데이터 이관, 인덱스 적용(BASCTM/BCMMTM/BRDOCM/BRIVGM/실시간로그) | 체크리스트 추적 |
+| **W4** 🏛️ 외부/운영 의존 | KDB·DBA·운영 협의 | EAI IF_ID/UMS 발급·도메인 연동, 메타 PK 정합(BBUGTM/BRDOCM), BPOVWM 데이터 이관, **인덱스 dev/prod 적용(`V20260629_002~005`, 스크립트·로컬검증 완료 → DBA 적용 대기)** | 체크리스트 추적 |
 | **Backlog** 🟢 선택 | 성능/확장/품질 | SSE/WebSocket 전환, 조회수 Redis, Oracle Text 검색, 목록 프로젝션 DTO(T16), 통합테스트 인프라(T18), 클래스 JavaDoc 누락 컨트롤러 소수 잔여(전수 86% 완료, PR-2), 토큰 재사용 탐지(T10)/Blocklist | 여유 시 |
 
 ---
 
 ## 🚧 진행 중
 
-> 🕒 최종 업데이트: 2026-06-29 (보안 하드닝 구현 완료 — #1·#2·#3·#5·#6·#7 6건 조치, #4 감내. 보안 § 잔여 = Blocklist(감내) 외 0건. plan `docs/superpowers/plans/2026-06-29-security-hardening.md`·design `docs/superpowers/specs/2026-06-29-security-hardening-design.md`)
+> 🕒 최종 업데이트: 2026-06-30 (🗄️ DB/JPA 최적화 12건 전체 완료 — P0 로컬 Oracle `@DataJpaTest` 하네스 신설 후 P1 벌크/flush·P2 N+1·P3 프로젝션 봉인·P4 인덱스·P5 Caffeine을 페이즈별 구현+2단계 리뷰로 조치. `it_backend` main `0e247a5`·`it_database` main `37fd523`. `TASK_DONE.md` §🗄️ 2026-06-30 이관. 잔여: 협의회 BPROJM 컬럼 드리프트 버그(`task_11b75a35`), P4 인덱스 dev/prod DBA 적용. design/plans `docs/superpowers/{specs,plans}/2026-06-29-db-jpa-*`)
+>
+> 🕒 이전 업데이트: 2026-06-29 (보안 하드닝 구현 완료 — #1·#2·#3·#5·#6·#7 6건 조치, #4 감내. 보안 § 잔여 = Blocklist(감내) 외 0건. plan `docs/superpowers/plans/2026-06-29-security-hardening.md`·design `docs/superpowers/specs/2026-06-29-security-hardening-design.md`)
 >
 > 🕒 이전 업데이트: 2026-06-29 (보안 하드닝 착수 — 보안 7건 plan `docs/superpowers/plans/2026-06-29-security-hardening.md`·design `docs/superpowers/specs/2026-06-29-security-hardening-design.md`. #4 Blocklist 감내(☑️ Accepted), 에러처리 클래스 JavaDoc 종료)
 >
@@ -68,20 +70,12 @@
 
 ### 🗄️ DB / JPA 최적화
 
+> ✅ **12건 전체 완료 (2026-06-30)** — P0~P5 페이즈로 조치 후 [`TASK_DONE.md`](TASK_DONE.md) §🗄️ 2026-06-30으로 이관. 코드: `it_backend` main `0e247a5`, `it_database` main `37fd523`. design `docs/superpowers/specs/2026-06-29-db-jpa-optimization-design.md`, plans `docs/superpowers/plans/2026-06-29-db-jpa-p0~p5-*.md`. 아래는 잔여 후속 과제.
+
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
-| ⬜ Open | 🟡 Medium | `BudgetWorkService.applyItemRates()` 전체 연도 BBUGTM 메모리 로드 + 루프 Soft Delete → `@Modifying` 벌크 UPDATE | `BudgetWorkService.java L243-244` |
-| ⬜ Open | 🟡 Medium | `ProjectRepositoryImpl`/`CostRepositoryImpl` `selectFrom` 전체 컬럼 → 목록 API용 DTO 프로젝션 (1000자 텍스트 컬럼 제외) | `ProjectRepositoryImpl.java L140`, `CostRepositoryImpl.java L163` |
-| ⬜ Open | 🟡 Medium | Native Query `Object[]` 반환 → DTO 프로젝션 또는 `@SqlResultSetMapping` 적용 | `CouncilRepository`, `ApplicationRepository`, `ServiceRequestDocRepository`, `LoginHistoryRepository`, `EvaluationRepository` |
-| ⬜ Open | 🟡 Medium | `FeasibilityService.replacePerformances()` JPQL DELETE 후 flush 없이 persist → `flush()` 명시 또는 Spring Data `deleteAll` 통일 | `FeasibilityService.java L225` |
-| ⬜ Open | 🟡 Medium | `EvaluationService`·`CommitteeService` 사용자명 N+1 (ScheduleService는 2026-06-29 완료) — PR-1 처리 예정 | 사번별 `findByEno()` 반복(`ScheduleService`는 `findByEnoIn` 일괄조회로 해소 완료) |
-| ⬜ Open | 🟡 Medium | CommitteeService.buildUserMap은 PR-1 처리; CouncilService L298 per-evaluator count 쿼리는 별도 배치메서드 필요로 STILL_OPEN | `CommitteeService.buildUserMap`(PR-1), `CouncilService.java:298` per-evaluator count 반복 |
-| ⬜ Open | 🟡 Medium | 협의회 목록 `BASCTM`/`BCMMTM` 역방향 조회 인덱스 검토 | 후보: `BASCTM(PRJ_MNG_NO, PRJ_SNO, DEL_YN)`, `BCMMTM(ENO, DEL_YN, ASCT_ID)` |
-| ⬜ Open | 🟡 Medium | `BRDOCM` 최신버전 목록 조회 실행계획 검증 및 복합 인덱스 검토 | `findLatestVersionsAll()`의 `DEL_YN='N'` + 상관 서브쿼리 `MAX(DOC_VRS)` + `FST_ENR_DTM DESC` 정렬. 후보: `(DEL_YN, DOC_MNG_NO, DOC_VRS, FST_ENR_DTM)` |
-| ⬜ Open | 🟡 Medium | `BRIVGM` 검토의견 목록 조회 인덱스 추가 검토 | 댓글 목록이 `(DOC_MNG_NO, DOC_VRS, DEL_YN)` 필터와 `FST_ENR_DTM ASC` 정렬을 사용. 후보: `(DOC_MNG_NO, DOC_VRS, DEL_YN, FST_ENR_DTM)`. (2026-06-28 재검증: 06-27 추가 `IX_BRIVGM_DOC_DEL_FSG`는 대시보드 미완료 검토용 별개 인덱스로 본 정렬 쿼리 미커버 → Open 유지) |
-| ⬜ Open | 🟡 Medium | `findProjectsForCouncilAll`/`findProjectsForCouncilByDepartment` (18컬럼) native `Object[]` 전용 DTO/projection 전환 우선 처리 | 18개 컬럼 순서와 서비스 캐스팅이 강하게 결합되어 오매핑 위험 |
-| ⬜ Open | 🟡 Medium | 실시간 로그 피드 커서 폴링 인덱스/실행계획 검증 — `CHG_DTM DESC, LOG_TBL DESC, LOG_HIS_TGR_SNO DESC`, `LOG_KEY`, `CHG_DTT_YN` 필터와 5/30분 집계가 View 기반으로 충분히 지원되는지 확인 | `RealtimeLogRepository.java`, `V_ITPAPP_LOG_FEED`, 탐지: 2026-06-05 |
-| ⬜ Open | 🟡 Medium | [후속/T13] 캐시 TTL 미적용 보완 — 현재 `ConcurrentMapCacheManager`는 TTL 미지원. `tiptapMetadata`는 프로젝트 쓰기 시 stale 가능(`ProjectService` 쓰기경로에 `@CacheEvict` 추가 또는 Caffeine 도입 필요); `NotificationService` unread-count는 60s TTL 미적용(evict-on-write로 대체됨). Caffeine 전환 또는 쓰기경로 evict 보강 결정 필요 | `ProjectService`, `TiptapVariableService`(metadata), `NotificationService`, 탐지: 2026-06-22 |
+| ⬜ Open | 🟠 High | **[버그] 협의회 `CouncilRepository` BPROJM 컬럼 드리프트 2건** — `IT_PTL_STS_TC`(실제 `IT_PTL_RPR_STS_TC`, L93·179·181·232·234)와 `findByDepartment`의 `p.BBR_C`(BPROJM에 없음, 실제 `SVN_DPM_C` 추정, L112)가 라이브 스키마에서 `ORA-00904` → 협의회 신청대상/부서별 목록 쿼리 런타임 실패. P3 프로젝션은 동작 보존이라 미수정(범위 외). 별도 태스크 `task_11b75a35` | `CouncilRepository.java`, `all_tab_columns`(ITPOWN.TPRMPP_BPROJM), 탐지: 2026-06-30 |
+| ⬜ Open | 🟡 Medium | [W4] P4 후보 인덱스(`V20260629_002~005`) **dev/prod 적용 (DBA)** — 로컬 ITPOWN 적용·Flyway local-ext 검증(success=1) 완료, dev/prod는 DBA 검토 후 수동 적용 | `it_database/migrations/V20260629_002~005`, EXPLAIN `docs/superpowers/notes/2026-06-29-p4-explain-results.md` |
 
 ### 🎨 프론트엔드 리팩토링
 
