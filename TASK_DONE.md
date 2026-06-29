@@ -204,6 +204,20 @@
 | ✅ Done | 🟢 Low | `CodeNameMapBuilder` → `common.util` 패키지 이동 — `CostService`/`ProjectService` 공유 유틸 위치 정리 | `CodeNameMapBuilder`, 조치일: 2026-06-29 |
 | ✅ Done | 🟡 Medium | EAI `HostAddressProvider` IP/MAC 조회 실패 진단 로깅 보강 — 원인 예외 없는 info만 남던 경로에 `log.warn`+예외 추가(전문 공통부 공백 추적성 확보) | `HostAddressProvider.java:34,57`, 조치일: 2026-06-29 |
 
+### 🧹 2026-06-29 재검증 종료
+
+> `TASK.md` 잔여 항목을 6개 병렬 에이전트로 코드 재대조한 결과, 이미 해소·정정 완료되었거나 코드 부재로 실행 불가한 7건을 종료 이관. 재범위/문구 정정 7건은 `TASK.md` 본문에 반영(Open 유지). plan: `docs/superpowers/plans/2026-06-29-task-recheck-improvement.md`, design: `docs/superpowers/specs/2026-06-29-task-recheck-improvement-design.md`.
+
+| 상태 | 우선순위 | 과제 | 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | 🟡 Medium | `$apiFetch` 401 갱신 후 원요청 재시도 결과가 호출자에게 반환되는지 E2E 검증 — 회귀 테스트 존재 확인 | `plugins/auth.ts:113-115`, `tests/unit/plugins/auth.test.ts:136-146`, `tests/e2e/session.spec.ts:75-125`, 검증일: 2026-06-29 |
+| ✅ Done | 🟡 Medium | `AdminDto` 잔여 DTO JavaDoc 보강 — 전 중첩 DTO 문서화 완료 확인 | `AdminDto.java` 전 중첩 DTO 문서화 완료, 검증일: 2026-06-29 |
+| ✅ Done | 🟡 Medium | 메타 `BPAYTM/BPAYTL.DFR_DT` NULL여부 N→Y 정정 — `table.csv` 이미 Y 등재 확인 | `table.csv` 이미 Y, 검증일: 2026-06-29 |
+| ✅ Done | 🟡 Medium | 메타 `BPOVWM PRJ_BG_AMR→RQM_BG_AMT` — 메타 정정 완료. (운영 데이터 이관은 EXTERNAL로 `TASK.md` 메타 섹션에 1줄 유지) | 메타 정정 완료, 검증일: 2026-06-29 |
+| ✔️ Resolved | 🟡 Medium | 실시간로그 `V20260531_001` 마이그레이션 적용 검증 — STALE: 해당 마이그레이션 미존재. `V_ITPAPP_LOG_FEED`는 비버전 로컬 DDL | `ITPOWN_DDL_live.sql:3609`(비버전 로컬 DDL), 검증일: 2026-06-29 |
+| ✔️ Resolved | 🟡 Medium | `board/index.vue` + `AppSidebar.vue` 공통 권한 필터 추출 (inqAthC 중복) — 재검증 결과 코드 부재로 종료(실행불가): `inqAthC`가 프론트·백 코드에 부재(문서 prose만 존재) | `board/index.vue`/`AppSidebar.vue` `inqAthC` 코드 부재, 검증일: 2026-06-29 |
+| ✔️ Resolved | 🟡 Medium | 게시판 권한 코드(`inqAthC`/`enrAthC`) `ROLE.ADMIN` 외 역할 매핑 통합테스트 — 재검증 결과 코드 부재로 종료(실행불가): `inqAthC`/`enrAthC`가 프론트·백 코드에 부재(문서 prose만 존재) | 권한 코드 `inqAthC`/`enrAthC` 코드 부재, 검증일: 2026-06-29 |
+
 ### 🔍 2026-06-28 코드 대조 검증 — stale Open 이관
 
 > `TASK.md` 전체 ⬜ Open 항목을 6개 병렬 에이전트로 코드베이스 대조 검증(read-only) 후, 실제 이미 해소된 stale 3건만 이관. 대부분 항목은 정상 추적(STILL_OPEN) 재확인. spot-check로 에이전트 오판 2건 정정 — `ApplicationContextHolder.publishEvent()`는 구 이벤트 기반 감사로그 JavaDoc(38-53행)이 잔존해 Open 유지, `BRIVGM` 인덱스는 06-27 추가분(`IX_BRIVGM_DOC_DEL_FSG`)이 대시보드용 별개라 검토의견 목록 쿼리는 미커버로 Open 유지. 검증 기록·잔여 로드맵·보안 High 2건 상세 설계: `docs/superpowers/specs/2026-06-28-task-remediation-design.md`.
@@ -304,6 +318,7 @@
 
 | 상태 | 일자 | 영역 | 조치 |
 | :--: | :--: | :--: | --- |
+| ✅ Done | 2026-06-29 | 백로그 | TASK.md 재검증 반영 — `TASK.md` 잔여 항목을 6개 병렬 에이전트로 코드 재대조. 이미 해소·정정 완료 또는 코드 부재로 실행 불가한 7건 종료 이관(`$apiFetch` 401 E2E 검증·`AdminDto` JavaDoc·메타 `BPAYTM/BPAYTL.DFR_DT` N→Y·메타 `BPOVWM PRJ_BG_AMR→RQM_BG_AMT`·실시간로그 `V20260531_001` STALE·게시판 `inqAthC` 공통필터 추출·`inqAthC/enrAthC` 매핑 통합테스트 — 후 2건은 코드 부재로 실행불가). 재범위/문구 정정 7건은 `TASK.md` 본문 반영(Open 유지): `EvaluationService`·`CommitteeService` N+1(ScheduleService 완료)·`CouncilService` L298 per-evaluator count 분리·클래스 JavaDoc 잔여(전수 86%)·IT부문 예산 화면 wiring 잔여·본문 최대크기 정책(DECISION)·`findProjectsForCouncilAll/ByDepartment`(18컬럼) 메서드명/컬럼수 정정·환율 환산 활성 충돌(`BudgetWorkService` no-xcr vs `ProjectBudgetSummaryService` ×xcr). 2차 안전 묶음 W2b 착수. plan `docs/superpowers/plans/2026-06-29-task-recheck-improvement.md`·design `docs/superpowers/specs/2026-06-29-task-recheck-improvement-design.md`. |
 | ✅ Done | 2026-06-29 | 백로그 | 영향도 낮은 백로그 묶음 처리 — 실행 로드맵 W2(코드부채)+Low 잔여 13건을 단독 수정 가능한 영향도 낮은 작업으로 묶어 4 PR(it_backend `b58558d..1da0e32`, it_frontend `9035174`)로 처리·`TASK_DONE.md` 이관. SSO eno 로그 INFO→DEBUG 강등, `@Valid` 보강(Council/BoardPost), 클래스레벨 `@Transactional(readOnly)`(Plan/LoginAttempt), N+1 제거 4건(ScheduleService·CouncilService.deriveCurrentYearBudget·Deliberation/Contract/Payment.get), `CinfmmRepositoryImpl` 감사컬럼 명시 SET, `BtermmL` length 600→200, `ApplicationContextHolder` 미사용 메서드/구주석 제거, `CodeNameMapBuilder` common.util 이동, `HostAddressProvider` 진단 로깅, council-request/result catch 통일. W2에 묶여 있던 2건(`changeStatus` role 분기·환율 환산 규칙 통일)은 업무요건/단일규칙 결정 선행 필요로 카브아웃하여 W3 재범위(Open 유지). 설계/계획: `docs/superpowers/specs/2026-06-29-low-impact-task-bundling-design.md`, `docs/superpowers/plans/2026-06-29-low-impact-task-bundling.md`. |
 | ✅ Done | 2026-06-28 | 백로그 | TASK.md 코드 대조 검증 — 6개 병렬 에이전트로 전체 ⬜ Open 항목을 코드베이스 대조(read-only). 실제 해소된 stale 3건 이관(`ProjectService` 비목 N+1 제거, `applyAthIds` 실익 낮음 종료, 메타 12종 등재). spot-check로 `ApplicationContextHolder` 잔여 JavaDoc·`BRIVGM` 검토의견 인덱스는 Open 유지로 정정. 잔여 항목을 Wave 1~4 실행 로드맵으로 재정리, 보안 High 2건(bbrC 부서필터·사전협의 서버영속화) 상세 설계 문서화(`docs/superpowers/specs/2026-06-28-task-remediation-design.md`). |
 | ✅ Done | 2026-06-27 | 백엔드 | 테스트 스텁 정합(후속/T) 검증 종료 — 백로그가 "실패 6건"으로 추적하던 `CostServiceTest`(`@Mock CodeNameMapBuilder` 누락)·`BudgetWorkServiceTest`(단일키→배치 finder 스텁) 항목을 `./gradlew test --tests *CostServiceTest --tests *BudgetWorkServiceTest`로 재검증 → **BUILD SUCCESSFUL**. CostServiceTest는 `@Mock CodeNameMapBuilder`+`@BeforeEach` 기본값 적용 완료, BudgetWorkServiceTest는 배치 finder 스텁 반영 완료. 06-22 이후 커밋에서 해소된 stale 백로그로 확정·종료. |

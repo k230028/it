@@ -24,15 +24,17 @@
 | :--: | --- | --- | --- |
 | **W1** ✅ 완료 | — | `bbrC` 부서필터(`Contract/Deliberation/PaymentRepositoryImpl` + 과업심의 목록) — 구현·it_backend main 통합·**런타임 검증 완료**(로컬 Oracle 실데이터, 2026-06-29). plan [`2026-06-28-bbrc-dept-filter.md`](docs/superpowers/plans/2026-06-28-bbrc-dept-filter.md) | TASK_DONE 이관 완료 |
 | **W2** ✅ 완료 | — | 영향도 낮은 코드부채 13건 묶음 처리(4 PR) — `@Valid` 보강(Council/BoardPost), 클래스레벨 `@Transactional(readOnly)`(Plan/LoginAttempt), N+1 제거(ScheduleService·`CouncilService.deriveCurrentYearBudget`·Deliberation/Contract/Payment.get), `CinfmmRepositoryImpl` 감사컬럼, `BtermmL` length 정정, SSO eno 로그 강등, `HostAddressProvider` 진단, `ApplicationContextHolder` 주석 정리, `CodeNameMapBuilder` 이동, council-request/result catch 바인딩. plan [`2026-06-29-low-impact-task-bundling.md`](docs/superpowers/plans/2026-06-29-low-impact-task-bundling.md)·design [`2026-06-29-low-impact-task-bundling-design.md`](docs/superpowers/specs/2026-06-29-low-impact-task-bundling-design.md). **카브아웃 2건(`changeStatus` role 분기·환율 규칙 통일)은 결정 선행 필요로 W3 재범위** | TASK_DONE 이관 완료 |
-| **W3** 🧩 기능 spec/결정 필요 | 백엔드 신규 엔드포인트/스키마 또는 업무요건 결정 동반 | Mock→API(`info/index`, budget summary·comparison), 사전협의 검토자/세션 status 영속화(선행: 검토플로우 실제 인증연동)·`authorTeam`·첨부 매핑, 게시판 서버 페이지네이션·첨부 UI·다운로드 카운트·댓글 첨부, Tiptap 변수 prop 확대·권한 필터링, 실시간로그 드릴다운·필터 저장, **(W2 카브아웃) 사업집행 4단계 `changeStatus` role 분기(업무요건 확정 선행)·품목 금액 환율 환산 규칙 통일(단일 규칙 결정 선행)** | 기능별 spec→plan |
+| **W3** 🧩 기능 spec/결정 필요 | 백엔드 신규 엔드포인트/스키마 또는 업무요건 결정 동반 | Mock→API(`info/index` 엔드포인트 필요; budget summary·comparison은 `ItBudgetController`·`useItBudget` 준비됨 → 페이지 wiring만 잔여), 사전협의 검토자/세션 status 영속화(선행: 검토플로우 실제 인증연동)·`authorTeam`·첨부 매핑, 게시판 서버 페이지네이션·첨부 UI·다운로드 카운트·댓글 첨부·본문 최대크기 정책(DECISION), Tiptap 변수 prop 확대·권한 필터링, 실시간로그 드릴다운·필터 저장, **(W2 카브아웃) 사업집행 4단계 `changeStatus` role 분기(업무요건 확정 선행)·품목 금액 환율 환산 규칙 통일(`BudgetWorkService` no-xcr vs `ProjectBudgetSummaryService` ×xcr 활성 충돌, DECISION 선행)** | 기능별 spec→plan |
 | **W4** 🏛️ 외부/운영 의존 | KDB·DBA·운영 협의 | EAI IF_ID/UMS 발급·도메인 연동, 실시간로그 EXPLAIN/인덱스/보존정책, 메타 PK 정합(BBUGTM/BRDOCM), BPOVWM 데이터 이관, 인덱스 적용(BASCTM/BCMMTM/BRDOCM/BRIVGM/실시간로그) | 체크리스트 추적 |
-| **Backlog** 🟢 선택 | 성능/확장/품질 | SSE/WebSocket 전환, 조회수 Redis, Oracle Text 검색, 목록 프로젝션 DTO(T16), 통합테스트 인프라(T18), Java 헤더주석/`AdminDto` JavaDoc 보강, `CodeNameMapBuilder` 이동, 토큰 재사용 탐지(T10)/Blocklist | 여유 시 |
+| **Backlog** 🟢 선택 | 성능/확장/품질 | SSE/WebSocket 전환, 조회수 Redis, Oracle Text 검색, 목록 프로젝션 DTO(T16), 통합테스트 인프라(T18), 클래스 JavaDoc 누락 컨트롤러 소수 잔여(전수 86% 완료, PR-2), 토큰 재사용 탐지(T10)/Blocklist | 여유 시 |
 
 ---
 
 ## 🚧 진행 중
 
-> 🕒 최종 업데이트: 2026-06-29 (W2+Low 영향도 낮은 백로그 13건 묶음 처리 완료(4 PR: it_backend `b58558d..1da0e32`, it_frontend `9035174`) → `TASK_DONE.md` 이관. SSO eno 로그 강등, `@Valid`/`@Transactional(readOnly)` 보강, N+1 4건 제거, 감사컬럼/length 정정, `HostAddressProvider` 진단, `ApplicationContextHolder`/`CodeNameMapBuilder` 정리, council-request/result catch 통일. plan `docs/superpowers/plans/2026-06-29-low-impact-task-bundling.md`·design `docs/superpowers/specs/2026-06-29-low-impact-task-bundling-design.md`. 카브아웃 2건(`changeStatus` role 분기·환율 규칙 통일)은 결정 선행 필요로 W3 재범위)
+> 🕒 최종 업데이트: 2026-06-29 (재검증 — 종료 7건, 재범위/정정 7건, 2차 안전 묶음 W2b 착수. plan `docs/superpowers/plans/2026-06-29-task-recheck-improvement.md`·design `docs/superpowers/specs/2026-06-29-task-recheck-improvement-design.md`)
+>
+> 🕒 이전 업데이트: 2026-06-29 (W2+Low 영향도 낮은 백로그 13건 묶음 처리 완료(4 PR: it_backend `b58558d..1da0e32`, it_frontend `9035174`) → `TASK_DONE.md` 이관. SSO eno 로그 강등, `@Valid`/`@Transactional(readOnly)` 보강, N+1 4건 제거, 감사컬럼/length 정정, `HostAddressProvider` 진단, `ApplicationContextHolder`/`CodeNameMapBuilder` 정리, council-request/result catch 통일. plan `docs/superpowers/plans/2026-06-29-low-impact-task-bundling.md`·design `docs/superpowers/specs/2026-06-29-low-impact-task-bundling-design.md`. 카브아웃 2건(`changeStatus` role 분기·환율 규칙 통일)은 결정 선행 필요로 W3 재범위)
 >
 > 🕒 이전 업데이트: 2026-06-28 (전체 Open 항목 코드 대조 검증 → stale 3건 `TASK_DONE.md` 이관, 실행 로드맵 Wave 1~4 신설. W1 보안 High = bbrC 부서필터 1건으로 확정, plan 작성 완료(`docs/superpowers/plans/2026-06-28-bbrc-dept-filter.md`). 사전협의 영속화는 재검토 결과 코멘트는 이미 영속·검토자상태는 Phase-1 미성숙으로 시기상조 → Medium·W3로 재범위)
 
@@ -41,7 +43,6 @@
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
 | ⬜ Open | 🟡 Medium | `Authorization: Bearer` 헤더 폴백 운영 활성화 여부 결정 후 `it_backend/CLAUDE.md`에 명시                                                                       | 현재 운영에서도 동작 — XSS 탈취 토큰 헤더 전송 경로 오픈                                                   |
-| ⬜ Open | 🟡 Medium | `$apiFetch` 401 갱신 후 원요청 재시도 결과가 호출자에게 반환되는지 E2E로 검증                                                                                          | `plugins/auth.ts` refresh 재시도 흐름 브라우저 회귀 필요                                           |
 | ⬜ Open | 🟡 Medium | `it-portal-user` 쿠키 변조 시 프론트 관리자 가드가 일시적으로 관리자 화면을 노출하지 않는지 E2E 검증                                                                            | 프론트 쿠키는 UX 상태이며 최종 권한은 백엔드가 판단해야 함                                                    |
 | ⬜ Open | 🟡 Medium | SSO 운영 설정 검증 강화 — `app.sso.allow-direct-eno=false`, `app.frontend-url` 실제 값, 프록시 헤더 덮어쓰기 점검                                                   | `SsoController`, `AuthController.getClientIp()` 운영 안전장치                               |
 | ⬜ Open | 🟡 Medium | Access Token Blocklist 도입 검토 — 로그아웃 시 잔존 토큰(최대 15분) 무효화 필요 여부 결정                                                                              | `AuthService.logout()` Stateless 한계, 고보안 시나리오용                                        |
@@ -67,8 +68,7 @@
 
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
-| ⬜ Open | 🟡 Medium | Java 파일 헤더 주석 전수 보강                                                                                                                                                                                 | 다수 Java 파일이 `package`로 바로 시작하며 파일 역할/흐름/연동 테이블 헤더가 없음                            |
-| ⬜ Open | 🟡 Medium | `AdminDto` 잔여 DTO JavaDoc 보강                                                                                                                                                                        | 자격등급/사용자/조직/역할/로그인 이력/토큰/첨부파일/통계 DTO는 기본 설명만 존재                                  |
+| ⬜ Open | 🟡 Medium | 클래스 JavaDoc 누락 컨트롤러 소수 잔여 (전수 86% 완료) — PR-2 처리 예정                                                                                                                                                                                 | 일부 컨트롤러가 클래스 JavaDoc 없이 `package`로 시작 (대부분 파일은 헤더 보강 완료) |
 
 ### 🗄️ DB / JPA 최적화
 
@@ -78,12 +78,12 @@
 | ⬜ Open | 🟡 Medium | `ProjectRepositoryImpl`/`CostRepositoryImpl` `selectFrom` 전체 컬럼 → 목록 API용 DTO 프로젝션 (1000자 텍스트 컬럼 제외) | `ProjectRepositoryImpl.java L140`, `CostRepositoryImpl.java L163` |
 | ⬜ Open | 🟡 Medium | Native Query `Object[]` 반환 → DTO 프로젝션 또는 `@SqlResultSetMapping` 적용 | `CouncilRepository`, `ApplicationRepository`, `ServiceRequestDocRepository`, `LoginHistoryRepository`, `EvaluationRepository` |
 | ⬜ Open | 🟡 Medium | `FeasibilityService.replacePerformances()` JPQL DELETE 후 flush 없이 persist → `flush()` 명시 또는 Spring Data `deleteAll` 통일 | `FeasibilityService.java L225` |
-| ⬜ Open | 🟡 Medium | 협의회 일정/평가 사용자명 조회 N+1 제거 | `ScheduleService`, `EvaluationService`에서 사번별 `findByEno()` 반복 |
-| ⬜ Open | 🟡 Medium | 협의회 위원/상태 조회 배치화 검토 | `CommitteeService`, `CouncilService` 반복 조회 후보 |
+| ⬜ Open | 🟡 Medium | `EvaluationService`·`CommitteeService` 사용자명 N+1 (ScheduleService는 2026-06-29 완료) — PR-1 처리 예정 | 사번별 `findByEno()` 반복(`ScheduleService`는 `findByEnoIn` 일괄조회로 해소 완료) |
+| ⬜ Open | 🟡 Medium | CommitteeService.buildUserMap은 PR-1 처리; CouncilService L298 per-evaluator count 쿼리는 별도 배치메서드 필요로 STILL_OPEN | `CommitteeService.buildUserMap`(PR-1), `CouncilService.java:298` per-evaluator count 반복 |
 | ⬜ Open | 🟡 Medium | 협의회 목록 `BASCTM`/`BCMMTM` 역방향 조회 인덱스 검토 | 후보: `BASCTM(PRJ_MNG_NO, PRJ_SNO, DEL_YN)`, `BCMMTM(ENO, DEL_YN, ASCT_ID)` |
 | ⬜ Open | 🟡 Medium | `BRDOCM` 최신버전 목록 조회 실행계획 검증 및 복합 인덱스 검토 | `findLatestVersionsAll()`의 `DEL_YN='N'` + 상관 서브쿼리 `MAX(DOC_VRS)` + `FST_ENR_DTM DESC` 정렬. 후보: `(DEL_YN, DOC_MNG_NO, DOC_VRS, FST_ENR_DTM)` |
 | ⬜ Open | 🟡 Medium | `BRIVGM` 검토의견 목록 조회 인덱스 추가 검토 | 댓글 목록이 `(DOC_MNG_NO, DOC_VRS, DEL_YN)` 필터와 `FST_ENR_DTM ASC` 정렬을 사용. 후보: `(DOC_MNG_NO, DOC_VRS, DEL_YN, FST_ENR_DTM)`. (2026-06-28 재검증: 06-27 추가 `IX_BRIVGM_DOC_DEL_FSG`는 대시보드 미완료 검토용 별개 인덱스로 본 정렬 쿼리 미커버 → Open 유지) |
-| ⬜ Open | 🟡 Medium | `CouncilRepository.findWithDetails()` Native Query `Object[]` 전용 DTO/projection 전환 우선 처리 | 16개 컬럼 순서와 서비스 캐스팅이 강하게 결합되어 오매핑 위험 |
+| ⬜ Open | 🟡 Medium | `findProjectsForCouncilAll`/`findProjectsForCouncilByDepartment` (18컬럼) native `Object[]` 전용 DTO/projection 전환 우선 처리 | 18개 컬럼 순서와 서비스 캐스팅이 강하게 결합되어 오매핑 위험 |
 | ⬜ Open | 🟡 Medium | 실시간 로그 피드 커서 폴링 인덱스/실행계획 검증 — `CHG_DTM DESC, LOG_TBL DESC, LOG_HIS_TGR_SNO DESC`, `LOG_KEY`, `CHG_DTT_YN` 필터와 5/30분 집계가 View 기반으로 충분히 지원되는지 확인 | `RealtimeLogRepository.java`, `V_ITPAPP_LOG_FEED`, 탐지: 2026-06-05 |
 | ⬜ Open | 🟡 Medium | [후속/T13] 캐시 TTL 미적용 보완 — 현재 `ConcurrentMapCacheManager`는 TTL 미지원. `tiptapMetadata`는 프로젝트 쓰기 시 stale 가능(`ProjectService` 쓰기경로에 `@CacheEvict` 추가 또는 Caffeine 도입 필요); `NotificationService` unread-count는 60s TTL 미적용(evict-on-write로 대체됨). Caffeine 전환 또는 쓰기경로 evict 보강 결정 필요 | `ProjectService`, `TiptapVariableService`(metadata), `NotificationService`, 탐지: 2026-06-22 |
 
@@ -94,7 +94,7 @@
 > 🗓️ 2026-06-24 리팩토링 일괄 처리 — Phase 0~4 17건 완료/종료(거짓양성·이미반영 포함)는 [`TASK_DONE.md`](TASK_DONE.md) §🎨 참조. 아래는 백엔드 신규 엔드포인트가 필요한 Mock→API 연동(별도 기능 spec 예정) 잔여분.
 
 | ⬜ Open | 🟡 Medium | `info/index.vue` 정적 KPI/공지/일정 데이터를 실제 API 또는 운영 데이터 소스로 전환 | 파일 헤더가 정적 데이터/향후 API 연결 예정임을 명시. 백엔드 엔드포인트 필요 |
-| ⬜ Open | 🟡 Medium | 정보기술부문 예산 조회/비교 화면 목업 데이터 API 연동 | `pages/budget/summary.vue`, `pages/budget/comparison.vue`의 `MOCK_ROWS`/`MOCK_FSS_ROWS`/`MOCK_YOY_ROWS` TODO. 백엔드 엔드포인트 필요 |
+| ⬜ Open | 🟡 Medium | 정보기술부문 예산 조회/비교 화면 — 백엔드 `ItBudgetController`·`useItBudget` 준비됨, 페이지 wiring만 잔여 (W3 기능) | `pages/budget/summary.vue`, `pages/budget/comparison.vue`의 `MOCK_ROWS`/`MOCK_FSS_ROWS`/`MOCK_YOY_ROWS`를 준비된 `ItBudgetController`/`useItBudget`에 연결 |
 
 ### ⚙️ 백엔드 리팩토링
 
@@ -105,7 +105,7 @@
 | ⬜ Open | 🟡 Medium | 소요예산 산정 `EstimateRepositoryImpl.search()` QueryDSL에 대한 통합 테스트 부재 (프로젝트에 `@DataJpaTest` 인프라 없음, 현재 Mockito 단위테스트만). 단계별 화면 안정화 후 통합 테스트 보강 | `it_backend/src/test/.../estimate/repository/EstimateRepositoryTest.java`, 탐지: 2026-06-07 |
 | ⬜ Open | 🟡 Medium | [후속/T18] 통합테스트 인프라 부재로 Task13-15(감사로그 리스너 통합테스트, `EstimateRepository` 통합테스트, `CinfmmRepositoryImplTest`) 미착수 — H2(strategy A) 또는 Oracle(strategy B) DB-backed 테스트 전략 결정 필요. 현재 `application-test.properties`는 DataSource/JPA 제외, H2/Testcontainers 의존성 없음. (참고: 기존 `NoClassDefFoundError` 대량실패는 재현 안 됨 — byte-buddy 1.18.10/mockito 5.23.0 Java25 정상) | `application-test.properties`, 탐지: 2026-06-22 (기존 NoClassDefFoundError 분석 항목 대체) |
 | ⬜ Open | 🟡 Medium | [후속/T16] 목록 프로젝션 DTO 작업(`ProjectRepositoryImpl`/`CostRepositoryImpl` DTO, `@SqlResultSetMapping`, `CouncilRepository.findWithDetails`, 4단계 상세 JOIN) 별도 계획으로 분리됨 — 미착수 | `ProjectRepositoryImpl`, `CostRepositoryImpl`, `CouncilRepository`, 탐지: 2026-06-22 |
-| ⬜ Open | 🟡 Medium | **[W3 카브아웃][기술부채]** 품목 금액 환율 환산 규칙 통일 — `ProjectBudgetSummaryService`(amt × xcr)와 과거 `recalcCurrentYearBudget`(× 미적용)의 비대칭. MPL_AMT는 현재 AMT 규칙을 지점별로 미러링 중. 단일 규칙 결정 **선행 필요** 후 정리. (2026-06-29: W2 묶음에서 카브아웃 — 단일 규칙 결정 선행) | 2026-06-22 품목 예정금액(MPL_AMT) 전환에서 분리 |
+| ⬜ Open | 🟡 Medium | **[W3 카브아웃][기술부채][DECISION]** 품목 금액 환율 환산 규칙 통일 — `BudgetWorkService`(no-xcr, `:224,322`) vs `ProjectBudgetSummaryService`(×xcr, `:86`) 활성 충돌(이중환산 위험). 단일 규칙 결정 **선행 필요** 후 정리. (2026-06-29: W2 묶음에서 카브아웃 — 단일 규칙 결정 선행) | `BudgetWorkService.java:224,322`(환율 미적용) vs `ProjectBudgetSummaryService.java:86`(amt × xcr) |
 
 ## 📝 PRD_20260517 Tiptap 변수 입력 후속 과제
 
@@ -129,18 +129,17 @@
 
 ## 📡 실시간 로그 모니터링
 
-- [ ] `/api/admin/realtime-logs` 통합/E2E 검증 — Flyway `V20260531_001` 적용 DB에서 관리자/일반사용자/미인증 접근과 since 커서 증분 조회 확인
+- [ ] `/api/admin/realtime-logs` 통합/E2E 검증 — `V_ITPAPP_LOG_FEED`(비버전 로컬 DDL `ITPOWN_DDL_live.sql:3609`) 적용 DB에서 관리자/일반사용자/미인증 접근과 since 커서 증분 조회 확인
 - [ ] 라이브 피드 행 클릭 → 변경 본문(BEFORE/AFTER) 인라인 드릴다운 (`/admin/logs/[logKey]` 데이터 재사용)
 - [ ] SSE 또는 WebSocket push 전환 (관리자 수·트래픽 증가 시)
 - [ ] 로그 데이터 보존 정책 / 아카이브 분리 View
 - [ ] 사용자별 즐겨찾기 테이블 필터 저장 (localStorage)
 - [ ] `V_ITPAPP_LOG_FEED` 실행계획 `EXPLAIN PLAN` 검증 결과 기록 및 필요 시 복합 인덱스 도입
-- [ ] Spring Boot bootRun 환경 셋업 후 V20260531_001 마이그레이션 적용 검증
 - [ ] Playwright E2E (`tests/e2e/admin/realtime-logs.spec.ts`) 백엔드+프론트 dev 모드 기동 후 실제 실행
 
 ## 📬 공통 게시판 후속 과제
 
-- [ ] `Bgdocm.docCone` BLOB → CLOB 마이그레이션 (게시판 도입 후 일관성 회복)
+- [ ] (DECISION) 본문 최대 크기 정책 결정 — 실제 `Cblbcm.nacCone VARCHAR2(4000)`
 - [ ] 본문 검색 Oracle Text 인덱스 도입 (게시판당 1만 건/검색 1초 초과 시)
 - [ ] 조회수 카운터 Redis 전환 (다중 인스턴스 운영 시)
 - [ ] 알림(메일/슬랙) 연동 — 공지·중요 게시물 등록, 본인 게시물 댓글 알림
@@ -150,10 +149,8 @@
 - [ ] 검색 키워드 최소 2자 강제 (현재 미적용)
 - [ ] 본문 최대 크기 정책 결정 및 검증 추가 (현재 오픈이슈)
 - [ ] 게시물 목록 서버사이드 페이지네이션 — 백엔드 `Page<T>` 응답 + 전체 건수 반환 (현재 클라이언트 페이징 size=1000)
-- [ ] `board/index.vue` + `AppSidebar.vue` 공통 권한 필터 추출 (현재 `inqAthC` 로직 중복)
 - [ ] 게시판 단위 테스트 확대 — `BoardMetaService`, `BoardPostService` 커버리지 80%+
 - [ ] 게시판 첨부파일 UI/API 연결 — 현재 게시물 타입에 `flApgYn`, `flNbr`만 있고 파일 업로드 흐름은 미연동
-- [ ] 게시판 권한 코드(`inqAthC`, `enrAthC`)가 `ROLE.ADMIN` 외 역할을 정확히 매핑하는지 프론트/백엔드 통합 테스트 추가
 
 ## 🔌 EAI (KDB 표준전문 발송)
 - [ ] KDB EAI 운영팀으로부터 IT Portal 전용 **IF_ID(인터페이스ID)** 및 **UMS 템플릿(업무구분ID)** 발급·확정. (시스템 식별자 IPP/PRM/PP는 프로퍼티로 확정)
@@ -170,7 +167,6 @@
 
 ## 📒 메타 용어사전(table.csv) 정합성 후속 과제 (2026-06-11 스키마 통일 작업 잔여)
 
-- [ ] 메타 `BPAYTM/BPAYTL.DFR_DT` NULL여부 정정(N → Y) — 지급 회차는 지급일자 미확정(작성중) 상태로 저장될 수 있어 DB는 NULL 허용 유지(2026-06-12 결정, `V20260612_004` 헤더 참조). 운영 메타 NULL여부=N 등재가 stale — 정정 필요.
-- [ ] BPOVWM 드롭된 `PRJ_BG_AMR`(테스트 1행) 값은 `RQM_BG_AMT`로 승계되지 않음 — 운영 데이터 이관 시 소요예산금액 원천 확인 필요.
+- [ ] (EXTERNAL) BPOVWM 드롭된 `PRJ_BG_AMR`(테스트 1행) 값은 `RQM_BG_AMT`로 승계되지 않음 — 메타 정정은 완료, 운영 데이터 이관 시 소요예산금액 원천 확인 필요(운영/DBA 의존).
 - [ ] `TPRMPP_BBUGTM` PK 정합 보류 — 운영(table.csv)은 PK(`BG_NO`) 단일이나 로컬은 PK(`BG_NO`,`SNO`)이고 `BG_NO` 중복 20건 존재. 운영 PK 정의 재확인(메타 stale 가능성) 또는 로컬 데이터 중복 정리 후 `V20260612_002` 재실행 시 자동 정합 (2026-06-12 전면 정합 작업 잔여).
 - [ ] `TPRMPP_BRDOCM` PK 정합 보류 — 운영은 PK(`DOC_MNG_NO`) 단일이나 로컬은 PK(`DOC_MNG_NO`,`DOC_VRS_SNO`)이고 중복 2건 존재. 문서 버전 관리 구조상 운영 PK 정의 재확인 필요. 해소 후 `V20260612_002` 재실행 시 자동 정합 (2026-06-12 전면 정합 작업 잔여).
