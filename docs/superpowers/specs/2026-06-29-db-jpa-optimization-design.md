@@ -12,7 +12,10 @@
 ### 1.1 범위 결정 (브레인스토밍, 2026-06-29)
 - **범위**: DB/JPA 12건 **전부** (A 순수 코드 + B 인덱스 + C 캐시).
 - **B(인덱스)**: 실제 적용은 운영/DBA 의존이므로, 본 계획에는 **로컬 Oracle `EXPLAIN PLAN` 검증 절차 + 후보 인덱스 마이그레이션 스크립트 작성**까지 담고, `dev`/`prod` 적용은 DBA에 위임한다.
-- **검증 방식**: **Testcontainers Oracle 기반 `@DataJpaTest` 인프라 선구축**(T18 strategy B) 후 프로젝션·bulk·N+1을 DB-backed 테스트로 검증한다.
+- **검증 방식**: **실제 로컬 Oracle 기반 `@DataJpaTest` 인프라 선구축** 후 프로젝션·bulk·N+1을 DB-backed 테스트로 검증한다.
+  - 당초 Testcontainers(T18 strategy B)로 결정했으나, **실행 환경에 Docker가 미설치**되어 Testcontainers 사용 불가(2026-06-29 확인). 대신 **이미 가동 중인 로컬 Oracle**(`ITPAPP@127.0.0.1:11521/XEPDB1`, 21c XE, `ITPOWN` 77테이블 + `V_ITPAPP_LOG_FEED` 뷰 보유)에 `@DataJpaTest`를 연결한다.
+  - **안전성**: `@DataJpaTest`는 기본 `@Transactional`이라 각 테스트가 **자동 롤백**되어 dev 데이터 오염 없음. `spring.jpa.hibernate.ddl-auto=none`으로 **실 스키마를 절대 변경하지 않는다**(create-drop 금지 — 실 테이블 DROP 위험).
+  - **이점**: 실제 스키마·뷰가 이미 있어 뷰 의존 항목(#11)까지 동일 경로로 검증 가능. Docker/이미지 반입 불필요.
 - **캐시(C/T13)**: **Caffeine 전환**으로 결정 — `CacheManager`를 Caffeine으로 교체해 per-cache TTL을 지원하고 `tiptapMetadata`·unread-count를 일관 처리한다.
 
 ### 1.2 12건 → 페이즈 매핑
@@ -51,26 +54,26 @@
 
 ---
 
-## 3. P0 — Testcontainers Oracle 인프라
+## 3. P0 — 로컬 Oracle 기반 @DataJpaTest 인프라
 
 ### 3.1 현황
 - `application-test.properties`는 DataSource/JPA를 **제외**(`spring.autoconfigure.exclude`)하고 있어 리포지토리 통합 테스트 불가. 현재 Mockito 단위 테스트만 존재.
+- 실행 환경에 **Docker 미설치** → Testcontainers 불가. 대신 **로컬 Oracle 21c XE 가동 중**(`ITPAPP@127.0.0.1:11521/XEPDB1`, `ITPOWN` 77테이블 + `V_ITPAPP_LOG_FEED` 뷰, 2026-06-29 확인).
 
 ### 3.2 설계
-- **의존성** (`build.gradle`, testImplementation): `org.testcontainers:junit-jupiter`, `org.testcontainers:oracle-free`. 이미지는 라이선스 부담 없는 **`gvenzl/oracle-free:slim-faststart`** 사용(공식 이미지 대비 경량·고속 기동).
-- **싱글톤 컨테이너 패턴**: static `@Container` + `withReuse(true)`(로컬). 테스트 클래스마다 재기동하지 않도록 베이스에서 1회 기동, 클래스 간 공유.
-- **스키마 시드 — Hibernate `ddl-auto=create-drop`** (결정 2026-06-29): `it_database/migrations/`에는 **베이스 테이블 DDL이 없고**(baseline `20260620.001` 위의 ALTER 증분만 존재), `ITPOWN_DDL_live.sql`은 3659줄 `DBMS_METADATA` 덤프(`"ITPOWN".` 하드코딩 + `COLLATE` 절)라 JDBC로 statement 단위 재생이 취약하다. 따라서 테스트 스키마는 **Hibernate가 JPA 엔티티에서 생성**(`spring.jpa.hibernate.ddl-auto=create-drop`)한다. `@DataJpaTest` 표준 경로이며 빠르고 견고하다.
-  - **네이티브 쿼리 영향(P3)**: `findProjectsForCouncil*` 등 native `Object[]` 쿼리는 **테이블 기반**이므로 Hibernate가 엔티티에서 생성한 동일 테이블/컬럼에 그대로 실행된다(컬럼명은 `@Column(name=...)` 매핑과 일치).
-  - **뷰 의존 항목 제외**: 실시간 로그 피드(#11)는 `V_ITPAPP_LOG_FEED` **뷰** 의존이라 Hibernate 생성 대상이 아니다 → 이 항목과 P4 전체(EXPLAIN/인덱스)는 **실제 로컬 Oracle**(`ITPAPP@127.0.0.1:11521/XEPDB1`, §CLAUDE 3.1.1)에서 검증한다(Testcontainers 비대상).
-- **Flyway 비활성**: 테스트 프로파일은 `spring.flyway.enabled=false`(Hibernate가 스키마 생성). 마이그레이션 자체 검증은 별도 로컬 Oracle 경로.
+- **DB 연결**: 실제 로컬 Oracle에 직접 연결. 신규 의존성 없음(Oracle JDBC `ojdbc11`은 이미 `runtimeOnly`로 testRuntimeClasspath에 포함).
+- **세션 스키마**: 운영과 동일하게 HikariCP `connection-init-sql=ALTER SESSION SET CURRENT_SCHEMA=ITPOWN`(§CLAUDE 2)로 `ITPOWN` 스키마를 본다. 엔티티는 스키마 접두어 없음 → 동일 정합.
+- **스키마 변경 금지 (안전 핵심)**: `spring.jpa.hibernate.ddl-auto=none`. **create/create-drop 절대 금지** — 실 테이블 DROP 위험. 실 스키마를 읽기만 한다.
+- **데이터 오염 방지**: `@DataJpaTest`는 기본 `@Transactional`이라 각 테스트가 종료 시 **롤백**된다. 테스트 픽스처 INSERT도 롤백되어 dev 데이터에 영향 없음.
 - **베이스 클래스** `AbstractOracleRepositoryTest`:
-  - `@DataJpaTest` + `@AutoConfigureTestDatabase(replace = NONE)`(내장 DB 치환 비활성) + `@Import(QuerydslConfig.class)`로 `JPAQueryFactory` 빈 주입.
-  - `@DynamicPropertySource`로 컨테이너 JDBC URL/계정 주입.
-  - 전용 프로파일 `application-test-it.properties`(DataSource/JPA 활성)로 분리해 기존 `application-test.properties`(슬라이스 단위 테스트용)와 공존.
-- **로컬 전용 게이트 (결정 2026-06-29)**: 통합 테스트는 **로컬 전용**으로 둔다(CI Docker 비의존). `@Tag("it")`로 분리하고 별도 `integrationTest` 태스크를 만들어, 기본 `./gradlew test`(단위, CI 게이트)에서는 **제외**(`useJUnitPlatform { excludeTags 'it' }`)한다. 개발자가 로컬에서 Docker 기동 후 `./gradlew integrationTest`로 실행한다. Docker 미존재 시 통합 테스트는 `@EnabledIfDockerAvailable`(Testcontainers `@Testcontainers(disabledWithoutDocker = true)`)로 자동 스킵해 로컬에서도 Docker 없이 단위 빌드가 깨지지 않게 한다.
+  - `@DataJpaTest` + `@AutoConfigureTestDatabase(replace = NONE)`(내장 DB 치환 비활성, 실 DataSource 유지) + `@Import(QuerydslConfig.class)`로 `JPAQueryFactory` 빈 주입.
+  - 전용 프로파일 `application-test-it.properties`(DataSource/JPA 활성, ddl-auto=none, CURRENT_SCHEMA init-sql)로 분리해 기존 `application-test.properties`(슬라이스 단위용)와 공존.
+  - **DB 미가동 시 자동 스킵**: `@BeforeAll`에서 `127.0.0.1:11521` TCP 프로브 후 `Assumptions.assumeTrue(...)`로 스킵 → 로컬 Oracle이 꺼져 있어도 빌드가 깨지지 않음.
+- **로컬 전용 게이트 (결정 2026-06-29)**: 통합 테스트는 **로컬 전용**(CI 비의존). `@Tag("it")`로 분리하고 별도 `integrationTest` 태스크를 만들어 기본 `./gradlew test`(CI 게이트)에서 **제외**(`useJUnitPlatform { excludeTags 'it' }`)한다. 개발자는 로컬 Oracle 가동 상태에서 `./gradlew integrationTest`로 실행한다.
+- **네이티브/뷰 검증 범위**: 실 스키마+뷰가 그대로 있으므로 native `Object[]` 쿼리(P3 #5/#6)와 뷰 의존 항목(#11)을 **모두 동일 경로로 검증** 가능. P4 인덱스 EXPLAIN은 동일 로컬 Oracle에서 SQL로 수행.
 
 ### 3.3 산출물
-- `build.gradle` 의존성, `application-test-it.properties`, `AbstractOracleRepositoryTest`, 스모크 테스트 1건(임의 리포지토리 save/find 라운드트립).
+- `build.gradle`(`integrationTest` 태스크 + `test` 태그 제외), `application-test-it.properties`, `AbstractOracleRepositoryTest`, 스모크 테스트 1건(실 스키마 읽기 라운드트립).
 
 ---
 
@@ -177,7 +180,7 @@
 | --- | --- |
 | 벌크 UPDATE가 감사로그 리스너 우회(#1) | §4.2 DECISION — 선정리 구간 행별 로그 손실 수용(권장) 또는 현행 유지 |
 | native 프로젝션 컬럼 순서 결합(#5,#6) | `fromRow` 단일 팩토리로 집중 + §5.5.4 타입 헬퍼 강제, 동등성 테스트 |
-| Testcontainers Oracle 이미지/CI 비용(P0) | 통합 테스트 **로컬 전용**(CI 제외), `gvenzl/oracle-free:slim-faststart` + 싱글톤 reuse, `@Tag("it")` 분리 + Docker 미존재 시 자동 스킵 |
+| 실 dev DB 대상 테스트 위험(P0) | `ddl-auto=none`(스키마 변경 금지) + `@DataJpaTest` 트랜잭션 롤백(데이터 변경 없음), `@Tag("it")` 로컬 전용, DB 미가동 시 TCP 프로브로 자동 스킵 |
 | Flyway 체크섬 불변(P4) | 인덱스는 항상 신규 V* 스크립트로만 추가, 기존 수정 금지 |
 | 인덱스 운영 적용 권한 | `dev`/`prod`는 DBA 위임, 본 계획은 검증+스크립트 작성까지 |
 | CacheManager 교체 회귀(P5) | 공통코드(§5.5.1) 등 기존 캐시 동작 회귀 테스트로 보호 |
