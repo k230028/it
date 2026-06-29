@@ -22,7 +22,7 @@
 
 | Wave | 성격 | 주요 항목 | 산출물 |
 | :--: | --- | --- | --- |
-| **W1** ✅ 완료 | — | `bbrC` 부서필터(`Contract/Deliberation/PaymentRepositoryImpl` + 과업심의 목록) — 구현·it_backend main 통합(2026-06-29). plan [`2026-06-28-bbrc-dept-filter.md`](docs/superpowers/plans/2026-06-28-bbrc-dept-filter.md). **런타임 기능검증(로컬 Oracle) 잔여** | TASK_DONE 이관 |
+| **W1** ✅ 완료 | — | `bbrC` 부서필터(`Contract/Deliberation/PaymentRepositoryImpl` + 과업심의 목록) — 구현·it_backend main 통합·**런타임 검증 완료**(로컬 Oracle 실데이터, 2026-06-29). plan [`2026-06-28-bbrc-dept-filter.md`](docs/superpowers/plans/2026-06-28-bbrc-dept-filter.md) | TASK_DONE 이관 완료 |
 | **W2** 🟡 코드부채 | 단독 수정 가능 | `@Valid` 보강(Council/BoardPost), 클래스레벨 `@Transactional(readOnly)`(Plan/LoginAttempt), N+1 제거(ScheduleService·`CouncilService.deriveCurrentYearBudget`·Deliberation/Contract/Payment.get), `CinfmmRepositoryImpl` 감사컬럼, `BtermmL` length 정정, SSO eno 로그 강등, `changeStatus` role 분기, 환율 규칙 통일, `HostAddressProvider` 진단, `ApplicationContextHolder` 주석 정리, council-request/result catch 바인딩 | 묶음 PR(들) |
 | **W3** 🧩 기능 spec 필요 | 백엔드 신규 엔드포인트/스키마 동반 | Mock→API(`info/index`, budget summary·comparison), 사전협의 검토자/세션 status 영속화(선행: 검토플로우 실제 인증연동)·`authorTeam`·첨부 매핑, 게시판 서버 페이지네이션·첨부 UI·다운로드 카운트·댓글 첨부, Tiptap 변수 prop 확대·권한 필터링, 실시간로그 드릴다운·필터 저장 | 기능별 spec→plan |
 | **W4** 🏛️ 외부/운영 의존 | KDB·DBA·운영 협의 | EAI IF_ID/UMS 발급·도메인 연동, 실시간로그 EXPLAIN/인덱스/보존정책, 메타 PK 정합(BBUGTM/BRDOCM), BPOVWM 데이터 이관, 인덱스 적용(BASCTM/BCMMTM/BRDOCM/BRIVGM/실시간로그) | 체크리스트 추적 |

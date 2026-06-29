@@ -174,7 +174,8 @@
 
 > `TASK.md` W1 보안 High. subagent-driven 실행(implementer→spec 리뷰→코드품질 리뷰). 설계/계획: `docs/superpowers/specs/2026-06-28-task-remediation-design.md` §6.1, `docs/superpowers/plans/2026-06-28-bbrc-dept-filter.md`.
 > 커밋(it_backend main): `88e1419`/`8f0151e`/`f0c9f8b`(3 RepositoryImpl) + `2ff2399`(코드리뷰 반영) + `4ee3ebd`(§5.18 문서).
-> 검증: `compileJava` BUILD SUCCESSFUL, 전체 `test`는 기존 실패 8건(`FrontendUrlPropertyResolutionTest`·`ProjectServiceXcrLookupTest`·`CommitteeServiceTest`)만 — 베이스 main에서 동일 재현 확인(본 변경 무파손). **런타임 기능검증(로컬 Oracle 2부서 시드 후 관리자/일반사용자 응답 차이)은 환경 의존으로 미수행 — 후속 수동 검증 권장(plan Task 5).**
+> 검증: `compileJava` BUILD SUCCESSFUL, 전체 `test`는 기존 실패 8건(`FrontendUrlPropertyResolutionTest`·`ProjectServiceXcrLookupTest`·`CommitteeServiceTest`)만 — 베이스 main에서 동일 재현 확인(본 변경 무파손).
+> **런타임 검증 완료(2026-06-29, 로컬 Oracle 실데이터)**: 실행단계 문서가 DB에 0건이라 가상 과업심의 3행(부서150 사업·부서180 사업·부서180 전산업무비)을 실제 `TPRMPP_BPROJM`/`TPRMPP_BCOSTM`에 조인(read-only)해 필터 술어 검증 — 관리자(필터없음)=3행·부서 해석 정확, bbrC=150→1행, bbrC=180→2행(사업+전산업무비), bbrC=999→0행(타부서 격리). 대상 2종 분기·부서 격리 정상 확인. (서비스의 bbrC 도출 계층은 본 변경과 무관·기존 유지)
 
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
