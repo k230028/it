@@ -23,6 +23,19 @@
 | :--: | :--: | --- | --- |
 | ✅ Done | 🟡 Medium | 클래스 JavaDoc 누락 컨트롤러 소수 잔여 (전수 86% 완료) — `AdminMenuController`/`AdminRouteController`/`MenuQueryController` 클래스 JavaDoc 보강 완료로 종료 | W2b PR-2 `30dc249`, 종료일: 2026-06-29 |
 
+### 🔒 2026-06-29 보안 하드닝 구현
+
+> `TASK.md` 🔒 보안 § 잔여 6건 구현 완료 이관(#1·#2·#3·#5·#6·#7). 코드 커밋은 중첩 `it_backend`/`it_frontend`/`it_database` repo. #4 Blocklist는 감내(☑️ Accepted)로 보안 §에 유지. plan: `docs/superpowers/plans/2026-06-29-security-hardening.md`, design: `docs/superpowers/specs/2026-06-29-security-hardening-design.md`. 보안 § 잔여 = Blocklist(감내) 외 0건.
+
+| 상태 | 우선순위 | 과제 | 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | 🟡 Medium | `Authorization: Bearer` 헤더 폴백 운영 활성화 여부 결정 + CLAUDE.md 명시 — `app.auth.allow-bearer-header` 플래그로 게이팅(base/prod=false, dev/local=true), 헤더 폴백 비활성 시 쿠키 전용 | `JwtAuthenticationFilter`, `it_backend/CLAUDE.md §5.6`, 종료일: 2026-06-29 |
+| ✅ Done | 🟡 Medium | `it-portal-user` 쿠키 변조 시 프론트 관리자 가드 E2E 검증 — 백엔드 경계 테스트 `AdminSecurityBoundaryTest`가 `/api/admin/**`은 JWT 필수(`it-portal-user` 무시)→401 입증, 프론트 E2E 스펙 `access-control.spec.ts` 추가(로컬 실행) | `AdminSecurityBoundaryTest`, `tests/e2e/access-control.spec.ts`, 종료일: 2026-06-29 |
+| ✅ Done | 🟡 Medium | SSO 운영 설정 검증 강화 — `EnvironmentValidator`가 prod에서 `allow-direct-eno`/`frontend-url`/cors 이미 차단, `app.dev.user-switch.enabled=true` prod 가드 추가. `getClientIp`는 이미 `ClientIpResolver`(trusted-proxy) 적용. CLAUDE.md §5.6 정정 | `EnvironmentValidator`, `ClientIpResolver`, `it_backend/CLAUDE.md §5.6`, 종료일: 2026-06-29 |
+| ✅ Done | 🟡 Medium | [후속/T10] Refresh Token 재사용 탐지(토큰 패밀리/세대) — `TPRMPP_CRTOKM`에 `FAM_NM`/`AVL_YN` 추가(Flyway `V20260629_001`), `AuthService` 패밀리 회전 + 재사용 탐지(회전 grace 윈도우로 다중탭 오탐 방지) | `TPRMPP_CRTOKM`(`V20260629_001`), `AuthService`, 종료일: 2026-06-29 |
+| ✅ Done | 🟡 Medium | Tiptap 변수 metadata 프로젝트 카탈로그 권한 필터링 — `getMetadata(user)` 부서(bbrC) 필터(ADMIN/부서매니저 전체), 캐시 키 사용자 부서 기준 분리 | `TiptapVariableController.java`, `TiptapVariableService.java`, 종료일: 2026-06-29 |
+| ✅ Done | 🟡 Medium | 사업집행 4단계 `changeStatus` role 분기(구 [W3 카브아웃]) — ADMIN 전용 전이로 구현(`OwnershipVerifier.verifyAdmin`, 4개 서비스 적용), CLAUDE.md §5.18 갱신 | `EstimateService`/`DeliberationService`/`ContractService`/`PaymentService`, `OwnershipVerifier.verifyAdmin`, `it_backend/CLAUDE.md §5.18`, 종료일: 2026-06-29 |
+
 ### 🔒 보안
 
 | 상태 | 우선순위 | 과제 | 근거 |
@@ -326,6 +339,7 @@
 
 | 상태 | 일자 | 영역 | 조치 |
 | :--: | :--: | :--: | --- |
+| ✅ Done | 2026-06-29 | 보안 | 보안 하드닝 구현 완료 — `TASK.md` 🔒 보안 § 잔여 6건(#1·#2·#3·#5·#6·#7) 조치·`TASK_DONE.md` 이관. ① `Authorization: Bearer` 헤더 폴백 `app.auth.allow-bearer-header` 게이팅(base/prod=false)·CLAUDE.md §5.6; ② `AdminSecurityBoundaryTest`로 `/api/admin/**` JWT 필수(`it-portal-user` 무시)→401 입증 + 프론트 `access-control.spec.ts`; ③ SSO 운영 설정 검증(`EnvironmentValidator` prod 가드 + `app.dev.user-switch.enabled` 추가, `ClientIpResolver` 기적용); ④ [T10] Refresh Token 재사용 탐지(`TPRMPP_CRTOKM` FAM_NM/AVL_YN, Flyway `V20260629_001`, `AuthService` 패밀리 회전+grace 윈도우); ⑤ Tiptap 변수 metadata bbrC 부서 권한 필터(`getMetadata(user)`·캐시 키 분리); ⑥ 사업집행 4단계 `changeStatus` ADMIN 전용 전이(`OwnershipVerifier.verifyAdmin` 4개 서비스, CLAUDE.md §5.18). #4 Blocklist는 감내(☑️ Accepted)로 보안 §에 유지 → 보안 § 잔여 = Blocklist(감내) 외 0건. plan `docs/superpowers/plans/2026-06-29-security-hardening.md`·design `docs/superpowers/specs/2026-06-29-security-hardening-design.md`. |
 | ✅ Done | 2026-06-29 | 백로그 | TASK.md 재검증 반영 — `TASK.md` 잔여 항목을 6개 병렬 에이전트로 코드 재대조. 이미 해소·정정 완료 또는 코드 부재로 실행 불가한 7건 종료 이관(`$apiFetch` 401 E2E 검증·`AdminDto` JavaDoc·메타 `BPAYTM/BPAYTL.DFR_DT` N→Y·메타 `BPOVWM PRJ_BG_AMR→RQM_BG_AMT`·실시간로그 `V20260531_001` STALE·게시판 `inqAthC` 공통필터 추출·`inqAthC/enrAthC` 매핑 통합테스트 — 후 2건은 코드 부재로 실행불가). 재범위/문구 정정 7건은 `TASK.md` 본문 반영(Open 유지): `EvaluationService`·`CommitteeService` N+1(ScheduleService 완료)·`CouncilService` L298 per-evaluator count 분리·클래스 JavaDoc 잔여(전수 86%)·IT부문 예산 화면 wiring 잔여·본문 최대크기 정책(DECISION)·`findProjectsForCouncilAll/ByDepartment`(18컬럼) 메서드명/컬럼수 정정·환율 환산 활성 충돌(`BudgetWorkService` no-xcr vs `ProjectBudgetSummaryService` ×xcr). 2차 안전 묶음 W2b 착수. plan `docs/superpowers/plans/2026-06-29-task-recheck-improvement.md`·design `docs/superpowers/specs/2026-06-29-task-recheck-improvement-design.md`. |
 | ✅ Done | 2026-06-29 | 백로그 | 영향도 낮은 백로그 묶음 처리 — 실행 로드맵 W2(코드부채)+Low 잔여 13건을 단독 수정 가능한 영향도 낮은 작업으로 묶어 4 PR(it_backend `b58558d..1da0e32`, it_frontend `9035174`)로 처리·`TASK_DONE.md` 이관. SSO eno 로그 INFO→DEBUG 강등, `@Valid` 보강(Council/BoardPost), 클래스레벨 `@Transactional(readOnly)`(Plan/LoginAttempt), N+1 제거 4건(ScheduleService·CouncilService.deriveCurrentYearBudget·Deliberation/Contract/Payment.get), `CinfmmRepositoryImpl` 감사컬럼 명시 SET, `BtermmL` length 600→200, `ApplicationContextHolder` 미사용 메서드/구주석 제거, `CodeNameMapBuilder` common.util 이동, `HostAddressProvider` 진단 로깅, council-request/result catch 통일. W2에 묶여 있던 2건(`changeStatus` role 분기·환율 환산 규칙 통일)은 업무요건/단일규칙 결정 선행 필요로 카브아웃하여 W3 재범위(Open 유지). 설계/계획: `docs/superpowers/specs/2026-06-29-low-impact-task-bundling-design.md`, `docs/superpowers/plans/2026-06-29-low-impact-task-bundling.md`. |
 | ✅ Done | 2026-06-28 | 백로그 | TASK.md 코드 대조 검증 — 6개 병렬 에이전트로 전체 ⬜ Open 항목을 코드베이스 대조(read-only). 실제 해소된 stale 3건 이관(`ProjectService` 비목 N+1 제거, `applyAthIds` 실익 낮음 종료, 메타 12종 등재). spot-check로 `ApplicationContextHolder` 잔여 JavaDoc·`BRIVGM` 검토의견 인덱스는 Open 유지로 정정. 잔여 항목을 Wave 1~4 실행 로드맵으로 재정리, 보안 High 2건(bbrC 부서필터·사전협의 서버영속화) 상세 설계 문서화(`docs/superpowers/specs/2026-06-28-task-remediation-design.md`). |
