@@ -68,7 +68,7 @@
 - **베이스 클래스** `AbstractOracleRepositoryTest`:
   - `@DataJpaTest` + `@AutoConfigureTestDatabase(replace = NONE)`(내장 DB 치환 비활성, 실 DataSource 유지) + `@Import(QuerydslConfig.class)`로 `JPAQueryFactory` 빈 주입.
   - 전용 프로파일 `application-test-it.properties`(DataSource/JPA 활성, ddl-auto=none, CURRENT_SCHEMA init-sql)로 분리해 기존 `application-test.properties`(슬라이스 단위용)와 공존.
-  - **DB 미가동 시 자동 스킵**: `@BeforeAll`에서 `127.0.0.1:11521` TCP 프로브 후 `Assumptions.assumeTrue(...)`로 스킵 → 로컬 Oracle이 꺼져 있어도 빌드가 깨지지 않음.
+  - **DB 미가동 시 자동 스킵**: JUnit 5 `ExecutionCondition`(`OracleAvailableCondition`, `@ExtendWith`)이 `127.0.0.1:11521` TCP 프로브로 가용성을 판정 → 미가동 시 `ConditionEvaluationResult.disabled`로 깨끗이 스킵. **컨텍스트 로드 전에 평가**되므로 DB가 꺼져 있어도 컨텍스트 로드 실패(빨간 빌드) 없이 스킵된다(`@BeforeAll`은 컨텍스트 기동 후라 부적합).
 - **로컬 전용 게이트 (결정 2026-06-29)**: 통합 테스트는 **로컬 전용**(CI 비의존). `@Tag("it")`로 분리하고 별도 `integrationTest` 태스크를 만들어 기본 `./gradlew test`(CI 게이트)에서 **제외**(`useJUnitPlatform { excludeTags 'it' }`)한다. 개발자는 로컬 Oracle 가동 상태에서 `./gradlew integrationTest`로 실행한다.
 - **네이티브/뷰 검증 범위**: 실 스키마+뷰가 그대로 있으므로 native `Object[]` 쿼리(P3 #5/#6)와 뷰 의존 항목(#11)을 **모두 동일 경로로 검증** 가능. P4 인덱스 EXPLAIN은 동일 로컬 Oracle에서 SQL로 수행.
 
