@@ -182,6 +182,28 @@
 | ✅ Done | 🟠 High | 사업집행 ②과업심의·③계약·④지급 목록 `bbrC` 부서 필터 적용 — 대상구분 100=`Bprojm.svnDpmC`/200=`Bcostm.costSvnDpmC`를 `cncdRfrNo` 키로 LEFT JOIN(최신 `lstYn='Y'`) 후 `Expressions.anyOf(allOf(...))` 분기 비교 + `.distinct()` 가드. `EstimateRepositoryImpl` 패턴을 2대상으로 확장. 일반 사용자 타부서 열람 차단 | `DeliberationRepositoryImpl`/`ContractRepositoryImpl`/`PaymentRepositoryImpl`, `it_backend/CLAUDE.md §5.18`, 통합일: 2026-06-29 |
 | ✅ Done | 🟠 High | 과업심의 목록 부서(bbrC) 필터 미적용 — 위 작업으로 동일 해소(과업심의=Deliberation 목록 동일 RepositoryImpl) | 별도 항목이었으나 통합 해소 |
 
+### 🧹 2026-06-29 영향도 낮은 백로그 묶음 처리 (W2+Low 13건, 4 PR)
+
+> `TASK.md` 실행 로드맵 W2(코드부채) + Low 잔여 13건을 단독 수정 가능한 영향도 낮은 작업으로 묶어 4 PR로 처리. 설계/계획: `docs/superpowers/specs/2026-06-29-low-impact-task-bundling-design.md`, `docs/superpowers/plans/2026-06-29-low-impact-task-bundling.md`.
+> 커밋: it_backend `b58558d..1da0e32`(4 PR), it_frontend `9035174`.
+> W2에 함께 묶여 있던 2건(사업집행 4단계 `changeStatus` role 분기·품목 금액 환율 환산 규칙 통일)은 각각 업무요건 확정·단일 규칙 결정이 선행되어야 하므로 카브아웃하여 `TASK.md` W3로 재범위(Open 유지).
+
+| 상태 | 우선순위 | 과제 | 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | 🟡 Medium | SSO 인증 흐름 INFO 로그 사번(eno) 평문 노출 → INFO→DEBUG 강등 (알림/게시판 PII 강등 2026-06-27 동일 정책) | `SsoController.java:321,373`, 조치일: 2026-06-29 |
+| ✅ Done | 🟡 Medium | mutating 컨트롤러 요청 본문 `@Valid` 누락 보강 — 협의회/게시판 POST·PUT DTO 검증 일관성 회복 + 핵심 필드 제약 | `CouncilController.java`, `BoardPostController.java`, 조치일: 2026-06-29 |
+| ✅ Done | 🟡 Medium | `LoginAttemptService` 클래스 레벨 `@Transactional(readOnly=true)` 적용 (조회 전용 트랜잭션 경계 명시) | `LoginAttemptService.java`, 조치일: 2026-06-29 |
+| ✅ Done | 🟡 Medium | `PlanService` 클래스 레벨 `@Transactional(readOnly=true)` 적용 — 쓰기 메서드는 `@Transactional` 오버라이드 | `PlanService.java:43`, 조치일: 2026-06-29 |
+| ✅ Done | 🟢 Low | `council-request/result/[id].vue` catch 바인딩 통일(`catch (e: unknown)` + `err.data?.message`) + 통보 성공·수신자 null 시 무피드백 보완 | `pages/info/council-request/result/[id].vue:273,299,314`, 조치일: 2026-06-29 |
+| ✅ Done | 🟡 Medium | `ScheduleService` 위원 사용자명 조회 N+1 제거 — 위원별 `findByEno` 반복을 `findByEnoIn` 일괄 조회로 전환 | `ScheduleService.java:311`, 조치일: 2026-06-29 |
+| ✅ Done | 🟢 Low | `CouncilService.deriveCurrentYearBudget` 협의회 목록 N+1 제거 — 행별 `findByAbusMngNoAndDelYn` 호출을 품목 배치 prefetch로 전환 | `CouncilService`, 조치일: 2026-06-29 |
+| ✅ Done | 🟡 Medium | `Deliberation/Contract/PaymentService.get()` 상세 조회 대상명 별도 SELECT 제거 — `loadCurrent()`+`resolveTargetName()` 2쿼리를 BPROJM/BCOSTM LEFT JOIN 단일 쿼리로 통합(`EstimateRepositoryImpl` 패턴) | `DeliberationService.java:148`, `ContractService.java:146`, `PaymentService.java:176`, 조치일: 2026-06-29 |
+| ✅ Done | 🟡 Medium | `CinfmmRepositoryImpl.markAllReadByRmsEno()` 벌크 UPDATE 감사컬럼(`LST_CHG_DTM`/`LST_CHG_USID`) 명시 SET — JPA Auditing 우회/1차 캐시 stale 해소 | `CinfmmRepositoryImpl.java:67-78`, 조치일: 2026-06-29 |
+| ✅ Done | 🟢 Low | `BtermmL.IND_RSN` `@Column(length)` 600→200 — `TPRMPP_BTERML` DDL 정합(BcostmL 2026-06-22 정정과 동일) | `BtermmL.java`, `TPRMPP_BTERML`, 조치일: 2026-06-29 |
+| ✅ Done | 🟢 Low | `ApplicationContextHolder.publishEvent()` 미사용 메서드 + 구 `@TransactionalEventListener(BEFORE_COMMIT)` JavaDoc 제거 (`AuditLogEvent`는 2026-06-22 삭제됨) | `ApplicationContextHolder.java:38-53`, 조치일: 2026-06-29 |
+| ✅ Done | 🟢 Low | `CodeNameMapBuilder` → `common.util` 패키지 이동 — `CostService`/`ProjectService` 공유 유틸 위치 정리 | `CodeNameMapBuilder`, 조치일: 2026-06-29 |
+| ✅ Done | 🟡 Medium | EAI `HostAddressProvider` IP/MAC 조회 실패 진단 로깅 보강 — 원인 예외 없는 info만 남던 경로에 `log.warn`+예외 추가(전문 공통부 공백 추적성 확보) | `HostAddressProvider.java:34,57`, 조치일: 2026-06-29 |
+
 ### 🔍 2026-06-28 코드 대조 검증 — stale Open 이관
 
 > `TASK.md` 전체 ⬜ Open 항목을 6개 병렬 에이전트로 코드베이스 대조 검증(read-only) 후, 실제 이미 해소된 stale 3건만 이관. 대부분 항목은 정상 추적(STILL_OPEN) 재확인. spot-check로 에이전트 오판 2건 정정 — `ApplicationContextHolder.publishEvent()`는 구 이벤트 기반 감사로그 JavaDoc(38-53행)이 잔존해 Open 유지, `BRIVGM` 인덱스는 06-27 추가분(`IX_BRIVGM_DOC_DEL_FSG`)이 대시보드용 별개라 검토의견 목록 쿼리는 미커버로 Open 유지. 검증 기록·잔여 로드맵·보안 High 2건 상세 설계: `docs/superpowers/specs/2026-06-28-task-remediation-design.md`.
@@ -282,6 +304,7 @@
 
 | 상태 | 일자 | 영역 | 조치 |
 | :--: | :--: | :--: | --- |
+| ✅ Done | 2026-06-29 | 백로그 | 영향도 낮은 백로그 묶음 처리 — 실행 로드맵 W2(코드부채)+Low 잔여 13건을 단독 수정 가능한 영향도 낮은 작업으로 묶어 4 PR(it_backend `b58558d..1da0e32`, it_frontend `9035174`)로 처리·`TASK_DONE.md` 이관. SSO eno 로그 INFO→DEBUG 강등, `@Valid` 보강(Council/BoardPost), 클래스레벨 `@Transactional(readOnly)`(Plan/LoginAttempt), N+1 제거 4건(ScheduleService·CouncilService.deriveCurrentYearBudget·Deliberation/Contract/Payment.get), `CinfmmRepositoryImpl` 감사컬럼 명시 SET, `BtermmL` length 600→200, `ApplicationContextHolder` 미사용 메서드/구주석 제거, `CodeNameMapBuilder` common.util 이동, `HostAddressProvider` 진단 로깅, council-request/result catch 통일. W2에 묶여 있던 2건(`changeStatus` role 분기·환율 환산 규칙 통일)은 업무요건/단일규칙 결정 선행 필요로 카브아웃하여 W3 재범위(Open 유지). 설계/계획: `docs/superpowers/specs/2026-06-29-low-impact-task-bundling-design.md`, `docs/superpowers/plans/2026-06-29-low-impact-task-bundling.md`. |
 | ✅ Done | 2026-06-28 | 백로그 | TASK.md 코드 대조 검증 — 6개 병렬 에이전트로 전체 ⬜ Open 항목을 코드베이스 대조(read-only). 실제 해소된 stale 3건 이관(`ProjectService` 비목 N+1 제거, `applyAthIds` 실익 낮음 종료, 메타 12종 등재). spot-check로 `ApplicationContextHolder` 잔여 JavaDoc·`BRIVGM` 검토의견 인덱스는 Open 유지로 정정. 잔여 항목을 Wave 1~4 실행 로드맵으로 재정리, 보안 High 2건(bbrC 부서필터·사전협의 서버영속화) 상세 설계 문서화(`docs/superpowers/specs/2026-06-28-task-remediation-design.md`). |
 | ✅ Done | 2026-06-27 | 백엔드 | 테스트 스텁 정합(후속/T) 검증 종료 — 백로그가 "실패 6건"으로 추적하던 `CostServiceTest`(`@Mock CodeNameMapBuilder` 누락)·`BudgetWorkServiceTest`(단일키→배치 finder 스텁) 항목을 `./gradlew test --tests *CostServiceTest --tests *BudgetWorkServiceTest`로 재검증 → **BUILD SUCCESSFUL**. CostServiceTest는 `@Mock CodeNameMapBuilder`+`@BeforeEach` 기본값 적용 완료, BudgetWorkServiceTest는 배치 finder 스텁 반영 완료. 06-22 이후 커밋에서 해소된 stale 백로그로 확정·종료. |
 | ✅ Done | 2026-06-27 | 백로그 | TASK.md 완료 항목 아카이빙 — "에러 처리" 프론트 sweep 26건(2026-06-24)을 dated 서브섹션으로 이관, `AdminMenuService` DB/JPA 1건 이관, 테스트 스텁 stale 항목 종료. TASK.md는 잔여 ⬜ Open만 유지. High 잔여 7건 코드 검증 후 조치 계획 수립(`docs/superpowers/specs/2026-06-27-task-high-remediation-design.md`). |
