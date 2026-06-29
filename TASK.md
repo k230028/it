@@ -32,7 +32,9 @@
 
 ## 🚧 진행 중
 
-> 🕒 최종 업데이트: 2026-06-29 (재검증 — 종료 7건, 재범위/정정 7건, 2차 안전 묶음 W2b 착수. plan `docs/superpowers/plans/2026-06-29-task-recheck-improvement.md`·design `docs/superpowers/specs/2026-06-29-task-recheck-improvement-design.md`)
+> 🕒 최종 업데이트: 2026-06-29 (보안 하드닝 착수 — 보안 7건 plan `docs/superpowers/plans/2026-06-29-security-hardening.md`·design `docs/superpowers/specs/2026-06-29-security-hardening-design.md`. #4 Blocklist 감내(☑️ Accepted), 에러처리 클래스 JavaDoc 종료)
+>
+> 🕒 이전 업데이트: 2026-06-29 (재검증 — 종료 7건, 재범위/정정 7건, 2차 안전 묶음 W2b 착수. plan `docs/superpowers/plans/2026-06-29-task-recheck-improvement.md`·design `docs/superpowers/specs/2026-06-29-task-recheck-improvement-design.md`)
 >
 > 🕒 이전 업데이트: 2026-06-29 (W2+Low 영향도 낮은 백로그 13건 묶음 처리 완료(4 PR: it_backend `b58558d..1da0e32`, it_frontend `9035174`) → `TASK_DONE.md` 이관. SSO eno 로그 강등, `@Valid`/`@Transactional(readOnly)` 보강, N+1 4건 제거, 감사컬럼/length 정정, `HostAddressProvider` 진단, `ApplicationContextHolder`/`CodeNameMapBuilder` 정리, council-request/result catch 통일. plan `docs/superpowers/plans/2026-06-29-low-impact-task-bundling.md`·design `docs/superpowers/specs/2026-06-29-low-impact-task-bundling-design.md`. 카브아웃 2건(`changeStatus` role 분기·환율 규칙 통일)은 결정 선행 필요로 W3 재범위)
 >
@@ -45,7 +47,7 @@
 | ⬜ Open | 🟡 Medium | `Authorization: Bearer` 헤더 폴백 운영 활성화 여부 결정 후 `it_backend/CLAUDE.md`에 명시                                                                       | 현재 운영에서도 동작 — XSS 탈취 토큰 헤더 전송 경로 오픈                                                   |
 | ⬜ Open | 🟡 Medium | `it-portal-user` 쿠키 변조 시 프론트 관리자 가드가 일시적으로 관리자 화면을 노출하지 않는지 E2E 검증                                                                            | 프론트 쿠키는 UX 상태이며 최종 권한은 백엔드가 판단해야 함                                                    |
 | ⬜ Open | 🟡 Medium | SSO 운영 설정 검증 강화 — `app.sso.allow-direct-eno=false`, `app.frontend-url` 실제 값, 프록시 헤더 덮어쓰기 점검                                                   | `SsoController`, `AuthController.getClientIp()` 운영 안전장치                               |
-| ⬜ Open | 🟡 Medium | Access Token Blocklist 도입 검토 — 로그아웃 시 잔존 토큰(최대 15분) 무효화 필요 여부 결정                                                                              | `AuthService.logout()` Stateless 한계, 고보안 시나리오용                                        |
+| ☑️ Accepted | 🟡 Medium | Access Token Blocklist 도입 검토 — 로그아웃 시 잔존 토큰(최대 15분) 무효화 필요 여부 결정. 감내(2026-06-29 결정): stateless JWT·access 15분 단기·사내 3천명. 로그아웃 시 refresh 삭제 + T10 재사용 탐지로 탈취 대응. 잔존 access(최대 15분)는 수용.                                                                              | `AuthService.logout()` Stateless 한계, 고보안 시나리오용                                        |
 | ⬜ Open | 🟡 Medium | [후속/T10] Refresh Token 재사용 탐지(토큰 패밀리/세대 카운터) 도입 — Phase 3에서 회전(rotation)만 구현되어 탈취된 구 토큰의 재사용 탐지가 없음. 회전 시 무효화된 토큰이 다시 제출되면 패밀리 전체 폐기하는 메커니즘 필요 | `AuthService`(rotation 구현부), 스파이크: `docs/superpowers/plans/2026-06-22-phase3-security-hardening-spike-blocklist.md`, 탐지: 2026-06-22 |
 | ⬜ Open | 🟡 Medium | Tiptap 변수 metadata 프로젝트 카탈로그 권한 필터링 — 현재 인증 사용자 공통 프로젝트 목록을 반환하므로 사용자 권한/부서 기준 목록 제한 필요 | `TiptapVariableController.java`, `TiptapVariableService.java:51`, 탐지: 2026-06-24 |
 | ⬜ Open | 🟡 Medium | **[W3 카브아웃]** 사업집행 4단계 `changeStatus` — 단방향 상태전이(인접만)는 검증하나 역할(ADMIN/작업자/신청자)별 전이 권한 분기 없음. 업무 요건(제출=본인/관리자, 완료=관리자/작업자 등) 확정 **선행 필요** 후 서비스 계층 role 분기 추가. (2026-06-29: W2 묶음에서 카브아웃 — 제출/완료 권한 업무요건 확정 선행) | `EstimateService.java:115`, `DeliberationService/ContractService/PaymentService` 동일, 발견일: 2026-06-09 |
@@ -66,9 +68,7 @@
 
 > 📦 프론트 toast/silent-failure sweep 26건(2026-06-24 완료)·`AdminMenuService`는 [`TASK_DONE.md`](TASK_DONE.md)로 이관(2026-06-27).
 
-| 상태 | 우선순위 | 과제 | 근거 |
-| :--: | :--: | --- | --- |
-| ⬜ Open | 🟡 Medium | 클래스 JavaDoc 누락 컨트롤러 소수 잔여 (전수 86% 완료) — PR-2 처리 예정                                                                                                                                                                                 | 일부 컨트롤러가 클래스 JavaDoc 없이 `package`로 시작 (대부분 파일은 헤더 보강 완료) |
+> ✅ 잔여 없음 — 종료 내역은 [`TASK_DONE.md`](TASK_DONE.md) 참조
 
 ### 🗄️ DB / JPA 최적화
 

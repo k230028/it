@@ -15,6 +15,14 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### 🔒 2026-06-29 보안하드닝 정비
+
+> 보안 하드닝 착수 정비. `TASK.md`에서 종료 이관한 항목. plan: `docs/superpowers/plans/2026-06-29-security-hardening.md`, design: `docs/superpowers/specs/2026-06-29-security-hardening-design.md`.
+
+| 상태 | 우선순위 | 과제 | 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | 🟡 Medium | 클래스 JavaDoc 누락 컨트롤러 소수 잔여 (전수 86% 완료) — `AdminMenuController`/`AdminRouteController`/`MenuQueryController` 클래스 JavaDoc 보강 완료로 종료 | W2b PR-2 `30dc249`, 종료일: 2026-06-29 |
+
 ### 🔒 보안
 
 | 상태 | 우선순위 | 과제 | 근거 |
