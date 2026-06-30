@@ -72,6 +72,7 @@ it/
 - 인증 API 호출은 `credentials: 'include'`.
 - Access Token 15분 / Refresh Token 7일 (백엔드 SoT).
 - 관리자 권한은 프론트 라우트 가드 + 백엔드 `SecurityConfig`/`@PreAuthorize` 이중 적용.
+- 협의회 개최준비의 클라이언트 역할 구분(`ITPAD001`, `ITPAD002`)과 정보보호시스템 심의유형 범위는 `it_frontend/CLAUDE.md` §4.8을 따릅니다.
 - 프론트의 `it-portal-user` 쿠키와 라우트 가드는 UX 보호용입니다. 서버 권한 판단은 반드시 JWT 클레임 기반 `@PreAuthorize` 또는 서비스 계층 권한 검증에서 수행합니다.
 - DB 비밀번호, JWT 시크릿, 외부 API 키는 운영 배포 시 환경변수 또는 비공개 프로파일에서 주입합니다.
 - 상세 정책은 `it_backend/CLAUDE.md` 인증 섹션을 SoT로 따릅니다.

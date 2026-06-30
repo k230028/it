@@ -11,14 +11,14 @@
 - 요구사항 정의서 및 사전협의(문서 검토 코멘트)
 - 정보화실무협의회(타당성검토, 위원선정, 평가, 결과)
 - 공통 게시판(게시판 메타, 게시물, 댓글, 답변글)
-- 변경 이력 추적(Audit Log, 23개 도메인)
+- `@LogTarget` 업무 엔티티 변경 이력 자동 추적
 
 **기술 스택:**
 - **프론트엔드:** Nuxt 4 (Vue 3 Composition API) + PrimeVue + Tailwind CSS (CSR 모드)
 - **백엔드:** Spring Boot 4 (Java 25) + Oracle Database 21c XE + JPA/QueryDSL
 - **인증:** JWT httpOnly 쿠키 기반 (Access Token 15분 / Refresh Token 7일)
 - **외부 연동:** Gemini AI (텍스트 생성), SSO(선택적)
-- **소스 통계:** 백엔드 357개 Java 파일 + 135개 테스트 + 77개 엔티티, 프론트엔드 83개 컴포넌트 + 58개 Composable + 67개 페이지
+- **소스 통계:** 백엔드 375개 Java 파일 + 152개 테스트 + 80개 엔티티, 프론트엔드 84개 컴포넌트 + 60개 Composable + 67개 페이지
 
 ---
 
@@ -27,7 +27,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Nuxt 4 (CSR)  http://localhost:3000                        │
-│  - 67개 페이지, 83개 컴포넌트, 58개 Composable             │
+│  - 67개 페이지, 84개 컴포넌트, 60개 Composable             │
 │  - Pinia 상태관리 (인증, 사전협의)                          │
 │  - PrimeVue + Tailwind CSS 스타일링                        │
 └─────────────────────────────────────────────────────────────┘
@@ -35,14 +35,14 @@
 ┌─────────────────────────────────────────────────────────────┐
 │  Spring Boot 4  http://localhost:28080                        │
 │  - 19개 도메인 + 8개 공통 모듈                              │
-│  - 357개 Java 파일, 135개 테스트 파일                      │
+│  - 375개 Java 파일, 152개 테스트 파일                      │
 │  - JWT 인증 + RBAC + Soft Delete                            │
-│  - 변경 로그 (30개 도메인, 자동 추적)                       │
+│  - JPA 리스너 기반 변경 감사로그 자동 추적                  │
 └─────────────────────────────────────────────────────────────┘
                     ↕
 ┌─────────────────────────────────────────────────────────────┐
 │  Oracle Database 21c XE  XEPDB1 (ITPAPP)                   │
-│  - 77개 JPA 엔티티                                           │
+│  - 80개 JPA 엔티티                                           │
 │  - Flyway 마이그레이션                                      │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -58,25 +58,25 @@ it/
 │   ├── CLAUDE.md         ← 프론트 기술 결정 & API 맵 (개발 표준)
 │   ├── app/              ← 소스 루트 (Nuxt 4 convention)
 │   │   ├── pages/        ← 파일 기반 라우팅 (67개 페이지)
-│   │   ├── components/   ← 재사용 컴포넌트 (83개)
-│   │   ├── composables/  ← 비즈니스 로직 & API 래퍼 (58개)
+│   │   ├── components/   ← 재사용 컴포넌트 (84개)
+│   │   ├── composables/  ← 비즈니스 로직 & API 래퍼 (60개)
 │   │   ├── stores/       ← Pinia 상태관리 (인증, 사전협의)
-│   │   ├── types/        ← TypeScript 타입 정의 (11개)
+│   │   ├── types/        ← TypeScript 타입 정의 (15개)
 │   │   ├── utils/        ← 유틸리티 함수 (금액포맷, PDF/Excel/HWPX 변환)
 │   │   └── middleware/   ← 라우트 가드 (인증, 관리자 접근 제어)
-│   └── tests/            ← Vitest + Playwright 테스트 (94개 unit, 15개 e2e)
+│   └── tests/            ← Vitest + Playwright 테스트 (97개 unit, 16개 e2e)
 │
 ├── it_backend/           ← Spring Boot 4 REST API 서버
 │   ├── README.md         ← 백엔드 상세 가이드 (아키텍처, API, 환경 설정)
 │   ├── CLAUDE.md         ← 백엔드 기술 결정 & 보안 정책 (SoT)
-│   ├── src/main/java/    ← 소스 코드 (357개 파일)
+│   ├── src/main/java/    ← 소스 코드 (375개 파일)
 │   │   └── com/kdb/it/
 │   │       ├── config/   ← Spring 설정 (보안, JPA, Swagger 등)
 │   │       ├── common/   ← 공통 모듈 (인증, 게시판, 결재, 알림)
 │   │       ├── domain/   ← 비즈니스 도메인 (예산, 사업집행 4단계, 협의회, 문서, 로그)
 │   │       ├── infra/    ← 외부 연동 (파일, Gemini AI, EAI 표준전문)
 │   │       └── exception/ ← 전역 예외 처리
-│   ├── src/test/java/    ← JUnit 5 + Mockito 테스트 (135개 파일)
+│   ├── src/test/java/    ← JUnit 5 + Mockito 테스트 (152개 파일)
 │   └── build.gradle      ← Gradle 빌드 스크립트 (Spring Boot 4.1.0)
 │
 ├── it_database/          ← Oracle DB 마이그레이션 & 초기화
@@ -335,7 +335,7 @@ Press Enter to open https://github.com/login/device in your browser...
 | **예산 관리** | `budget/plan`, `status`, `work` | 계획, 현황 대시보드, 편성률 | Bplanm, Bproja, Bbugtm |
 | **사업집행 4단계** | `estimate`, `deliberation`, `contract`, `payment` | 소요예산 산정→과업심의→입찰계약→대금지급 (`/api/project/**`, 상태머신) | Bestim·Besttm, Bdelim, Bcontm, Bpaymm·Bpaymt |
 | **협의회** | `council` | 타당성검토, 위원선정, 평가, 결과 | Basctm, Bevalm, Bperfm 등 9개 |
-| **변경 로그** | `domain/log` | 자동 감사로그 (30개 도메인) | BaseLogEntity 하위 *L 엔티티 |
+| **변경 로그** | `domain/log` | `@LogTarget` 업무 엔티티 자동 감사로그 | BaseLogEntity 하위 *L 엔티티 |
 | **파일·AI·EAI** | `infra/file`, `infra/ai`, `infra/eai` | 첨부파일, Gemini API, KDB 표준전문 발송(미연동) | Cfilem |
 
 ### 6.2 프론트엔드 주요 모듈 (Nuxt 4 기반)
@@ -367,12 +367,12 @@ Press Enter to open https://github.com/login/device in your browser...
 ### 7.1 백엔드 (Spring Boot 4)
 - **[`it_backend/README.md`](./it_backend/README.md)** — 전체 기술 스택, 아키텍처, API 엔드포인트 (32개 컨트롤러)
 - **[`it_backend/CLAUDE.md`](./it_backend/CLAUDE.md)** — 기술 결정, 인증 정책 (SoT), 보안 규칙, 환경 설정
-- **[`it_backend/docs/guides/data-model.md`](./it_backend/docs/guides/data-model.md)** — 데이터 모델 (63개 엔티티, 채번 규칙)
+- **[`it_backend/docs/guides/data-model.md`](./it_backend/docs/guides/data-model.md)** — 엔티티·테이블 매핑과 채번 규칙
 
 **주요 내용:**
 - 인증: JWT httpOnly 쿠키 (15분 Access / 7일 Refresh)
 - 아키텍처: Controller → Service → Repository (QueryDSL) → Oracle DB
-- 변경 로그: JPA 리스너 기반 자동 감사 (30개 도메인)
+- 변경 로그: `@LogTarget`과 JPA 리스너 기반 자동 감사
 - API 응답: 표준 JSON (success/data/message/meta)
 - 폐쇄망 빌드: 외부망에서 수집한 `C:\maven-repo`를 file:// 저장소로 사용
   (→ `it_backend/README.md` §10.1, 변환 스크립트 `it_backend/make-local-maven-repo.ps1`)
@@ -427,7 +427,7 @@ npm run test:coverage
 ```bash
 cd it_backend
 
-# JUnit 5 + Mockito 테스트 실행 — 135개 테스트 파일
+# JUnit 5 + Mockito 테스트 실행 — 152개 테스트 파일
 ./gradlew test
 
 # 커버리지 리포트 생성 (JaCoCo)
@@ -922,3 +922,10 @@ Claude가 상황에 따라 자동으로 활성화하거나, 요청 시 서브에
 - **소스 통계 갱신**: 백엔드 350개 메인 Java 파일, 115개 테스트 파일, 79개 JPA 엔티티, 36개 컨트롤러, 감사로그 대상 31개, 프론트 components 84개, composables 56개, pages 67개 기준으로 현행화했습니다.
 - **보안 점검(Task 3)**: 집행 4단계 서비스 소유권 검증 누락(HIGH), `Contract/Deliberation/PaymentRepositoryImpl` bbrC 부서필터 미적용(HIGH), DTO 금액 검증·EAI 운영검증/로그 마스킹 등을 `TASK.md` 보안 섹션에 등록하고 백엔드 CLAUDE.md §5.18에 집행 4단계 보안 규칙을 명문화했습니다.
 - **백로그 갱신(Task 4)**: 집행 4단계 시퀀스 NOCACHE·복합 인덱스(DEL_YN/정렬)·상세 N+1·BPAYTM 인덱스 등 DB 과제를 `TASK.md` DB/JPA 섹션에 추가했습니다. 신규 도메인 코드는 한글 주석이 충실하여 `PaymentController` 클래스 주석 1건만 보강했습니다.
+
+### 18.14 2026-07-01 REVIEW 재점검
+
+- 정보보호시스템 정실협은 `ROLE.INFOSEC_ADMIN`과 `council-manager` 미들웨어로 일반 IT 관리자와 화면 접근 범위를 분리하며, 타당성검토부터 결재·생략판정·개최준비·평가·결과까지 이어지는 흐름을 백엔드와 프론트엔드 README에 반영했습니다.
+- 백엔드 캐시는 Caffeine 기반 캐시별 TTL·최대 크기와 트랜잭션 인지 프록시를 사용하며, 사업 생성·수정 시 Tiptap 사업 카탈로그 캐시를 무효화합니다.
+- 사업집행 4단계의 `bbrC` 검색은 사업과 전산업무비를 각각 LEFT JOIN하여 주관부서를 필터링하는 현재 구현으로 문서를 교정했습니다.
+- 현재 소스 기준으로 백엔드 375개 메인 Java 파일, 152개 테스트 파일, 80개 JPA 엔티티, 38개 컨트롤러와 프론트엔드 84개 컴포넌트, 60개 composable, 67개 페이지를 확인했습니다.

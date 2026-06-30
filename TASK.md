@@ -1,6 +1,6 @@
 # 📋 IT Portal 백로그
 
-> 🗓️ **기준일:** 2026-06-24
+> 🗓️ **기준일:** 2026-07-01
 > 🎯 **목적:** `REVIEW.md` 정비 과정에서 확인한 기술 부채, 미구현 항목, 후속 검증 과제를 추적합니다.
 
 ### 🔑 범례 (Legend)
@@ -26,13 +26,15 @@
 | **W2** ✅ 완료 | — | 영향도 낮은 코드부채 13건 묶음 처리(4 PR) — `@Valid` 보강(Council/BoardPost), 클래스레벨 `@Transactional(readOnly)`(Plan/LoginAttempt), N+1 제거(ScheduleService·`CouncilService.deriveCurrentYearBudget`·Deliberation/Contract/Payment.get), `CinfmmRepositoryImpl` 감사컬럼, `BtermmL` length 정정, SSO eno 로그 강등, `HostAddressProvider` 진단, `ApplicationContextHolder` 주석 정리, `CodeNameMapBuilder` 이동, council-request/result catch 바인딩. plan [`2026-06-29-low-impact-task-bundling.md`](docs/superpowers/plans/2026-06-29-low-impact-task-bundling.md)·design [`2026-06-29-low-impact-task-bundling-design.md`](docs/superpowers/specs/2026-06-29-low-impact-task-bundling-design.md). **카브아웃 2건(`changeStatus` role 분기·환율 규칙 통일)은 결정 선행 필요로 W3 재범위** | TASK_DONE 이관 완료 |
 | **W3** 🧩 기능 spec/결정 필요 | 백엔드 신규 엔드포인트/스키마 또는 업무요건 결정 동반 | Mock→API(`info/index` 엔드포인트 필요; budget summary·comparison은 `ItBudgetController`·`useItBudget` 준비됨 → 페이지 wiring만 잔여), 사전협의 검토자/세션 status 영속화(선행: 검토플로우 실제 인증연동)·`authorTeam`·첨부 매핑, 게시판 서버 페이지네이션·첨부 UI·다운로드 카운트·댓글 첨부·본문 최대크기 정책(DECISION), Tiptap 변수 prop 확대·권한 필터링, 실시간로그 드릴다운·필터 저장, **(W2 카브아웃) 사업집행 4단계 `changeStatus` role 분기(업무요건 확정 선행)·품목 금액 환율 환산 규칙 통일(`BudgetWorkService` no-xcr vs `ProjectBudgetSummaryService` ×xcr 활성 충돌, DECISION 선행)** | 기능별 spec→plan |
 | **W4** 🏛️ 외부/운영 의존 | KDB·DBA·운영 협의 | EAI IF_ID/UMS 발급·도메인 연동, 메타 PK 정합(BBUGTM/BRDOCM), BPOVWM 데이터 이관, **인덱스 dev/prod 적용(`V20260629_002~005`, 스크립트·로컬검증 완료 → DBA 적용 대기)** | 체크리스트 추적 |
-| **Backlog** 🟢 선택 | 성능/확장/품질 | SSE/WebSocket 전환, 조회수 Redis, Oracle Text 검색, 목록 프로젝션 DTO(T16), 통합테스트 인프라(T18), 클래스 JavaDoc 누락 컨트롤러 소수 잔여(전수 86% 완료, PR-2), 토큰 재사용 탐지(T10)/Blocklist | 여유 시 |
+| **Backlog** 🟢 선택 | 성능/확장/품질 | SSE/WebSocket 전환, 조회수 Redis, Oracle Text 검색, 목록 프로젝션 DTO(T16), 대상별 Oracle 통합테스트(T18), 클래스 JavaDoc 보강, Access Token Blocklist | 여유 시 |
 
 ---
 
 ## 🚧 진행 중
 
-> 🕒 최종 업데이트: 2026-06-30 (🗄️ DB/JPA 최적화 12건 전체 완료 — P0 로컬 Oracle `@DataJpaTest` 하네스 신설 후 P1 벌크/flush·P2 N+1·P3 프로젝션 봉인·P4 인덱스·P5 Caffeine을 페이즈별 구현+2단계 리뷰로 조치. `it_backend` main `0e247a5`·`it_database` main `37fd523`. `TASK_DONE.md` §🗄️ 2026-06-30 이관. 잔여: 협의회 BPROJM 컬럼 드리프트 버그(`task_11b75a35`), P4 인덱스 dev/prod DBA 적용. design/plans `docs/superpowers/{specs,plans}/2026-06-29-db-jpa-*`)
+> 🕒 최종 업데이트: 2026-07-01 (`REVIEW.md` 전수 재점검 — 협의회 개최준비 서버 권한, Refresh 회전 동시성·조회 정합성, 오류 삼킴, 감사로그 진단, 타입·중복 로직 후보를 신규 등록. P0 Oracle 테스트 하네스 반영에 맞춰 T18 문구 현행화.)
+>
+> 🕒 이전 업데이트: 2026-06-30 (🗄️ DB/JPA 최적화 12건 전체 완료 — P0 로컬 Oracle `@DataJpaTest` 하네스 신설 후 P1 벌크/flush·P2 N+1·P3 프로젝션 봉인·P4 인덱스·P5 Caffeine을 페이즈별 구현+2단계 리뷰로 조치. `it_backend` main `0e247a5`·`it_database` main `37fd523`. `TASK_DONE.md` §🗄️ 2026-06-30 이관. 잔여: 협의회 BPROJM 컬럼 드리프트 버그(`task_11b75a35`), P4 인덱스 dev/prod DBA 적용. design/plans `docs/superpowers/{specs,plans}/2026-06-29-db-jpa-*`)
 >
 > 🕒 이전 업데이트: 2026-06-29 (보안 하드닝 구현 완료 — #1·#2·#3·#5·#6·#7 6건 조치, #4 감내. 보안 § 잔여 = Blocklist(감내) 외 0건. plan `docs/superpowers/plans/2026-06-29-security-hardening.md`·design `docs/superpowers/specs/2026-06-29-security-hardening-design.md`)
 >
@@ -49,6 +51,9 @@
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
 | ☑️ Accepted | 🟡 Medium | Access Token Blocklist 도입 검토 — 로그아웃 시 잔존 토큰(최대 15분) 무효화 필요 여부 결정. 감내(2026-06-29 결정): stateless JWT·access 15분 단기·사내 3천명. 로그아웃 시 refresh 삭제 + T10 재사용 탐지로 탈취 대응. 잔존 access(최대 15분)는 수용.                                                                              | `AuthService.logout()` Stateless 한계, 고보안 시나리오용                                        |
+| ⬜ Open | 🟠 High | 협의회 개최준비 전이의 서버 권한·심의유형 범위 검증 추가 — ITPAD001은 전체 심의유형, ITPAD002는 `dbrTc='04'`만 허용하도록 서비스 최종 경계를 적용 | `CouncilController.startPreparation()`에 principal/`@PreAuthorize`가 없고 `CouncilService.startPreparation()`은 상태 04만 검증. 프론트 `council-manager`/상세 scope 검사는 UX 가드 |
+| ⬜ Open | 🟠 High | Refresh Token 회전에 동시성 제어와 패밀리당 활성 토큰 1개 불변식 추가 | `AuthService.refreshToken()`이 잠금·`@Version` 없이 기존 N/신규 Y를 저장하여 동시 요청 시 활성 토큰이 복수 생성될 수 있음. `V20260629_001`에는 이를 막는 제약 없음 |
+| ⬜ Open | 🟡 Medium | 부서코드가 없는 비관리자의 전체 부서 조회 차단 정책 적용 | 일부 목록 서비스가 `bbrC=null`을 전체 조회로 해석하여 SSO/인사 미동기화 계정에 데이터가 과다 노출될 수 있음 |
 
 ### 📦 의존성 취약점 (Snyk, 업스트림 미해결)
 
@@ -66,7 +71,13 @@
 
 > 📦 프론트 toast/silent-failure sweep 26건(2026-06-24 완료)·`AdminMenuService`는 [`TASK_DONE.md`](TASK_DONE.md)로 이관(2026-06-27).
 
-> ✅ 잔여 없음 — 종료 내역은 [`TASK_DONE.md`](TASK_DONE.md) 참조
+| 상태 | 우선순위 | 과제 | 근거 |
+| :--: | :--: | --- | --- |
+| ⬜ Open | 🟠 High | 예산 작업 중복률 기준코드 조회 실패 시 계산·저장을 차단하고 사용자 재시도 안내 | `pages/budget/work.vue:119-121`이 실패를 삼키고 기본 중복률로 계산을 계속함 |
+| ⬜ Open | 🟠 High | HWPX 이미지 변환 실패를 부분 성공 결과와 누락 목록으로 노출 | `utils/hwpx-images.ts:271-273`이 이미지 오류를 삼켜 불완전 문서를 정상 다운로드로 처리함 |
+| ⬜ Open | 🟡 Medium | 문서 버전 본문·코멘트·이력 조회 실패를 빈 데이터와 구분하는 오류 상태로 통합 | `stores/review.ts:316-335`, `pages/info/documents/[id]/index.vue:134-136`이 실패를 빈 문자열·빈 배열로 표시 |
+| ⬜ Open | 🟡 Medium | 클립보드 기록과 알림 폴링의 무시형 실패에 사용자 피드백 또는 중복 제한 진단 추가 | `useTableCellSelection.ts:326-332`, `useNotifications.ts:114-121` |
+| ⬜ Open | 🟡 Medium | 감사로그 리플렉션 필드 접근·설정 실패에 필드명 포함 진단을 남겨 실제 null과 유실을 구분 | `AuditLogPersister.java:103-128` |
 
 ### 🗄️ DB / JPA 최적화
 
@@ -76,6 +87,9 @@
 | :--: | :--: | --- | --- |
 | ⬜ Open | 🟠 High | **[버그] 협의회 `CouncilRepository` BPROJM 컬럼 드리프트 2건** — `IT_PTL_STS_TC`(실제 `IT_PTL_RPR_STS_TC`, L93·179·181·232·234)와 `findByDepartment`의 `p.BBR_C`(BPROJM에 없음, 실제 `SVN_DPM_C` 추정, L112)가 라이브 스키마에서 `ORA-00904` → 협의회 신청대상/부서별 목록 쿼리 런타임 실패. P3 프로젝션은 동작 보존이라 미수정(범위 외). 별도 태스크 `task_11b75a35` | `CouncilRepository.java`, `all_tab_columns`(ITPOWN.TPRMPP_BPROJM), 탐지: 2026-06-30 |
 | ⬜ Open | 🟡 Medium | [W4] P4 후보 인덱스(`V20260629_002~005`) **dev/prod 적용 (DBA)** — 로컬 ITPOWN 적용·Flyway local-ext 검증(success=1) 완료, dev/prod는 DBA 검토 후 수동 적용 | `it_database/migrations/V20260629_002~005`, EXPLAIN `docs/superpowers/notes/2026-06-29-p4-explain-results.md` |
+| ⬜ Open | 🟠 High | Refresh Token 원문 조회의 DB 제약·인덱스 정합화 — 긴 JWT 원문 대신 SHA-256 해시 UNIQUE 조회 전략 검토 | `RefreshTokenRepository.findByTokCone()`은 매 refresh 실행되나 라이브 DDL은 `ENO` 인덱스만 존재하고 엔티티 `unique=true`와 DB UNIQUE가 불일치 |
+| ⬜ Open | 🟡 Medium | Tiptap 메타데이터 캐시의 null 부서 키를 명시적 격리 키로 대체 | `TiptapVariableService.getMetadata()`의 일반 사용자 키 `#user.bbrC`는 null이면 Spring Cache가 거부하며 데이터 격리 fallback도 없음 |
+| ⬜ Open | 🟢 Low | 생략 판정 요청 목록의 삭제여부 필터를 DB 쿼리로 이동 | `CouncilSkipService.getActiveSkipRequests()`가 `findAll()` 후 JVM에서 `DEL_YN='N'` 필터 |
 
 ### 🎨 프론트엔드 리팩토링
 
@@ -85,6 +99,8 @@
 
 | ⬜ Open | 🟡 Medium | `info/index.vue` 정적 KPI/공지/일정 데이터를 실제 API 또는 운영 데이터 소스로 전환 | 파일 헤더가 정적 데이터/향후 API 연결 예정임을 명시. 백엔드 엔드포인트 필요 |
 | ⬜ Open | 🟡 Medium | 정보기술부문 예산 조회/비교 화면 — 백엔드 `ItBudgetController`·`useItBudget` 준비됨, 페이지 wiring만 잔여 (W3 기능) | `pages/budget/summary.vue`, `pages/budget/comparison.vue`의 `MOCK_ROWS`/`MOCK_FSS_ROWS`/`MOCK_YOY_ROWS`를 준비된 `ItBudgetController`/`useItBudget`에 연결 |
+| ⬜ Open | 🟡 Medium | 프로젝트 생성·수정, 탭 라우트 입력 및 공통 API 오류의 `any` 제거 — 요청 DTO·최소 라우트 타입과 `unknown` 오류 포맷터 도입 | `useProjects.ts:221-248`, `useTabs.ts:78-80`, 프로젝트/집행 4단계 화면의 `catch (e: any)` 반복 |
+| ⬜ Open | 🟢 Low | 파일 크기·금액 표시 중복 함수를 공통 유틸로 통합하고 null/0 표시 정책 확정 | `AttachmentNodeView.vue`, 문서 form/detail, `budget/approval.vue`, `budget/list.vue`, plan form/detail |
 
 ### ⚙️ 백엔드 리팩토링
 
@@ -93,9 +109,11 @@
 | ⬜ Open | 🟡 Medium | 문서/내보내기 회귀 테스트 범위 확대 (HWPX/PDF/Excel) | `utils/hwpx.ts` HTML 파싱·이미지 패키징·XML 생성 통합 담당 |
 | ⬜ Open | 🟡 Medium | `domain/log` 감사로그 리스너 통합 테스트 보강 | JaCoCo 제외 대상이나 업무 감사 추적에 중요 |
 | ⬜ Open | 🟡 Medium | 소요예산 산정 `EstimateRepositoryImpl.search()` QueryDSL에 대한 통합 테스트 부재 (프로젝트에 `@DataJpaTest` 인프라 없음, 현재 Mockito 단위테스트만). 단계별 화면 안정화 후 통합 테스트 보강 | `it_backend/src/test/.../estimate/repository/EstimateRepositoryTest.java`, 탐지: 2026-06-07 |
-| ⬜ Open | 🟡 Medium | [후속/T18] 통합테스트 인프라 부재로 Task13-15(감사로그 리스너 통합테스트, `EstimateRepository` 통합테스트, `CinfmmRepositoryImplTest`) 미착수 — H2(strategy A) 또는 Oracle(strategy B) DB-backed 테스트 전략 결정 필요. 현재 `application-test.properties`는 DataSource/JPA 제외, H2/Testcontainers 의존성 없음. (참고: 기존 `NoClassDefFoundError` 대량실패는 재현 안 됨 — byte-buddy 1.18.10/mockito 5.23.0 Java25 정상) | `application-test.properties`, 탐지: 2026-06-22 (기존 NoClassDefFoundError 분석 항목 대체) |
+| ⬜ Open | 🟡 Medium | [후속/T18] 공통 로컬 Oracle `@DataJpaTest` 하네스는 구축 완료. 감사로그 리스너·`EstimateRepository`·`CinfmmRepositoryImpl` 등 대상별 통합 테스트를 순차 추가 | `AbstractOracleRepositoryTest`와 실제 사용 테스트는 존재하나 `EstimateRepositoryTest`는 여전히 Mockito 단위테스트 |
 | ⬜ Open | 🟡 Medium | [후속/T16] 목록 프로젝션 DTO 작업(`ProjectRepositoryImpl`/`CostRepositoryImpl` DTO, `@SqlResultSetMapping`, `CouncilRepository.findWithDetails`, 4단계 상세 JOIN) 별도 계획으로 분리됨 — 미착수 | `ProjectRepositoryImpl`, `CostRepositoryImpl`, `CouncilRepository`, 탐지: 2026-06-22 |
 | ⬜ Open | 🟡 Medium | **[W3 카브아웃][기술부채][DECISION]** 품목 금액 환율 환산 규칙 통일 — `BudgetWorkService`(no-xcr, `:224,322`) vs `ProjectBudgetSummaryService`(×xcr, `:86`) 활성 충돌(이중환산 위험). 단일 규칙 결정 **선행 필요** 후 정리. (2026-06-29: W2 묶음에서 카브아웃 — 단일 규칙 결정 선행) | `BudgetWorkService.java:224,322`(환율 미적용) vs `ProjectBudgetSummaryService.java:86`(amt × xcr) |
+| ⬜ Open | 🟡 Medium | 파일 다건 업로드의 부분 성공 트랜잭션 계약 재설계 — 개별 영속성 실패가 rollback-only이면 응답의 성공 목록과 실제 커밋 결과가 달라질 수 있음 | `FileService.uploadFiles()` 단일 `@Transactional` 경계 |
+| ⬜ Open | 🟢 Low | 알림 문구의 null-safe·말줄임 중복 구현을 공통 정책으로 통합 | `ApplicationService`, `BoardPostService`, `BoardCommentService`, `NotificationEventListener` |
 
 ## 📝 PRD_20260517 Tiptap 변수 입력 후속 과제
 
