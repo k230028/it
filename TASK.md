@@ -1,6 +1,6 @@
 # 📋 IT Portal 백로그
 
-> 🗓️ **기준일:** 2026-07-01
+> 🗓️ **기준일:** 2026-07-02
 > 🎯 **목적:** `REVIEW.md` 정비 과정에서 확인한 기술 부채, 미구현 항목, 후속 검증 과제를 추적합니다.
 
 ### 🔑 범례 (Legend)
@@ -32,7 +32,9 @@
 
 ## 🚧 진행 중
 
-> 🕒 최종 업데이트: 2026-07-01 (`REVIEW.md` 전수 재점검 — 협의회 개최준비 서버 권한, Refresh 회전 동시성·조회 정합성, 오류 삼킴, 감사로그 진단, 타입·중복 로직 후보를 신규 등록. P0 Oracle 테스트 하네스 반영에 맞춰 T18 문구 현행화.)
+> 🕒 최종 업데이트: 2026-07-02 (`REVIEW.md` 델타 정비 — 작성자 소속 컬럼(AuthorOrg) 신규 반영. 협의회 관리 액션 서버 권한(`verifyCouncilManager`, `9432023`)·BPROJM 컬럼 드리프트 버그(`task_11b75a35`, 라이브 스키마 대조로 `SVN_DPM_C`/`ps.IT_PTL_STS_TC` 정합 확인)·생략판정 삭제여부 DB 필터(`769130a`) 3건 완료 이관. it_backend CLAUDE.md §5.6 `CouncilController` 클래스레벨 ADMIN 오기 정정. 소스 카운트 현행화.)
+>
+> 🕒 이전 업데이트: 2026-07-01 (`REVIEW.md` 전수 재점검 — 협의회 개최준비 서버 권한, Refresh 회전 동시성·조회 정합성, 오류 삼킴, 감사로그 진단, 타입·중복 로직 후보를 신규 등록. P0 Oracle 테스트 하네스 반영에 맞춰 T18 문구 현행화.)
 >
 > 🕒 이전 업데이트: 2026-06-30 (🗄️ DB/JPA 최적화 12건 전체 완료 — P0 로컬 Oracle `@DataJpaTest` 하네스 신설 후 P1 벌크/flush·P2 N+1·P3 프로젝션 봉인·P4 인덱스·P5 Caffeine을 페이즈별 구현+2단계 리뷰로 조치. `it_backend` main `0e247a5`·`it_database` main `37fd523`. `TASK_DONE.md` §🗄️ 2026-06-30 이관. 잔여: 협의회 BPROJM 컬럼 드리프트 버그(`task_11b75a35`), P4 인덱스 dev/prod DBA 적용. design/plans `docs/superpowers/{specs,plans}/2026-06-29-db-jpa-*`)
 >
@@ -51,7 +53,6 @@
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
 | ☑️ Accepted | 🟡 Medium | Access Token Blocklist 도입 검토 — 로그아웃 시 잔존 토큰(최대 15분) 무효화 필요 여부 결정. 감내(2026-06-29 결정): stateless JWT·access 15분 단기·사내 3천명. 로그아웃 시 refresh 삭제 + T10 재사용 탐지로 탈취 대응. 잔존 access(최대 15분)는 수용.                                                                              | `AuthService.logout()` Stateless 한계, 고보안 시나리오용                                        |
-| ⬜ Open | 🟠 High | 협의회 개최준비 전이의 서버 권한·심의유형 범위 검증 추가 — ITPAD001은 전체 심의유형, ITPAD002는 `dbrTc='04'`만 허용하도록 서비스 최종 경계를 적용 | `CouncilController.startPreparation()`에 principal/`@PreAuthorize`가 없고 `CouncilService.startPreparation()`은 상태 04만 검증. 프론트 `council-manager`/상세 scope 검사는 UX 가드 |
 | ⬜ Open | 🟠 High | Refresh Token 회전에 동시성 제어와 패밀리당 활성 토큰 1개 불변식 추가 | `AuthService.refreshToken()`이 잠금·`@Version` 없이 기존 N/신규 Y를 저장하여 동시 요청 시 활성 토큰이 복수 생성될 수 있음. `V20260629_001`에는 이를 막는 제약 없음 |
 | ⬜ Open | 🟡 Medium | 부서코드가 없는 비관리자의 전체 부서 조회 차단 정책 적용 | 일부 목록 서비스가 `bbrC=null`을 전체 조회로 해석하여 SSO/인사 미동기화 계정에 데이터가 과다 노출될 수 있음 |
 
@@ -85,11 +86,10 @@
 
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
-| ⬜ Open | 🟠 High | **[버그] 협의회 `CouncilRepository` BPROJM 컬럼 드리프트 2건** — `IT_PTL_STS_TC`(실제 `IT_PTL_RPR_STS_TC`, L93·179·181·232·234)와 `findByDepartment`의 `p.BBR_C`(BPROJM에 없음, 실제 `SVN_DPM_C` 추정, L112)가 라이브 스키마에서 `ORA-00904` → 협의회 신청대상/부서별 목록 쿼리 런타임 실패. P3 프로젝션은 동작 보존이라 미수정(범위 외). 별도 태스크 `task_11b75a35` | `CouncilRepository.java`, `all_tab_columns`(ITPOWN.TPRMPP_BPROJM), 탐지: 2026-06-30 |
 | ⬜ Open | 🟡 Medium | [W4] P4 후보 인덱스(`V20260629_002~005`) **dev/prod 적용 (DBA)** — 로컬 ITPOWN 적용·Flyway local-ext 검증(success=1) 완료, dev/prod는 DBA 검토 후 수동 적용 | `it_database/migrations/V20260629_002~005`, EXPLAIN `docs/superpowers/notes/2026-06-29-p4-explain-results.md` |
+| ⬜ Open | 🟡 Medium | [W4] 작성자 소속 컬럼 마이그레이션(`V20260701_002`) **dev/prod 적용 (DBA)** — BPROJM/BPROJL `SVN_TEM_C`, BCOSTM/BCOSTL `PRLM_HRK_OGZ_C_CONE`, BRDOCM/BRDOCL `SVN_DPM_C`/`SVN_TEM_C` 추가(모두 NULL 허용, 백필 없음). 로컬 ITPOWN 적용 확인, dev/prod DBA 적용 대기 | `it_database/migrations/V20260701_002__AddAuthorOrgColumns.sql`, 등록: 2026-07-02 |
 | ⬜ Open | 🟠 High | Refresh Token 원문 조회의 DB 제약·인덱스 정합화 — 긴 JWT 원문 대신 SHA-256 해시 UNIQUE 조회 전략 검토 | `RefreshTokenRepository.findByTokCone()`은 매 refresh 실행되나 라이브 DDL은 `ENO` 인덱스만 존재하고 엔티티 `unique=true`와 DB UNIQUE가 불일치 |
 | ⬜ Open | 🟡 Medium | Tiptap 메타데이터 캐시의 null 부서 키를 명시적 격리 키로 대체 | `TiptapVariableService.getMetadata()`의 일반 사용자 키 `#user.bbrC`는 null이면 Spring Cache가 거부하며 데이터 격리 fallback도 없음 |
-| ⬜ Open | 🟢 Low | 생략 판정 요청 목록의 삭제여부 필터를 DB 쿼리로 이동 | `CouncilSkipService.getActiveSkipRequests()`가 `findAll()` 후 JVM에서 `DEL_YN='N'` 필터 |
 
 ### 🎨 프론트엔드 리팩토링
 

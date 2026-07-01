@@ -1,6 +1,6 @@
 # ✅ IT Portal 완료·종료 내역 (Archive)
 
-> 🗓️ **기준일:** 2026-06-22
+> 🗓️ **기준일:** 2026-07-02
 > 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️) 항목을 보관합니다.
 
 ### 🔑 범례 (Legend)
@@ -14,6 +14,17 @@
 ---
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
+
+### 🧩 2026-07-02 협의회 후속 정비 + 작성자 소속 컬럼
+
+> `TASK.md`에서 종료 이관. 협의회 관리 액션 서버 권한·컬럼 드리프트·생략판정 필터 3건은 `REVIEW.md` 델타 정비 중 라이브 스키마/코드 대조로 완료 확인. 작성자 소속 컬럼(AuthorOrg)은 신규 구현·테스트 완료. 코드 커밋은 중첩 repo(`it_backend` main `20fcafb`·`769130a`·`9432023`, `it_database` main `6feb16e`).
+
+| 상태 | 우선순위 | 과제 | 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | 🟠 High | 협의회 개최준비 전이의 서버 권한·심의유형 범위 검증 추가 — ITPAD001 전체 심의유형, ITPAD002 `dbrTc='04'`만 허용을 서비스 최종 경계로 적용 | `CouncilService.verifyCouncilManager(asctId, userDetails)` 신설(admin∪정보보호관리자+dbrTc04) + `CouncilController` 관리 액션 12개(start/complete/start-preparation/schedule confirm·confirm-written/result save·update·confirm·approval/notify)에 principal 가드 부착, skip·approval콜백은 `verifyAdmin` 전용. 커밋 `9432023`, 종료일: 2026-07-02 |
+| ✅ Done | 🟠 High | [버그] 협의회 `CouncilRepository` BPROJM 컬럼 드리프트 2건 (`task_11b75a35`) — 라이브 스키마 대조로 `p.BBR_C`는 `p.SVN_DPM_C`(존재)로 정합, `IT_PTL_STS_TC`는 BPROJM이 아닌 `ps.`(TPRMPP_BPROJA 서브쿼리) 대상이며 BPROJA에 컬럼 존재 확인 → `ORA-00904` 미발생. 협의회 리팩토링 과정에서 해소됨 | `CouncilRepository.findByDepartment`/`findProjectsForCouncilAll`/`findProjectsForCouncilByDepartment`, 라이브 `all_tab_columns`(ITPOWN.TPRMPP_BPROJM: `SVN_DPM_C`/`IT_PTL_RPR_STS_TC`, TPRMPP_BPROJA: `IT_PTL_STS_TC`), 검증일: 2026-07-02 |
+| ✅ Done | 🟢 Low | 생략 판정 요청 목록의 삭제여부 필터를 DB 쿼리로 이동 — `getActiveSkipRequests()`가 `findByDelYn("N")`로 DB 필터 적용(기존 `findAll()` 후 JVM 필터 제거) | `CouncilSkipService.getActiveSkipRequests()`, `BaskpmRepository.findByDelYn`, 커밋 `769130a`, 종료일: 2026-07-02 |
+| ✅ Done | 🟡 Medium | 작성자 소속 컬럼(AuthorOrg) 신규 구현 — `AuthorOrg`(record)/`AuthorOrgResolver`(사번→CuserI 조회로 주관부서·주관팀·인사상위조직 스냅샷) 추가, BPROJM `SVN_TEM_C`·BCOSTM `PRLM_HRK_OGZ_C_CONE`·BRDOCM `SVN_DPM_C`/`SVN_TEM_C`(+ `*L` 미러)를 신규 생성 시 작성자 기준으로 채움. `V20260701_002` 로컬 적용 완료(dev/prod DBA 잔여는 `TASK.md` W4) | `common/iam/service/AuthorOrg*`, `ProjectService`/`CostService`/`ServiceRequestDocService`, `it_database/migrations/V20260701_002`, 커밋 `20fcafb`/`6feb16e`, 종료일: 2026-07-02 |
 
 ### 🗄️ 2026-06-30 DB/JPA 최적화 (P0~P5)
 

@@ -18,7 +18,7 @@
 - **백엔드:** Spring Boot 4 (Java 25) + Oracle Database 21c XE + JPA/QueryDSL
 - **인증:** JWT httpOnly 쿠키 기반 (Access Token 15분 / Refresh Token 7일)
 - **외부 연동:** Gemini AI (텍스트 생성), SSO(선택적)
-- **소스 통계:** 백엔드 375개 Java 파일 + 152개 테스트 + 80개 엔티티, 프론트엔드 84개 컴포넌트 + 60개 Composable + 67개 페이지
+- **소스 통계:** 백엔드 377개 Java 파일 + 163개 테스트 + 80개 엔티티, 프론트엔드 84개 컴포넌트 + 60개 Composable + 67개 페이지
 
 ---
 
@@ -35,7 +35,7 @@
 ┌─────────────────────────────────────────────────────────────┐
 │  Spring Boot 4  http://localhost:28080                        │
 │  - 19개 도메인 + 8개 공통 모듈                              │
-│  - 375개 Java 파일, 152개 테스트 파일                      │
+│  - 377개 Java 파일, 163개 테스트 파일                      │
 │  - JWT 인증 + RBAC + Soft Delete                            │
 │  - JPA 리스너 기반 변경 감사로그 자동 추적                  │
 └─────────────────────────────────────────────────────────────┘
@@ -64,19 +64,19 @@ it/
 │   │   ├── types/        ← TypeScript 타입 정의 (15개)
 │   │   ├── utils/        ← 유틸리티 함수 (금액포맷, PDF/Excel/HWPX 변환)
 │   │   └── middleware/   ← 라우트 가드 (인증, 관리자 접근 제어)
-│   └── tests/            ← Vitest + Playwright 테스트 (97개 unit, 16개 e2e)
+│   └── tests/            ← Vitest + Playwright 테스트 (101개 unit, 16개 e2e)
 │
 ├── it_backend/           ← Spring Boot 4 REST API 서버
 │   ├── README.md         ← 백엔드 상세 가이드 (아키텍처, API, 환경 설정)
 │   ├── CLAUDE.md         ← 백엔드 기술 결정 & 보안 정책 (SoT)
-│   ├── src/main/java/    ← 소스 코드 (375개 파일)
+│   ├── src/main/java/    ← 소스 코드 (377개 파일)
 │   │   └── com/kdb/it/
 │   │       ├── config/   ← Spring 설정 (보안, JPA, Swagger 등)
 │   │       ├── common/   ← 공통 모듈 (인증, 게시판, 결재, 알림)
 │   │       ├── domain/   ← 비즈니스 도메인 (예산, 사업집행 4단계, 협의회, 문서, 로그)
 │   │       ├── infra/    ← 외부 연동 (파일, Gemini AI, EAI 표준전문)
 │   │       └── exception/ ← 전역 예외 처리
-│   ├── src/test/java/    ← JUnit 5 + Mockito 테스트 (152개 파일)
+│   ├── src/test/java/    ← JUnit 5 + Mockito 테스트 (163개 파일)
 │   └── build.gradle      ← Gradle 빌드 스크립트 (Spring Boot 4.1.0)
 │
 ├── it_database/          ← Oracle DB 마이그레이션 & 초기화
@@ -334,7 +334,7 @@ Press Enter to open https://github.com/login/device in your browser...
 | **요구사항·검토** | `budget/document` | 가이드/요구사항 정의서, 검토의견 | Bgdocm, Brdocm, Brivgm |
 | **예산 관리** | `budget/plan`, `status`, `work` | 계획, 현황 대시보드, 편성률 | Bplanm, Bproja, Bbugtm |
 | **사업집행 4단계** | `estimate`, `deliberation`, `contract`, `payment` | 소요예산 산정→과업심의→입찰계약→대금지급 (`/api/project/**`, 상태머신) | Bestim·Besttm, Bdelim, Bcontm, Bpaymm·Bpaymt |
-| **협의회** | `council` | 타당성검토, 위원선정, 평가, 결과 | Basctm, Bevalm, Bperfm 등 9개 |
+| **협의회** | `council` | 타당성검토, 위원선정, 생략판정, 평가, 결과 | Basctm, Baskpm, Bevalm, Bperfm 등 10개 |
 | **변경 로그** | `domain/log` | `@LogTarget` 업무 엔티티 자동 감사로그 | BaseLogEntity 하위 *L 엔티티 |
 | **파일·AI·EAI** | `infra/file`, `infra/ai`, `infra/eai` | 첨부파일, Gemini API, KDB 표준전문 발송(미연동) | Cfilem |
 
@@ -365,7 +365,7 @@ Press Enter to open https://github.com/login/device in your browser...
 **각 디렉토리의 SoT(Single Source of Truth) 파일을 우선 참조하세요.**
 
 ### 7.1 백엔드 (Spring Boot 4)
-- **[`it_backend/README.md`](./it_backend/README.md)** — 전체 기술 스택, 아키텍처, API 엔드포인트 (32개 컨트롤러)
+- **[`it_backend/README.md`](./it_backend/README.md)** — 전체 기술 스택, 아키텍처, API 엔드포인트 (38개 컨트롤러)
 - **[`it_backend/CLAUDE.md`](./it_backend/CLAUDE.md)** — 기술 결정, 인증 정책 (SoT), 보안 규칙, 환경 설정
 - **[`it_backend/docs/guides/data-model.md`](./it_backend/docs/guides/data-model.md)** — 엔티티·테이블 매핑과 채번 규칙
 
@@ -411,7 +411,7 @@ npm run typecheck
 # ESLint + Prettier 린트
 npm run lint
 
-# 단위 테스트 (Vitest) — 94개 단위 테스트 + 15개 E2E 테스트
+# 단위 테스트 (Vitest) — 101개 단위 테스트 + 16개 E2E 테스트
 npm test
 
 # 파일 변경 감지 실시간 테스트
@@ -427,7 +427,7 @@ npm run test:coverage
 ```bash
 cd it_backend
 
-# JUnit 5 + Mockito 테스트 실행 — 152개 테스트 파일
+# JUnit 5 + Mockito 테스트 실행 — 163개 테스트 파일
 ./gradlew test
 
 # 커버리지 리포트 생성 (JaCoCo)
