@@ -1,6 +1,6 @@
 # 📋 IT Portal 백로그
 
-> 🗓️ **기준일:** 2026-07-02
+> 🗓️ **기준일:** 2026-07-06
 > 🎯 **목적:** `REVIEW.md` 정비 과정에서 확인한 기술 부채, 미구현 항목, 후속 검증 과제를 추적합니다.
 
 ### 🔑 범례 (Legend)
@@ -32,7 +32,9 @@
 
 ## 🚧 진행 중
 
-> 🕒 최종 업데이트: 2026-07-02 (`REVIEW.md` 델타 정비 — 작성자 소속 컬럼(AuthorOrg) 신규 반영. 협의회 관리 액션 서버 권한(`verifyCouncilManager`, `9432023`)·BPROJM 컬럼 드리프트 버그(`task_11b75a35`, 라이브 스키마 대조로 `SVN_DPM_C`/`ps.IT_PTL_STS_TC` 정합 확인)·생략판정 삭제여부 DB 필터(`769130a`) 3건 완료 이관. it_backend CLAUDE.md §5.6 `CouncilController` 클래스레벨 ADMIN 오기 정정. 소스 카운트 현행화.)
+> 🕒 최종 업데이트: 2026-07-06 (`REVIEW.md` 델타 현행화 — 백엔드/프론트 파일 수 재검증, 빈 catch 패턴 추가 발견 없음. Refresh Token 회전 동시성·부서코드 null 조회 정책·Tiptap 캐시 null 키·에러 처리 후속 과제는 기존 Open 항목으로 유지. README/CLAUDE 문서만 최신 코드 기준으로 보강.)
+>
+> 🕒 이전 업데이트: 2026-07-02 (`REVIEW.md` 델타 정비 — 작성자 소속 컬럼(AuthorOrg) 신규 반영. 협의회 관리 액션 서버 권한(`verifyCouncilManager`, `9432023`)·BPROJM 컬럼 드리프트 버그(`task_11b75a35`, 라이브 스키마 대조로 `SVN_DPM_C`/`ps.IT_PTL_STS_TC` 정합 확인)·생략판정 삭제여부 DB 필터(`769130a`) 3건 완료 이관. it_backend CLAUDE.md §5.6 `CouncilController` 클래스레벨 ADMIN 오기 정정. 소스 카운트 현행화.)
 >
 > 🕒 이전 업데이트: 2026-07-01 (`REVIEW.md` 전수 재점검 — 협의회 개최준비 서버 권한, Refresh 회전 동시성·조회 정합성, 오류 삼킴, 감사로그 진단, 타입·중복 로직 후보를 신규 등록. P0 Oracle 테스트 하네스 반영에 맞춰 T18 문구 현행화.)
 >
@@ -114,6 +116,7 @@
 | ⬜ Open | 🟡 Medium | **[W3 카브아웃][기술부채][DECISION]** 품목 금액 환율 환산 규칙 통일 — `BudgetWorkService`(no-xcr, `:224,322`) vs `ProjectBudgetSummaryService`(×xcr, `:86`) 활성 충돌(이중환산 위험). 단일 규칙 결정 **선행 필요** 후 정리. (2026-06-29: W2 묶음에서 카브아웃 — 단일 규칙 결정 선행) | `BudgetWorkService.java:224,322`(환율 미적용) vs `ProjectBudgetSummaryService.java:86`(amt × xcr) |
 | ⬜ Open | 🟡 Medium | 파일 다건 업로드의 부분 성공 트랜잭션 계약 재설계 — 개별 영속성 실패가 rollback-only이면 응답의 성공 목록과 실제 커밋 결과가 달라질 수 있음 | `FileService.uploadFiles()` 단일 `@Transactional` 경계 |
 | ⬜ Open | 🟢 Low | 알림 문구의 null-safe·말줄임 중복 구현을 공통 정책으로 통합 | `ApplicationService`, `BoardPostService`, `BoardCommentService`, `NotificationEventListener` |
+| ⬜ Open | 🟢 Low | Javadoc 잔여 경고 정리 — `-Xmaxwarns 10000` 전수 측정(2026-07-06) 기준 총 1,207건 중 100건 해소(9개 파일 `@param` 보강), 잔여 1,107건: `no @param` 443·`no comment` 172·`no @return` 131·`use of default constructor` 359(주석만으로 해소 불가, 명시적 생성자 추가 필요 → 별도 합의). 우선순위 상위: `CouncilDto`(157), `BudgetStatusDto`(65 잔여), `Bprojm`(64 잔여), `ContractController`(26) | `./gradlew javadoc` (기본 출력 상한 100건 주의), 탐지: 2026-07-06 TEST.md Task 6 |
 
 ## 📝 PRD_20260517 Tiptap 변수 입력 후속 과제
 
