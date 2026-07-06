@@ -1,0 +1,23 @@
+﻿{
+    "local_table_count":  79,
+    "prod_table_count":  78,
+    "local_column_count":  1447,
+    "prod_column_count":  1433,
+    "tables_only_local":  1,
+    "tables_only_prod":  0,
+    "tables_common":  78,
+    "columns_only_local":  16,
+    "columns_only_prod":  2,
+    "columns_common":  1431,
+    "gap_total":  292,
+    "gap_by_category":  {
+                            "COLUMN_COMMENT_DIFF":  21,
+                            "COLUMN_DEFAULT_DIFF":  40,
+                            "COLUMN_NULL_DIFF":  18,
+                            "COLUMN_ONLY_LOCAL":  16,
+                            "COLUMN_ONLY_PROD":  2,
+                            "COLUMN_TYPE_DIFF":  192,
+                            "TABLE_COMMENT_DIFF":  2,
+                            "TABLE_ONLY_LOCAL":  1
+                        }
+}
