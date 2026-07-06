@@ -26,7 +26,7 @@
 | --- | --- | --- |
 | 즉시 조치 | 보안, 데이터 정합성, 사용자 오판 가능성이 있음 | Wave 1~2 우선 배치 |
 | 계획 조치 | 기능 회귀 위험 또는 유지보수 비용이 있으나 결정/순서가 필요 | Wave 3~4 배치 |
-| 외부 추적 | DBA, 운영팀 등 외부 주체가 적용해야 함 | 코드 작업과 분리해 체크리스트 유지 |
+| 적용 확인 완료 | `C:\it\it_database\ITPOWN_DDL_live.sql`에 반영되어 dev/prod 적용 완료로 간주 | 구현 계획에서 제외하고 `TASK_DONE.md` 이관 대상으로 처리 |
 | 재분류 | 코드가 이미 일부 정리되어 기존 TASK 표현이 부정확함 | TASK 문구 정정 또는 결정 항목으로 전환 |
 
 ---
@@ -47,8 +47,8 @@
 
 | 항목 | 판정 | 근거 | 조치 방향 |
 | --- | --- | --- | --- |
-| P4 후보 인덱스 dev/prod 적용 | 외부 추적 | 로컬 Flyway 검증 완료, dev/prod는 DBA 적용 필요 | DBA 적용 체크리스트로 유지, 코드 작업 제외 |
-| 작성자 소속 컬럼 dev/prod 적용 | 외부 추적 | 로컬 적용 확인, dev/prod 수동 적용 대기 | DBA 적용 체크리스트로 유지, 배포 전 스키마 확인 |
+| P4 후보 인덱스 dev/prod 적용 | 적용 확인 완료 | `ITPOWN_DDL_live.sql`에 `IX_BASCTM_PRJ_DEL`, `IX_BCMMTM_ENO_DEL_ASCT`, `IX_BRDOCM_DEL_DOC_VRS_FED`, `IX_BRIVGM_DOC_VRS_DEL_FED` 확인 | 코드 작업 제외, 완료 이관 |
+| 작성자 소속 컬럼 dev/prod 적용 | 적용 확인 완료 | `ITPOWN_DDL_live.sql`에 `BPROJM/BPROJL.SVN_TEM_C`, `BCOSTM/BCOSTL.PRLM_HRK_OGZ_C_CONE`, `BRDOCM/BRDOCL.SVN_DPM_C/SVN_TEM_C` 확인 | 코드 작업 제외, 완료 이관 |
 | Refresh Token 원문 조회 정합화 | 즉시 조치 | `findByTokCone`가 긴 JWT 원문을 조회하고 엔티티 `unique=true`와 DDL 정합이 약함 | SHA-256 해시 컬럼 추가, 해시 UNIQUE 조회, 원문 컬럼 유지 여부 결정 |
 | Tiptap metadata null 부서 캐시 키 | 즉시 조치 | 일반 사용자 캐시 키가 `#user.bbrC`라 null 계정에서 키 생성 실패와 격리 불명확 | 명시 키(`ALL`, `DEPT:{bbrC}`, `USER_NO_DEPT:{eno}`)로 분리 |
 
@@ -82,7 +82,7 @@
 
 | Wave | 목표 | 주요 산출물 | 완료 게이트 |
 | :--: | --- | --- | --- |
-| W0 | 결정/외부 추적 분리 | DBA 적용 체크리스트, 환율·파일업로드 계약 결정 기록 | 코드 작업 항목과 외부 적용 항목 분리 |
+| W0 | 결정/완료 이관 분리 | 로컬 DDL 적용 확인 항목 완료 이관, 환율·파일업로드 계약 결정 기록 | 코드 작업 항목과 완료 이관 항목 분리 |
 | W1 | 보안·캐시 정합성 | Refresh Token 해시 조회 설계/마이그레이션, Tiptap cache key 수정 | 백엔드 테스트 통과, 기존 토큰 전환 경로 검증 |
 | W2 | 사용자 영향 에러 처리 | DUP 코드 실패 차단, HWPX 부분 실패 노출, 감사로그 진단 | 프론트 단위 테스트/타입체크, 백엔드 테스트 |
 | W3 | 프론트 API 연결·타입 정리 | 예산 조회/비교 API wiring, `any` 제거, 표시 유틸 통합 | `npm run typecheck`, 관련 Vitest 통과 |
@@ -92,9 +92,9 @@
 
 ## 4. 설계 상세
 
-### 4.1 W0: 결정/외부 추적
+### 4.1 W0: 결정/완료 이관
 
-DBA 적용 항목은 코드 변경과 분리한다. `V20260629_002~005`와 `V20260701_002`는 로컬 검증 완료 상태를 유지하고, dev/prod 적용 여부만 체크리스트로 추적한다. 적용 확인은 `ALL_TAB_COLUMNS`, `ALL_INDEXES`, `DBA_INDEXES` 조회 결과로 기록한다.
+DB/JPA의 P4 후보 인덱스와 작성자 소속 컬럼은 `C:\it\it_database\ITPOWN_DDL_live.sql`에 반영되어 있으면 dev/prod 적용 완료로 간주한다. 현재 DDL에서 대상 인덱스와 컬럼이 확인되었으므로 구현 계획에는 포함하지 않고 `TASK.md`에서 `TASK_DONE.md`로 이관한다.
 
 환율 규칙은 먼저 업무 결정을 받아야 한다. `BITEMM.AMT`가 저장 시점 원화 정규화 금액이라면 모든 집계는 `amt`를 그대로 사용하고 `xcr`은 표시/감사 정보로만 둔다. 반대로 `amt`가 외화 금액이라는 업무 정의라면 저장 경로부터 재정의해야 하므로 영향 범위가 커진다. 현재 코드 주석과 `BudgetWorkServiceXcrLookupTest`는 전자를 지지하므로, 기본 설계는 “`BITEMM.AMT`는 원화 정규화 금액”으로 둔다.
 
@@ -149,7 +149,7 @@ HWPX 이미지 처리는 성공 이미지와 실패 이미지 목록을 함께 �
 - 공통 게시판 Oracle Text, Redis 조회수, SSE/WebSocket 전환은 이번 Wave에 포함하지 않는다.
 - `info/index.vue` 운영 데이터 전환은 백엔드 API 스펙이 먼저 필요하므로 별도 기능 설계로 분리한다.
 - Javadoc 잔여 1,107건은 기능 안정화와 별도 문서 품질 작업으로 분리한다.
-- dev/prod DBA 적용 자체는 이 작업에서 수행하지 않는다.
+- DB/JPA P4 인덱스와 작성자 소속 컬럼의 dev/prod 적용 추적은 `ITPOWN_DDL_live.sql` 확인 기준으로 완료 처리한다.
 
 ---
 
@@ -157,5 +157,5 @@ HWPX 이미지 처리는 성공 이미지와 실패 이미지 목록을 함께 �
 
 - 각 Wave는 변경 파일, 테스트 결과, `TASK.md`/`TASK_DONE.md` 이관 근거를 남긴다.
 - 코드 변경 Wave는 관련 단위 테스트를 먼저 추가하고, 구현 후 최소 게이트를 통과해야 한다.
-- 외부 추적 항목은 DBA 적용 여부와 확인 SQL 결과를 별도 기록한다.
+- 적용 확인 완료 항목은 `ITPOWN_DDL_live.sql` 근거와 함께 `TASK_DONE.md`로 이관한다.
 - 결정 선행 항목은 결정 내용이 문서화되기 전 구현하지 않는다.
