@@ -88,8 +88,6 @@
 
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
-| ⬜ Open | 🟡 Medium | [W4] P4 후보 인덱스(`V20260629_002~005`) **dev/prod 적용 (DBA)** — 로컬 ITPOWN 적용·Flyway local-ext 검증(success=1) 완료, dev/prod는 DBA 검토 후 수동 적용 | `it_database/migrations/V20260629_002~005`, EXPLAIN `docs/superpowers/notes/2026-06-29-p4-explain-results.md` |
-| ⬜ Open | 🟡 Medium | [W4] 작성자 소속 컬럼 마이그레이션(`V20260701_002`) **dev/prod 적용 (DBA)** — BPROJM/BPROJL `SVN_TEM_C`, BCOSTM/BCOSTL `PRLM_HRK_OGZ_C_CONE`, BRDOCM/BRDOCL `SVN_DPM_C`/`SVN_TEM_C` 추가(모두 NULL 허용, 백필 없음). 로컬 ITPOWN 적용 확인, dev/prod DBA 적용 대기 | `it_database/migrations/V20260701_002__AddAuthorOrgColumns.sql`, 등록: 2026-07-02 |
 | ⬜ Open | 🟠 High | Refresh Token 원문 조회의 DB 제약·인덱스 정합화 — 긴 JWT 원문 대신 SHA-256 해시 UNIQUE 조회 전략 검토 | `RefreshTokenRepository.findByTokCone()`은 매 refresh 실행되나 라이브 DDL은 `ENO` 인덱스만 존재하고 엔티티 `unique=true`와 DB UNIQUE가 불일치 |
 | ⬜ Open | 🟡 Medium | Tiptap 메타데이터 캐시의 null 부서 키를 명시적 격리 키로 대체 | `TiptapVariableService.getMetadata()`의 일반 사용자 키 `#user.bbrC`는 null이면 Spring Cache가 거부하며 데이터 격리 fallback도 없음 |
 
