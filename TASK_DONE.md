@@ -36,6 +36,27 @@
   - 확인 컬럼: `BPROJM/BPROJL.SVN_TEM_C`, `BCOSTM/BCOSTL.PRLM_HRK_OGZ_C_CONE`, `BRDOCM/BRDOCL.SVN_DPM_C/SVN_TEM_C`
 - 판정 기준: 로컬 DDL(`C:\it\it_database\ITPOWN_DDL_live.sql`)에 적용 완료가 확인되면 dev/prod도 적용 완료로 간주한다.
 
+### ✅ 2026-07-07 TASK 잔여 조치(Subagent-Driven)
+
+> `TASK.md`의 에러 처리, DB/JPA, 프론트/백엔드 리팩토링 잔여 중 구현 가능한 항목을 Subagent-Driven 방식으로 조치하고 이관. DB 컬럼은 사용자 결정에 따라 `API_TOK_HASH_CONE`이 아니라 `ECY_RNW_PUB_TOK_CONE`(암호화갱신발행토큰내용, `VARCHAR2(900)`)로 반영.
+
+| 상태 | 우선순위 | 과제 | 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | 🟠 High | Refresh Token 원문 조회 대신 암호화갱신발행토큰내용 기반 조회·UNIQUE 인덱스 정합화 | `it_backend` `f9912d7`, `1c48abc`; `it_database` `f02d3b9`. `Crtokm.ECY_RNW_PUB_TOK_CONE`, `RefreshTokenRepository.findByEcyRnwPubTokCone`, 기존 원문 fallback/backfill 테스트 완료 |
+| ✅ Done | 🟡 Medium | Tiptap metadata 캐시 null 부서 키 격리 | `it_backend` `f9912d7`, `1c48abc`. `metadataCacheKey`: `ANONYMOUS`/`ALL`/`DEPT:<bbrC>`/`USER_NO_DEPT:<username>` 테스트 완료 |
+| ✅ Done | 🟠 High | 예산 작업 DUP 기준코드 조회 실패 시 계산·저장 차단 | `it_frontend` `88d0565`. `work.vue` loaded/error 상태와 toast, 저장·계산 guard 반영 |
+| ✅ Done | 🟠 High | HWPX 이미지 변환 실패 부분 성공 결과·누락 목록 노출 | `it_frontend` `88d0565`. `convertHtmlImagesForHwpx()`가 `{ images, failures }` 반환, export warning 및 단위 테스트 반영 |
+| ✅ Done | 🟡 Medium | 감사로그 리플렉션 필드 접근·설정 실패 진단 보강 | `it_backend` `f9f24a5`, `6854fbe`. `targetClass`/`fieldName` warn 경로와 회귀 테스트 반영 |
+| ✅ Done | 🟡 Medium | 정보기술부문 예산 조회/비교 화면 Mock 제거와 API wiring | `it_frontend` `a8ce04d`, `7e1d4f3`; `it_backend` `6854fbe`. summary/comparison API 연결, FSS mapping 응답 DTO·화면 렌더링 반영 |
+| ✅ Done | 🟡 Medium | `useProjects`/`useTabs` 타입 정리와 파일 크기 표시 일부 공통화 | `it_frontend` `a8ce04d`. 프로젝트 mutation payload 타입, 최소 라우트 입력 타입, 문서 form/detail·`AttachmentNodeView` `formatFileSize` 공통 유틸 사용 |
+| ✅ Done | 🟡 Medium | 파일 다건 업로드 부분 성공 트랜잭션 계약 정리 | `it_backend` `d25dc87`. `FileUploadUnitService` `REQUIRES_NEW`, `uploadFiles` per-file success/fail 응답, 두 번째 DB 저장 실패 회귀 테스트 반영 |
+| ✅ Done | 🟡 Medium | 감사로그 리스너·EstimateRepository 로컬 Oracle 통합 테스트 보강 | `it_backend` `d25dc87`. `AuditLogPersisterIntegrationTest`, `EstimateRepositoryIntegrationTest` 추가 |
+
+검증:
+- Backend focused: `./gradlew --no-daemon test --tests AuthServiceTest --tests TiptapVariableServiceTest --tests ItBudgetServiceTest --tests ItBudgetControllerTest --tests AuditLogPersisterTest --tests FileServiceTest --warning-mode all` 성공.
+- Backend integration: `./gradlew --no-daemon integrationTest --tests EstimateRepositoryIntegrationTest --tests AuditLogPersisterIntegrationTest --warning-mode all` 성공.
+- Frontend focused: `npm test -- tests/unit/utils/hwpx-images.test.ts tests/unit/composables/useTabs.test.ts tests/unit/utils/common.test.ts` 성공(182 tests).
+- Backend full: `./gradlew --no-daemon cleanTest test --warning-mode all` 성공. Frontend `npm run typecheck`는 기존 테스트 fixture 타입 오류(`tests/e2e/generate-report.ts`, 다수 unit test fixture)로 실패하며 이번 변경 파일 진단은 확인되지 않음.
 ### 🗄️ 2026-06-30 DB/JPA 최적화 (P0~P5)
 
 > `TASK.md` 🗄️ DB/JPA § 12건 전체 조치 완료 이관. 페이즈별 서브에이전트 구현 + 2단계 리뷰(스펙·품질) + 폴리시. 코드 커밋은 중첩 repo(`it_backend` main `0e247a5`, `it_database` main `37fd523`). design: `docs/superpowers/specs/2026-06-29-db-jpa-optimization-design.md`, plans: `docs/superpowers/plans/2026-06-29-db-jpa-p0~p5-*.md`. 검증: 로컬 Oracle `@DataJpaTest`(`@Tag("it")`) 하네스 신설(P0).
