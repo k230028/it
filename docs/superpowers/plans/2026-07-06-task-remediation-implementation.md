@@ -72,10 +72,10 @@ git commit -m "docs: DB/JPA 적용 확인 항목 완료 이관"
 
 ---
 
-### Task 2: Refresh Token 해시 조회와 Tiptap 캐시 키 정합성
+### Task 2: Refresh Token 암호화갱신발행토큰내용 조회와 Tiptap 캐시 키 정합성
 
 **Files:**
-- Create: `it_database/migrations/V20260706_001__AddRefreshTokenHash.sql`
+- Create: `it_database/migrations/V20260706_001__AddEncryptedRenewalTokenValue.sql`
 - Modify: `it_backend/src/main/java/com/kdb/it/common/system/entity/Crtokm.java`
 - Modify: `it_backend/src/main/java/com/kdb/it/common/system/repository/RefreshTokenRepository.java`
 - Modify: `it_backend/src/main/java/com/kdb/it/common/system/service/AuthService.java`
@@ -83,19 +83,19 @@ git commit -m "docs: DB/JPA 적용 확인 항목 완료 이관"
 - Test: `it_backend/src/test/java/com/kdb/it/common/system/service/AuthServiceTest.java`
 - Test: `it_backend/src/test/java/com/kdb/it/common/system/tiptap/service/TiptapVariableServiceTest.java`
 
-- [ ] **Step 1: Refresh Token 해시 테스트를 먼저 추가한다**
+- [ ] **Step 1: Refresh Token 조회값 테스트를 먼저 추가한다**
 
 Add tests to `AuthServiceTest`:
 
 ```java
 @Test
-@DisplayName("refreshAccessToken - 토큰 해시로 조회하고 신규 토큰에도 해시를 저장한다")
-void refreshAccessToken_hashLookup_savesHash() {
+@DisplayName("refreshAccessToken - 암호화갱신발행토큰내용으로 조회하고 신규 토큰에도 조회값을 저장한다")
+void refreshAccessToken_lookupValue_savesEncryptedRenewalTokenContent() {
         String oldToken = "old-refresh-token";
         String newToken = "new-refresh-token";
         Crtokm stored = Crtokm.builder()
                 .tokCone(oldToken)
-                .tokHashCone(AuthService.sha256HexForToken(oldToken))
+                .ecyRnwPubTokCone(AuthService.sha256HexForToken(oldToken))
                 .eno("E1")
                 .famNm("FAM1")
                 .avlYn("Y")
@@ -104,7 +104,7 @@ void refreshAccessToken_hashLookup_savesHash() {
         CuserI user = CuserI.builder().eno("E1").empNm("홍길동").bbrC("D001").build();
 
         given(jwtUtil.validateToken(oldToken)).willReturn(true);
-        given(refreshTokenRepository.findByTokHashCone(AuthService.sha256HexForToken(oldToken)))
+        given(refreshTokenRepository.findByEcyRnwPubTokCone(AuthService.sha256HexForToken(oldToken)))
                 .willReturn(Optional.of(stored));
         given(userRepository.findByEno("E1")).willReturn(Optional.of(user));
         given(roleRepository.findByEno("E1")).willReturn(List.of());
@@ -114,14 +114,14 @@ void refreshAccessToken_hashLookup_savesHash() {
         AuthDto.RefreshResponse response = authService.refreshAccessToken(oldToken);
 
         assertThat(response.getRefreshToken()).isEqualTo(newToken);
-        verify(refreshTokenRepository).findByTokHashCone(AuthService.sha256HexForToken(oldToken));
+        verify(refreshTokenRepository).findByEcyRnwPubTokCone(AuthService.sha256HexForToken(oldToken));
         verify(refreshTokenRepository).save(argThat(token ->
                 newToken.equals(token.getTokCone())
-                        && AuthService.sha256HexForToken(newToken).equals(token.getTokHashCone())));
+                        && AuthService.sha256HexForToken(newToken).equals(token.getEcyRnwPubTokCone())));
 }
 ```
 
-- [ ] **Step 2: 해시 조회 테스트가 컴파일 실패하는지 확인한다**
+- [ ] **Step 2: 조회값 기반 조회 테스트가 컴파일 실패하는지 확인한다**
 
 Run:
 
@@ -130,15 +130,15 @@ cd C:\it\it_backend
 .\gradlew test --tests com.kdb.it.common.system.service.AuthServiceTest --warning-mode all
 ```
 
-Expected: `findByTokHashCone`, `getTokHashCone`, `sha256HexForToken`가 없어 컴파일 실패한다.
+Expected: `findByEcyRnwPubTokCone`, `getEcyRnwPubTokCone`, `sha256HexForToken`가 없어 컴파일 실패한다.
 
-- [ ] **Step 3: Refresh Token 해시 마이그레이션을 추가한다**
+- [ ] **Step 3: Refresh Token 암호화갱신발행토큰내용 마이그레이션을 추가한다**
 
-Create `it_database/migrations/V20260706_001__AddRefreshTokenHash.sql`:
+Create `it_database/migrations/V20260706_001__AddEncryptedRenewalTokenValue.sql`:
 
 ```sql
--- V20260706_001__AddRefreshTokenHash.sql
--- Refresh Token 원문 조회를 SHA-256 해시 조회로 전환하기 위한 해시 컬럼과 UNIQUE 인덱스.
+-- V20260706_001__AddEncryptedRenewalTokenValue.sql
+-- Refresh Token 원문 조회를 고정 길이 조회값(SHA-256 HEX)으로 전환하기 위한 표준 컬럼과 UNIQUE 인덱스.
 DECLARE
     FUNCTION col_exists(p_tab VARCHAR2, p_col VARCHAR2) RETURN BOOLEAN IS
         n NUMBER;
@@ -160,47 +160,47 @@ DECLARE
         RETURN n > 0;
     END;
 BEGIN
-    IF NOT col_exists('TPRMPP_CRTOKM', 'API_TOK_HASH_CONE') THEN
-        EXECUTE IMMEDIATE 'ALTER TABLE TPRMPP_CRTOKM ADD (API_TOK_HASH_CONE VARCHAR2(64 CHAR))';
-        EXECUTE IMMEDIATE 'COMMENT ON COLUMN TPRMPP_CRTOKM.API_TOK_HASH_CONE IS ''API토큰해시내용(SHA-256 HEX)''';
+    IF NOT col_exists('TPRMPP_CRTOKM', 'ECY_RNW_PUB_TOK_CONE') THEN
+        EXECUTE IMMEDIATE 'ALTER TABLE TPRMPP_CRTOKM ADD (ECY_RNW_PUB_TOK_CONE VARCHAR2(900 CHAR))';
+        EXECUTE IMMEDIATE 'COMMENT ON COLUMN TPRMPP_CRTOKM.ECY_RNW_PUB_TOK_CONE IS ''암호화갱신발행토큰내용(SHA-256 HEX 조회값)''';
     END IF;
 
-    IF NOT idx_exists('UX_CRTOKM_API_TOK_HASH') THEN
-        EXECUTE IMMEDIATE 'CREATE UNIQUE INDEX UX_CRTOKM_API_TOK_HASH ON TPRMPP_CRTOKM(API_TOK_HASH_CONE)';
+    IF NOT idx_exists('UX_CRTOKM_ECY_RNW_PUB_TOK') THEN
+        EXECUTE IMMEDIATE 'CREATE UNIQUE INDEX UX_CRTOKM_ECY_RNW_PUB_TOK ON TPRMPP_CRTOKM(ECY_RNW_PUB_TOK_CONE)';
     END IF;
 END;
 /
 ```
 
-- [ ] **Step 4: `Crtokm`에 해시 필드를 추가한다**
+- [ ] **Step 4: `Crtokm`에 암호화갱신발행토큰내용 필드를 추가한다**
 
 Add field after `tokCone`:
 
 ```java
-/** 토큰해시내용: Refresh Token 원문을 SHA-256 HEX로 변환한 조회 키 */
-@Column(name = "API_TOK_HASH_CONE", length = 64, comment = "토큰해시내용")
-private String tokHashCone;
+/** 암호화갱신발행토큰내용: Refresh Token 원문을 SHA-256 HEX로 변환한 조회 키 */
+@Column(name = "ECY_RNW_PUB_TOK_CONE", length = 900, comment = "암호화갱신발행토큰내용")
+private String ecyRnwPubTokCone;
 
-/** 기존 원문 토큰 행에 해시가 비어 있으면 호환 기간 중 1회 백필한다. */
-public void fillHashIfMissing(String hash) {
-    if (this.tokHashCone == null || this.tokHashCone.isBlank()) {
-        this.tokHashCone = hash;
+/** 기존 원문 토큰 행에 조회값이 비어 있으면 호환 기간 중 1회 백필한다. */
+public void fillEncryptedRenewalTokenIfMissing(String lookupValue) {
+    if (this.ecyRnwPubTokCone == null || this.ecyRnwPubTokCone.isBlank()) {
+        this.ecyRnwPubTokCone = lookupValue;
     }
 }
 ```
 
-- [ ] **Step 5: Repository를 해시 조회 우선으로 바꾼다**
+- [ ] **Step 5: Repository를 암호화갱신발행토큰내용 조회 우선으로 바꾼다**
 
 Add method to `RefreshTokenRepository`:
 
 ```java
-/** SHA-256 HEX 토큰 해시로 갱신토큰 조회 */
-Optional<Crtokm> findByTokHashCone(String tokHashCone);
+/** 암호화갱신발행토큰내용(SHA-256 HEX 조회값)으로 갱신토큰 조회 */
+Optional<Crtokm> findByEcyRnwPubTokCone(String ecyRnwPubTokCone);
 ```
 
 Keep `findByTokCone` during compatibility period.
 
-- [ ] **Step 6: `AuthService`에 해시 생성과 호환 조회를 구현한다**
+- [ ] **Step 6: `AuthService`에 조회값 생성과 호환 조회를 구현한다**
 
 Add helper:
 
@@ -220,11 +220,11 @@ public static String sha256HexForToken(String token) {
 }
 
 private Crtokm findRefreshTokenByValue(String refreshTokenValue) {
-    String tokenHash = sha256HexForToken(refreshTokenValue);
-    return refreshTokenRepository.findByTokHashCone(tokenHash)
+    String tokenLookupValue = sha256HexForToken(refreshTokenValue);
+    return refreshTokenRepository.findByEcyRnwPubTokCone(tokenLookupValue)
             .or(() -> refreshTokenRepository.findByTokCone(refreshTokenValue)
                     .map(token -> {
-                        token.fillHashIfMissing(tokenHash);
+                        token.fillEncryptedRenewalTokenIfMissing(tokenLookupValue);
                         return token;
                     }))
             .orElseThrow(() -> new RuntimeException("Refresh Token을 찾을 수 없습니다."));
@@ -248,14 +248,14 @@ When creating a new token:
 
 ```java
 .tokCone(newRefreshTokenValue)
-.tokHashCone(sha256HexForToken(newRefreshTokenValue))
+.ecyRnwPubTokCone(sha256HexForToken(newRefreshTokenValue))
 ```
 
 And in `issueNewRefreshFamily`:
 
 ```java
 .tokCone(value)
-.tokHashCone(sha256HexForToken(value))
+.ecyRnwPubTokCone(sha256HexForToken(value))
 ```
 
 - [ ] **Step 7: Tiptap 캐시 키 테스트를 추가한다**
@@ -345,8 +345,8 @@ Expected: PASS.
 - [ ] **Step 10: 커밋한다**
 
 ```powershell
-git add -- it_database/migrations/V20260706_001__AddRefreshTokenHash.sql it_backend/src/main/java/com/kdb/it/common/system/entity/Crtokm.java it_backend/src/main/java/com/kdb/it/common/system/repository/RefreshTokenRepository.java it_backend/src/main/java/com/kdb/it/common/system/service/AuthService.java it_backend/src/main/java/com/kdb/it/common/system/tiptap/service/TiptapVariableService.java it_backend/src/test/java/com/kdb/it/common/system/service/AuthServiceTest.java it_backend/src/test/java/com/kdb/it/common/system/tiptap/service/TiptapVariableServiceTest.java
-git commit -m "fix: Refresh Token 해시 조회와 Tiptap 캐시 키 정합화"
+git add -- it_database/migrations/V20260706_001__AddEncryptedRenewalTokenValue.sql it_backend/src/main/java/com/kdb/it/common/system/entity/Crtokm.java it_backend/src/main/java/com/kdb/it/common/system/repository/RefreshTokenRepository.java it_backend/src/main/java/com/kdb/it/common/system/service/AuthService.java it_backend/src/main/java/com/kdb/it/common/system/tiptap/service/TiptapVariableService.java it_backend/src/test/java/com/kdb/it/common/system/service/AuthServiceTest.java it_backend/src/test/java/com/kdb/it/common/system/tiptap/service/TiptapVariableServiceTest.java
+git commit -m "fix: Refresh Token 조회값과 Tiptap 캐시 키 정합화"
 ```
 
 ---
@@ -941,7 +941,7 @@ Move completed rows from `TASK.md` to `TASK_DONE.md` with commit hashes and file
 ```markdown
 ### 2026-07-06 TASK 잔여 조치
 
-- ✅ Refresh Token 해시 조회 정합화
+- ✅ Refresh Token 암호화갱신발행토큰내용 조회 정합화
 - ✅ Tiptap metadata null 부서 캐시 키 정합화
 - ✅ 예산 DUP 코드 조회 실패 차단
 - ✅ HWPX 이미지 변환 부분 실패 노출

@@ -49,7 +49,7 @@
 | --- | --- | --- | --- |
 | P4 후보 인덱스 dev/prod 적용 | 적용 확인 완료 | `ITPOWN_DDL_live.sql`에 `IX_BASCTM_PRJ_DEL`, `IX_BCMMTM_ENO_DEL_ASCT`, `IX_BRDOCM_DEL_DOC_VRS_FED`, `IX_BRIVGM_DOC_VRS_DEL_FED` 확인 | 코드 작업 제외, 완료 이관 |
 | 작성자 소속 컬럼 dev/prod 적용 | 적용 확인 완료 | `ITPOWN_DDL_live.sql`에 `BPROJM/BPROJL.SVN_TEM_C`, `BCOSTM/BCOSTL.PRLM_HRK_OGZ_C_CONE`, `BRDOCM/BRDOCL.SVN_DPM_C/SVN_TEM_C` 확인 | 코드 작업 제외, 완료 이관 |
-| Refresh Token 원문 조회 정합화 | 즉시 조치 | `findByTokCone`가 긴 JWT 원문을 조회하고 엔티티 `unique=true`와 DDL 정합이 약함 | SHA-256 해시 컬럼 추가, 해시 UNIQUE 조회, 원문 컬럼 유지 여부 결정 |
+| Refresh Token 원문 조회 정합화 | 즉시 조치 | `findByTokCone`가 긴 JWT 원문을 조회하고 엔티티 `unique=true`와 DDL 정합이 약함 | 메타 표준 컬럼 `ECY_RNW_PUB_TOK_CONE`(암호화갱신발행토큰내용) 추가, 고정 길이 조회값 UNIQUE 조회, 원문 컬럼 유지 여부 결정 |
 | Tiptap metadata null 부서 캐시 키 | 즉시 조치 | 일반 사용자 캐시 키가 `#user.bbrC`라 null 계정에서 키 생성 실패와 격리 불명확 | 명시 키(`ALL`, `DEPT:{bbrC}`, `USER_NO_DEPT:{eno}`)로 분리 |
 
 ### 2.3 프론트엔드 리팩토링
@@ -83,7 +83,7 @@
 | Wave | 목표 | 주요 산출물 | 완료 게이트 |
 | :--: | --- | --- | --- |
 | W0 | 결정/완료 이관 분리 | 로컬 DDL 적용 확인 항목 완료 이관, 환율·파일업로드 계약 결정 기록 | 코드 작업 항목과 완료 이관 항목 분리 |
-| W1 | 보안·캐시 정합성 | Refresh Token 해시 조회 설계/마이그레이션, Tiptap cache key 수정 | 백엔드 테스트 통과, 기존 토큰 전환 경로 검증 |
+| W1 | 보안·캐시 정합성 | Refresh Token 암호화갱신발행토큰내용 조회 설계/마이그레이션, Tiptap cache key 수정 | 백엔드 테스트 통과, 기존 토큰 전환 경로 검증 |
 | W2 | 사용자 영향 에러 처리 | DUP 코드 실패 차단, HWPX 부분 실패 노출, 감사로그 진단 | 프론트 단위 테스트/타입체크, 백엔드 테스트 |
 | W3 | 프론트 API 연결·타입 정리 | 예산 조회/비교 API wiring, `any` 제거, 표시 유틸 통합 | `npm run typecheck`, 관련 Vitest 통과 |
 | W4 | 백엔드 테스트·계약 보강 | 파일 업로드 계약 정리, Oracle 통합 테스트 추가 | `./gradlew test`, 필요 시 `integrationTest` |
@@ -102,7 +102,7 @@ DB/JPA의 P4 후보 인덱스와 작성자 소속 컬럼은 `C:\it\it_database\I
 
 ### 4.2 W1: 보안·캐시 정합성
 
-Refresh Token 조회는 원문 JWT 대신 SHA-256 해시 기준으로 바꾼다. 새 nullable 컬럼을 추가하고 기존 활성 토큰은 첫 refresh 또는 로그인 시 해시를 채우는 점진 전환을 기본으로 한다. 전환 완료 후에는 해시 UNIQUE 인덱스를 기준 조회 경로로 사용한다. 원문 컬럼은 즉시 제거하지 않고 호환 기간을 둔다.
+Refresh Token 조회는 원문 JWT 대신 `ECY_RNW_PUB_TOK_CONE`(암호화갱신발행토큰내용) 기준으로 바꾼다. 저장값은 SHA-256 HEX 조회값을 사용하되, 물리 컬럼명은 메타 표준명 `ECY_RNW_PUB_TOK_CONE`을 따른다. 새 nullable 컬럼을 추가하고 기존 활성 토큰은 첫 refresh 또는 로그인 시 값을 채우는 점진 전환을 기본으로 한다. 전환 완료 후에는 해당 컬럼의 UNIQUE 인덱스를 기준 조회 경로로 사용한다. 원문 컬럼은 즉시 제거하지 않고 호환 기간을 둔다.
 
 Tiptap metadata 캐시는 별도 key resolver를 둔다. 관리자·부서매니저는 `ALL`, 부서코드가 있는 일반 사용자는 `DEPT:{bbrC}`, 부서코드가 없는 일반 사용자는 `USER_NO_DEPT:{eno}`로 격리한다. 부서코드가 없는 사용자는 전체 사업을 보여주지 않고 빈 사업 목록을 반환한다.
 
@@ -134,7 +134,7 @@ HWPX 이미지 처리는 성공 이미지와 실패 이미지 목록을 함께 �
 
 | 영역 | 테스트 |
 | --- | --- |
-| Refresh Token | 해시 생성, 해시 조회, 기존 원문 토큰 호환, 중복 해시 방지, 회전 재사용 탐지 |
+| Refresh Token | 조회값 생성, `ECY_RNW_PUB_TOK_CONE` 조회, 기존 원문 토큰 호환, 중복 조회값 방지, 회전 재사용 탐지 |
 | Tiptap metadata | 관리자 `ALL`, 일반 사용자 `DEPT:{bbrC}`, 부서 없음 `USER_NO_DEPT:{eno}`, 캐시 키 null 미발생 |
 | DUP 코드 실패 | API 실패 시 저장 차단, 재시도 성공 시 계산 재개 |
 | HWPX 이미지 | 전체 성공, 일부 실패, 전체 실패, 실패 목록 UI 전달 |
