@@ -38,7 +38,7 @@
 >
 > 🕒 이전 업데이트: 2026-07-01 (`REVIEW.md` 전수 재점검 — 협의회 개최준비 서버 권한, Refresh 회전 동시성·조회 정합성, 오류 삼킴, 감사로그 진단, 타입·중복 로직 후보를 신규 등록. P0 Oracle 테스트 하네스 반영에 맞춰 T18 문구 현행화.)
 >
-> 🕒 이전 업데이트: 2026-06-30 (🗄️ DB/JPA 최적화 12건 전체 완료 — P0 로컬 Oracle `@DataJpaTest` 하네스 신설 후 P1 벌크/flush·P2 N+1·P3 프로젝션 봉인·P4 인덱스·P5 Caffeine을 페이즈별 구현+2단계 리뷰로 조치. `it_backend` main `0e247a5`·`it_database` main `37fd523`. `TASK_DONE.md` §🗄️ 2026-06-30 이관. 잔여: 협의회 BPROJM 컬럼 드리프트 버그(`task_11b75a35`), P4 인덱스 dev/prod DBA 적용. design/plans `docs/superpowers/{specs,plans}/2026-06-29-db-jpa-*`)
+> 🕒 이전 업데이트: 2026-06-30 (🗄️ DB/JPA 최적화 12건 전체 완료 — P0 로컬 Oracle `@DataJpaTest` 하네스 신설 후 P1 벌크/flush·P2 N+1·P3 프로젝션 봉인·P4 인덱스·P5 Caffeine을 페이즈별 구현+2단계 리뷰로 조치. `it_backend` main `0e247a5`·`it_database` main `37fd523`. `TASK_DONE.md` §🗄️ 2026-06-30 이관. 잔여: 협의회 BPROJM 컬럼 드리프트 버그(`task_11b75a35`). 잔여였던 P4 인덱스 dev/prod 적용은 2026-07-06 로컬 DDL 확인 기준으로 완료 이관. design/plans `docs/superpowers/{specs,plans}/2026-06-29-db-jpa-*`)
 >
 > 🕒 이전 업데이트: 2026-06-29 (보안 하드닝 구현 완료 — #1·#2·#3·#5·#6·#7 6건 조치, #4 감내. 보안 § 잔여 = Blocklist(감내) 외 0건. plan `docs/superpowers/plans/2026-06-29-security-hardening.md`·design `docs/superpowers/specs/2026-06-29-security-hardening-design.md`)
 >
