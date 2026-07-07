@@ -54,6 +54,7 @@
 | CQ-05 | 🟡 Medium | 테스트 | E2E 핵심 3개 시나리오를 정기 실행 경로에 편입 | 대상: 로그인, 프로젝트 조회/생성, 결재 처리. 로컬 Oracle·인증 데이터 의존성을 정리한 뒤 CI 또는 주기 실행 명령으로 고정 |
 | CQ-06 | 🟢 Low | 리팩터링 | `Bcostm.update`의 20개 매개변수를 `UpdateCommand` record로 전환 | `Bprojm.UpdateCommand` 선례를 따르되 호출부 영향이 넓으므로 비용 도메인 리팩터링과 함께 처리 |
 | CQ-07 | 🟢 Low | 스타일 | Java 포맷터 도입과 매직 넘버 상수화 검토 | Spotless/google-java-format 도입 여부를 먼저 결정. Toast `life` 값, 기본 편성률 `100` 등 반복 리터럴은 도메인별 상수로 점진 정리 |
+| CQ-08 | 🟡 Medium | 검증 | `AdminMenuController.move` 요청 본문 검증 규칙 재정의 | `MenuDto.MoveRequest.newHrkMnuId`는 루트 이동 시 null이 합법이라 필드 단위 필수 검증을 둘 수 없음. 빈 본문 400 요구가 필요하면 DTO/엔드포인트 수준 규칙을 먼저 합의해야 함 |
 
 ## 📝 Tiptap 변수 입력
 
