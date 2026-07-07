@@ -1,6 +1,6 @@
 # ✅ IT Portal 완료·종료 내역 (Archive)
 
-> 🗓️ **기준일:** 2026-07-02
+> 🗓️ **기준일:** 2026-07-06
 > 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️) 항목을 보관합니다.
 
 ### 🔑 범례 (Legend)
@@ -24,8 +24,39 @@
 | ✅ Done | 🟠 High | 협의회 개최준비 전이의 서버 권한·심의유형 범위 검증 추가 — ITPAD001 전체 심의유형, ITPAD002 `dbrTc='04'`만 허용을 서비스 최종 경계로 적용 | `CouncilService.verifyCouncilManager(asctId, userDetails)` 신설(admin∪정보보호관리자+dbrTc04) + `CouncilController` 관리 액션 12개(start/complete/start-preparation/schedule confirm·confirm-written/result save·update·confirm·approval/notify)에 principal 가드 부착, skip·approval콜백은 `verifyAdmin` 전용. 커밋 `9432023`, 종료일: 2026-07-02 |
 | ✅ Done | 🟠 High | [버그] 협의회 `CouncilRepository` BPROJM 컬럼 드리프트 2건 (`task_11b75a35`) — 라이브 스키마 대조로 `p.BBR_C`는 `p.SVN_DPM_C`(존재)로 정합, `IT_PTL_STS_TC`는 BPROJM이 아닌 `ps.`(TPRMPP_BPROJA 서브쿼리) 대상이며 BPROJA에 컬럼 존재 확인 → `ORA-00904` 미발생. 협의회 리팩토링 과정에서 해소됨 | `CouncilRepository.findByDepartment`/`findProjectsForCouncilAll`/`findProjectsForCouncilByDepartment`, 라이브 `all_tab_columns`(ITPOWN.TPRMPP_BPROJM: `SVN_DPM_C`/`IT_PTL_RPR_STS_TC`, TPRMPP_BPROJA: `IT_PTL_STS_TC`), 검증일: 2026-07-02 |
 | ✅ Done | 🟢 Low | 생략 판정 요청 목록의 삭제여부 필터를 DB 쿼리로 이동 — `getActiveSkipRequests()`가 `findByDelYn("N")`로 DB 필터 적용(기존 `findAll()` 후 JVM 필터 제거) | `CouncilSkipService.getActiveSkipRequests()`, `BaskpmRepository.findByDelYn`, 커밋 `769130a`, 종료일: 2026-07-02 |
-| ✅ Done | 🟡 Medium | 작성자 소속 컬럼(AuthorOrg) 신규 구현 — `AuthorOrg`(record)/`AuthorOrgResolver`(사번→CuserI 조회로 주관부서·주관팀·인사상위조직 스냅샷) 추가, BPROJM `SVN_TEM_C`·BCOSTM `PRLM_HRK_OGZ_C_CONE`·BRDOCM `SVN_DPM_C`/`SVN_TEM_C`(+ `*L` 미러)를 신규 생성 시 작성자 기준으로 채움. `V20260701_002` 로컬 적용 완료(dev/prod DBA 잔여는 `TASK.md` W4) | `common/iam/service/AuthorOrg*`, `ProjectService`/`CostService`/`ServiceRequestDocService`, `it_database/migrations/V20260701_002`, 커밋 `20fcafb`/`6feb16e`, 종료일: 2026-07-02 |
+| ✅ Done | 🟡 Medium | 작성자 소속 컬럼(AuthorOrg) 신규 구현 — `AuthorOrg`(record)/`AuthorOrgResolver`(사번→CuserI 조회로 주관부서·주관팀·인사상위조직 스냅샷) 추가, BPROJM `SVN_TEM_C`·BCOSTM `PRLM_HRK_OGZ_C_CONE`·BRDOCM `SVN_DPM_C`/`SVN_TEM_C`(+ `*L` 미러)를 신규 생성 시 작성자 기준으로 채움. `V20260701_002`는 2026-07-06 로컬 DDL 확인 기준으로 dev/prod 적용 완료 판정 | `common/iam/service/AuthorOrg*`, `ProjectService`/`CostService`/`ServiceRequestDocService`, `it_database/migrations/V20260701_002`, 커밋 `20fcafb`/`6feb16e`, 종료일: 2026-07-02 |
 
+### 🗄️ 2026-07-06 DB/JPA dev/prod 적용 확인
+
+- ✅ P4 후보 인덱스 `V20260629_002~005` 적용 확인
+  - 근거: `it_database/ITPOWN_DDL_live.sql`
+  - 확인 인덱스: `IX_BASCTM_PRJ_DEL`, `IX_BCMMTM_ENO_DEL_ASCT`, `IX_BRDOCM_DEL_DOC_VRS_FED`, `IX_BRIVGM_DOC_VRS_DEL_FED`
+- ✅ 작성자 소속 컬럼 `V20260701_002` 적용 확인
+  - 근거: `it_database/ITPOWN_DDL_live.sql`
+  - 확인 컬럼: `BPROJM/BPROJL.SVN_TEM_C`, `BCOSTM/BCOSTL.PRLM_HRK_OGZ_C_CONE`, `BRDOCM/BRDOCL.SVN_DPM_C/SVN_TEM_C`
+- 판정 기준: 로컬 DDL(`C:\it\it_database\ITPOWN_DDL_live.sql`)에 적용 완료가 확인되면 dev/prod도 적용 완료로 간주한다.
+
+### ✅ 2026-07-07 TASK 잔여 조치(Subagent-Driven)
+
+> `TASK.md`의 에러 처리, DB/JPA, 프론트/백엔드 리팩토링 잔여 중 구현 가능한 항목을 Subagent-Driven 방식으로 조치하고 이관. DB 컬럼은 사용자 결정에 따라 `API_TOK_HASH_CONE`이 아니라 `ECY_RNW_PUB_TOK_CONE`(암호화갱신발행토큰내용, `VARCHAR2(900)`)로 반영.
+
+| 상태 | 우선순위 | 과제 | 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | 🟠 High | Refresh Token 원문 조회 대신 암호화갱신발행토큰내용 기반 조회·UNIQUE 인덱스 정합화 | `it_backend` `f9912d7`, `1c48abc`; `it_database` `f02d3b9`. `Crtokm.ECY_RNW_PUB_TOK_CONE`, `RefreshTokenRepository.findByEcyRnwPubTokCone`, 기존 원문 fallback/backfill 테스트 완료 |
+| ✅ Done | 🟡 Medium | Tiptap metadata 캐시 null 부서 키 격리 | `it_backend` `f9912d7`, `1c48abc`. `metadataCacheKey`: `ANONYMOUS`/`ALL`/`DEPT:<bbrC>`/`USER_NO_DEPT:<username>` 테스트 완료 |
+| ✅ Done | 🟠 High | 예산 작업 DUP 기준코드 조회 실패 시 계산·저장 차단 | `it_frontend` `88d0565`. `work.vue` loaded/error 상태와 toast, 저장·계산 guard 반영 |
+| ✅ Done | 🟠 High | HWPX 이미지 변환 실패 부분 성공 결과·누락 목록 노출 | `it_frontend` `88d0565`. `convertHtmlImagesForHwpx()`가 `{ images, failures }` 반환, export warning 및 단위 테스트 반영 |
+| ✅ Done | 🟡 Medium | 감사로그 리플렉션 필드 접근·설정 실패 진단 보강 | `it_backend` `f9f24a5`, `6854fbe`. `targetClass`/`fieldName` warn 경로와 회귀 테스트 반영 |
+| ✅ Done | 🟡 Medium | 정보기술부문 예산 조회/비교 화면 Mock 제거와 API wiring | `it_frontend` `a8ce04d`, `7e1d4f3`; `it_backend` `6854fbe`. summary/comparison API 연결, FSS mapping 응답 DTO·화면 렌더링 반영 |
+| ✅ Done | 🟡 Medium | `useProjects`/`useTabs` 타입 정리와 파일 크기 표시 일부 공통화 | `it_frontend` `a8ce04d`. 프로젝트 mutation payload 타입, 최소 라우트 입력 타입, 문서 form/detail·`AttachmentNodeView` `formatFileSize` 공통 유틸 사용 |
+| ✅ Done | 🟡 Medium | 파일 다건 업로드 부분 성공 트랜잭션 계약 정리 | `it_backend` `d25dc87`. `FileUploadUnitService` `REQUIRES_NEW`, `uploadFiles` per-file success/fail 응답, 두 번째 DB 저장 실패 회귀 테스트 반영 |
+| ✅ Done | 🟡 Medium | 감사로그 리스너·EstimateRepository 로컬 Oracle 통합 테스트 보강 | `it_backend` `d25dc87`. `AuditLogPersisterIntegrationTest`, `EstimateRepositoryIntegrationTest` 추가 |
+
+검증:
+- Backend focused: `./gradlew --no-daemon test --tests AuthServiceTest --tests TiptapVariableServiceTest --tests ItBudgetServiceTest --tests ItBudgetControllerTest --tests AuditLogPersisterTest --tests FileServiceTest --warning-mode all` 성공.
+- Backend integration: `./gradlew --no-daemon integrationTest --tests EstimateRepositoryIntegrationTest --tests AuditLogPersisterIntegrationTest --warning-mode all` 성공.
+- Frontend focused: `npm test -- tests/unit/utils/hwpx-images.test.ts tests/unit/composables/useTabs.test.ts tests/unit/utils/common.test.ts` 성공(182 tests).
+- Backend full: `./gradlew --no-daemon cleanTest test --warning-mode all` 성공. Frontend `npm run typecheck`는 기존 테스트 fixture 타입 오류(`tests/e2e/generate-report.ts`, 다수 unit test fixture)로 실패하며 이번 변경 파일 진단은 확인되지 않음.
 ### 🗄️ 2026-06-30 DB/JPA 최적화 (P0~P5)
 
 > `TASK.md` 🗄️ DB/JPA § 12건 전체 조치 완료 이관. 페이즈별 서브에이전트 구현 + 2단계 리뷰(스펙·품질) + 폴리시. 코드 커밋은 중첩 repo(`it_backend` main `0e247a5`, `it_database` main `37fd523`). design: `docs/superpowers/specs/2026-06-29-db-jpa-optimization-design.md`, plans: `docs/superpowers/plans/2026-06-29-db-jpa-p0~p5-*.md`. 검증: 로컬 Oracle `@DataJpaTest`(`@Tag("it")`) 하네스 신설(P0).
@@ -40,10 +71,10 @@
 | ✅ Done | 🟡 Medium | `findProjectsForCouncilAll/ByDepartment`(18컬럼) native `Object[]` → `CouncilProjectRow.fromRow` 단일 팩토리 봉인(§5.5.4 `NativeRowMapper`), `CouncilService` 직접 캐스트 제거 | `CouncilProjectRow`, `NativeRowMapper`, `CouncilRepository`, 종료일: 2026-06-30 |
 | ✅ Done | 🟡 Medium | 나머지 Native `Object[]` 반환(`Council`/`Application`/`ServiceRequestDoc`/`LoginHistory`/`Evaluation`) → DTO `fromRow` 봉인 + 동등성 IT | `*Row` DTO 5종, 각 Repository default 래퍼, 종료일: 2026-06-30 |
 | ✅ Done | 🟡 Medium | `ProjectRepositoryImpl`/`CostRepositoryImpl` `selectFrom` 전체 컬럼 → 목록용 경량 QueryDSL `Projections.constructor`(대용량 텍스트 제외), 상세 경로 불변 | `ProjectRepositoryImpl.searchListByCondition`, `CostRepositoryImpl.searchListByCondition`, 종료일: 2026-06-30 |
-| ✅ Done | 🟡 Medium | 협의회 `BASCTM`/`BCMMTM` 역방향 인덱스 — `V20260629_002`(EXPLAIN: BASCTM Full Scan 제거). dev/prod 적용은 DBA 위임 | `it_database/migrations/V20260629_002`, 종료일: 2026-06-30 |
-| ✅ Done | 🟡 Medium | `BRDOCM.findLatestVersionsAll()` 복합 인덱스 — `V20260629_003`(상관 MAX 서브쿼리 cost 9→7; 외부 ORDER BY SORT는 미제거 명시). dev/prod 적용은 DBA 위임 | `it_database/migrations/V20260629_003`, 종료일: 2026-06-30 |
-| ✅ Done | 🟡 Medium | `BRIVGM` 검토의견 목록 인덱스 — `V20260629_004`(EXPLAIN: SORT ORDER BY 제거, cost 3→2). dev/prod 적용은 DBA 위임 | `it_database/migrations/V20260629_004`, 종료일: 2026-06-30 |
-| ✅ Done | 🟡 Medium | 실시간 로그 피드 `V_ITPAPP_LOG_FEED` 실행계획 검증 — 뷰가 20개 *L UNION ALL이라 단일 커버 인덱스 불가; 누락된 `TPRMPP_CCODEL(CHG_DTM)`만 `V20260629_005` 보완(집계 24→22). 피드 스냅샷 경로는 인덱스 효과 없음(☑️ 감내) | `it_database/migrations/V20260629_005`, EXPLAIN 노트 `docs/superpowers/notes/2026-06-29-p4-explain-results.md`, 종료일: 2026-06-30 |
+| ✅ Done | 🟡 Medium | 협의회 `BASCTM`/`BCMMTM` 역방향 인덱스 — `V20260629_002`(EXPLAIN: BASCTM Full Scan 제거). 최초 dev/prod 적용은 DBA 위임으로 추적했으나 2026-07-06 로컬 DDL 확인 기준으로 적용 완료 판정 | `it_database/migrations/V20260629_002`, 종료일: 2026-06-30 |
+| ✅ Done | 🟡 Medium | `BRDOCM.findLatestVersionsAll()` 복합 인덱스 — `V20260629_003`(상관 MAX 서브쿼리 cost 9→7; 외부 ORDER BY SORT는 미제거 명시). 최초 dev/prod 적용은 DBA 위임으로 추적했으나 2026-07-06 로컬 DDL 확인 기준으로 적용 완료 판정 | `it_database/migrations/V20260629_003`, 종료일: 2026-06-30 |
+| ✅ Done | 🟡 Medium | `BRIVGM` 검토의견 목록 인덱스 — `V20260629_004`(EXPLAIN: SORT ORDER BY 제거, cost 3→2). 최초 dev/prod 적용은 DBA 위임으로 추적했으나 2026-07-06 로컬 DDL 확인 기준으로 적용 완료 판정 | `it_database/migrations/V20260629_004`, 종료일: 2026-06-30 |
+| ✅ Done | 🟡 Medium | 실시간 로그 피드 `V_ITPAPP_LOG_FEED` 실행계획 검증 — 뷰가 20개 *L UNION ALL이라 단일 커버 인덱스 불가; 누락된 `TPRMPP_CCODEL(CHG_DTM)`만 `V20260629_005` 보완(집계 24→22). 피드 스냅샷 경로는 인덱스 효과 없음(☑️ 감내). 2026-07-06 로컬 DDL 확인 기준으로 적용 완료 판정 | `it_database/migrations/V20260629_005`, EXPLAIN 노트 `docs/superpowers/notes/2026-06-29-p4-explain-results.md`, 종료일: 2026-06-30 |
 | ✅ Done | 🟡 Medium | [T13] 캐시 TTL 미적용 보완 — `ConcurrentMapCacheManager`→`CaffeineCacheManager`(per-cache TTL: codes*/menuAuthMap 1h, tiptapMetadata 10m, unread 60s), `TransactionAwareCacheManagerProxy`로 evict 커밋 후 지연, `ProjectService` 쓰기경로 `tiptapMetadata` `@CacheEvict` 추가. 캐시명 6종·기존 evict 의미 보존 | `CacheConfig`, `ProjectService`, `spring-boot-starter-cache`, 종료일: 2026-06-30 |
 
 ### 🔒 2026-06-29 보안하드닝 정비
