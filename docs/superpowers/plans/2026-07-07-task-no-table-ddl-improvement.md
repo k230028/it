@@ -268,7 +268,7 @@ Replace duplicated string pushes with this helper. Preserve prior data unless th
 
 - [ ] **Step 3: Show document error state**
 
-In `pages/info/documents/[id]/index.vue`, render a small PrimeVue `Message` or existing local error component when the new error ref is non-null. Text must be user-facing Korean copy such as `문서 내용을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.`
+In `pages/info/documents/[id]/index.vue`, render a small PrimeVue `Message` or existing local error component when `loadSession()`이 반환한 `loadWarnings`(또는 파생 `loadWarningState`)에 해당 섹션 경고가 있을 때. Text must be user-facing Korean copy such as `문서 내용을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.`
 
 - [ ] **Step 4: Add duplicate-limited diagnostics**
 
@@ -665,7 +665,12 @@ Only add rules that will prevent recurrence, such as Refresh Token concurrency p
 Run:
 
 ```powershell
-git diff -- TASK.md TASK_DONE.md it_backend/CLAUDE.md it_frontend/CLAUDE.md
+cd C:\it
+git diff -- TASK.md TASK_DONE.md
+cd C:\it\it_backend
+git diff -- CLAUDE.md
+cd C:\it\it_frontend
+git diff -- CLAUDE.md
 cd C:\it\it_database
 git diff -- migrations ITPOWN_DDL_live.sql | Select-String -Pattern 'CREATE TABLE|ALTER TABLE|ADD .*COLUMN|DROP COLUMN|PRIMARY KEY|CONSTRAINT'
 cd C:\it\it_backend
