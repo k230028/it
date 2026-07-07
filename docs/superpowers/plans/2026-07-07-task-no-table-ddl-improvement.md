@@ -472,11 +472,14 @@ Run:
 cd C:\it\it_frontend
 npm test -- tests/unit/utils/hwpx.test.ts tests/unit/utils/hwpx-images.test.ts tests/unit/composables/useHwpxExport.direct.test.ts
 cd C:\it\it_backend
-.\gradlew test --tests "*CinfmmRepositoryImpl*" --tests "*ProjectRepositoryImpl*" --tests "*CostRepositoryImpl*" --warning-mode all
+.\gradlew test --tests "*ProjectRepositoryImpl*" --tests "*CostRepositoryImpl*" --warning-mode all
+.\gradlew integrationTest --tests "*CinfmmRepositoryImpl*" --warning-mode all
 .\gradlew javadoc --warning-mode all
 ```
 
-Expected: focused tests pass. Javadoc warning count decreases for touched files.
+Expected: focused tests pass. `CinfmmRepositoryImplTest` extends `AbstractOracleRepositoryTest`
+and is tagged `it`, so it must run through `integrationTest` rather than the default `test`
+task. Javadoc warning count decreases for touched files.
 
 - [ ] **Step 7: Commit**
 
