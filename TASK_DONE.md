@@ -1,6 +1,6 @@
 # ✅ IT Portal 완료·종료 내역 (Archive)
 
-> 🗓️ **기준일:** 2026-07-06
+> 🗓️ **기준일:** 2026-07-07
 > 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️) 항목을 보관합니다.
 
 ### 🔑 범례 (Legend)
@@ -51,12 +51,54 @@
 | ✅ Done | 🟡 Medium | `useProjects`/`useTabs` 타입 정리와 파일 크기 표시 일부 공통화 | `it_frontend` `a8ce04d`. 프로젝트 mutation payload 타입, 최소 라우트 입력 타입, 문서 form/detail·`AttachmentNodeView` `formatFileSize` 공통 유틸 사용 |
 | ✅ Done | 🟡 Medium | 파일 다건 업로드 부분 성공 트랜잭션 계약 정리 | `it_backend` `d25dc87`. `FileUploadUnitService` `REQUIRES_NEW`, `uploadFiles` per-file success/fail 응답, 두 번째 DB 저장 실패 회귀 테스트 반영 |
 | ✅ Done | 🟡 Medium | 감사로그 리스너·EstimateRepository 로컬 Oracle 통합 테스트 보강 | `it_backend` `d25dc87`. `AuditLogPersisterIntegrationTest`, `EstimateRepositoryIntegrationTest` 추가 |
+| ✅ Done | 🟢 Low | `EaiServiceTest`에 `umsTrSno=""`/비숫자 케이스 추가 | `EaiServiceTest.umsTrSnoBlank_returnsFailure`, `EaiServiceTest.umsTrSnoNonNumeric_returnsFailure`가 `Integer.parseInt` 실패 → `EaiResult.failure` 경로를 검증 |
 
 검증:
 - Backend focused: `./gradlew --no-daemon test --tests AuthServiceTest --tests TiptapVariableServiceTest --tests ItBudgetServiceTest --tests ItBudgetControllerTest --tests AuditLogPersisterTest --tests FileServiceTest --warning-mode all` 성공.
 - Backend integration: `./gradlew --no-daemon integrationTest --tests EstimateRepositoryIntegrationTest --tests AuditLogPersisterIntegrationTest --warning-mode all` 성공.
 - Frontend focused: `npm test -- tests/unit/utils/hwpx-images.test.ts tests/unit/composables/useTabs.test.ts tests/unit/utils/common.test.ts` 성공(182 tests).
 - Backend full: `./gradlew --no-daemon cleanTest test --warning-mode all` 성공. Frontend `npm run typecheck`는 기존 테스트 fixture 타입 오류(`tests/e2e/generate-report.ts`, 다수 unit test fixture)로 실패하며 이번 변경 파일 진단은 확인되지 않음.
+
+### ✅ 2026-07-07 무테이블 DDL 잔여 개선
+
+> `TASK.md`에서 DB 테이블/컬럼/PK 변경이 불필요한 항목만 선별해 Subagent-Driven 방식으로 구현·검증. 중첩 저장소별로 커밋했으며, 루트 저장소에서 무시되는 하위 저장소 파일은 각 저장소 내부에서만 커밋했다. 실행 계획: `docs/superpowers/plans/2026-07-07-task-no-table-ddl-improvement.md`.
+
+| 상태 | 우선순위 | 과제 | 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | 🟠 High | SEC-01 Refresh Token 회전 동시성·활성 토큰 1개 불변식 강화 | `it_backend` `db7322d..46b6959`; `AuthService`, `AuthServiceTest`. 검증: `./gradlew test --tests com.kdb.it.common.system.service.AuthServiceTest --warning-mode all`, `./gradlew test --warning-mode all` |
+| ✅ Done | 🟡 Medium | SEC-02 부서코드 없는 비관리자 조회 차단 | `it_backend` `db7322d`; `PaymentService`, `PaymentServiceTest`. 검증: `./gradlew test --tests com.kdb.it.domain.payment.service.PaymentServiceTest --warning-mode all` |
+| ✅ Done | 🟡 Medium | ERR-01 문서 버전 본문·코멘트·이력 조회 실패를 `loadWarnings` 기반 오류 상태로 표시 | `it_frontend` `df3fb05..9664e78`; `stores/review.ts`, `pages/info/documents/[id]/*`, `review.direct.test.ts`. 검증: `npm test -- tests/unit/stores/review.direct.test.ts`, `npm run typecheck` |
+| ✅ Done | 🟡 Medium | ERR-02 클립보드 기록 실패 중복 제한 진단 추가 | `it_frontend` `df3fb05`; `useTableCellSelection.ts`, 관련 단위 테스트. 검증: `npm test -- tests/unit/composables/useTableCellSelection.direct.test.ts` |
+| ✅ Done | 🟡 Medium | FE-01 `info/index.vue` KPI·진행현황 정적 데이터 API 기반 전환 | `it_frontend` `85461b1`; `app/pages/info/index.vue`. 검증: `npm run typecheck` |
+| ✅ Done | 🟢 Low | FE-02 예산 목록/승인 화면 금액 0 표시 정책 보정 | `it_frontend` `0463584`; `budget/approval.vue`, `budget/list.vue`. 검증: `npm test -- tests/unit/composables/useTiptapVariables.test.ts`, `npm run typecheck` |
+| ✅ Done | 🟡 Medium | BE-01 HWPX/문서 내보내기 회귀 테스트 범위 확대 | `it_frontend` `32348d8`; `hwpx.test.ts`, `hwpx-images.test.ts`, `useHwpxExport.direct.test.ts`. 검증: `npm test -- tests/unit/utils/hwpx.test.ts tests/unit/utils/hwpx-images.test.ts tests/unit/composables/useHwpxExport.direct.test.ts` |
+| ✅ Done | 🟡 Medium | BE-02 `CinfmmRepositoryImpl` Oracle 통합 테스트 추가 | `it_backend` `53bc356`; `CinfmmRepositoryImplTest`. 검증: `./gradlew integrationTest --tests "*CinfmmRepositoryImpl*" --warning-mode all` |
+| ✅ Done | 🟡 Medium | BE-03 `ProjectRepositoryImpl`/`CostRepositoryImpl` 목록 프로젝션 회귀 가드 추가 | `it_backend` `53bc356`; `ProjectRepositoryImplTest`, `CostRepositoryImplTest`. 검증: `./gradlew test --tests "*ProjectRepositoryImpl*" --tests "*CostRepositoryImpl*" --warning-mode all` |
+| ✅ Done | 🟡 Medium | BE-04 품목 금액 환율 환산 규칙 통일 — `BITEMM.amt`는 KRW 금액으로 직접 합산 | `it_backend` `c2aa574..d407430`; `BudgetWorkService`, `ProjectBudgetSummaryService`, Budget query repositories. 검증: `./gradlew test --tests "*BudgetWorkService*" --tests "*ProjectBudgetSummaryService*" --warning-mode all` |
+| ✅ Done | 🟢 Low | BE-05 알림 문구 null-safe 말줄임 공통화 | `it_backend` `53bc356`; `NotificationMessageFormatter`, `ApplicationService`, `BoardPostService`, `BoardCommentService`, `NotificationEventListener`. 검증: `./gradlew test --tests "*NotificationMessageFormatter*" --warning-mode all` |
+| ✅ Done | 🟢 Low | BE-06 `CouncilDto`·`BudgetStatusDto` Javadoc 경고 정리 | `it_backend` `53bc356`; DTO JavaDoc 보강. 검증: `./gradlew javadoc --warning-mode all` |
+| ✅ Done | 🟡 Medium | TIP-01 Tiptap 변수 prop 적용 범위 확대 | `it_frontend` `85461b1..3f3c4ac`; 문서/계획/게시판/가이드 페이지. 검증: `npm test -- tests/unit/composables/useTiptapVariables.test.ts`, `npm run typecheck` |
+| ✅ Done | 🟡 Medium | TIP-04 VariableNodeView 작성 직후 `resolveTokens` 호출 및 비동기 응답 병합 보강 | `it_frontend` `85461b1..0463584`; `TiptapEditor.vue`, `useTiptapVariables.ts`. 검증: `npm test -- tests/unit/composables/useTiptapVariables.test.ts`, 재리뷰 clean |
+| ✅ Done | 🟡 Medium | LOG-01 `/api/admin/realtime-logs` 관리자/일반/미인증·커서 검증 보강 | `it_backend` `87ed5bd`; `RealtimeLogControllerTest`, `RealtimeLogRepositoryTest`. 검증: `./gradlew test --tests "*RealtimeLog*" --warning-mode all` |
+| ✅ Done | 🟡 Medium | LOG-02 라이브 피드 행 클릭에서 로그번호 포함 상세 이동 연결 | `it_frontend` `6f7d736`; `RealtimeDetailDrawer.vue`, `RealtimeFeedTable.vue`, `admin/logs/[logKey].vue`, E2E. 검증: `npm run test:e2e -- tests/e2e/admin/realtime-logs.spec.ts` |
+| ✅ Done | 🟢 Low | LOG-03 SSE/WebSocket 전환 운영 임계치·feature flag 설계 문서화 | 루트 `3d137d6`; `docs/superpowers/notes/2026-07-07-realtime-log-explain.md`. 실제 push 구현은 별도 잔여로 유지 |
+| ✅ Done | 🟢 Low | LOG-04 로그 보존 정책·아카이브 분리 View 운영 방향 문서화 | 루트 `3d137d6`; 신규 테이블 없이 운영 정책 노트 작성. 실제 보존기간 시행은 별도 잔여로 유지 |
+| ✅ Done | 🟡 Medium | LOG-06 `V_ITPAPP_LOG_FEED` 실행계획/인덱스 현황 기록 | 루트 `3d137d6`; 기존 `V20260629_005`와 `IX_CCODEL_CHG_DTM` 유효성 확인, 신규 DDL 없음 |
+| ✅ Done | 🟡 Medium | LOG-07 실시간 로그 Playwright E2E 실행 | `it_frontend` `6f7d736`; `tests/e2e/admin/realtime-logs.spec.ts`. 검증: `npm run test:e2e -- tests/e2e/admin/realtime-logs.spec.ts` |
+| ✅ Done | 🟡 Medium | BRD-01 게시판 본문 4000자 정책 검증 추가 | `it_backend` `61d26d4`, `it_frontend` `487bcb1`; `BoardPostDto`, board form/edit UI, controller tests. 검증: `./gradlew test --tests "*Board*" --no-daemon --max-workers=1`, `npm run test:e2e -- tests/e2e/board.spec.ts` |
+| ✅ Done | 🟢 Low | BRD-04 게시판 멘션 알림 연동 확인·회귀 유지 | `it_backend` `61d26d4`; 기존 `BoardPostService`/`BoardCommentService` 알림 이벤트 경로 유지 및 테스트 통과 |
+| ✅ Done | 🟢 Low | BRD-07 답변글·댓글 깊이 UI 5단계 캡 | `it_frontend` `487bcb1`; `BoardCommentTree.vue`, board detail/list 화면. 검증: `npm run typecheck`, `npm run test:e2e -- tests/e2e/board.spec.ts` |
+| ✅ Done | 🟢 Low | BRD-08 게시판 검색 키워드 최소 2자 강제 | `it_backend` `61d26d4`, `it_frontend` `487bcb1`; `BoardPostService.validateSearchCondition`, board E2E. 검증: `./gradlew test --tests "*Board*"`, `npm run test:e2e -- tests/e2e/board.spec.ts` |
+| ✅ Done | 🟡 Medium | BRD-09 게시물 목록 서버사이드 페이지네이션 | `it_backend` `61d26d4`, `it_frontend` `487bcb1`; backend `Page<BoardPostDto.ListItem>`, frontend `BoardPostPage`. 검증: backend Board tests + board E2E |
+| ✅ Done | 🟡 Medium | BRD-10 게시판 단위/E2E 테스트 확대 | `it_backend` `61d26d4`, `it_frontend` `487bcb1`; `BoardPostControllerTest`, `BoardPostServiceTest`, `board.spec.ts`. 검증: `./gradlew test --tests "*Board*"`, `npm run test:e2e -- tests/e2e/board.spec.ts` |
+| ✅ Done | 🟢 Low | EAI-03 `NotificationDispatcher` → `EaiService` 라우터 연결 | `it_backend` `56a8cee..86eaa04`; `NotificationDispatcherRouter`, `NotificationService`, `NotificationDispatcherRouterTest`. 검증: `./gradlew test --tests "*Notification*" --warning-mode all` |
+| ✅ Done | 🟡 Medium | EAI-04 `Estimate`/`Deliberation`/`Contract`/`PaymentService` 상태전이 EAI side-effect 연결 | `it_backend` `56a8cee`; 4개 도메인 서비스·테스트. 검증: `./gradlew test --tests "*EstimateServiceTest" --tests "*DeliberationServiceTest" --tests "*ContractServiceTest" --tests "*PaymentServiceTest" --warning-mode all` |
+
+검증:
+- Backend Task 5 focused: `./gradlew test --tests "*RealtimeLog*" --tests "*Board*" --tests "*Eai*" --tests "*Notification*" --tests "*ApplicationServiceTest" --warning-mode all` 성공.
+- Frontend: `npm run typecheck`, `npm run test:e2e -- tests/e2e/board.spec.ts`, `npm run test:e2e -- tests/e2e/admin/realtime-logs.spec.ts` 성공.
+- DDL 가드: `it_database`와 `it_backend/src/main/resources` diff에서 `CREATE TABLE|ALTER TABLE|ADD .*COLUMN|DROP COLUMN|PRIMARY KEY|CONSTRAINT` 금지 패턴 없음.
+
 ### 🗄️ 2026-06-30 DB/JPA 최적화 (P0~P5)
 
 > `TASK.md` 🗄️ DB/JPA § 12건 전체 조치 완료 이관. 페이즈별 서브에이전트 구현 + 2단계 리뷰(스펙·품질) + 폴리시. 코드 커밋은 중첩 repo(`it_backend` main `0e247a5`, `it_database` main `37fd523`). design: `docs/superpowers/specs/2026-06-29-db-jpa-optimization-design.md`, plans: `docs/superpowers/plans/2026-06-29-db-jpa-p0~p5-*.md`. 검증: 로컬 Oracle `@DataJpaTest`(`@Tag("it")`) 하네스 신설(P0).
@@ -87,7 +129,7 @@
 
 ### 🔒 2026-06-29 보안 하드닝 구현
 
-> `TASK.md` 🔒 보안 § 잔여 6건 구현 완료 이관(#1·#2·#3·#5·#6·#7). 코드 커밋은 중첩 `it_backend`/`it_frontend`/`it_database` repo. #4 Blocklist는 감내(☑️ Accepted)로 보안 §에 유지. plan: `docs/superpowers/plans/2026-06-29-security-hardening.md`, design: `docs/superpowers/specs/2026-06-29-security-hardening-design.md`. 보안 § 잔여 = Blocklist(감내) 외 0건.
+> `TASK.md` 🔒 보안 § 잔여 6건 구현 완료 이관(#1·#2·#3·#5·#6·#7). 코드 커밋은 중첩 `it_backend`/`it_frontend`/`it_database` repo. #4 Blocklist는 감내(☑️ Accepted)로 종료 이관. plan: `docs/superpowers/plans/2026-06-29-security-hardening.md`, design: `docs/superpowers/specs/2026-06-29-security-hardening-design.md`.
 
 | 상태 | 우선순위 | 과제 | 근거 |
 | :--: | :--: | --- | --- |
@@ -97,6 +139,7 @@
 | ✅ Done | 🟡 Medium | [후속/T10] Refresh Token 재사용 탐지(토큰 패밀리/세대) — `TPRMPP_CRTOKM`에 `FAM_NM`/`AVL_YN` 추가(Flyway `V20260629_001`), `AuthService` 패밀리 회전 + 재사용 탐지(회전 grace 윈도우로 다중탭 오탐 방지) | `TPRMPP_CRTOKM`(`V20260629_001`), `AuthService`, 종료일: 2026-06-29 |
 | ✅ Done | 🟡 Medium | Tiptap 변수 metadata 프로젝트 카탈로그 권한 필터링 — `getMetadata(user)` 부서(bbrC) 필터(ADMIN/부서매니저 전체), 캐시 키 사용자 부서 기준 분리 | `TiptapVariableController.java`, `TiptapVariableService.java`, 종료일: 2026-06-29 |
 | ✅ Done | 🟡 Medium | 사업집행 4단계 `changeStatus` role 분기(구 [W3 카브아웃]) — ADMIN 전용 전이로 구현(`OwnershipVerifier.verifyAdmin`, 4개 서비스 적용), CLAUDE.md §5.18 갱신 | `EstimateService`/`DeliberationService`/`ContractService`/`PaymentService`, `OwnershipVerifier.verifyAdmin`, `it_backend/CLAUDE.md §5.18`, 종료일: 2026-06-29 |
+| ☑️ Accepted | 🟡 Medium | Access Token Blocklist 도입 검토 — stateless JWT·access 15분 단기·사내 3천명 조건에서 잔존 access(최대 15분) 위험 수용 | `AuthService.logout()`은 refresh 삭제, T10 재사용 탐지로 탈취 대응. 2026-06-29 감내 결정 |
 
 ### 🔒 보안
 
