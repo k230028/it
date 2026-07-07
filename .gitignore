@@ -7,6 +7,7 @@ it_database
 everything-claude-code/
 .worktrees/
 .playwright-mcp/
+.superpowers/
 .agents/skills/gstack
 .bkit
 .claude

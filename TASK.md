@@ -79,10 +79,3 @@
 | EAI-06 | 🏛️ External | 운영 | GWE 전문 실제 규칙 KDB 확인 | `RMS_SYS_C`, `IF_ID`, `MSG_KEY` 접두, 발신자 상수, `SYSTEM_CODE` 운영값 |
 | EAI-07 | 🟢 Low | 확장 | 신규 시스템 연동 시 EaiPayload + EaiPayloadSection 1쌍 추가 패턴 유지 | 플러그형 확장 규칙 |
 
-## 📒 메타 용어사전
-
-| ID | 우선순위 | 유형 | 과제 | 근거/조건 |
-| --- | :--: | --- | --- | --- |
-| META-01 | 🏛️ External | 데이터 | BPOVWM 드롭 컬럼 데이터 이관 원천 확인 | `PRJ_BG_AMR` 테스트 1행 값이 `RQM_BG_AMT`로 승계되지 않음. 운영 데이터 이관 시 소요예산금액 원천 확인 필요 |
-| META-02 | 🏛️ External | DB | `TPRMPP_BBUGTM` PK 정합 보류 해소 | 운영(table.csv)은 PK(`BG_NO`) 단일, 로컬은 PK(`BG_NO`,`SNO`)이고 `BG_NO` 중복 20건 존재 |
-| META-03 | 🏛️ External | DB | `TPRMPP_BRDOCM` PK 정합 보류 해소 | 운영은 PK(`DOC_MNG_NO`) 단일, 로컬은 PK(`DOC_MNG_NO`,`DOC_VRS_SNO`)이고 중복 2건 존재 |
