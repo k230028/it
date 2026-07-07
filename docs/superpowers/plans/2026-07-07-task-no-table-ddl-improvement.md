@@ -4,7 +4,7 @@
 
 **Goal:** `TASK.md` 잔여과제 중 테이블 구조 변경 없이 가능한 항목을 보안, 사용자 영향, 프론트/Tiptap, 품질, 운영 확장 순서로 개선한다.
 
-**Architecture:** 물리 테이블 구조 변경(신규 테이블, 컬럼 추가/변경, PK 변경)은 금지하고, 기존 테이블·엔티티·API를 재사용한다. 인덱스, 뷰, 쿼리, API, 프론트엔드, 테스트, 운영 설정 변경은 허용한다. 루트 `C:\it`와 `it_backend`, `it_frontend`, `it_database`는 독립 Git 저장소이므로 커밋과 DDL 가드는 각 저장소 안에서 실행한다. 완료된 항목은 `TASK_DONE.md`로 옮기고 `TASK.md`에서는 삭제한다.
+**Architecture:** 물리 테이블 구조 변경(신규 테이블, 컬럼 추가/변경, PK 변경)은 금지하고, 기존 테이블·엔티티·API를 재사용한다. 인덱스, 뷰, 쿼리, API, 프론트엔드, 테스트, 운영 설정 변경은 허용한다. 예산 품목 금액은 현재 코드/데이터 의미에 맞춰 `BITEMM.amt`를 KRW 환산 금액, `BITEMM.fcAmt`를 원금/외화 금액으로 다룬다. 루트 `C:\it`와 `it_backend`, `it_frontend`, `it_database`는 독립 Git 저장소이므로 커밋과 DDL 가드는 각 저장소 안에서 실행한다. 완료된 항목은 `TASK_DONE.md`로 옮기고 `TASK.md`에서는 삭제한다.
 
 **Tech Stack:** Spring Boot 4.1.0, Java 25, Oracle, JPA/QueryDSL, Nuxt 4, Vue 3, TypeScript, Pinia, PrimeVue, Vitest, Playwright, Gradle.
 
@@ -232,7 +232,7 @@ git commit -m "fix: 무테이블 DDL 보안 불변식 강화"
 
 **Interfaces:**
 - Produces: review store keeps the existing `loadWarnings: string[]` return path and extends it into named warning categories only if the UI needs stable per-section rendering.
-- Produces: one currency conversion policy shared by work and summary calculations.
+- Produces: one currency conversion policy shared by work and summary calculations: `BITEMM.amt` is already KRW, so readers sum `amt` directly and never apply `amt * xcr`.
 
 - [ ] **Step 1: Add review store warning-state tests**
 
@@ -286,11 +286,11 @@ const warnOncePerMinute = (message: string, error: unknown) => {
 
 - [ ] **Step 5: Decide and encode currency rule**
 
-Use this rule for the implementation plan: monetary item amounts are stored in their source currency, and KRW summary values apply `xcr` exactly once at aggregation/display boundary. Remove any path that applies `xcr` twice or not at all for the same KRW summary.
+Use this rule for the implementation plan: `BITEMM.amt` is the KRW-converted amount saved by the project item write path, and `BITEMM.fcAmt` is the original/source-currency amount. KRW summary/query values sum `amt` directly. Remove any reader path that applies `amt * xcr` and double-converts persisted KRW amounts.
 
 - [ ] **Step 6: Add backend currency regression tests**
 
-Add tests where `amt=100`, `xcr=1300`. Expected KRW summary is `130000`, never `100` and never `169000000`.
+Add tests where `fcAmt=100`, `xcr=1300`, and persisted `amt=130000`. Expected KRW summary is `130000`, never `100` and never `169000000`.
 
 - [ ] **Step 7: Verify**
 
@@ -700,4 +700,4 @@ git commit -m "docs: 무테이블 DDL 프론트 규칙 반영"
 - Spec coverage: P0 covers `SEC-01`, `SEC-02`; P1 covers `ERR-01`, `ERR-02`, `BE-04`; P2 covers `FE-01`, `FE-02`, `TIP-01`, `TIP-04`; P3 covers `BE-01`, `BE-02`, `BE-03`, `BE-05`, `BE-06`, `TIP-02`, `TIP-03`, `TIP-05`; P4 covers `LOG-01~07`, `EAI-02~04`, `EAI-07`, `BRD-01~04`, `BRD-07~10`.
 - Exclusions: `REV-01~03`, `BRD-05`, `BRD-06`, `BRD-11`, `EAI-01`, `EAI-05`, `EAI-06`, `META-01~03` remain out of implementation scope.
 - Placeholder scan: 통과. 미정 표기와 불완전 구현 지시가 없다.
-- Type consistency: `AuthService.refreshAccessToken(String)` matches the current service method. `review.ts` keeps `loadWarnings: string[]` as the single source of truth for partial load failures.
+- Type consistency: `AuthService.refreshAccessToken(String)` matches the current service method. `review.ts` keeps `loadWarnings: string[]` as the single source of truth for partial load failures. Budget summary code treats `BITEMM.amt` as KRW and `BITEMM.fcAmt` as source amount.
