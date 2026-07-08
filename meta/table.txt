@@ -27,7 +27,7 @@ TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	API_TOK_CONE	API토큰
 TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	ECY_RNW_PUB_TOK_CONE	암호화갱신발행토큰내용		Y		VARCHAR2	900	
 TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	ENO	사원번호		N		VARCHAR2	32	
 TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	END_DTM	종료일시		N		DATE		
-TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	FAM_NM	가족명		Y		VARCHAR2	100	
+TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	FAM_NM	가족명		N	LEGACY	VARCHAR2	100	
 TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	AVL_YN	유효여부		N	'Y'	VARCHAR2	1	
 TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
 TPRMPP_CRTOKM	프로젝트관리_공통갱신토큰기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
@@ -267,7 +267,9 @@ TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	LST_YN	최종여부		Y		V
 TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	SECT_SYS_UTZ_YN	보안시스템운용여부		Y		VARCHAR2	1	
 TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	PRLM_HRK_OGZ_C_CONE	인사상위조직코드내용		Y		VARCHAR2	100	
 TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	SVN_DPM_C	주관부서코드		Y		VARCHAR2	20	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	SVN_DPM_NM	주관부서명		Y		VARCHAR2	100	
 TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	SVN_TEM_C	주관팀코드		Y		VARCHAR2	5	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	SVN_TEM_NM	주관팀명		Y		VARCHAR2	100	
 TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	AMT	금액		Y		NUMBER	18	3
 TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	FC_AMT	외화금액		Y		NUMBER	18	3
 TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	XCR	환율		Y		NUMBER	9	4
@@ -442,7 +444,9 @@ TPRMPP_BRDOCM	프로젝트관리_사전협의기본	REQ_TTL	요청제목		Y		VAR
 TPRMPP_BRDOCM	프로젝트관리_사전협의기본	RVW_FSG_TLM_DT	리뷰완료기한일자		Y		VARCHAR2	8	
 TPRMPP_BRDOCM	프로젝트관리_사전협의기본	PRLM_HRK_OGZ_C_CONE	인사상위조직코드내용		Y		VARCHAR2	100	
 TPRMPP_BRDOCM	프로젝트관리_사전협의기본	SVN_DPM_C	주관부서코드		Y		VARCHAR2	20	
+TPRMPP_BRDOCM	프로젝트관리_사전협의기본	SVN_DPM_NM	주관부서명		Y		VARCHAR2	100	
 TPRMPP_BRDOCM	프로젝트관리_사전협의기본	SVN_TEM_C	주관팀코드		Y		VARCHAR2	5	
+TPRMPP_BRDOCM	프로젝트관리_사전협의기본	SVN_TEM_NM	주관팀명		Y		VARCHAR2	100	
 TPRMPP_BRDOCM	프로젝트관리_사전협의기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
 TPRMPP_BRDOCM	프로젝트관리_사전협의기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
 TPRMPP_BRDOCM	프로젝트관리_사전협의기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
@@ -470,7 +474,9 @@ TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	REQ_TTL	요청�
 TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	RVW_FSG_TLM_DT	리뷰완료기한일자		Y		VARCHAR2	8	
 TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	PRLM_HRK_OGZ_C_CONE	인사상위조직코드내용		Y		VARCHAR2	100	
 TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	SVN_DPM_C	주관부서코드		Y		VARCHAR2	20	
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	SVN_DPM_NM	주관부서명		Y		VARCHAR2	100	
 TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	SVN_TEM_C	주관팀코드		Y		VARCHAR2	5	
+TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	SVN_TEM_NM	주관팀명		Y		VARCHAR2	100	
 TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
 TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	CHG_DTM	변경일시		N		DATE		
 TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	
@@ -639,7 +645,9 @@ TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ODN_YN	경상여부		Y		V
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	PLM_DES	문제설명		Y		VARCHAR2	4000	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	PRLM_HRK_OGZ_C_CONE	인사상위조직코드내용		Y		VARCHAR2	100	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	SVN_DPM_C	주관부서코드		Y		VARCHAR2	20	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	SVN_DPM_NM	주관부서명		Y		VARCHAR2	100	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	SVN_TEM_C	주관팀코드		Y		VARCHAR2	5	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	SVN_TEM_NM	주관팀명		Y		VARCHAR2	100	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	TLR_USID	팀장사용자ID		Y		VARCHAR2	14	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	USID	사용자ID		Y		VARCHAR2	14	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	DVM_DPM_C	개발부서코드		Y		VARCHAR2	20	
@@ -731,7 +739,9 @@ TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	LST_YN	최종
 TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	SECT_SYS_UTZ_YN	보안시스템운용여부		Y		VARCHAR2	1	
 TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	PRLM_HRK_OGZ_C_CONE	인사상위조직코드내용		Y		VARCHAR2	100	
 TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	SVN_DPM_C	주관부서코드		Y		VARCHAR2	20	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	SVN_DPM_NM	주관부서명		Y		VARCHAR2	100	
 TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	SVN_TEM_C	주관팀코드		Y		VARCHAR2	5	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	SVN_TEM_NM	주관팀명		Y		VARCHAR2	100	
 TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	AMT	금액		Y		NUMBER	18	3
 TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	FC_AMT	외화금액		Y		NUMBER	18	3
 TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	XCR	환율		Y		NUMBER	9	4
@@ -800,7 +810,9 @@ TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ODN_YN	경상
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	PLM_DES	문제설명		Y		VARCHAR2	4000	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	PRLM_HRK_OGZ_C_CONE	인사상위조직코드내용		Y		VARCHAR2	100	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	SVN_DPM_C	주관부서코드		Y		VARCHAR2	20	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	SVN_DPM_NM	주관부서명		Y		VARCHAR2	100	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	SVN_TEM_C	주관팀코드		Y		VARCHAR2	5	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	SVN_TEM_NM	주관팀명		Y		VARCHAR2	100	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	TLR_USID	팀장사용자ID		Y		VARCHAR2	14	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	USID	사용자ID		Y		VARCHAR2	14	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	DVM_DPM_C	개발부서코드		Y		VARCHAR2	20	
