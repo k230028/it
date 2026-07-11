@@ -27,6 +27,7 @@
 | ID | 우선순위 | 유형 | 과제 | 근거/조건 |
 | --- | :--: | --- | --- | --- |
 | ERR-03 | 🟢 Low | 진단 | 남은 무시형 실패 경로의 사용자 피드백 기준 정리 | 이번 조치에서 review load warning과 클립보드 진단은 반영됨. 잔여 신규 경로 발견 시 같은 패턴 적용 |
+| ERR-04 | 🟢 Low | 정리 | 반입 SSO 샘플·로컬 저장소 스크립트의 빈 catch 분리 관리 | 운영 소스에서는 신규 빈 catch가 발견되지 않았으나 `it_backend/sso/별첨1...` 벤더 샘플과 `rebuild-local-*-repo.ps1` 인코딩 보정 스크립트에 빈 catch가 남아 있음. 운영 빌드/스캔 대상에서 제외하거나 주석으로 의도를 명시 |
 
 ## 🎨 프론트엔드
 
@@ -34,6 +35,7 @@
 | --- | :--: | --- | --- | --- |
 | FE-01 | 🟡 Medium | 기능 | `info/index.vue` 공지/일정 데이터를 실제 API 또는 운영 데이터 소스로 전환 | KPI·진행현황은 기존 API composable 기반으로 전환 완료. 공지/일정 영역은 운영 데이터 소스 결정 필요 |
 | FE-02 | 🟢 Low | 정리 | 잔여 비용/자원 화면의 파일 크기·금액 표시 중복 함수 공통화 | 예산 목록/승인 0원 표시와 문서·계획 일부는 정리 완료. 기존 dirty 작업 중인 비용/자원 화면은 별도 정리 필요 |
+| FE-03 | 🟢 Low | 스타일 | Prettier 포맷 드리프트 일괄 정리 | 2026-07-11 `npm run format:check` 기준 37개 파일 위반(`app/pages/info/plan/form.vue`, `app/utils/common.ts`, `app/utils/hwpx.ts`, 테스트/문서 다수). 대량 diff 노이즈 방지를 위해 기능 변경이 없는 시점에 `npm run format` 1회 일괄 적용 권장 |
 
 ## ⚙️ 백엔드
 
@@ -41,7 +43,9 @@
 | --- | :--: | --- | --- | --- |
 | BE-02 | 🟡 Medium | 테스트 | 공통 로컬 Oracle `@DataJpaTest` 하네스 기반 대상별 통합 테스트 순차 추가 | `CinfmmRepositoryImpl`은 완료. 잔여 Repository는 기능 변경 시 `integrationTest` 태스크로 추가 |
 | BE-03 | 🟡 Medium | 성능 | 잔여 네이티브/상세 조회 프로젝션 분리 검토 | `ProjectRepositoryImpl`/`CostRepositoryImpl` 목록 프로젝션은 완료. 잔여 후보: `CouncilRepository.findWithDetails`, 4단계 상세 JOIN |
-| BE-06 | 🟢 Low | 문서 | Javadoc 잔여 경고 정리 | `CouncilDto`, `BudgetStatusDto`는 정리 완료. 잔여 후보: `Bprojm`, `ContractController` 등 |
+| BE-06 | 🟢 Low | 문서 | Javadoc 잔여 경고 정리 | `CouncilDto`, `BudgetStatusDto`는 정리 완료. 2026-07-11 전수 측정(`-Xmaxwarns` 임시 적용) 결과 총 985건 — 상위: `Bprojm`(63), `ContractController`(18), `ApplicationDto`(18, default constructor), `CouncilProjectRow`(17), `UmsPayload`(16), `Btermm`(16). Lombok 클래스의 default constructor 경고는 주석만으로 해소 불가하므로 별도 방침 필요 |
+| BE-07 | 🟠 High | DB | `TPRMPP_CFILEM` DDL/Flyway와 엔티티 컬럼명 정합성 확인 | `Cfilem`은 `FL_MPN_ID`, `FL_NM`, `FL_PYS_NM`, `PK_COL_NM`, `PK_CONE`, `FL_TP_CONE`를 사용하나 보조 DDL/점검 SQL은 과거 컬럼명(`FL_MNG_NO`, `ORC_FL_NM`, `SVR_FL_NM`, `ORC_DTT`, `ORC_PK_VL`, `FL_DTT`) 기준. 실제 스키마 확인 후 마이그레이션 또는 보조 SQL 갱신 필요 |
+| BE-08 | 🟡 Medium | 성능 | `TPRMPP_BTERMM` 연결 비용 조회용 인덱스 검토 | 단말기 PK는 `TMN_MNG_NO, SNO`이나 서비스 조회는 `BG_NO`, `BG_SNO`, `DEL_YN` 중심. 실행계획 확인 후 `(BG_NO, BG_SNO, DEL_YN)` 또는 `(BG_NO, DEL_YN, BG_SNO)` 인덱스 검토 |
 
 ## 🧹 Clean Code 부채
 
@@ -49,7 +53,7 @@
 | --- | :--: | --- | --- | --- |
 | CQ-01 | 🟡 Medium | 리팩터링 | 대형 서비스·컨트롤러를 도메인 경계별로 분해 | 대상: `ProjectService`, `CostService`, `BudgetWorkService`, `CouncilController`. 이번 Clean Code 즉시 개선 범위에서는 제외하고, 기능 변경 시 Query/Command·모듈별 컨트롤러 분리와 테스트 분리를 함께 수행 |
 | CQ-02 | 🟡 Medium | 리팩터링 | 대형 프론트 composable/page를 하위 composable과 표시 컴포넌트로 분해 | 대상: `useCostListPage.ts`, `projects/form.vue`, `plan/[id].vue`, `usePdfReport.ts`. 단일 파일 리팩터링만으로 끝내지 말고 기존 화면 테스트 또는 수동 QA 기준을 먼저 세운 뒤 단계적으로 진행 |
-| CQ-03 | 🟡 Medium | 타입 | 프로덕션 코드의 `any`와 `eslint-disable-next-line @typescript-eslint/no-explicit-any`를 도메인별로 제거 | 이번 개선에서는 `odnYn` 버그 관련 핵심 경로만 처리. 잔여 184건은 결재/예산/PDF, 게시판, 관리자 화면 순서로 기존 타입 재사용 또는 slot 타입 보강 |
+| CQ-03 | 🟡 Medium | 타입 | 프로덕션 코드의 `any`와 `eslint-disable-next-line @typescript-eslint/no-explicit-any`를 도메인별로 제거 | 2026-07-11 스캔 기준 프론트 `app/`/`server/`에 398라인 매칭. 결재/사업집행 4단계 페이지, Tiptap/Excel/PDF, 가이드 문서 CRUD 순서로 기존 타입 재사용 또는 우회 사유 축소 |
 | CQ-04 | 🟡 Medium | 테스트 | PDF/HWPX/Excel 산출물 회귀 테스트 기준 수립 | `usePdfReport.ts` 분해 전후 결과 차이를 검증할 최소 fixture와 스냅샷/구조 검증 기준 필요 |
 | CQ-05 | 🟡 Medium | 테스트 | E2E 핵심 3개 시나리오를 정기 실행 경로에 편입 | 대상: 로그인, 프로젝트 조회/생성, 결재 처리. 로컬 Oracle·인증 데이터 의존성을 정리한 뒤 CI 또는 주기 실행 명령으로 고정 |
 | CQ-06 | 🟢 Low | 리팩터링 | `Bcostm.update`의 20개 매개변수를 `UpdateCommand` record로 전환 | `Bprojm.UpdateCommand` 선례를 따르되 호출부 영향이 넓으므로 비용 도메인 리팩터링과 함께 처리 |
