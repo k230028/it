@@ -1,3 +1,0 @@
-﻿"category","table","column","field","local","prod","detail"
-"COLUMN_ONLY_PROD","TPRMPP_BRDOCM","PRLM_HRK_OGZ_C_CONE","컬럼","","VARCHAR2(100)","운영 CSV에만 존재"
-"COLUMN_ONLY_PROD","TPRMPP_CRTOKM","ECY_RNW_PUB_TOK_CONE","컬럼","","VARCHAR2(900)","운영 CSV에만 존재"
