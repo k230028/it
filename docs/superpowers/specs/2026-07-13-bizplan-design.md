@@ -71,8 +71,10 @@ QTY, AMT, FC_AMT, CUR_C, XCR, XCR_BSE_DT, CTT_SNO / BBIZCM: CTT_NM, NOW_CTT_MANR
 
 ### 3.4 행 관리 정책
 
-- 자식 3테이블의 `SNO`는 안정 유지: 기존 행 UPDATE, 화면에서 삭제한 행은 `DEL_YN='Y'`
-  소프트 삭제, 신규 행은 서버가 MAX+1 채번. (품목 `CTT_SNO`가 계약 `SNO`를 참조하므로 재부여 금지)
+- 자식 3개 테이블의 `SNO`는 **안정 유지**: 기존 행은 SNO로 UPDATE, 화면에서 지운 행은 `DEL_YN='Y'`
+  소프트 삭제, 신규 행은 **프론트가 현재 최대 SNO+1로 부여**하고 서버는 (ABUS_MNG_NO, SNO) 기준
+  upsert 한다(품목 `CTT_SNO`가 같은 요청의 신규 계약 SNO를 참조할 수 있어야 하므로 서버 채번 불가).
+  품목의 `CTT_SNO`가 계약 `SNO`를 참조하므로 재부여하지 않습니다.
 - `TOT_RQM_AMT` = 유효 품목(`DEL_YN='N'`) `AMT` 합계로 저장 시 서버가 자동 계산.
 - `BG_NO`는 최초 생성 시 BPROJA의 예산편성 행(`CNCD_RFR_NO LIKE 'BG-%'`)에서 자동 연계, 없으면 NULL. 화면 읽기 전용.
 - `ABUS_NM`은 생성 시 `TPRMPP_BPROJM.ABUS_NM` 복사(문서 스냅샷).
