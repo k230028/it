@@ -8,7 +8,6 @@ AI 어시스턴트는 코드 생성 시 모든 주석을 한글로 작성합니�
 
 - 명칭 : IT Project Portal (IT 정보화 포탈)
 - 주요 기능: 정보화 예산, 사업, 인력 관리, 관리자 실시간 로그 모니터링
-- 사용자: 약 3,000명의 사내 임직원
 
 ## 2. 디렉토리 구조 및 SoT 분배
 
@@ -79,6 +78,7 @@ it/
 - 자격등급은 `ITPAD001=ROLE_ADMIN`, `ITPAD002=ROLE_INFOSEC_ADMIN`, `ITPZZ002=ROLE_DEPT_MANAGER`, 그 외 `ROLE_USER`로 매핑합니다. `ROLE_INFOSEC_ADMIN`은 일반 관리자 권한과 구분하며 협의회 심의유형 범위는 서버 서비스에서 검증합니다.
 - 프론트의 `it-portal-user` 쿠키와 라우트 가드는 UX 보호용입니다. 서버 권한 판단은 반드시 JWT 클레임 기반 `@PreAuthorize` 또는 서비스 계층 권한 검증에서 수행합니다.
 - DB 비밀번호, JWT 시크릿, 외부 API 키는 운영 배포 시 환경변수 또는 비공개 프로파일에서 주입합니다.
+- 운영 프로파일은 비밀값·허용 Origin·프론트 URL을 fail-fast로 검증하고 SSO 직접 사번, 개발 사용자 전환, 모의 SSO, Bearer 폴백, 비보안 쿠키 설정을 허용하지 않습니다.
 - 상세 정책은 `it_backend/CLAUDE.md` 인증 섹션을 SoT로 따릅니다.
 
 ### 4.3 문서 관리
@@ -150,9 +150,13 @@ it/
 
 ## 6. Health Stack
 
-| 명령                | 디렉토리      | 용도               |
-| ------------------- | ------------- | ------------------ |
-| `npm run typecheck` | `it_frontend` | 타입 체크          |
-| `npm run lint`      | `it_frontend` | 린트               |
-| `npm test`          | `it_frontend` | 프론트 단위 테스트 |
-| `./gradlew test`    | `it_backend`  | 백엔드 테스트      |
+| 명령                                       | 디렉토리      | 용도                                  |
+| ------------------------------------------ | ------------- | ------------------------------------- |
+| `npm run format:check`                     | `it_frontend` | Prettier 검사                         |
+| `npm run check`                            | `it_frontend` | 타입 검사와 ESLint                    |
+| `npm run lint:css`                         | `it_frontend` | CSS 변경 시 Stylelint                 |
+| `npm test`                                 | `it_frontend` | 프론트 단위 테스트                    |
+| `npm run test:e2e`                         | `it_frontend` | 핵심 사용자 흐름 E2E 테스트           |
+| `./gradlew test`                           | `it_backend`  | 백엔드 단위·슬라이스 테스트           |
+| `./gradlew integrationTest`                | `it_backend`  | 실제 Oracle 매핑·QueryDSL 통합 테스트 |
+| `./gradlew jacocoTestCoverageVerification` | `it_backend`  | 설정된 커버리지 기준 확인             |

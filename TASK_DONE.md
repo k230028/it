@@ -31,7 +31,7 @@
 
 ### ✅ 2026-07-19 보안·에러 처리 Remediation Phase 2
 
-> `TASK.md`의 `SEC-03`, `SEC-07`, `ERR-07`을 구현·검증하고 종료 이관했습니다. 설계는 `docs/superpowers/specs/2026-07-19-security-error-handling-remediation-design.md`, 실행 계획은 `docs/superpowers/plans/2026-07-19-security-error-handling-remediation-phase-2.md`를 따릅니다. SEC-06은 원문 제거 마이그레이션의 Flyway 버전 중복, ERR-05는 그 뒤 마이그레이션 미적용이 재확인되어 `TASK.md`로 환원했습니다.
+> `TASK.md`의 `SEC-03`, `SEC-07`, `ERR-07`을 구현·검증하고 종료 이관했습니다. 설계는 `docs/superpowers/specs/2026-07-19-security-error-handling-remediation-design.md`, 실행 계획은 `docs/superpowers/plans/2026-07-19-security-error-handling-remediation-phase-2.md`를 따릅니다. SEC-06은 원문 제거 마이그레이션의 Flyway 버전 중복, ERR-05는 그 뒤 마이그레이션 미적용이 재확인되어 `TASK.md`로 환원했습니다(이후 아래 2026-07-19 배포 정합성 후속에서 종료).
 
 | 상태 | ID | 과제 | 완료 근거 |
 | :--: | :--: | --- | --- |
@@ -41,6 +41,17 @@
 
 - 주요 파일: `it_backend/common/system/service/AuthService`, `EnvironmentValidator`, `common/notification/**`, `infra/eai/config/GweProperties`, `it_frontend/app/components/editor/**`, `app/composables/**`, `app/pages/**`, `app/stores/review.ts`
 - 검증 명령: `it_backend ./gradlew clean test`, `it_frontend npm run format:check`, `npm run check`, `npm test`, `npx playwright test tests/e2e/security-error-remediation-phase2.spec.ts --project=chromium`
+
+### ✅ 2026-07-19 보안·에러 처리 배포 정합성 후속 (SEC-06·ERR-05)
+
+> Phase 2에서 `TASK.md`로 환원했던 `SEC-06`(Flyway 버전 중복)·`ERR-05`(알림 outbox 마이그레이션 미적용)를 마이그레이션 개번·적용·검증 완료로 종료 이관했습니다.
+
+| 상태 | ID | 과제 | 완료 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | SEC-06 | Refresh Token 원문 제거 마이그레이션의 Flyway 버전 중복 해소·적용 | `it_database` 커밋 `0e286a6`이 `V20260719_001__RemovePlainRefreshToken.sql`을 `V20260719_003`으로 개번했습니다(성공 적용된 SEC-05 `V20260719_001__NormalizeCfilemParentKeys.sql`은 미수정, 설치 순번 45 유지). 로컬 `ITPOWN.FLYWAY_SCHEMA_HISTORY`에 설치 순번 47·버전 `20260719.003`·성공 상태로 2026-07-19 적용을 확인했습니다. 적용 후 `TPRMPP_CRTOKM.API_TOK_CONE`은 NULL 허용으로 전환되고 전 행 원문이 NULL이며, `ECY_RNW_PUB_TOK_CONE`은 NOT NULL로 전환되고 해시 누락 0행입니다. |
+| ✅ Done | ERR-05 | 알림 outbox 상태 마이그레이션 적용 | `V20260719_002__AddNotificationDispatchState.sql`이 설치 순번 46·성공 상태로 2026-07-19 적용을 확인했습니다. `TPRMPP_CINFMM`에 `INFM_SD_STS_C`(NOT NULL, 기본 '02')·`RE_TRY_NOT`(NOT NULL, 기본 0)·`ERR_CONE`(NULL 허용) 컬럼과 `IX_CINFMM_SD_RETRY(INFM_SD_STS_C, RE_TRY_NOT, SD_DTM)` 인덱스가 생성됐습니다. 재시도 동작은 `NotificationDispatchServiceTest`·`CinfmmTest` 단위 6건과 `CinfmmRepositoryImplTest` 로컬 Oracle 통합 2건 통과로 검증했습니다. |
+
+- 검증 명령: `it_backend ./gradlew test --tests '*NotificationDispatchServiceTest' --tests '*CinfmmTest' --tests '*CinfmmRepositoryImplTest'`, `./gradlew integrationTest --tests '*CinfmmRepositoryImpl*'` 모두 성공(실패·오류·스킵 0건).
 
 ### 🧩 2026-07-02 협의회 후속 정비 + 작성자 소속 컬럼
 
