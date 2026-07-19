@@ -1,6 +1,6 @@
 # ✅ IT Portal 완료·종료 내역 (Archive)
 
-> 🗓️ **기준일:** 2026-07-07
+> 🗓️ **기준일:** 2026-07-19
 > 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️) 항목을 보관합니다.
 
 ### 🔑 범례 (Legend)
@@ -15,19 +15,31 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-07-19 보안·에러 처리 Remediation Phase 1
+
+> `TASK.md`의 `SEC-04`, `SEC-05`, `ERR-06`을 코드·정책 문서·회귀 테스트 및 로컬 DB 적용 이력과 대조하고 구현 완료로 판정해 종료 이관했습니다. 설계는 `docs/superpowers/specs/2026-07-19-security-error-handling-remediation-design.md`의 Phase 1을 따릅니다.
+
+| 상태 | ID | 과제 | 완료 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | SEC-04 | Access/Refresh Token 용도 구분과 검증 강제 | JWT에 `tokenUse=access/refresh`를 발급하고 Access 필터와 Refresh 서비스가 각 용도 allowlist를 검증합니다. 과도기 Access 토큰만 claim 누락을 허용하며 Refresh 경로는 누락·오용·비문자 claim을 거부하고 401 응답과 인증 쿠키 삭제를 수행합니다. |
+| ✅ Done | SEC-05 | 비게시판 업무 파일의 부모 자원 기준 읽기 권한 검증 | `FileReadAuthorizerRegistry`와 게시판·가이드·요구사항 정의서·협의회 authorizer를 적용했습니다. 미등록·null 종류는 기본 거부하고 목록·메타·다운로드·미리보기 네 경로가 동일 검증을 사용합니다. 부모 키 요청 캐시와 레거시 키 정규화도 반영했으며, `V20260719_001__NormalizeCfilemParentKeys.sql`이 로컬 DB 설치 순번 45·성공 상태로 적용된 것을 확인했습니다. |
+| ✅ Done | ERR-06 | 감사로그 저장 실패의 지속 탐지·격리 | 원 업무 커밋 후 감사로그를 `REQUIRES_NEW`로 저장하고 실패를 `audit.log.write.failure` 메트릭과 구조화 ERROR 로그로 노출합니다. `ThreadLocal` 재진입 가드로 실패 기록의 재귀를 차단하고 `/actuator/metrics`는 관리자에게만 허용합니다. 감사 저장 실패가 원 업무를 롤백하지 않는 계약도 Oracle 통합 테스트로 확인했습니다. |
+
+- 주요 구현: `it_backend` SEC-04 커밋 `c507935`, `5ecb527`, `cf70912`, `8137fc5`; SEC-05 커밋 `1608287`, `c7512cb`, `5206e6e`, `b78ef29`, `a840483`, `d8212ec`, `ee25c14`, `94601a3`, `32b1f22`, `fb0f7ea`, `2d34dc6`, `82f5b06`; ERR-06 커밋 `66d3658`, `05e2689`, `0a337bf`, `cbf770e`, `6627817`, `204df59`, `0506a7c`.
+- DB 정합화: `it_database` 커밋 `3183b60`, `it_database/migrations/V20260719_001__NormalizeCfilemParentKeys.sql`; 로컬 `ITPOWN.FLYWAY_SCHEMA_HISTORY` 적용 성공 확인.
+- 2026-07-19 재검증: SEC-05 코드 범위를 포함한 선별 단위·서비스·컨트롤러 테스트 159건과 Oracle 통합 테스트(`FileReadAuthorizationIT`, `AuditFailureIsolationIT`) 11건 모두 통과(실패·오류·스킵 0건).
+
 ### ✅ 2026-07-19 보안·에러 처리 Remediation Phase 2
 
-> `TASK.md`의 `SEC-03`, `SEC-06`, `SEC-07`, `ERR-05`, `ERR-07`을 구현·검증하고 종료 이관했습니다. 설계는 `docs/superpowers/specs/2026-07-19-security-error-handling-remediation-design.md`, 실행 계획은 `docs/superpowers/plans/2026-07-19-security-error-handling-remediation-phase-2.md`를 따릅니다.
+> `TASK.md`의 `SEC-03`, `SEC-07`, `ERR-07`을 구현·검증하고 종료 이관했습니다. 설계는 `docs/superpowers/specs/2026-07-19-security-error-handling-remediation-design.md`, 실행 계획은 `docs/superpowers/plans/2026-07-19-security-error-handling-remediation-phase-2.md`를 따릅니다. SEC-06은 원문 제거 마이그레이션의 Flyway 버전 중복, ERR-05는 그 뒤 마이그레이션 미적용이 재확인되어 `TASK.md`로 환원했습니다.
 
 | 상태 | ID | 과제 | 완료 근거 |
 | :--: | :--: | --- | --- |
 | ✅ Done | SEC-03 | GWE `IF_ID` 설정 단일화 | `GweProperties`와 `eai.gwe.if-id`를 유일한 설정 원천으로 적용하고 dispatcher·집행 4단계의 중복 상수를 제거했습니다. |
-| ✅ Done | SEC-06 | Refresh Token 해시 전용 저장·쿠키 기반 로그아웃 | DB에는 소문자 SHA-256 HEX만 저장하고 원문 컬럼을 제거했습니다. Access Token 만료 상태에서도 Refresh 쿠키로 토큰 패밀리를 폐기합니다. |
 | ✅ Done | SEC-07 | 운영 위험 토글 기동 차단·SSO 세션 고정 방어 | `prod`에서 mock SSO·Bearer 폴백·`Secure=false`를 fail-fast 처리하고 SSO 인증 성공 시 세션 ID를 교체합니다. |
-| ✅ Done | ERR-05 | 알림 outbox 상태·제한 재시도·운영 탐지 | `CINFMM`에 PENDING/SENT/FAILED와 시도 횟수를 추가하고 60초·50건·최대 5회 재시도를 적용했습니다. 적재 실패는 원 업무를 롤백하지 않고 `notification.persist.failure` 메트릭으로 탐지합니다. |
 | ✅ Done | ERR-07 | 정상 빈 상태와 조회·변환 실패 UI 분리 | 에디터·자동완성·통화·예산기간·사업개요·과거버전·PDF/인쇄 경로에 경고, 재시도, 기존 데이터 유지 또는 대체 출력을 적용했습니다. |
 
-- 주요 파일: `it_backend/common/system/service/AuthService`, `EnvironmentValidator`, `common/notification/**`, `infra/eai/config/GweProperties`, `it_frontend/app/components/editor/**`, `app/composables/**`, `app/pages/**`, `app/stores/review.ts`, `it_database/migrations/V20260719_001__RemovePlainRefreshToken.sql`, `V20260719_002__AddNotificationDispatchState.sql`
+- 주요 파일: `it_backend/common/system/service/AuthService`, `EnvironmentValidator`, `common/notification/**`, `infra/eai/config/GweProperties`, `it_frontend/app/components/editor/**`, `app/composables/**`, `app/pages/**`, `app/stores/review.ts`
 - 검증 명령: `it_backend ./gradlew clean test`, `it_frontend npm run format:check`, `npm run check`, `npm test`, `npx playwright test tests/e2e/security-error-remediation-phase2.spec.ts --project=chromium`
 
 ### 🧩 2026-07-02 협의회 후속 정비 + 작성자 소속 컬럼
@@ -477,6 +489,7 @@
 
 | 상태 | 일자 | 영역 | 조치 |
 | :--: | :--: | :--: | --- |
+| ✅ Done | 2026-07-19 | 보안/에러 처리 | SEC-04·SEC-05·ERR-06 완료 재검증 — JWT 용도 allowlist, 업무 파일 부모 권한·default-deny와 SEC-05 마이그레이션 적용 성공, 감사로그 실패 메트릭·재진입 방지·트랜잭션 격리를 확인. 선별 테스트 159건과 Oracle 통합 테스트 11건 통과. SEC-06은 별도 Flyway 정합성 잔여로 환원. |
 | ✅ Done | 2026-07-19 | 에러처리/비운영 자산 | ERR-03·ERR-04 완료 — HWPX 부분 누락 경고, 파일 메타 실패 ID 보존·재시도, 보조 조회 오류 상태, 손상 설정 복구, Tiptap rate-limit 진단을 반영하고 SSO/OSS 비운영 경계와 스캔 제외·삭제 판단 기준을 문서화. 프론트 전체 게이트와 백엔드 `clean test` 통과. |
 | ✅ Done | 2026-06-29 | 보안 | 보안 하드닝 구현 완료 — `TASK.md` 🔒 보안 § 잔여 6건(#1·#2·#3·#5·#6·#7) 조치·`TASK_DONE.md` 이관. ① `Authorization: Bearer` 헤더 폴백 `app.auth.allow-bearer-header` 게이팅(base/prod=false)·CLAUDE.md §5.6; ② `AdminSecurityBoundaryTest`로 `/api/admin/**` JWT 필수(`it-portal-user` 무시)→401 입증 + 프론트 `access-control.spec.ts`; ③ SSO 운영 설정 검증(`EnvironmentValidator` prod 가드 + `app.dev.user-switch.enabled` 추가, `ClientIpResolver` 기적용); ④ [T10] Refresh Token 재사용 탐지(`TPRMPP_CRTOKM` FAM_NM/AVL_YN, Flyway `V20260629_001`, `AuthService` 패밀리 회전+grace 윈도우); ⑤ Tiptap 변수 metadata bbrC 부서 권한 필터(`getMetadata(user)`·캐시 키 분리); ⑥ 사업집행 4단계 `changeStatus` ADMIN 전용 전이(`OwnershipVerifier.verifyAdmin` 4개 서비스, CLAUDE.md §5.18). #4 Blocklist는 감내(☑️ Accepted)로 보안 §에 유지 → 보안 § 잔여 = Blocklist(감내) 외 0건. plan `docs/superpowers/plans/2026-06-29-security-hardening.md`·design `docs/superpowers/specs/2026-06-29-security-hardening-design.md`. |
 | ✅ Done | 2026-06-29 | 백로그 | TASK.md 재검증 반영 — `TASK.md` 잔여 항목을 6개 병렬 에이전트로 코드 재대조. 이미 해소·정정 완료 또는 코드 부재로 실행 불가한 7건 종료 이관(`$apiFetch` 401 E2E 검증·`AdminDto` JavaDoc·메타 `BPAYTM/BPAYTL.DFR_DT` N→Y·메타 `BPOVWM PRJ_BG_AMR→RQM_BG_AMT`·실시간로그 `V20260531_001` STALE·게시판 `inqAthC` 공통필터 추출·`inqAthC/enrAthC` 매핑 통합테스트 — 후 2건은 코드 부재로 실행불가). 재범위/문구 정정 7건은 `TASK.md` 본문 반영(Open 유지): `EvaluationService`·`CommitteeService` N+1(ScheduleService 완료)·`CouncilService` L298 per-evaluator count 분리·클래스 JavaDoc 잔여(전수 86%)·IT부문 예산 화면 wiring 잔여·본문 최대크기 정책(DECISION)·`findProjectsForCouncilAll/ByDepartment`(18컬럼) 메서드명/컬럼수 정정·환율 환산 활성 충돌(`BudgetWorkService` no-xcr vs `ProjectBudgetSummaryService` ×xcr). 2차 안전 묶음 W2b 착수. plan `docs/superpowers/plans/2026-06-29-task-recheck-improvement.md`·design `docs/superpowers/specs/2026-06-29-task-recheck-improvement-design.md`. |
