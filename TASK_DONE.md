@@ -455,10 +455,29 @@
 | ✅ Done | 🟡 Medium | `stream().collect(Collectors.toList())` → `.toList()` 전환 | 구현 2026-06-22: 50/51건 전환 (소비자 코드 가변성 확인) |
 | ✅ Done | 🟢 Low | `BoardCommentService` 미사용 import 제거 · `FileService` `FL_MNG_NO_RETRY` 제거 | 구현 2026-06-22: dead code 정리 |
 
+### 2026-07-19 — 보안·에러 처리 Remediation Phase 3 (ERR-03·ERR-04)
+
+- **변경 파일**
+  - 프론트 진단·복구: `app/utils/diagnostics.ts`, `app/utils/file-meta-update.ts`, `app/composables/useHwpxExport.ts`, `app/composables/useExcalidrawAttachment.ts`, 문서 등록·상세/사업 등록/가이드/예산 현황 화면, Tiptap 확장·표 도구와 관련 단위 테스트.
+  - 비운영 자산 경계: `it_backend/sso/README.md`, 양쪽 `oss/README.md`, Maven/npm 로컬 저장소 PowerShell 도구의 의도적 인코딩 실패 진단.
+- **자동 검증 4개**
+  1. `it_frontend npm run format:check` — PASS.
+  2. `it_frontend npm run check` — PASS(0 errors, 기존 `vue/attribute-hyphenation` 경고 3건).
+  3. `it_frontend npm test` — 전체 Vitest suite PASS.
+  4. `it_backend .\gradlew.bat clean test --console=plain` — `BUILD SUCCESSFUL`.
+- **QA 시나리오 5개 결과** — 브라우저 수동 조작 대신 동일 실패를 자동 주입하거나 소스 계약으로 재현했다.
+  1. 부서 조회·Excalidraw 변환 실패 후에도 HWPX 생성이 계속되고 `일부 내용 제외` 경고가 각각 1회 노출됨 — `useHwpxExport.direct.test.ts` PASS.
+  2. 파일 메타 일부 실패 ID 보존, 경고와 재시도 버튼, 성공 ID 치환 계약 — `file-meta-update.test.ts`, `useExcalidrawAttachment.test.ts`, `document-file-meta-warning.test.ts` PASS.
+  3. 가이드 첨부 실패를 정상 빈 목록과 구분하고 재시도 제공 — `guide-attachment-error.test.ts` PASS.
+  4. 손상된 예산 컬럼 설정 삭제, 기본값 복구, 제한 경고 계약 — `budgetStatusFooterTotals.test.ts` PASS.
+  5. Tiptap DOM 매핑 반복 실패를 분당 1회·`tablePos` 포함 진단으로 제한하고 DOM 전용 보정이 문서 모델을 변경하지 않음 — `tiptap-error-diagnostics.test.ts`, `useTiptapTableTools.test.ts` PASS.
+- **벤더 샘플 유지 결정** — SSO 공급 계약과 장애 대응 참고자료이므로 유지한다. Gradle `main`·`test` 소스셋과 운영 WAR에는 포함하지 않고, 향후 정적분석에서는 `it_backend/sso/**`를 vendor/non-production 경로로 제외한다. 삭제는 계약·보존 기간·운영 담당자 승인을 확인하는 별도 작업에서만 결정한다.
+
 ## 📋 완료 로그 (시간순)
 
 | 상태 | 일자 | 영역 | 조치 |
 | :--: | :--: | :--: | --- |
+| ✅ Done | 2026-07-19 | 에러처리/비운영 자산 | ERR-03·ERR-04 완료 — HWPX 부분 누락 경고, 파일 메타 실패 ID 보존·재시도, 보조 조회 오류 상태, 손상 설정 복구, Tiptap rate-limit 진단을 반영하고 SSO/OSS 비운영 경계와 스캔 제외·삭제 판단 기준을 문서화. 프론트 전체 게이트와 백엔드 `clean test` 통과. |
 | ✅ Done | 2026-06-29 | 보안 | 보안 하드닝 구현 완료 — `TASK.md` 🔒 보안 § 잔여 6건(#1·#2·#3·#5·#6·#7) 조치·`TASK_DONE.md` 이관. ① `Authorization: Bearer` 헤더 폴백 `app.auth.allow-bearer-header` 게이팅(base/prod=false)·CLAUDE.md §5.6; ② `AdminSecurityBoundaryTest`로 `/api/admin/**` JWT 필수(`it-portal-user` 무시)→401 입증 + 프론트 `access-control.spec.ts`; ③ SSO 운영 설정 검증(`EnvironmentValidator` prod 가드 + `app.dev.user-switch.enabled` 추가, `ClientIpResolver` 기적용); ④ [T10] Refresh Token 재사용 탐지(`TPRMPP_CRTOKM` FAM_NM/AVL_YN, Flyway `V20260629_001`, `AuthService` 패밀리 회전+grace 윈도우); ⑤ Tiptap 변수 metadata bbrC 부서 권한 필터(`getMetadata(user)`·캐시 키 분리); ⑥ 사업집행 4단계 `changeStatus` ADMIN 전용 전이(`OwnershipVerifier.verifyAdmin` 4개 서비스, CLAUDE.md §5.18). #4 Blocklist는 감내(☑️ Accepted)로 보안 §에 유지 → 보안 § 잔여 = Blocklist(감내) 외 0건. plan `docs/superpowers/plans/2026-06-29-security-hardening.md`·design `docs/superpowers/specs/2026-06-29-security-hardening-design.md`. |
 | ✅ Done | 2026-06-29 | 백로그 | TASK.md 재검증 반영 — `TASK.md` 잔여 항목을 6개 병렬 에이전트로 코드 재대조. 이미 해소·정정 완료 또는 코드 부재로 실행 불가한 7건 종료 이관(`$apiFetch` 401 E2E 검증·`AdminDto` JavaDoc·메타 `BPAYTM/BPAYTL.DFR_DT` N→Y·메타 `BPOVWM PRJ_BG_AMR→RQM_BG_AMT`·실시간로그 `V20260531_001` STALE·게시판 `inqAthC` 공통필터 추출·`inqAthC/enrAthC` 매핑 통합테스트 — 후 2건은 코드 부재로 실행불가). 재범위/문구 정정 7건은 `TASK.md` 본문 반영(Open 유지): `EvaluationService`·`CommitteeService` N+1(ScheduleService 완료)·`CouncilService` L298 per-evaluator count 분리·클래스 JavaDoc 잔여(전수 86%)·IT부문 예산 화면 wiring 잔여·본문 최대크기 정책(DECISION)·`findProjectsForCouncilAll/ByDepartment`(18컬럼) 메서드명/컬럼수 정정·환율 환산 활성 충돌(`BudgetWorkService` no-xcr vs `ProjectBudgetSummaryService` ×xcr). 2차 안전 묶음 W2b 착수. plan `docs/superpowers/plans/2026-06-29-task-recheck-improvement.md`·design `docs/superpowers/specs/2026-06-29-task-recheck-improvement-design.md`. |
 | ✅ Done | 2026-06-29 | 백로그 | 영향도 낮은 백로그 묶음 처리 — 실행 로드맵 W2(코드부채)+Low 잔여 13건을 단독 수정 가능한 영향도 낮은 작업으로 묶어 4 PR(it_backend `b58558d..1da0e32`, it_frontend `9035174`)로 처리·`TASK_DONE.md` 이관. SSO eno 로그 INFO→DEBUG 강등, `@Valid` 보강(Council/BoardPost), 클래스레벨 `@Transactional(readOnly)`(Plan/LoginAttempt), N+1 제거 4건(ScheduleService·CouncilService.deriveCurrentYearBudget·Deliberation/Contract/Payment.get), `CinfmmRepositoryImpl` 감사컬럼 명시 SET, `BtermmL` length 600→200, `ApplicationContextHolder` 미사용 메서드/구주석 제거, `CodeNameMapBuilder` common.util 이동, `HostAddressProvider` 진단 로깅, council-request/result catch 통일. W2에 묶여 있던 2건(`changeStatus` role 분기·환율 환산 규칙 통일)은 업무요건/단일규칙 결정 선행 필요로 카브아웃하여 W3 재범위(Open 유지). 설계/계획: `docs/superpowers/specs/2026-06-29-low-impact-task-bundling-design.md`, `docs/superpowers/plans/2026-06-29-low-impact-task-bundling.md`. |
