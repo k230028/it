@@ -94,9 +94,9 @@ TASK.md 백엔드 섹션에 남은 과제는 정합성 결함 1건(BE-09, High),
 
 - 상위 오염원의 누락 주석을 한글 주석 원칙에 따라 수동 보강한다: `Bprojm`(63건), `ContractController`(18건), `ApplicationDto`(18건), `CouncilProjectRow`(17건), `UmsPayload`(16건), `Btermm`(16건).
 - Lombok 기본 생성자 경고 정책:
-  - 핵심 DTO는 Javadoc을 단 명시적 no-arg 생성자로 전환한다.
-  - 잔여 대량 DTO는 허용 기준으로 문서화하고 총량 기준선을 기록한다.
-  - 정책은 `it_backend/CLAUDE.md`에 규칙으로 남긴다.
+  - 이번에 주석을 보강하는 상위 오염원 중 기본 생성자 경고가 있는 클래스(`ApplicationDto` 18건 등)는 Javadoc을 단 명시적 no-arg 생성자로 전환한다.
+  - 잔여 대량 DTO는 허용 기준으로 문서화한다. 총량 기준선 수치는 시점성 정보이므로 `CLAUDE.md`가 아닌 TASK.md의 BE-06 항목 메모(항목 유지 시) 또는 README 변경 이력에 기록한다.
+  - 정책(규칙)만 `it_backend/CLAUDE.md`에 남긴다.
 - 측정: `-Xmaxwarns` 임시 적용으로 전수 재측정한다(javadoc 기본 출력 상한 100건 우회).
 
 ### 5.3 완료 기준
