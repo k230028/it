@@ -15,6 +15,21 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-07-19 보안·에러 처리 Remediation Phase 2
+
+> `TASK.md`의 `SEC-03`, `SEC-06`, `SEC-07`, `ERR-05`, `ERR-07`을 구현·검증하고 종료 이관했습니다. 설계는 `docs/superpowers/specs/2026-07-19-security-error-handling-remediation-design.md`, 실행 계획은 `docs/superpowers/plans/2026-07-19-security-error-handling-remediation-phase-2.md`를 따릅니다.
+
+| 상태 | ID | 과제 | 완료 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | SEC-03 | GWE `IF_ID` 설정 단일화 | `GweProperties`와 `eai.gwe.if-id`를 유일한 설정 원천으로 적용하고 dispatcher·집행 4단계의 중복 상수를 제거했습니다. |
+| ✅ Done | SEC-06 | Refresh Token 해시 전용 저장·쿠키 기반 로그아웃 | DB에는 소문자 SHA-256 HEX만 저장하고 원문 컬럼을 제거했습니다. Access Token 만료 상태에서도 Refresh 쿠키로 토큰 패밀리를 폐기합니다. |
+| ✅ Done | SEC-07 | 운영 위험 토글 기동 차단·SSO 세션 고정 방어 | `prod`에서 mock SSO·Bearer 폴백·`Secure=false`를 fail-fast 처리하고 SSO 인증 성공 시 세션 ID를 교체합니다. |
+| ✅ Done | ERR-05 | 알림 outbox 상태·제한 재시도·운영 탐지 | `CINFMM`에 PENDING/SENT/FAILED와 시도 횟수를 추가하고 60초·50건·최대 5회 재시도를 적용했습니다. 적재 실패는 원 업무를 롤백하지 않고 `notification.persist.failure` 메트릭으로 탐지합니다. |
+| ✅ Done | ERR-07 | 정상 빈 상태와 조회·변환 실패 UI 분리 | 에디터·자동완성·통화·예산기간·사업개요·과거버전·PDF/인쇄 경로에 경고, 재시도, 기존 데이터 유지 또는 대체 출력을 적용했습니다. |
+
+- 주요 파일: `it_backend/common/system/service/AuthService`, `EnvironmentValidator`, `common/notification/**`, `infra/eai/config/GweProperties`, `it_frontend/app/components/editor/**`, `app/composables/**`, `app/pages/**`, `app/stores/review.ts`, `it_database/migrations/V20260719_001__RemovePlainRefreshToken.sql`, `V20260719_002__AddNotificationDispatchState.sql`
+- 검증 명령: `it_backend ./gradlew clean test`, `it_frontend npm run format:check`, `npm run check`, `npm test`, `npx playwright test tests/e2e/security-error-remediation-phase2.spec.ts --project=chromium`
+
 ### 🧩 2026-07-02 협의회 후속 정비 + 작성자 소속 컬럼
 
 > `TASK.md`에서 종료 이관. 협의회 관리 액션 서버 권한·컬럼 드리프트·생략판정 필터 3건은 `REVIEW.md` 델타 정비 중 라이브 스키마/코드 대조로 완료 확인. 작성자 소속 컬럼(AuthorOrg)은 신규 구현·테스트 완료. 코드 커밋은 중첩 repo(`it_backend` main `20fcafb`·`769130a`·`9432023`, `it_database` main `6feb16e`).
