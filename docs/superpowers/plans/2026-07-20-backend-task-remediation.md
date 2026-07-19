@@ -4,7 +4,7 @@
 
 **Goal:** TASK.md 백엔드 섹션의 진행 중 과제 6건(BE-02/03/06/09/10/11)을 위험도 순서(Phase A→B→C)로 해소한다.
 
-**Architecture:** 비결정 첫 행 선택은 패키지 전용 정적 선택 헬퍼(순수 함수)로 추출해 단위 테스트하고, 팀 조회 N+1은 `findByTemCIn` 배치 + 공용 `UserRepresentativeSelector`로 통일한다. DB 정합(BE-11)은 ORM 선언 완화만 수행한다. BE-03은 조사 리포트 기반으로 명백 후보만 프로젝션 분리하고, BE-06은 상위 오염원 주석 보강 + Lombok 기본 생성자 정책화로 마감한다.
+**Architecture:** 비결정 첫 행 선택은 패키지 전용 정적 선택 헬퍼(순수 함수)로 추출해 단위 테스트하고, 팀 조회 N+1은 `findByTemCInAndDelYn` 활성 사용자 배치 조회 + 공용 `UserRepresentativeSelector`로 통일한다. DB 정합(BE-11)은 ORM 선언 완화만 수행한다. BE-03은 조사 리포트 기반으로 명백 후보만 프로젝션 분리하고, BE-06은 상위 오염원 주석 보강 + Lombok 기본 생성자 정책화로 마감한다.
 
 **Tech Stack:** Java 25, Spring Boot 4.1, Spring Data JPA, JUnit 5 + AssertJ + Mockito, 로컬 Oracle `@DataJpaTest` 하네스(`AbstractOracleRepositoryTest`, `@Tag("it")`).
 
@@ -28,11 +28,13 @@
 | ---- | ---- | ---- |
 | `src/main/java/com/kdb/it/domain/budget/cost/service/CostService.java` | 수정 | `resolvePrimaryRow` 정적 헬퍼 추가, `get(0)` 3곳 교체 (Task 2) |
 | `src/main/java/com/kdb/it/domain/bizplan/service/BizplanService.java` | 수정 | `selectLatestBgKey` 정적 헬퍼 추가, `resolveBgNo` 교체 (Task 3) |
-| `src/main/java/com/kdb/it/common/iam/repository/UserRepository.java` | 수정 | `findByTemCIn` 파생 쿼리 추가 (Task 5) |
+| `src/main/java/com/kdb/it/common/iam/repository/UserRepository.java` | 수정 | `findByTemCInAndDelYn` 활성 사용자 파생 쿼리 추가 (Task 5) |
 | `src/main/java/com/kdb/it/common/iam/service/UserRepresentativeSelector.java` | 생성 | 팀 대표자 결정적 선택 공용 유틸 (Task 6) |
 | `src/main/java/com/kdb/it/domain/budget/document/service/ReviewerService.java` | 수정 | 배치 조회 + 순서 고정 (Task 7) |
 | `src/main/java/com/kdb/it/domain/council/service/CommitteeService.java` | 수정 | `resolveTeamLeads` 배치 전환 (Task 8) |
 | `src/main/java/com/kdb/it/infra/file/entity/Cfilem.java` | 수정 | 3컬럼 `nullable=false` 제거 (Task 9) |
+| `src/main/java/com/kdb/it/infra/file/service/FileService.java` | 수정 | 불완전 파일 메타데이터 다운로드 가드·파일명 폴백 (Task 9) |
+| `src/main/java/com/kdb/it/infra/ai/service/GeminiService.java` | 수정 | 불완전 파일 메타데이터 첨부 skip·파일명 폴백 (Task 9) |
 | `build.gradle` | 수정 | Javadoc `-Xmaxwarns` 상한 해제 (Task 14) |
 | `Bprojm`·`ContractController`·`ApplicationDto`·`CouncilProjectRow`·`UmsPayload`·`Btermm` | 수정 | Javadoc 누락 주석 보강 (Task 15·16) |
 | `CLAUDE.md` | 수정 | Lombok 기본 생성자 경고 정책 규칙 추가 (Task 16) |
@@ -43,10 +45,12 @@
 | ---- | ---- | ---- |
 | `src/test/java/com/kdb/it/domain/budget/cost/service/CostServiceTest.java` | 수정 | `resolvePrimaryRow` @Nested 테스트 (Task 2) |
 | `src/test/java/com/kdb/it/domain/bizplan/service/BizplanServiceTest.java` | 수정 | `selectLatestBgKey` @Nested 테스트 (Task 3) |
-| `src/test/java/com/kdb/it/common/iam/repository/UserRepositoryTemCInIt.java` | 생성 | `findByTemCIn` 통합 테스트 (Task 5) |
+| `src/test/java/com/kdb/it/common/iam/repository/UserRepositoryTemCInIt.java` | 생성 | `findByTemCInAndDelYn` 활성 사용자 통합 테스트 (Task 5) |
 | `src/test/java/com/kdb/it/common/iam/service/UserRepresentativeSelectorTest.java` | 생성 | 대표자 선택 규칙 단위 테스트 (Task 6) |
 | `src/test/java/com/kdb/it/domain/budget/document/service/ReviewerServiceTest.java` | 수정 | 배치 스텁 기준 재작성 (Task 7) |
-| `src/test/java/com/kdb/it/domain/council/service/CommitteeServiceTest.java` | 수정 | `findByTemCIn` 스텁 전환 (Task 8) |
+| `src/test/java/com/kdb/it/domain/council/service/CommitteeServiceTest.java` | 수정 | `findByTemCInAndDelYn` 스텁 전환 (Task 8) |
+| `src/test/java/com/kdb/it/infra/file/service/FileServiceTest.java` | 수정 | NULL 파일 메타데이터 다운로드 실패·폴백 테스트 (Task 9) |
+| `src/test/java/com/kdb/it/infra/ai/service/GeminiServiceTest.java` | 수정 | NULL 파일 메타데이터 첨부 skip·폴백 테스트 (Task 9) |
 
 **외부 C:\it 저장소:**
 
@@ -289,43 +293,67 @@ git commit -m "fix: 전산관리비 대표 행 선택을 결정적 규칙으로 
 
 - [ ] **Step 1: 실패하는 테스트 작성**
 
-`BizplanServiceTest.java`에 아래 `@Nested` 클래스를 추가한다(`PRJ` 상수·`Bproja` import는 기존 파일에 이미 존재).
+`BizplanServiceTest.java`에 아래 `@Nested` 클래스를 추가한다(`PRJ` 상수·`Bproja` import는 기존 파일에 이미 존재하며, `java.time.LocalDateTime`을 import한다).
 
 ```java
     @Nested
     @DisplayName("selectLatestBgKey — BG- 키 결정적 선택 (BE-09)")
     class SelectLatestBgKeyTests {
 
-        private Bproja app(String cncdRfrNo) {
-            return Bproja.builder().abusMngNo(PRJ).cncdRfrNo(cncdRfrNo).stsTc("09").build();
+        private Bproja app(String cncdRfrNo, LocalDateTime lastChangedAt) {
+            return Bproja.builder()
+                    .abusMngNo(PRJ)
+                    .cncdRfrNo(cncdRfrNo)
+                    .stsTc("09")
+                    .lstChgDtm(lastChangedAt)
+                    .build();
         }
 
         @Test
         @DisplayName("BG- 키가 없으면 null을 반환한다")
         void noBgKey_returnsNull() {
-            assertThat(BizplanService.selectLatestBgKey(PRJ, List.of(app("BIZ-" + PRJ)))).isNull();
+            assertThat(BizplanService.selectLatestBgKey(PRJ,
+                    List.of(app("BIZ-" + PRJ, LocalDateTime.parse("2026-01-01T09:00:00")))))
+                    .isNull();
         }
 
         @Test
         @DisplayName("BG- 키 1건이면 그 키를 반환한다")
         void singleBgKey_returned() {
             assertThat(BizplanService.selectLatestBgKey(PRJ,
-                    List.of(app("BG-2026-0001"), app("BIZ-" + PRJ)))).isEqualTo("BG-2026-0001");
+                    List.of(
+                            app("BG-2026-0001", LocalDateTime.parse("2026-01-02T09:00:00")),
+                            app("BIZ-" + PRJ, LocalDateTime.parse("2026-01-03T09:00:00")))))
+                    .isEqualTo("BG-2026-0001");
         }
 
         @Test
-        @DisplayName("BG- 키 다건이면 사전순 내림차순으로 최신 키를 선택한다 (WARN 경로)")
+        @DisplayName("BG- 키 다건이면 최종변경일시가 최신인 키를 선택한다 (WARN 경로)")
         void multipleBgKeys_latestSelected() {
             assertThat(BizplanService.selectLatestBgKey(PRJ,
-                    List.of(app("BG-2025-0009"), app("BG-2026-0002"), app("BG-2026-0001"))))
-                    .isEqualTo("BG-2026-0002");
+                    List.of(
+                            app("BG-Z", LocalDateTime.parse("2026-01-01T09:00:00")),
+                            app("BG-A", LocalDateTime.parse("2026-02-01T09:00:00")))))
+                    .isEqualTo("BG-A");
+        }
+
+        @Test
+        @DisplayName("최종변경일시가 같으면 키 사전순 내림차순으로 결정한다")
+        void sameTimestamp_keyDescendingTieBreak() {
+            LocalDateTime same = LocalDateTime.parse("2026-02-01T09:00:00");
+            assertThat(BizplanService.selectLatestBgKey(PRJ,
+                    List.of(app("BG-A", same), app("BG-B", same))))
+                    .isEqualTo("BG-B");
         }
 
         @Test
         @DisplayName("cncdRfrNo가 null인 행은 무시한다")
         void nullKey_ignored() {
             assertThat(BizplanService.selectLatestBgKey(PRJ,
-                    List.of(app(null), app("BG-2026-0001")))).isEqualTo("BG-2026-0001");
+                    List.of(
+                            app(null, LocalDateTime.parse("2026-02-01T09:00:00")),
+                            app("BG-2026-0001", LocalDateTime.parse("2026-01-01T09:00:00")))))
+                    .isEqualTo("BG-2026-0001");
         }
     }
 ```
@@ -386,25 +414,28 @@ import org.slf4j.LoggerFactory;
     /**
      * BG- 접두 후보 키 중 최신 키를 결정적으로 선택한다. (BE-09)
      *
-     * <p>선택 규칙: {@code CNCD_RFR_NO} 사전순 내림차순(연도·일련번호 채번 체계상 최신 우선).
-     * 서로 다른 BG- 키가 2건 이상이면 WARN 로그를 남긴다.</p>
+     * <p>선택 규칙: {@code LST_CHG_DTM} 내림차순(최근 변경 우선) →
+     * {@code CNCD_RFR_NO} 사전순 내림차순(tie-break). 감사일시가 없는 레거시 행은
+     * 일시가 있는 행보다 후순위이며, 서로 다른 BG- 키가 2건 이상이면 WARN 로그를 남긴다.</p>
      *
      * @param abusMngNo    사업관리번호 (로그 문맥용)
      * @param applications 미삭제 BPROJA 행 목록
      * @return 최신 BG- 키 (후보가 없으면 null)
      */
     static String selectLatestBgKey(String abusMngNo, List<Bproja> applications) {
-        List<String> bgKeys = applications.stream()
-                .map(Bproja::getCncdRfrNo)
-                .filter(key -> key != null && key.startsWith(BG_KEY_PREFIX))
-                .distinct()
-                .sorted(Comparator.reverseOrder())
+        List<Bproja> candidates = applications.stream()
+                .filter(application -> application.getCncdRfrNo() != null
+                        && application.getCncdRfrNo().startsWith(BG_KEY_PREFIX))
+                .sorted(Comparator
+                        .comparing(Bproja::getLstChgDtm,
+                                Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparing(Bproja::getCncdRfrNo, Comparator.reverseOrder()))
                 .toList();
-        if (bgKeys.size() > 1) {
+        if (candidates.size() > 1) {
             log.warn("BPROJA 예산편성 BG- 키가 {}건입니다 (abusMngNo={}, 선택 키={})",
-                    bgKeys.size(), abusMngNo, bgKeys.get(0));
+                    candidates.size(), abusMngNo, candidates.get(0).getCncdRfrNo());
         }
-        return bgKeys.isEmpty() ? null : bgKeys.get(0);
+        return candidates.isEmpty() ? null : candidates.get(0).getCncdRfrNo();
     }
 ```
 
@@ -417,7 +448,7 @@ cd C:\it\it_backend
 ./gradlew test --tests "com.kdb.it.domain.bizplan.service.BizplanServiceTest"
 ```
 
-Expected: BUILD SUCCESSFUL — 신규 4건 포함 전체 PASS (기존 `createsPlanWithStatus21AndBgNo` 테스트가 회귀 검증 역할)
+Expected: BUILD SUCCESSFUL — 신규 5건 포함 전체 PASS (기존 `createsPlanWithStatus21AndBgNo` 테스트가 회귀 검증 역할)
 
 - [ ] **Step 5: 커밋**
 
@@ -450,7 +481,7 @@ git merge --no-ff fix/be09-deterministic-row-selection -m "merge: BE-09 비결�
 
 ## Phase B — BE-10 팀 조회 배치화 + BE-11 Cfilem NULL 정책 (🟡 Medium)
 
-### Task 5: UserRepository.findByTemCIn + 통합 테스트
+### Task 5: UserRepository.findByTemCInAndDelYn + 통합 테스트
 
 **Files:**
 - Modify: `it_backend/src/main/java/com/kdb/it/common/iam/repository/UserRepository.java`
@@ -483,12 +514,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 /**
- * UserRepository.findByTemCIn 배치 조회 통합 테스트 (BE-10)
+ * UserRepository.findByTemCInAndDelYn 활성 사용자 배치 조회 통합 테스트 (BE-10)
  *
  * <p>실 로컬 Oracle(ITPOWN)에 @DataJpaTest로 연결하며, 픽스처는 트랜잭션 롤백으로
  * 정리된다. 존재하지 않는 팀코드 대역(T999x)을 사용해 실 데이터와 격리한다.</p>
  */
-@DisplayName("UserRepository.findByTemCIn 배치 조회 (BE-10)")
+@DisplayName("UserRepository.findByTemCInAndDelYn 활성 사용자 배치 조회 (BE-10)")
 class UserRepositoryTemCInIt extends AbstractOracleRepositoryTest {
 
     private static final String TEAM_A = "T9991";
@@ -528,20 +559,23 @@ class UserRepositoryTemCInIt extends AbstractOracleRepositoryTest {
         insertUser("TENO9001", TEAM_A, "팀장");
         insertUser("TENO9002", TEAM_A, "과장");
         insertUser("TENO9003", TEAM_B, "차장");
+        CuserI deleted = insertUser("TENO9004", TEAM_A, "팀장");
+        deleted.delete();
         em.flush();
         em.clear();
 
-        List<CuserI> result = userRepository.findByTemCIn(List.of(TEAM_A, TEAM_B, TEAM_EMPTY));
+        List<CuserI> result = userRepository.findByTemCInAndDelYn(
+                List.of(TEAM_A, TEAM_B, TEAM_EMPTY), "N");
 
         assertThat(result).extracting(CuserI::getEno)
-                .contains("TENO9001", "TENO9002", "TENO9003");
+                .containsExactlyInAnyOrder("TENO9001", "TENO9002", "TENO9003");
         assertThat(result).allSatisfy(u -> assertThat(u.getTemC()).isIn(TEAM_A, TEAM_B));
     }
 
     @Test
     @DisplayName("해당 팀 사용자가 없으면 빈 목록을 반환한다")
     void findByTemCIn_noUsers_returnsEmpty() {
-        assertThat(userRepository.findByTemCIn(List.of(TEAM_EMPTY))).isEmpty();
+        assertThat(userRepository.findByTemCInAndDelYn(List.of(TEAM_EMPTY), "N")).isEmpty();
     }
 }
 ```
@@ -553,7 +587,7 @@ cd C:\it\it_backend
 ./gradlew integrationTest --tests "com.kdb.it.common.iam.repository.UserRepositoryTemCInIt" 2>&1 | tail -5
 ```
 
-Expected: `cannot find symbol ... findByTemCIn` 컴파일 오류
+Expected: `cannot find symbol ... findByTemCInAndDelYn` 컴파일 오류
 
 - [ ] **Step 3: 파생 쿼리 추가**
 
@@ -569,9 +603,10 @@ Expected: `cannot find symbol ... findByTemCIn` 컴파일 오류
      * </p>
      *
      * @param temCs 조회할 팀코드 컬렉션
-     * @return 해당 팀들의 사용자 목록
+     * @param delYn 삭제여부 ({@code N}=활성 사용자)
+     * @return 해당 팀들의 활성 사용자 목록
      */
-    java.util.List<CuserI> findByTemCIn(Collection<String> temCs);
+    java.util.List<CuserI> findByTemCInAndDelYn(Collection<String> temCs, String delYn);
 ```
 
 - [ ] **Step 4: 통합 테스트 통과 확인 (로컬 Oracle 기동 상태)**
@@ -588,7 +623,7 @@ Expected: BUILD SUCCESSFUL, 2건 PASS (Oracle 미기동이면 SKIP — 반드시
 ```bash
 cd C:\it\it_backend
 git add src/main/java/com/kdb/it/common/iam/repository/UserRepository.java src/test/java/com/kdb/it/common/iam/repository/UserRepositoryTemCInIt.java
-git commit -m "feat: 팀코드 배치 조회 findByTemCIn 추가 (BE-10)"
+git commit -m "feat: 팀코드별 활성 사용자 배치 조회 추가 (BE-10)"
 ```
 
 ### Task 6: UserRepresentativeSelector 공용 유틸
@@ -742,6 +777,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -749,7 +785,7 @@ import static org.mockito.Mockito.verify;
 /**
  * ReviewerService 단위 테스트 — BE-10
  *
- * <p>검토자 목록: findByTemCIn 1회 배치 조회, 대표자 결정 규칙(팀장 우선→사번 오름차순),
+ * <p>검토자 목록: findByTemCInAndDelYn 1회 활성 사용자 배치 조회, 대표자 결정 규칙(팀장 우선→사번 오름차순),
  * 팀 표시 순서 고정을 검증한다.</p>
  */
 @ExtendWith(MockitoExtension.class)
@@ -771,19 +807,19 @@ class ReviewerServiceTest {
     }
 
     @Test
-    @DisplayName("getReviewers: 팀코드 전체를 findByTemCIn 1회로 배치 조회한다")
+    @DisplayName("getReviewers: 팀코드 전체의 활성 사용자를 1회로 배치 조회한다")
     void getReviewers_배치조회_1회() {
-        given(userRepository.findByTemCIn(anyCollection())).willReturn(List.of());
+        given(userRepository.findByTemCInAndDelYn(anyCollection(), eq("N"))).willReturn(List.of());
 
         reviewerService.getReviewers("DOC-2026-0001");
 
-        verify(userRepository, times(1)).findByTemCIn(anyCollection());
+        verify(userRepository, times(1)).findByTemCInAndDelYn(anyCollection(), eq("N"));
     }
 
     @Test
     @DisplayName("getReviewers: 팀장이 있으면 팀장을 검토자로 선택한다")
     void getReviewers_팀장우선() {
-        given(userRepository.findByTemCIn(anyCollection())).willReturn(List.of(
+        given(userRepository.findByTemCInAndDelYn(anyCollection(), eq("N"))).willReturn(List.of(
                 makeUser("E002", "김과장", "18010", "과장"),
                 makeUser("E009", "박팀장", "18010", "팀장")));
 
@@ -798,7 +834,7 @@ class ReviewerServiceTest {
     @Test
     @DisplayName("getReviewers: 팀장이 없으면 사번 오름차순 첫 번째를 선택한다")
     void getReviewers_사번오름차순() {
-        given(userRepository.findByTemCIn(anyCollection())).willReturn(List.of(
+        given(userRepository.findByTemCInAndDelYn(anyCollection(), eq("N"))).willReturn(List.of(
                 makeUser("E005", "이차장", "18010", "차장"),
                 makeUser("E001", "정과장", "18010", "과장")));
 
@@ -813,7 +849,7 @@ class ReviewerServiceTest {
     @Test
     @DisplayName("getReviewers: 사용자가 없는 팀은 결과에서 제외된다")
     void getReviewers_사용자없는팀_제외() {
-        given(userRepository.findByTemCIn(anyCollection())).willReturn(List.of());
+        given(userRepository.findByTemCInAndDelYn(anyCollection(), eq("N"))).willReturn(List.of());
 
         assertThat(reviewerService.getReviewers("DOC-2026-0001")).isEmpty();
     }
@@ -821,7 +857,7 @@ class ReviewerServiceTest {
     @Test
     @DisplayName("getReviewers: 결과는 계약팀→기획팀→PMO팀→개발/운영팀 순서로 고정된다")
     void getReviewers_팀순서고정() {
-        given(userRepository.findByTemCIn(anyCollection())).willReturn(List.of(
+        given(userRepository.findByTemCInAndDelYn(anyCollection(), eq("N"))).willReturn(List.of(
                 makeUser("E301", "개발A", "18501", "과장"),
                 makeUser("E101", "기획A", "18001", "과장"),
                 makeUser("E201", "PMOA", "18010", "과장"),
@@ -842,7 +878,7 @@ cd C:\it\it_backend
 ./gradlew test --tests "com.kdb.it.domain.budget.document.service.ReviewerServiceTest"
 ```
 
-Expected: FAIL — 서비스가 아직 `findByTemC` 반복 조회를 사용하므로 배치·순서 테스트 실패
+Expected: FAIL — 서비스가 아직 `findByTemC` 반복 조회를 사용하므로 활성 사용자 배치·순서 테스트 실패
 
 - [ ] **Step 3: ReviewerService 전체 교체**
 
@@ -892,7 +928,7 @@ public class ReviewerService {
     /**
      * 사전협의 문서에 대한 검토자 목록을 반환합니다.
      *
-     * <p>팀코드 전체를 {@code findByTemCIn} 1회로 배치 조회(N+1 제거)하고,
+     * <p>팀코드 전체의 활성 사용자를 {@code findByTemCInAndDelYn} 1회로 배치 조회(N+1 제거)하고,
      * 각 팀의 대표자는 {@link UserRepresentativeSelector}가 결정적으로 선택합니다.
      * 사용자가 없는 팀은 결과에서 제외합니다.</p>
      *
@@ -901,7 +937,7 @@ public class ReviewerService {
      */
     public List<ReviewerDto.Response> getReviewers(String docMngNo) {
         Map<String, List<CuserI>> usersByTeam = userRepository
-                .findByTemCIn(REVIEW_TEAM_MAP.keySet()).stream()
+                .findByTemCInAndDelYn(REVIEW_TEAM_MAP.keySet(), "N").stream()
                 .collect(Collectors.groupingBy(CuserI::getTemC));
 
         List<ReviewerDto.Response> reviewers = new ArrayList<>();
@@ -939,12 +975,12 @@ git commit -m "refactor: 검토자 조회를 배치+결정적 대표자 선택�
 
 - [ ] **Step 1: 테스트 스텁 전환**
 
-`CommitteeServiceTest.java`에 배치 스텁 헬퍼를 추가한다 (import: `static org.mockito.ArgumentMatchers.anyCollection`, `java.util.Arrays`, `java.util.Collection`):
+`CommitteeServiceTest.java`에 배치 스텁 헬퍼를 추가한다 (import: `static org.mockito.ArgumentMatchers.anyCollection`, `static org.mockito.ArgumentMatchers.eq`, `java.util.Arrays`, `java.util.Collection`):
 
 ```java
-    /** findByTemCIn 배치 스텁 — 요청된 팀코드에 속한 사용자만 반환한다. */
+    /** findByTemCInAndDelYn 배치 스텁 — 요청된 팀코드에 속한 활성 사용자만 반환한다. */
     private void stubUsersByTeam(CuserI... users) {
-        given(userRepository.findByTemCIn(anyCollection())).willAnswer(inv -> {
+        given(userRepository.findByTemCInAndDelYn(anyCollection(), eq("N"))).willAnswer(inv -> {
             Collection<String> temCs = inv.getArgument(0);
             return Arrays.stream(users)
                     .filter(u -> temCs.contains(u.getTemC()))
@@ -978,7 +1014,7 @@ cd C:\it\it_backend
 ./gradlew test --tests "com.kdb.it.domain.council.service.CommitteeServiceTest"
 ```
 
-Expected: FAIL — 서비스가 아직 `findByTemC`를 호출하므로 배치 스텁이 매칭되지 않아 위원 목록이 비어 어서션 실패
+Expected: FAIL — 서비스가 아직 `findByTemC`를 호출하므로 활성 사용자 배치 스텁이 매칭되지 않아 위원 목록이 비어 어서션 실패
 
 - [ ] **Step 3: resolveTeamLeads 교체**
 
@@ -1016,7 +1052,7 @@ Expected: FAIL — 서비스가 아직 `findByTemC`를 호출하므로 배치 �
     /**
      * 팀코드 목록별 대표 후보(팀장 우선→사번 오름차순)를 해석합니다. (BE-10)
      *
-     * <p>팀코드 전체를 {@code findByTemCIn} 1회로 배치 조회(N+1 제거)하고, 팀별 대표자는
+     * <p>팀코드 전체의 활성 사용자를 {@code findByTemCInAndDelYn} 1회로 배치 조회(N+1 제거)하고, 팀별 대표자는
      * {@link UserRepresentativeSelector}가 결정적으로 선택합니다. 팀원이 없는 팀은
      * 결과에서 제외하며, 반환 Map은 입력 팀코드 순서를 보존합니다(LinkedHashMap).</p>
      *
@@ -1027,7 +1063,8 @@ Expected: FAIL — 서비스가 아직 `findByTemC`를 호출하므로 배치 �
         if (temCodes.isEmpty()) {
             return Map.of();
         }
-        Map<String, List<CuserI>> usersByTeam = userRepository.findByTemCIn(temCodes).stream()
+        Map<String, List<CuserI>> usersByTeam = userRepository
+                .findByTemCInAndDelYn(temCodes, "N").stream()
                 .collect(Collectors.groupingBy(CuserI::getTemC));
         Map<String, CuserI> leads = new LinkedHashMap<>();
         for (String temC : temCodes) {
@@ -1059,6 +1096,10 @@ git commit -m "refactor: 협의회 위원 후보 조회를 배치+결정적 대�
 
 **Files:**
 - Modify: `it_backend/src/main/java/com/kdb/it/infra/file/entity/Cfilem.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/infra/file/service/FileService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/infra/ai/service/GeminiService.java`
+- Test: `it_backend/src/test/java/com/kdb/it/infra/file/service/FileServiceTest.java`
+- Test: `it_backend/src/test/java/com/kdb/it/infra/ai/service/GeminiServiceTest.java`
 
 - [ ] **Step 1: 3컬럼 nullable 완화 + Javadoc 정책 명시**
 
@@ -1107,21 +1148,57 @@ git commit -m "refactor: 협의회 위원 후보 조회를 배치+결정적 대�
     @Column(name = "FL_KPN_PTH", length = 255, comment = "파일저장경로")
 ```
 
-- [ ] **Step 2: 테스트 확인**
+- [ ] **Step 2: 실패하는 NULL 메타데이터 테스트 작성**
+
+`FileServiceTest`에 다음 경로를 추가한다.
+
+- `FL_KPN_PTH=null`이면 `downloadFile`이 `CustomGeneralException`을 던지고 메시지에 파일매핑ID와 `파일 메타데이터가 불완전`을 포함한다.
+- `FL_PYS_NM=null` 또는 공백이어도 같은 업무 예외를 반환한다.
+- `FL_NM=null`이고 물리파일명이 유효하면 물리파일명을 다운로드 파일명과 MIME 판정 폴백으로 사용한다. 기존 `downloadFile_원본파일명없음_서버파일명확장자사용` 테스트에 `originalFilename()`이 `server.png`인지 어서션한다.
+
+`GeminiServiceTest`에 다음 경로를 추가한다.
+
+- 저장경로 또는 물리파일명이 null/공백이면 예외 없이 `skippedFiles`에 포함되고, 사유에 파일매핑ID와 `파일 메타데이터 불완전`을 포함하며 `attachedFileCount=0`이다.
+- 원본 파일명이 null이고 물리파일명에 지원 확장자가 있으면 물리파일명을 MIME 판정 폴백으로 사용해 정상 첨부한다.
 
 ```bash
 cd C:\it\it_backend
+./gradlew test --tests "com.kdb.it.infra.file.service.FileServiceTest" --tests "com.kdb.it.infra.ai.service.GeminiServiceTest"
+```
+
+Expected: FAIL — 다운로드는 `Paths.get(null)` 예외 또는 null 파일명 반환, Gemini 경로는 불완전 메타데이터 사유 없는 skip/예외
+
+- [ ] **Step 3: FileService 다운로드 가드·파일명 폴백 구현**
+
+`downloadFile`에서 경로를 조합하기 전에 저장경로와 물리파일명을 `StringUtils.hasText`로 검증한다. 둘 중 하나라도 비어 있으면 다음 업무 예외를 던진다.
+
+```java
+throw new CustomGeneralException(
+        "파일 메타데이터가 불완전합니다. 파일매핑ID: " + flMpnId);
+```
+
+원본 파일명이 비어 있으면 물리파일명을 `originalFilename`으로 사용하고, MIME 판정과 `FileDownloadResult`에 같은 폴백 값을 전달한다.
+
+- [ ] **Step 4: GeminiService 첨부 가드·파일명 폴백 구현**
+
+`buildFilePartFromFlMngNo`에서 저장경로와 물리파일명을 경로 조합 전에 검증한다. 둘 중 하나라도 비어 있으면 `FilePartResult.skip("파일 메타데이터 불완전: " + flMpnId)`을 반환한다. 원본 파일명이 비어 있으면 물리파일명을 MIME 판정 입력으로 사용한다.
+
+- [ ] **Step 5: 대상·전체 테스트 확인**
+
+```bash
+cd C:\it\it_backend
+./gradlew test --tests "com.kdb.it.infra.file.service.FileServiceTest" --tests "com.kdb.it.infra.ai.service.GeminiServiceTest"
 ./gradlew test
 ```
 
-Expected: BUILD SUCCESSFUL (선언 완화만이므로 회귀 없음)
+Expected: BUILD SUCCESSFUL, NULL 메타데이터 실패·폴백 경로 PASS
 
-- [ ] **Step 3: 커밋**
+- [ ] **Step 6: 커밋**
 
 ```bash
 cd C:\it\it_backend
-git add src/main/java/com/kdb/it/infra/file/entity/Cfilem.java
-git commit -m "fix: Cfilem 파일명·물리명·경로 컬럼을 실제 DB NULL 정책과 일치 (BE-11)"
+git add src/main/java/com/kdb/it/infra/file/entity/Cfilem.java src/main/java/com/kdb/it/infra/file/service/FileService.java src/main/java/com/kdb/it/infra/ai/service/GeminiService.java src/test/java/com/kdb/it/infra/file/service/FileServiceTest.java src/test/java/com/kdb/it/infra/ai/service/GeminiServiceTest.java
+git commit -m "fix: 파일 메타데이터 NULL 정책과 소비 경로를 일치 (BE-11)"
 ```
 
 ### Task 10: Phase B 검증·병합
@@ -1217,9 +1294,24 @@ git add docs/superpowers/reports/2026-07-be03-projection-survey.md
 git commit -m "docs: BE-03 전체 엔티티 로딩 후보 조사 리포트"
 ```
 
+- [ ] **Step 5: Task 13 구체화·승인 체크포인트**
+
+조사 리포트 커밋 후에는 프로젝션 구현을 시작하지 말고 실행을 멈춘다. 명백 후보마다 다음 내용을 실제 파일과 메서드 기준으로 이 계획의 Task 13에 반영한다.
+
+- 수정·생성할 정확한 파일 목록과 각 파일의 책임
+- 기존 엔티티 조회와 신규 프로젝션 조회의 쿼리·필터·정렬 동등성
+- 적용할 구현 방식(Spring Data 인터페이스 프로젝션 또는 기존 QueryDSL DTO 프로젝션)과 선택 근거
+- 실패하는 테스트의 파일명, 픽스처, 입력값, 기대 결과
+- Oracle 실행계획 기준선과 구현 후 비교할 비용·카디널리티·접근 경로
+- 서비스·DTO 호출부 변경 및 회귀 영향 범위
+
+구체화한 Task 13을 사용자에게 제시해 승인을 받은 뒤에만 구현을 재개한다. 명백 후보가 0건이면 리포트에 근거를 기록하고 승인 체크포인트에서 Task 13 건너뛰기를 확정한다.
+
 ### Task 13: BE-03 명백 후보 프로젝션 분리 (조건부)
 
-**Files:** 조사 결과에 따라 결정 (명백 후보 0건이면 이 Task 전체를 건너뛰고 리포트에 "명백 후보 없음"을 기록)
+> **실행 게이트:** Task 12 Step 5에서 실제 파일·쿼리·테스트로 이 Task를 다시 작성하고 사용자 승인을 받기 전에는 실행하지 않는다.
+
+**Files:** 조사 결과에 따라 Task 12 Step 5에서 확정 (명백 후보 0건이면 이 Task 전체를 건너뛰고 리포트에 "명백 후보 없음"을 기록)
 
 - [ ] **Step 1: 후보별 실패하는 통합 테스트 작성**
 
@@ -1358,6 +1450,7 @@ cd C:\it\it_backend
 ```
 
 - getter/setter 등 트리비얼 멤버가 경고 대상이면 소속 클래스·필드 주석으로 해소되는지 먼저 확인하고, 설명 가치가 없는 단순 대입 메서드에는 주석을 강제로 만들지 않는다(경고가 남으면 잔여 허용분으로 분류).
+- Task 14에서 측정한 최신 기준선을 바탕으로 파일별 `기준 건수 / 해소 건수 / 허용 잔여 건수 / 허용 사유` 표를 작성한다. 분류되지 않은 잔여 경고는 허용하지 않는다.
 
 - [ ] **Step 3: 파일별 경고 확인 후 개별 커밋**
 
@@ -1366,7 +1459,7 @@ cd C:\it\it_backend
 ./gradlew javadoc 2>&1 | grep "Bprojm.java" | grep -c ": warning"
 ```
 
-Expected: 0 (Lombok 생성자 경고만 남으면 해당 건수)
+Expected: 해당 파일에서 새로 발생한 미분류 경고 0건. 남는 경고는 모두 기준선 표에 허용 사유가 기록되어 있고, 수정 대상 경고는 해소되었음을 확인한다. 과거 조사 시점의 절대 건수나 파일별 0건을 완료 조건으로 사용하지 않는다.
 
 ```bash
 git add src/main/java/com/kdb/it/domain/budget/project/entity/Bprojm.java
@@ -1381,37 +1474,50 @@ git commit -m "docs: Bprojm Javadoc 누락 주석 보강 (BE-06)"
 - Modify: `src/main/java/com/kdb/it/common/approval/dto/ApplicationDto.java`
 - Modify: `it_backend/CLAUDE.md`
 
-- [ ] **Step 1: ApplicationDto 명시적 생성자 전환**
+- [ ] **Step 1: ApplicationDto 경고 클래스를 역할별로 분류**
 
-`./gradlew javadoc 2>&1 | grep "ApplicationDto.java"`로 default constructor 경고가 발생하는 중첩 클래스를 확인하고, 각 클래스에 Javadoc을 단 명시적 no-arg 생성자를 추가한다:
+`./gradlew javadoc 2>&1 | grep "ApplicationDto.java"`로 default constructor 경고가 발생하는 중첩 클래스를 확인하고 다음 기준으로 표를 만든다.
+
+| 역할 | 판정 기준 | 처리 |
+| ---- | --------- | ---- |
+| 요청·입력 DTO | Controller 요청 본문 등 Jackson 역직렬화 대상 | `@NoArgsConstructor`를 제거하고 Javadoc을 단 명시적 public no-arg 생성자로 전환 |
+| builder 전용 응답 DTO | 서비스가 `builder()`로 만들고 JSON 직렬화만 수행 | 생성자 변경 없음. `@Builder`가 기대하는 전체 필드 생성자를 보존 |
+| 양방향 DTO | 역직렬화와 builder 생성이 모두 실제 호출됨 | 이번 기계적 전환에서 제외하고 호출 근거와 후속 생성자 설계를 기록 |
+
+`@Builder`가 붙은 클래스에 명시적 no-arg 생성자만 추가하면 Lombok이 builder용 전체 필드 생성자를 더 이상 만들지 않아 컴파일이 깨질 수 있으므로 금지한다.
+
+- [ ] **Step 2: 요청·입력 DTO만 명시적 생성자로 전환**
+
+분류 결과 요청·입력 DTO에 해당하는 클래스만 다음과 같이 전환한다.
 
 ```java
         /** 기본 생성자 — Jackson 역직렬화용. */
-        public Response() {
+        public CreateRequest() {
         }
 ```
 
-(클래스에 `@Builder`/`@AllArgsConstructor`가 있으면 명시적 no-arg 생성자 추가로 기존 생성 경로가 깨지지 않는지 컴파일로 확인한다. `@NoArgsConstructor`가 이미 붙어 있으면 그 애너테이션을 제거하고 명시적 생성자로 대체한다.)
+`@NoArgsConstructor`가 이미 붙어 있으면 해당 애너테이션을 제거한다. builder 전용 응답 DTO에는 명시적 no-arg 생성자를 추가하지 않는다.
 
-- [ ] **Step 2: 검증**
+- [ ] **Step 3: 생성 경로·Javadoc 검증**
 
 ```bash
 cd C:\it\it_backend
+./gradlew test --tests "*Application*Test"
 ./gradlew test
 ./gradlew javadoc 2>&1 | grep "ApplicationDto.java" | grep -c ": warning"
 ```
 
-Expected: test BUILD SUCCESSFUL, ApplicationDto 경고 0건
+Expected: test BUILD SUCCESSFUL. 요청·입력 DTO의 default constructor 경고는 0건이며, builder 전용 응답 DTO의 기존 `builder()` 생성 경로가 유지된다. 남는 경고는 역할·잔류 사유와 함께 허용 기준선에 기록한다.
 
-- [ ] **Step 3: CLAUDE.md 정책 규칙 추가**
+- [ ] **Step 4: CLAUDE.md 정책 규칙 추가**
 
 `it_backend/CLAUDE.md` §9(테스트·주석·운영) 목록에 다음 항목을 추가한다:
 
 ```markdown
-- Javadoc 기본 생성자 경고는 역직렬화용 DTO에 한해 Javadoc을 단 명시적 no-arg 생성자 선언으로 해소합니다. 전환하지 않은 대량 DTO의 기본 생성자 경고는 허용 잔여로 관리하며, 총량 기준선 수치는 CLAUDE.md가 아닌 `../TASK.md` 항목 메모 또는 `../README.md` 변경 이력에 기록합니다.
+- Javadoc 기본 생성자 경고는 Jackson 역직렬화가 확인된 요청·입력 DTO에 한해 Javadoc을 단 명시적 no-arg 생성자 선언으로 해소합니다. 클래스 레벨 `@Builder`가 붙은 응답 DTO에는 builder용 전체 필드 생성자를 보존하기 위해 no-arg 생성자를 기계적으로 추가하지 않습니다. 전환하지 않은 대량 DTO의 기본 생성자 경고는 허용 잔여로 관리하며, 총량 기준선 수치는 CLAUDE.md가 아닌 `../TASK.md` 항목 메모 또는 `../README.md` 변경 이력에 기록합니다.
 ```
 
-- [ ] **Step 4: 커밋**
+- [ ] **Step 5: 커밋**
 
 ```bash
 cd C:\it\it_backend
@@ -1429,7 +1535,7 @@ cd C:\it\it_backend
 ./gradlew javadoc 2>&1 | grep -c ": warning"
 ```
 
-Expected: test BUILD SUCCESSFUL. 경고 총량이 기준선 대비 감소(상위 오염원 148건+ 해소 반영). 수치를 기록한다.
+Expected: test BUILD SUCCESSFUL. Task 14의 최신 기준선과 비교한 파일별 `기준 / 해소 / 허용 잔여 / 신규` 표를 기록한다. 신규 미분류 경고는 0건이어야 하며, 모든 잔여 경고에는 허용 사유가 있어야 한다. 과거 조사 수치인 `148건+`는 참고값으로만 취급하고 완료 조건으로 사용하지 않는다.
 
 - [ ] **Step 2: it_backend main 병합**
 
@@ -1461,6 +1567,6 @@ git commit -m "docs: 백엔드 잔여과제 조치 완료 반영 (BE-09·10·11 
 
 | Phase | 완료 기준 |
 | ----- | --------- |
-| A | `get(0)`/무정렬 첫 행 선택 4곳 제거, 신규 단위 테스트 9건 PASS, `./gradlew test` 녹색 |
-| B | `findByTemC` 반복 조회 0건, `findByTemCIn` IT PASS, Cfilem 3컬럼 완화, `./gradlew test integrationTest` 녹색 |
-| C | 조사 리포트 산출, 명백 후보 프로젝션 적용(0건이면 리포트 기록), 상위 오염원 5파일 + ApplicationDto 경고 해소, CLAUDE.md 정책 추가, TASK.md/TASK_DONE.md/README 현행화 |
+| A | `get(0)`/무정렬 첫 행 선택 4곳 제거, 신규 단위 테스트 10건 PASS, `./gradlew test` 녹색 |
+| B | `findByTemC` 반복 조회 0건, `findByTemCInAndDelYn` 활성 사용자 IT PASS, Cfilem 3컬럼 완화, `./gradlew test integrationTest` 녹색 |
+| C | 조사 리포트 산출, 명백 후보 프로젝션 적용(0건이면 리포트 기록), 상위 오염원 5파일 + ApplicationDto 경고를 최신 기준선 대비 분류·해소하고 신규 미분류 경고 0건 확인, CLAUDE.md 정책 추가, TASK.md/TASK_DONE.md/README 현행화 |
