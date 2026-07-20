@@ -1487,7 +1487,7 @@ git add docs/superpowers/reports/2026-07-be03-projection-survey.md
 git commit -m "docs: BE-03 전체 엔티티 로딩 후보 조사 리포트"
 ```
 
-- [ ] **Step 5: Task 13 구체화·승인 체크포인트**
+- [x] **Step 5: Task 13 구체화·승인 체크포인트**
 
 조사 리포트 커밋 후에는 프로젝션 구현을 시작하지 말고 실행을 멈춘다. 명백 후보마다 다음 내용을 실제 파일과 메서드 기준으로 이 계획의 Task 13에 반영한다.
 
@@ -1500,7 +1500,7 @@ git commit -m "docs: BE-03 전체 엔티티 로딩 후보 조사 리포트"
 
 구체화한 Task 13을 사용자에게 제시해 승인을 받은 뒤에만 구현을 재개한다. 명백 후보가 0건이면 리포트에 근거를 기록하고 승인 체크포인트에서 Task 13 건너뛰기를 확정한다.
 
-- [ ] **Step 6: 승인된 Task 13 실행 계약 버전 관리**
+- [x] **Step 6: 승인된 Task 13 실행 계약 버전 관리**
 
 사용자 승인 직후, 실제 파일·쿼리·테스트로 구체화된 이 계획 파일을 구현보다 먼저 외부 저장소에 커밋한다. 명백 후보가 0건이어도 건너뛰기 결정과 근거가 반영된 계획을 커밋한다.
 
@@ -1512,68 +1512,258 @@ git commit -m "docs: BE-03 프로젝션 실행 계약 승인 반영"
 
 커밋 해시를 `2026-07-be03-projection-survey.md`의 승인 기록에 남긴 뒤 Task 13을 시작한다. 승인된 계획 커밋이 없으면 구현을 재개하지 않는다.
 
-### Task 13: BE-03 명백 후보 프로젝션 분리 (조건부)
+### Task 13: BE-03 승인된 안전 후보 프로젝션 분리
 
-> **실행 게이트:** Task 12 Step 5에서 실제 파일·쿼리·테스트로 이 Task를 다시 작성해 사용자 승인을 받고, Step 6에서 승인된 계획을 커밋하기 전에는 실행하지 않는다.
+> **승인 상태:** 2026-07-21 사용자가 안전 범위 구현을 승인했다. 이 Task는 Task 12 Step 6의 계획 커밋 해시가 조사 리포트에 기록된 뒤에만 실행한다.
+>
+> **고정된 보류 결정:** #1 BITEMM GCL 대표행, #2 BBUGTM 대표행, #3 BPROJM 배치 이름, #4 BESTTM 물리 PK, #5 `orcTbMap/projectCategoryMap` namespace는 모두 기존 엔티티 동작을 유지한다. 보류 경로에만 필요한 `ProjectKeyView`도 이번에는 만들지 않는다.
 
-**Files:** 조사 결과에 따라 Task 12 Step 5에서 확정 (명백 후보 0건이면 이 Task 전체를 건너뛰고 리포트에 "명백 후보 없음"을 기록)
+#### 공통 구현 규칙
 
-- [ ] **Step 1: 후보별 실패하는 통합 테스트 작성**
+- 신규 조회는 읽기 응답 조립 전용이다. 인증, 존재 검증, 작성자·조직 snapshot, 생성·수정·삭제·상태 전이, 결재 mutation/sync, `BudgetWorkService.applyRates`는 기존 엔티티 조회를 유지한다.
+- 단순 파생 조회는 Repository 내부 interface projection, 동적 predicate·JOIN·CASE·DISTINCT는 `*RepositoryCustom` + `*RepositoryImpl`의 scalar DTO/row projection을 사용한다.
+- 기존 WHERE, null predicate, IN 범위, 정렬, page clamp, 대표 선택 순서를 그대로 보존한다. 성능을 이유로 임의 `ORDER BY`, `DISTINCT`, 추가 DB 조회를 넣지 않는다.
+- 기존 엔티티 메서드는 쓰기·호환 호출부 때문에 삭제하지 않는다. generic만 다른 overload는 만들지 않고 `applyBudgetSummaryViews`, `pickView`처럼 별도 이름을 쓴다.
+- 모든 신규 JavaDoc/주석은 한글로 쓰고 public/service 메서드는 입력값과 실패 조건을 기록한다.
+- 각 묶음은 RED 테스트가 신규 API 부재 또는 기존 entity 호출 검증 때문에 실패함을 확인한 후 구현한다. Oracle IT fixture는 `AbstractOracleRepositoryTest`, `@Tag("it")`, 트랜잭션 rollback을 사용한다.
 
-명백 판정 후보마다 `AbstractOracleRepositoryTest` 기반 IT를 먼저 작성한다. 기존 선례(`CostListProjectionIt`, `ProjectListProjectionIt`)의 구조를 따르되, **프로젝션 결과가 기존 엔티티 로딩 결과와 동일한 값을 반환하는지**를 어서션한다. 골격:
+#### Step 1: 게시글 목록 #1
+
+**Files:**
+- Modify: `it_backend/src/main/java/com/kdb/it/common/board/dto/BoardPostDto.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/board/repository/BoardPostRepositoryCustom.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/board/repository/BoardPostRepositoryImpl.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/board/service/BoardPostService.java`
+- Create: `it_backend/src/test/java/com/kdb/it/common/board/repository/BoardPostListProjectionIt.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/common/board/service/BoardPostServiceTest.java`
+
+- [ ] **1.1 RED:** `BoardPostDto.ListRow` exact 14필드 `nacMngNo,blbMngNo,nacNm,nacInqNbr,nacUnqId,ancYn,sreYn,flApgYn,flNbr,nacGrpLev,sttYmd,endYmd,fstEnrUsid,fstEnrDtm`와 `Page<BoardPostDto.ListRow> searchPostRows(String blbMngNo, BoardPostDto.SearchCondition cond, boolean isAdmin)` 호출을 테스트에 먼저 작성한다.
+- [ ] **1.2 fixture:** `today=LocalDate.now()`를 한 번 캡처한다. A=`alpha 공지/writer-a,ANC=Y,UNQ=300,GRP=2,SRE=Y`, B=`alpha 본문/writer-b,N,200,2,Y`, C=`alpha-author,N,200,1,Y`; D=`DEL=Y`, E=`SRE=N`, F=`STT_YMD=today.plusDays(1)`, G=`END_YMD=today.minusDays(1)`. `BLB-BE03, keyword=alpha, page=0, size=20, isAdmin=false` 결과는 A→C→B, total 3이고 D/E/F/G는 제외한다.
+- [ ] **1.3 GREEN:** 기존 게시판/삭제/공개/시작·종료일/title·body·author/bbr predicate와 `ANC_YN DESC,NAC_UNQ_ID DESC,NAC_GRP_SQN ASC`, page≥0/size1~100, count query를 복사하고 select만 scalar row로 바꾼다. 기존 `searchPosts`는 유지하고 `BoardPostService.searchPosts`만 신규 메서드를 사용한다.
+- [ ] **1.4 verify/commit:** `./gradlew test --tests '*BoardPostServiceTest' integrationTest --tests '*BoardPostListProjectionIt'`; commit `perf: 게시글 목록 조회 프로젝션 분리 (BE-03)`.
+
+#### Step 2: 사용자·조직·팀 대표 #2~#9
+
+**Core files:**
+- Modify: `it_backend/src/main/java/com/kdb/it/common/iam/dto/UserDto.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/iam/repository/UserRepository.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/iam/repository/UserRepositoryCustom.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/iam/repository/UserRepositoryImpl.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/iam/repository/OrganizationRepository.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/iam/service/UserRepresentativeSelector.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/iam/service/UserService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/document/dto/ReviewerDto.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/document/service/ReviewerService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/council/service/CommitteeService.java`
+
+**Read-response consumer files:**
+- Modify: `it_backend/src/main/java/com/kdb/it/common/admin/service/AdminService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/admin/service/AdminLogService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/approval/service/ApplicationService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/cost/service/CostService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/document/service/ReviewCommentService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/document/service/ServiceRequestDocService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/plan/service/PlanService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/project/service/ProjectService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/council/service/EvaluationService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/council/service/PlanEvaluationService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/council/service/ScheduleService.java`
+
+**Tests:**
+- Create: `it_backend/src/test/java/com/kdb/it/common/iam/repository/UserReadProjectionIt.java`
+- Create: `it_backend/src/test/java/com/kdb/it/common/iam/repository/OrganizationNameProjectionIt.java`
+- Create: `it_backend/src/test/java/com/kdb/it/common/iam/repository/CommitteeUserProjectionIt.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/common/iam/service/UserServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/common/iam/service/UserRepresentativeSelectorTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/common/admin/service/AdminServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/common/admin/service/AdminLogServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/common/approval/service/ApplicationServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/common/board/service/BoardPostServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/budget/cost/service/CostServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/budget/document/service/ReviewerServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/budget/document/service/ReviewCommentServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/budget/document/service/ServiceRequestDocServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/budget/plan/service/PlanServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/budget/project/service/ProjectServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/council/service/CommitteeServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/council/service/CouncilServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/council/service/EvaluationServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/council/service/PlanEvaluationServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/council/service/ScheduleServiceTest.java`
+
+- [ ] **2.1 RED row contracts:** `UserDto.ListRow` exact7 `eno,bbrC,bbrNm,temC,temNm,usrNm,ptCNm`; `DetailRow`은 그 7개와 `etrMilAddrNm,inleNo,cpnTpn,dtsDtlCone,prlmHrkOgzCCone,prlmHrkOgzCNm`이다. 상위코드는 조직 alias `o.prlmHrkOgzCCone`, 상위명은 `p.bbrNm`이다.
+- [ ] **2.2 RED view contracts:** `UserNameView(eno,usrNm)`, `UserOrgCodeView(eno,temC,bbrC)`, `AdminUserView(eno,usrNm,ptCNm,temC,temNm,bbrC,etrMilAddrNm,inleNo,cpnTpn,fstEnrDtm,lstChgDtm)`와 `findNameViewsByEnoIn(Collection<String>)`, `findNameViewByEno(String)`, `findOrgCodeViewsByEnoIn(Collection<String>)`, `findAdminUserViewsByDelYn(String)`를 추가한다. Custom signature는 `findListRowsByBbrC`, `searchListRowsByName`, `findDetailRowByEno`로 고정한다.
+- [ ] **2.3 RED team contract:** `CommitteeUserRow` exact5 getter `temC,eno,usrNm,bbrNm,ptCNm`; `UserRepository.java`에 다음 명시 JPQL과 signature를 테스트한다.
 
 ```java
-@DisplayName("<대상> 목록 프로젝션 (BE-03)")
-class <대상>ProjectionIt extends AbstractOracleRepositoryTest {
-
-    @Autowired
-    private <대상>Repository repository;
-
-    @Autowired
-    private TestEntityManager em;
-
-    @Test
-    @DisplayName("프로젝션 조회가 엔티티 조회와 동일한 값을 반환한다")
-    void projection_matchesEntityLoad() {
-        // Arrange: 픽스처 행 삽입 (감사컬럼 직접 세팅, 트랜잭션 롤백으로 정리)
-        // Act: 신규 프로젝션 메서드 조회
-        // Assert: 기존 엔티티 조회 결과의 대응 필드와 값 일치
-    }
-}
+@Query("SELECT u.temC AS temC, u.eno AS eno, u.usrNm AS usrNm, o.bbrNm AS bbrNm, u.ptCNm AS ptCNm "
+        + "FROM CuserI u LEFT JOIN CorgnI o ON o.prlmOgzCCone = u.bbrC "
+        + "WHERE u.temC IN :temCs AND u.delYn = :delYn")
+List<CommitteeUserRow> findCommitteeUserRowsByTemCInAndDelYn(
+        @Param("temCs") Collection<String> temCs, @Param("delYn") String delYn);
 ```
 
-- [ ] **Step 2: 프로젝션 구현**
+- [ ] **2.4 RED organization/selector:** `OrganizationNameView(prlmOgzCCone,bbrNm)`, `findNameViewsByPrlmOgzCConeIn`, `findNameViewByPrlmOgzCCone`; `public static Optional<UserRepository.CommitteeUserRow> pickView(List<UserRepository.CommitteeUserRow> users)`. 선택은 팀장 우선→ENO ASC이며 기존 `pick(List<CuserI>)`는 유지한다.
+- [ ] **2.5 fixture:** 조직 `120/디지털부`; 사용자 `BE03001/홍길동/팀장/BBR=120/TEM=12004/N`, `BE03002/김길동/사원/120/12004/Y`, `BE03003/null조직`; team 18010은 `BE03010/팀원`, `BE03011/팀장`. 부서·이름 검색은 현행대로 DEL filter/order가 없어 deleted BE03002도 포함한다. team bind `(12004,18001,18010,18501),DEL=N`에서 12004 `bbrNm=디지털부`, 대표 BE03001, 18010 대표 BE03011을 검증한다.
+- [ ] **2.6 GREEN consumers:** `ReviewerService.getReviewers`와 `CommitteeService.resolveTeamLeads`는 `CommitteeUserRow::getTemC` grouping + `pickView`; `ReviewerDto.Response.fromView(CommitteeUserRow,String)` 및 Committee row factory를 사용한다. 나머지는 이름/조직 read-response map만 view로 바꾼다. `AuthorOrgResolver`, `AuthService`, `CustomUserDetailsService`, Board 멘션 존재검증과 생성·수정 snapshot은 바꾸지 않는다.
+- [ ] **2.7 verify/commit:** `./gradlew test --tests '*UserServiceTest' --tests '*UserRepresentativeSelectorTest' --tests '*ReviewerServiceTest' --tests '*CommitteeServiceTest' integrationTest --tests '*UserReadProjectionIt' --tests '*OrganizationNameProjectionIt' --tests '*CommitteeUserProjectionIt'`; 이어 영향받은 consumer 테스트를 실행한다. commit `perf: 사용자 조직 응답 조회 프로젝션 분리 (BE-03)`.
 
-Spring Data 인터페이스 프로젝션(사용 컬럼만 getter 선언) 또는 기존 `*RepositoryImpl` QueryDSL DTO 프로젝션 선례를 따른다. 인터페이스 프로젝션 형태:
+#### Step 3: 계획·BITEMM ABUS·사업 단건 이름·BCOSTM #10,#12~#14
 
-```java
-/** <대상> 목록 조회 전용 프로젝션 — 사용 컬럼만 적재 (BE-03) */
-public interface <대상>SummaryView {
-    String get<식별자>();
-    String get<표시명>();
-    // 응답 DTO가 실제 사용하는 컬럼만 선언
-}
-```
+**Files:**
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/plan/repository/BplanmRepository.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/plan/dto/PlanDto.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/plan/service/PlanService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/project/repository/ProjectItemRepository.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/project/repository/ProjectRepository.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/project/service/ProjectBudgetSummaryService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/project/service/ProjectService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/cost/repository/CostRepository.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/cost/service/CostRepresentativeSelector.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/work/service/BudgetWorkService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/estimate/service/EstimateService.java`
+- Create: `it_backend/src/test/java/com/kdb/it/domain/budget/plan/repository/PlanListProjectionIt.java`
+- Create: `it_backend/src/test/java/com/kdb/it/domain/budget/project/repository/ProjectItemBudgetProjectionIt.java`
+- Create: `it_backend/src/test/java/com/kdb/it/domain/budget/project/repository/ProjectReferenceProjectionIt.java`
+- Create: `it_backend/src/test/java/com/kdb/it/domain/budget/cost/service/CostRepresentativeSelectorViewTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/budget/plan/service/PlanServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/budget/project/service/ProjectBudgetSummaryServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/budget/work/service/BudgetWorkServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/budget/work/service/BudgetWorkServiceBatchTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/council/service/CouncilServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/estimate/service/EstimateServiceTest.java`
 
-```java
-    /** 목록 화면용 경량 조회 — 전체 엔티티 로딩 대체 (BE-03) */
-    List<<대상>SummaryView> findAllProjectedByDelYn(String delYn);
-```
+- [ ] **3.1 RED Plan:** `PlanListView` exact9 `reqDocNo,itPtlPlnTpC,bseYy,aduTotAmt,cpitBgApvAmt,totXpAmt,fstEnrDtm,fstEnrUsid,redtConeInf`; `findListViewsByDelYnOrderByFstEnrDtmDesc(String)`. JSON은 `{"prjSnapshots":[{"id":1,"pulDtt":"001"},{"id":2,"pulDtt":"002"},{"id":3,"pulDtt":"001"}]}`이고 normalize 001→10/002→20 뒤 `CodeService.findCodeEntitiesByCId(ABUS)` mock `10→신규,20→계속`; `itPrjCnt=3,newPrjCnt=2,contPrjCnt=1`을 검증한다.
+- [ ] **3.2 RED BITEMM:** `ProjectItemBudgetView` exact5 `gclMngNo,abusMngNo,ioeC,amt,mplAmt`; 신규 메서드는 `findBudgetViewsByAbusMngNoInAndDelYn(Collection<String>,String)` 하나다. `ProjectBudgetSummaryService.applyBudgetSummaryViews(ProjectDto.Response,List<ProjectItemBudgetView>)`를 추가하고 기존 entity 메서드는 유지한다. Project/Council의 ABUS 전체행 sum/grouping만 전환한다.
+- [ ] **3.3 RED Project/Cost:** `ProjectNameView(abusMngNo,abusNm)`와 `findNameViewByAbusMngNoAndLstYnAndDelYn`은 `EstimateService.get`의 사업명 단건에만 쓴다. `CostRepresentativeView(costBgNo,bgSno,lstYn,cttNm)`, `findRepresentativeViewsByCostBgNoInAndDelYn`, `CostRepresentativeSelector.pickView(List<CostRepresentativeView>)`를 추가한다. Cost fixture `BG-DUP:SNO1/LST=N/구버전,SNO2/LST=Y/최신` 결과는 최신이다. `BudgetWorkService.getProjectSummary`에서는 BCOSTM 조회·selector만 view로 전환하고 기존 문자열 namespace map과 put-if-absent 동작은 그대로 둔다.
+- [ ] **3.4 blocked assertions:** `BbugtmRepository`에는 view를 만들지 않는다. `getIoeCategories/getSummary/getProjectSummary` 각각 `findByBseYyAndDelYn` entity exactly1/view0이다. GCL BITEMM, BPROJM batch name, `ProjectKeyView`, namespace map은 신규 조회·정렬 없이 기존 동작을 유지한다. `BudgetWorkServiceTest`/`BudgetWorkServiceBatchTest`는 BCOST view 전환만 허용하고 BBUG/BITEM GCL/BPROJM entity repository 호출 횟수와 결과를 보존하는 회귀 어서션을 추가한다.
+- [ ] **3.5 verify/commit:** `./gradlew test --tests '*PlanServiceTest' --tests '*ProjectBudgetSummaryServiceTest' --tests '*BudgetWorkServiceTest' --tests '*BudgetWorkServiceBatchTest' --tests '*CouncilServiceTest' --tests '*EstimateServiceTest' --tests '*CostRepresentativeSelectorViewTest' integrationTest --tests '*PlanListProjectionIt' --tests '*ProjectItemBudgetProjectionIt' --tests '*ProjectReferenceProjectionIt'`; commit `perf: 계획과 안전 예산 응답 조회 프로젝션 분리 (BE-03)`.
 
-서비스 호출부를 프로젝션 메서드로 교체하고, 응답 DTO 매핑을 뷰 getter 기준으로 바꾼다.
+#### Step 4: 집행 상세 Contract·Deliberation·Payment와 Payment line #16,#22,#23,#25
 
-- [ ] **Step 3: 테스트 통과 확인 후 후보별 커밋**
+**Contract files:**
+- Create: `it_backend/src/main/java/com/kdb/it/domain/contract/repository/ContractDetailRow.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/contract/repository/ContractRepositoryCustom.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/contract/repository/ContractRepositoryImpl.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/contract/dto/ContractDto.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/contract/service/ContractService.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/contract/service/ContractServiceTest.java`
+- Create: `it_backend/src/test/java/com/kdb/it/domain/contract/repository/ContractDetailProjectionIt.java`
 
-```bash
-cd C:\it\it_backend
-./gradlew test integrationTest
-git add <변경 파일들>
-git commit -m "perf: <대상> 목록 조회 프로젝션 분리 (BE-03)"
-```
+**Deliberation files:**
+- Create: `it_backend/src/main/java/com/kdb/it/domain/deliberation/repository/DeliberationDetailRow.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/deliberation/repository/DeliberationRepositoryCustom.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/deliberation/repository/DeliberationRepositoryImpl.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/deliberation/dto/DeliberationDto.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/deliberation/service/DeliberationService.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/deliberation/service/DeliberationServiceTest.java`
+- Create: `it_backend/src/test/java/com/kdb/it/domain/deliberation/repository/DeliberationDetailProjectionIt.java`
 
-- [ ] **Step 4: 경계선 후보 확정**
+**Payment files:**
+- Create: `it_backend/src/main/java/com/kdb/it/domain/payment/repository/PaymentDetailRow.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/payment/repository/PaymentRepositoryCustom.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/payment/repository/PaymentRepositoryImpl.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/payment/repository/PaymentLineRepository.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/payment/dto/PaymentDto.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/payment/service/PaymentService.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/payment/service/PaymentServiceTest.java`
+- Create: `it_backend/src/test/java/com/kdb/it/domain/payment/repository/PaymentDetailProjectionIt.java`
 
-경계선 판정 후보를 Task 17에서 TASK.md에 등록할 수 있도록 리포트의 판정 표를 확정한다.
+- [ ] **4.1 RED Contract:** `ContractDetailRow` exact15 `docMngNo,docVrsSno,ioeC,cncdRfrNo,tgtNm,stsTc,reqCone,itPtlCttManrC,cttManrRsn,cttNm,cttAmt,cttOppNm,cttDt,reqUsid,reqDtm`; `Optional<ContractDetailRow> findCurrentDetail(String docNo)`; `ContractDto.Detail.fromProjection(ContractDetailRow)`.
+- [ ] **4.2 RED Deliberation:** `DeliberationDetailRow` exact17 `docMngNo,docVrsSno,ioeC,cncdRfrNo,tgtNm,stsTc,reqCone,taskDbrTc,taskDbrRltTc,taskDbrDt,taskDbrTod,taskDbrOmtYn,taskDbrOmtRsn,opnnCone,apvTrdnRsnCone,reqUsid,reqDtm`; 같은 `findCurrentDetail`; `DeliberationDto.Detail.fromProjection`.
+- [ ] **4.3 RED Payment:** `PaymentDetailRow` exact11 `docMngNo,docVrsSno,ioeC,cncdRfrNo,tgtNm,stsTc,reqCone,cttNm,cttAmt,reqUsid,reqDtm`; 같은 `findCurrentDetail`; `PaymentDto.Detail.fromProjection(PaymentDetailRow,List<PaymentDto.Line>)`. `PaymentLineView(dfrTod,dfrAmt,dfrDt,dfrMplDt,opnnCone)`와 `findLineViewsByDocMngNoAndDocVrsSnoAndDelYn`을 추가한다.
+- [ ] **4.4 fixture/equivalence:** 각 master에 `V100 LST=N DEL=N`, `V101 LST=Y DEL=N`, `V200 LST=Y DEL=Y`; 결과는 최대버전이 아니라 플래그 일치 V101이다. 기존 `DOC_MNG_NO`, 최신·미삭제 BPROJM/BCOSTM LEFT JOIN, IOE CASE, DISTINCT, 무정렬을 보존한다. Contract 요청300/사유1000, Deliberation `opnnCone`1000, Payment master 요청300/line 의견1000을 검증한다.
+- [ ] **4.5 GREEN:** 각 Impl은 QueryDSL scalar constructor를 사용하며 기존 `findCurrentWithTargetName`을 유지한다. 각 Service `get`만 row factory로 전환한다. `EstimateLineRepository`와 `EstimateDto`는 물리 PK 결정 전 수정하지 않는다.
+- [ ] **4.6 verify/commit:** `./gradlew test --tests '*ContractServiceTest' --tests '*DeliberationServiceTest' --tests '*PaymentServiceTest' integrationTest --tests '*ContractDetailProjectionIt' --tests '*DeliberationDetailProjectionIt' --tests '*PaymentDetailProjectionIt'`; commit `perf: 집행 상세 조회 프로젝션 분리 (BE-03)`.
+
+#### Step 5: 결재 응답 조립 #17~#19
+
+**Files:**
+- Modify: `it_backend/src/main/java/com/kdb/it/common/approval/dto/ApplicationDto.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/approval/dto/ApplicationInfoDto.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/approval/repository/ApplicationMapRepository.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/approval/repository/ApplicationRepository.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/approval/repository/ApproverRepository.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/approval/service/ApplicationService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/project/service/ProjectService.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/cost/service/CostService.java`
+- Create: `it_backend/src/test/java/com/kdb/it/common/approval/repository/ApplicationReadProjectionIt.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/common/approval/service/ApplicationServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/budget/project/service/ProjectServiceTest.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/budget/cost/service/CostServiceTest.java`
+
+- [ ] **5.1 RED contracts:** `ApplicationMapView(apfDcmNo,pkColNm,fntTbCrySno)`; `findViewsByFntTbNmAndPkColNmAndFntTbCrySnoOrderByApfDcmNoDesc(String,String,Integer)`와 `findViewsByFntTbNmAndPkColNmInOrderByApfDcmNoDesc(String,List<String>)`. `ApplicationSummaryView(apfMngNo,itPtlApfPrgStsC,dcdReqTtl,dcdReqUsid,dcdReqDtm,rgprDcdReqCone)`와 `findSummaryViewsByApfMngNoIn(Collection<String>)`. `ApproverReadView(dcdMngNo,dcrSqnSno,dcrEno,itPtlDcdStsC,dcdDtm,dcrOpnnCone,lstDcdYn)`와 single/IN `findReadViews...OrderByDcrSqnSnoAsc`; DEL filter는 추가하지 않는다. `ApplicationDto.Response`와 `ApplicationInfoDto`에는 view 전용 factory를 별도 이름으로 추가해 기존 `fromEntities`를 유지한다.
+- [ ] **5.2 CAPPLA fixture:** Project A `(APF-2026-00000001,A,SNO1),(00000003,A,SNO2)`, B `(00000002,B,SNO7)`; detail A/SNO2→00000003, batch A→00000003/B→00000002. Cost BG-A `(00000004,SNO1),(00000006,SNO1),(00000005,SNO2)`; PK+SNO 결과 SNO1→00000006,SNO2→00000005. `CAPPLA.apfDcmNo=CAPPLM.apfMngNo` literal을 보장한다.
+- [ ] **5.3 GREEN four consumers:** Project/Cost detail은 table+PK+SNO 공통 SQL shape, Project batch는 table+PK IN 후 PK별 최신, Cost batch는 같은 SQL 후 PK+SNO별 최신이다. `ProjectService.setApplicationInfo`, `ProjectService.enrichProjectListBatch`, `CostService.setApplicationInfo`, `CostService.enrichCostListBatch` 네 곳을 모두 바꾼다. response assembly만 바꾸고 결재 생성·수정·회수·동기화는 entity를 유지한다.
+- [ ] **5.4 verify/commit:** `./gradlew test --tests '*ApplicationServiceTest' --tests '*ProjectServiceTest' --tests '*CostServiceTest' integrationTest --tests '*ApplicationReadProjectionIt'`; commit `perf: 결재 응답 조회 프로젝션 분리 (BE-03)`.
+
+#### Step 6: 관리자 파일·토큰·로그인 이력 #20,#21,#30
+
+**Files:**
+- Modify: `it_backend/src/main/java/com/kdb/it/infra/file/repository/FileRepository.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/system/repository/RefreshTokenRepository.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/system/repository/LoginHistoryRepository.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/admin/service/AdminService.java`
+- Create: `it_backend/src/test/java/com/kdb/it/common/admin/repository/AdminListProjectionIt.java`
+- Create: `it_backend/src/test/java/com/kdb/it/common/admin/repository/LoginHistoryProjectionIt.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/common/admin/service/AdminServiceTest.java`
+
+- [ ] **6.1 RED contracts:** `AdminFileView(flMpnId,flNm,flTpCone,pkColNm,fstEnrDtm,fstEnrUsid)` + `findAdminFileViewsByDelYn(String)`; `AdminTokenView(eno,endDtm,ecyRnwPubTokCone,fstEnrDtm)` + 유효한 Spring Data `findAllProjectedBy()`; `LoginHistoryView(eno,lgnDtm,itPtlLgnTc,ipAddr,lgnErrRsn,agtVrsCone,fstEnrDtm)` + `Page<LoginHistoryView> findPageViewsByOrderByLgnDtmDesc(Pageable)`. 기존 filter/order를 늘리지 않는다.
+- [ ] **6.2 token fixture:** ECY `null→null`, 20자 `12345678901234567890→동일`, 21자 `123456789012345678901→12345678901234567890...`, 64자 `abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789→abcdef0123456789abcd...`; 미사용 API token sentinel `API-TOKEN-SENTINEL-BE03`는 view getter에 없어야 한다.
+- [ ] **6.3 login fixture:** page rows `(KNOWN,UNKNOWN,null)` 결과는 `(사용자명,ENO 원문,null)`이고 `findNameViewsByEnoIn` exactly1, `findNameViewByEno` 0회다. page 정렬은 `LGN_DTM DESC` 그대로 둔다.
+- [ ] **6.4 verify/commit:** `./gradlew test --tests '*AdminServiceTest' integrationTest --tests '*AdminListProjectionIt' --tests '*LoginHistoryProjectionIt'`; commit `perf: 관리자 목록 조회 프로젝션 분리 (BE-03)`.
+
+#### Step 7: 요구사항 문서 버전 이력 #35
+
+**Files:**
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/document/repository/ServiceRequestDocRepository.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/document/dto/ServiceRequestDocDto.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/document/service/ServiceRequestDocService.java`
+- Create: `it_backend/src/test/java/com/kdb/it/domain/budget/document/repository/ServiceRequestDocVersionProjectionIt.java`
+- Modify: `it_backend/src/test/java/com/kdb/it/domain/budget/document/service/ServiceRequestDocServiceTest.java`
+
+- [ ] **7.1 RED:** `VersionHistoryView(docMngNo,docVrsSno,fstEnrDtm,lstChgDtm,delYn)`와 `findAllProjectedByDocMngNoAndDelYnOrderByDocVrsSnoDesc`; `ServiceRequestDocDto.VersionResponse.fromValues(...)`를 먼저 사용한다.
+- [ ] **7.2 fixture:** `DOC-BE03-0001`의 stored 100=`2026-07-21T09:00/09:05`, 101=`10:00/10:05`, 200=`11:00/11:05`는 DEL=N, 300=`12:00/12:05`는 DEL=Y, 미사용 CLOB 12K. 결과는 `(2.00,11:00,11:05),(1.01,10:00,10:05),(1.00,09:00,09:05)`이고 `DocVersionCodec.toDisplay`를 재사용한다.
+- [ ] **7.3 verify/commit:** `./gradlew test --tests '*ServiceRequestDocServiceTest' integrationTest --tests '*ServiceRequestDocVersionProjectionIt'`; commit `perf: 요구사항 버전 이력 조회 프로젝션 분리 (BE-03)`.
+
+#### Step 8: Oracle 전후 행렬 검증
+
+비밀번호는 환경변수/로컬 비공개 설정에서만 읽고 명령·로그·문서에 출력하지 않는다. 같은 literal, `CURRENT_SCHEMA=ITPOWN`, `DBMS_XPLAN.DISPLAY(...,'BASIC +ROWS +BYTES +COST +PREDICATE')`로 기존 SQL과 projection SQL을 연속 측정한다. 통계가 비어 있으므로 Rows/Bytes는 추정치이며 hash·cardinality·access·sort/distinct 동등성을 우선 검증한다.
+
+| 신규 method | bind | 기대 전→후 `(hash; Rows/Bytes/Cost; access; sort/distinct)` |
+| ----------- | ---- | ---------------------------------------------------------- |
+| Board `searchPostRows` | BLB-BE03,DEL=N,page0/20 | `3214418861`; 20/58,020/5→20/15,800/5; FULL+WINDOW; 기존 3-key/no distinct |
+| User 부서 row | BBR=120,no DEL/order | `1479025259`; 3/5,601/3→3/1,005/3; `IX_TPRMPP_CUSERI_01` RANGE+HASH OUTER+`PK_CORGNI` UNIQUE; none/none |
+| User 이름 row | contains 길,no DEL/order | `2075770119` 1/1,570/4 FULL→`862519252` 1/335/5 HASH OUTER; none/none |
+| User 상세 row | ENO=BE03001 | `710862926`; 1/2,164/3→1/1,649/3; PK UNIQUE+NL OUTER2; none/none |
+| User name IN / org-code IN / name single | ENO 001,002 / 001 | `4258768852` 1/1,570/3→70 또는25/3 PK IN; `1767995418` 1/1,570/1→70/1 PK UNIQUE |
+| Admin users / team rows | DEL=N / TEM 4개,DEL=N | `2075770119` 25/39,250/4→10,175/4 FULL; team `2075770119` 13/20,410/4→`3422623319` 13/3,705/7 HASH OUTER |
+| Org name IN / single | code 12004,P000 / 12004 | `3974003270` 1/297/2→104/2 PK IN; `2808597226` 1/297/1→104/1 PK UNIQUE |
+| Plan list | DEL=N,FST DESC | `2291581576`; 3/17,103/4→3/6,417/4; FULL; ORDER BY/none |
+| BITEM ABUS all rows | ABUS A,B,DEL=N | `646722203`; 1/1,576/1→1/140/1; `IX_TPRMPP_BITEMM_01` RANGE IN/ROWID; none/none |
+| ProjectName single | ABUS=A,LST=Y,DEL=N | `537617361`; 1/31,545/1→1/270/1; PK RANGE; none/none |
+| Cost representative | BG A,B,DEL=N | `2009769883`; 1/1,758/3→1/255/3; PK RANGE IN/ROWID; none/none |
+| Payment line | DOC=PAY-BE03,V=101,DEL=N | `2244852779`; 1/12,292/1→1/12,123/1; PK RANGE/ROWID; none/none |
+| Contract / Deliberation / Payment detail | 각 DOC,LST=Y,DEL=N | `492949432` 1/3,873→3,743/10; `2727222238` 1/14,476→14,346/10; `3295666622` 1/1,645→1,515/10; NL OUTER2+HASH UNIQUE; distinct/no sort |
+| CAPPLA detail / Project batch / Cost batch | BPROJM·BCOSTM literals | 모두 `2583179400`; 1/8,196/1→1/8,111/1; `IX_TPRMPP_CAPPLA_01` FULL DESC; APF DESC/no distinct |
+| CAPPLM summary IN | APF ...03,...02 | `230381884`; 1/2,866/1→1/789/1; PK IN; none/none |
+| CDECIM read IN / single | DCD IN / APF ...03 | `3468833582` 1/1,157/3→1,082/3 PK IN+SORT; `568951246` 1/1,157/1→1,082/1 PK RANGE; DCR ASC/no distinct |
+| Admin file / token | DEL=N / all | `1178941135` 61/267,851/4→57/122,322/4 FULL; `867877563` 14/85,708/4→25,732/4 FULL |
+| Login page | page0/20,LGN DESC | `190441828`; root20/15,840/294→12,300/232, table1,701/1.294M→1.000M; FULL+WINDOW; LGN DESC/none |
+| Brdocm version | DOC-BE03-0001,DEL=N,VRS DESC | `2391463171`; 1/3,815/0→1/75/0; `IX_TPRMPP_BRDOCM_01` RANGE DESC; VRS DESC/none |
+
+- [ ] **8.1 blocked matrix:** BBUG exact5는 측정 근거 `1120597652,35/294,910/6→290,430/6`만 유지하고 신규 method가 없어야 한다. BITEM GCL `1982961735`, BPROJM batch `2947393899`, BESTTM `2054273392`, ProjectKey/namespace는 after SQL·추가 sort·추가 조회가 없어야 한다.
+- [ ] **8.2 residue:** 모든 `BE03_%`/`T12_%` statement_id를 rollback/delete 후 `SELECT COUNT(*) FROM PLAN_TABLE WHERE STATEMENT_ID LIKE 'BE03%' OR STATEMENT_ID LIKE 'T12_%'`가 0인지 확인한다. DDL/DML/index 변경은 금지한다.
+
+#### Step 9: 전체 회귀·완료 게이트
+
+- [ ] **9.1 unit:** `cd C:\it\it_backend && ./gradlew clean test`.
+- [ ] **9.2 Oracle IT:** `./gradlew integrationTest`.
+- [ ] **9.3 source audit:** 신규 view/row가 exact 필드만 노출하는지, 차단된 다섯 정책 경로와 쓰기/인증 경로에 신규 projection 호출이 없는지 `rg`와 mock verify로 확인한다.
+- [ ] **9.4 worktree:** 백엔드 변경 파일만 후보별 커밋에 포함하고 외부 저장소 문서나 무관한 사용자 변경을 stage하지 않는다.
+- [ ] **9.5 경계선:** Task 12의 경계선 9개(#24,#26~#29,#31~#34)는 구현하지 않고 Task 17의 `TASK.md` 등록 대상으로 유지한다.
 
 ### Task 14: BE-06 Javadoc 경고 전수 측정 설정
 
