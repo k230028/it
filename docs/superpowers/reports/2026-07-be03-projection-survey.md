@@ -31,7 +31,7 @@
 | 10 | `BplanmRepository.findAllByDelYnOrderByFstEnrDtmDesc` → `PlanService.getPlans` → `PlanDto.ListResponse` | 파생 목록 | 전체 다건 | 9/19 | 사용 CLOB 1개, 미사용 300~4,000자 텍스트 5개 | 높음(계획 목록) | hash 2291581576, FULL + SORT, Rows 3/Bytes 17,103/Cost 4 | **명백** |
 | 11 | `BbugtmRepository.findByBseYyAndDelYn` → `BudgetWorkService.getIoeCategories/getSummary/getProjectSummary` | 파생 목록 | 연도별 다건 | **5/16** (`pkColNm,fntTbNm,ioeC,bgDupAmt,asgRt`) | `fntTbCrySno`는 쓰기 전용; `PK_COL_NM` 대형값은 읽기 사용 | 높음(예산작업 초기 로드) | hash 1120597652, FULL Rows35/Bytes294,910/Cost6; 5필드 SQL은 Bytes290,430. 세 메서드 모두 `findFirst`/`putIfAbsent`/`orcTbMap.putIfAbsent`와 집계를 같은 list snapshot에서 수행 | **명백-전체차단**: projection+entity 2조회 금지, 대표·namespace 정책 승인 전 세 메서드 모두 엔티티 1조회 유지 |
 | 12 | `ProjectItemRepository.findByGclMngNoIn.../findByAbusMngNoIn...` → Project 예산합계·Council 전체행 집계 / BudgetWork 대표행 | 파생 배치 | 다건 | 5/26 (`gclMngNo,abusMngNo,ioeC,amt,mplAmt`) | 미사용 대형 문자열, 조인 0 | 높음 | 안전한 ABUS 전체행은 hash 646722203/Bytes1,576→140/Cost1. GCL hash 1982961735/Bytes1,576/Cost3은 전부 대표행 의존이라 projection 메서드를 추가하지 않음 | **명백-부분차단**: GCL `putIfAbsent` 첫행은 기존 엔티티 조회 유지 |
-| 13 | `ProjectRepository.findByAbusMngNo...` → `EstimateService.get`, `BudgetWorkService` 존재·이름 보강 | 파생 단건/배치 | 단건·다건 | 1~2/45 | 미사용 1,000자 이상 문자열 11개 | 중간~높음 | 단건 hash 537617361/Bytes 31,545/Cost 1; 배치 hash 2947393899/Cost 3 | **명백-차단**: 배치가 무정렬 `putIfAbsent`라 대표 이름 동등성 검증 불가. 정책 승인 전 Task 13 보류 |
+| 13 | `ProjectRepository.findByAbusMngNo...` → `EstimateService.get`, `BudgetWorkService` 존재·이름 보강 | 파생 단건/배치 | 단건·다건 | 1~2/45 | 미사용 1,000자 이상 문자열 11개 | 중간~높음 | 단건 hash 537617361/Bytes 31,545/Cost 1; 배치 hash 2947393899/Cost 3 | **명백-부분차단**: Estimate 단건 이름만 구현. 배치 대표 이름과 그 조회를 분리해야 하는 `ProjectKeyView`는 보류 |
 | 14 | `CostRepository.findByCostBgNoInAndDelYn` → `BudgetWorkService.getProjectSummary` + `CostRepresentativeSelector` | 파생 배치 | 다건 | 4/33 (`costBgNo,bgSno,lstYn,cttNm`) | 미사용 업무·감사 컬럼, 조인 0 | 높음(예산작업 초기 로드) | hash 2009769883, PK IN-LIST, Rows 1/Bytes 1,758/Cost 3 | **명백** |
 | 15 | `EstimateLineRepository.findBy...AndDelYn` → `EstimateService.get` → `EstimateDto.Detail` | 파생 조회 | 문서별 다건 | 4/13 | 1,000자 `opnnCone`을 응답이 사용; 감사·식별 컬럼 미사용 | 중간(소요예산 상세) | 재수집 hash 2054273392: `TABLE ACCESS BY INDEX ROWID` + child `PK_BESTTM` unique scan, Rows1/Bytes12,291→12,122/Cost1. 로컬 물리 PK가 문서+버전 2컬럼이라 JPA 4컬럼 Id와 불일치 | **명백-차단**: 스키마 정합성 확인 전 1:N fixture/구현 보류 |
 | 16 | `PaymentLineRepository.findBy...AndDelYn` → `PaymentService.get` → `PaymentDto.Detail` | 파생 조회 | 문서별 다건 | 5/14 | 1,000자 의견은 사용, 나머지 감사·식별 컬럼 미사용 | 중간(지급 상세) | hash 2244852779, PK RANGE, Rows 1/Bytes 12,292/Cost 1 | **명백** |
@@ -104,7 +104,7 @@
 5. Plan 회귀 fixture는 raw `pulDtt` 001/002와 codeService map `10→신규,20→계속`을 사용해 normalize 후 3/2/1을 검증한다.
 6. CAPPLA table code는 `BPROJM`/`BCOSTM`이고 `apfDcmNo=CAPPLM.apfMngNo`를 보장한다. Project/Cost detail은 공통 table+PK+SNO shape, 두 batch는 별도 shape이며 네 소비자를 모두 전환·검증한다.
 7. Estimate line 재수집은 `TABLE ACCESS BY INDEX ROWID`와 child `PK_BESTTM` unique scan이었다. 물리 2컬럼 PK와 JPA 4컬럼 Id 불일치 때문에 구현은 차단한다.
-8. Task 13 계약에는 BITEMM ABUS IN, ProjectKey DISTINCT, team 대표, CAPPLA 세 변형, BCOSTM을 포함해 신규 repository method별 hash/cardinality/access/sort/distinct/bytes를 기록한다.
+8. Task 13 계약에는 BITEMM ABUS IN, BPROJM 단건 이름, team 대표, CAPPLA 세 변형, BCOSTM을 포함해 신규 repository method별 hash/cardinality/access/sort/distinct/bytes를 기록한다. `ProjectKeyView`는 차단된 BPROJM 배치 이름을 별도 조회로 분리하게 되므로 이번 계약에서 제외한다.
 9. Token view는 유효한 Spring Data `findAllProjectedBy()`를 사용한다. `AdminServiceTest.getTokens_토큰마스킹반환`이 ECY null/20/21/64자 경계와 미사용 API token sentinel을 검증한다.
 10. Contract/Deliberation/Payment는 domain별 row 파일, Custom/Impl signature, DTO factory, Service 전환, 기존/신규 테스트를 각각 열거한다.
 11. Board fixture는 `isAdmin=false`, title/body/author의 `alpha`, `ANC DESC,UNQ DESC,GRP ASC` 세 키와 deleted/private/not-started/ended 제외 predicate를 literal로 검증한다.
@@ -123,6 +123,7 @@
 - **결정 #3 — BPROJM**: 배치 사업 이름 대표 정책만 소유한다.
 - **결정 #4 — BESTTM**: 물리 `PK_BESTTM(문서,버전)`을 JPA `BesttmId(문서,버전,팀,비목)`와 맞게 변경할지, 현재 단일 line 물리 계약을 따를지 소유한다.
 - **결정 #5 — namespace**: `getProjectSummary`의 `orcTbMap/projectCategoryMap` key를 `(sourceNamespace,key)` 복합키로 분리할지 소유한다. 비충돌 불변식이 없으므로 승인 전 최적화를 시작하지 않는다.
-- **Task 13 사용자 승인: 대기**
-- **승인된 실행 계약 커밋: 대기**
-- 승인된 계획 커밋 해시가 이 절에 기록되기 전에는 Task 13 구현을 시작하지 않는다.
+- **Task 13 사용자 승인: 2026-07-21 안전 범위 구현 승인**
+- **승인된 실행 계약 커밋: `b8b26cfcb9394f908f53000eb0d1fbb751080af3`** (`docs: BE-03 프로젝션 실행 계약 승인 반영`)
+- 승인 범위는 게시글, 사용자·조직·팀 대표 read response, 계획, BITEMM ABUS 전체행 집계, BPROJM 단건 이름, BCOSTM 대표 view, Contract/Deliberation/Payment 상세와 Payment line, 결재 응답, 관리자 파일·토큰·로그인 이력, 요구사항 버전 이력이다.
+- 결정 #1 BITEMM GCL, #2 BBUGTM, #3 BPROJM 배치 이름, #4 BESTTM, #5 namespace는 모두 보류한다. 이 경계에서는 기존 엔티티 조회·encounter order·문자열 key 동작을 유지하고 신규 projection/정렬/2-query 분리를 만들지 않는다. 차단된 배치 경로에만 필요한 `ProjectKeyView`도 이번 실행에서 제외한다.
