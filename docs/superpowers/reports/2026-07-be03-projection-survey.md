@@ -29,7 +29,7 @@
 | 8 | `OrganizationRepository.findAllById` → Application/Project/Cost **응답** 조직명 Map | 상속 PK 배치 | 다건 | 2/13 | LOB 없음, 조인 0 | 높음(목록 응답 조립 공통) | hash 3974003270, PK IN-LIST, Rows 1/Bytes 297/Cost 2 | **명백** |
 | 9 | `OrganizationRepository.findById` → Project/Cost `setCodeNames` **응답** 폴백 | 상속 PK 단건 | 단건 반복 | 1/13 | LOB 없음, 조인 0이나 N+1 가능 | 중간~높음 | hash 2808597226, PK UNIQUE, Rows 1/Bytes 297/Cost 1 | **명백** |
 | 10 | `BplanmRepository.findAllByDelYnOrderByFstEnrDtmDesc` → `PlanService.getPlans` → `PlanDto.ListResponse` | 파생 목록 | 전체 다건 | 9/19 | 사용 CLOB 1개, 미사용 300~4,000자 텍스트 5개 | 높음(계획 목록) | hash 2291581576, FULL + SORT, Rows 3/Bytes 17,103/Cost 4 | **명백** |
-| 11 | `BbugtmRepository.findByBseYyAndDelYn` → `BudgetWorkService.getSummary/getProjectSummary` | 파생 목록 | 연도별 다건 | **5/16** (`pkColNm,fntTbNm,ioeC,bgDupAmt,asgRt`) | `fntTbCrySno`는 쓰기 전용; `PK_COL_NM` 대형값은 읽기 사용 | 높음(예산작업 초기 로드) | hash 1120597652, FULL Rows35/Bytes294,910/Cost6 → 5필드 Bytes290,430. 단, `findFirst`/`putIfAbsent` 대표행 하위경로는 무정렬이라 기존 엔티티 조회 유지 | **명백-부분차단** |
+| 11 | `BbugtmRepository.findByBseYyAndDelYn` → `BudgetWorkService.getIoeCategories/getSummary/getProjectSummary` | 파생 목록 | 연도별 다건 | **5/16** (`pkColNm,fntTbNm,ioeC,bgDupAmt,asgRt`) | `fntTbCrySno`는 쓰기 전용; `PK_COL_NM` 대형값은 읽기 사용 | 높음(예산작업 초기 로드) | hash 1120597652, FULL Rows35/Bytes294,910/Cost6; 5필드 SQL은 Bytes290,430. 세 메서드 모두 `findFirst`/`putIfAbsent`/`orcTbMap.putIfAbsent`와 집계를 같은 list snapshot에서 수행 | **명백-전체차단**: projection+entity 2조회 금지, 대표·namespace 정책 승인 전 세 메서드 모두 엔티티 1조회 유지 |
 | 12 | `ProjectItemRepository.findByGclMngNoIn.../findByAbusMngNoIn...` → Project 예산합계·Council 전체행 집계 / BudgetWork 대표행 | 파생 배치 | 다건 | 5/26 (`gclMngNo,abusMngNo,ioeC,amt,mplAmt`) | 미사용 대형 문자열, 조인 0 | 높음 | 안전한 ABUS 전체행은 hash 646722203/Bytes1,576→140/Cost1. GCL hash 1982961735/Bytes1,576/Cost3은 전부 대표행 의존이라 projection 메서드를 추가하지 않음 | **명백-부분차단**: GCL `putIfAbsent` 첫행은 기존 엔티티 조회 유지 |
 | 13 | `ProjectRepository.findByAbusMngNo...` → `EstimateService.get`, `BudgetWorkService` 존재·이름 보강 | 파생 단건/배치 | 단건·다건 | 1~2/45 | 미사용 1,000자 이상 문자열 11개 | 중간~높음 | 단건 hash 537617361/Bytes 31,545/Cost 1; 배치 hash 2947393899/Cost 3 | **명백-차단**: 배치가 무정렬 `putIfAbsent`라 대표 이름 동등성 검증 불가. 정책 승인 전 Task 13 보류 |
 | 14 | `CostRepository.findByCostBgNoInAndDelYn` → `BudgetWorkService.getProjectSummary` + `CostRepresentativeSelector` | 파생 배치 | 다건 | 4/33 (`costBgNo,bgSno,lstYn,cttNm`) | 미사용 업무·감사 컬럼, 조인 0 | 높음(예산작업 초기 로드) | hash 2009769883, PK IN-LIST, Rows 1/Bytes 1,758/Cost 3 | **명백** |
@@ -69,7 +69,7 @@
 - **게시글 목록**: 목록 응답은 본문을 소비하지 않지만 전체 `CBLBCM`을 읽는다. 로컬 활성 행은 1건이고 본문 길이는 2자라 현재 데이터로 절감량을 재현할 수 없으나, 물리 허용 길이 4,000자와 페이지 최대 100건 때문에 구조적으로 목록 projection이 유리하다. TABLE FULL 연산자 행 폭은 Bytes 2,888이고, analytic `RN`을 포함한 20행 VIEW 최상위는 Bytes 58,020이다. 같은 filter/order/page의 14필드 SQL은 동일 hash/Cost 5에서 최상위 Bytes 15,800이었다.
 - **사용자 계열**: 로컬 사용자는 25명(활성 23명), 한 부서 최대 7명이다. 부서 목록 계획은 조직 1개를 함께 적재하고, `findByEno` EntityGraph 계획은 `PK_CUSERI` unique scan 뒤 조직과 상위조직을 각각 unique scan한다(계획 해시 `710862926`, Cost 3, Bytes 2,164). 이름만 필요한 호출도 같은 전체 사용자와 2개 조직 조인을 수행한다. 이름 검색은 조직을 fetch하지 않아 DTO 변환 시 별도 LAZY 조회가 생길 수 있다. Reviewer/Committee 팀 대표 조회는 `temC,eno,usrNm,bbrNm,ptCNm` 5필드와 조직 LEFT JOIN이 필요하며, 기존 `UserRepresentativeSelector.pick(List<CuserI>)`와 erasure 충돌을 피한 `pickView(List<CommitteeUserRow>)` 별도 이름을 써야 한다.
 - **계획 목록**: 활성 3건의 `REDT_CONE_INF` 실제 길이는 평균 약 29.7K, 최대 약 30.7K였다. 목록 건수 계산에 이 CLOB이 필요하므로 CLOB 자체는 projection에 포함하되, 목록에서 쓰지 않는 5개 텍스트 컬럼을 빼야 한다. 옵티마이저 Bytes 17,103은 실제 CLOB 길이를 반영하지 못한다.
-- **예산작업 요약**: `BBUGTM`은 전체 214/활성 64건, 특정 연도 최대 35건이다. 읽기 계산 필드는 `pkColNm,fntTbNm,ioeC,bgDupAmt,asgRt` 5개이며 `fntTbCrySno`는 쓰기/upsert에서만 사용한다. 다만 `getSummary/getProjectSummary` 내부의 `findFirst`·`putIfAbsent` 대표행 계산은 무정렬 첫행에 의존하므로 그 하위경로는 기존 엔티티 결과를 유지하고, 전체행 합계/Map처럼 순서 독립 동등성이 정의된 계산만 projection으로 분리한다. `BITEMM`도 전체행 합계에는 `ProjectItemBudgetView(gclMngNo,abusMngNo,ioeC,amt,mplAmt)`를 쓰되 GCL별 `putIfAbsent` 대표행은 엔티티 조회를 유지한다. `ProjectBudgetSummaryService`는 erasure 충돌을 피하도록 기존 `applyBudgetSummary(Response,List<Bitemm>)`와 다른 이름인 `applyBudgetSummaryViews(Response,List<ProjectItemBudgetView>)`를 추가한다. `BPROJM` 무정렬 대표 이름은 별도 정책 승인 전 차단한다. `BCOSTM` view는 4필드이며 selector도 `pickView(List<CostRepresentativeView>)`라는 별도 이름을 쓴다.
+- **예산작업 요약**: `BBUGTM`은 전체 214/활성 64건, 특정 연도 최대 35건이다. 읽기 계산 필드는 `pkColNm,fntTbNm,ioeC,bgDupAmt,asgRt` 5개이며 `fntTbCrySno`는 쓰기/upsert에서만 사용한다. 그러나 `getIoeCategories`의 `findFirst`, `getSummary`의 편성률 `findFirst`와 MPL용 첫행, `getProjectSummary`의 `rateByPrefix`, `firstBudgetByGcl`, `orcTbMap` `putIfAbsent`가 모두 집계와 같은 무정렬 list snapshot에 의존한다. projection+entity 두 조회로 분리하면 snapshot/순서가 달라질 수 있으므로 세 메서드 전체가 기존 엔티티 1조회를 유지한다. 특히 `getSummary`는 approved-source 필터 후 같은 집합에 `srcPks` 교집합을 적용한 뒤 모든 집계·대표를 계산해야 한다. 또한 `getProjectSummary`는 BITEMM을 사업번호로 바꾼 key와 BCOSTM PK가 문자열상 충돌할 수 있고 절대 비충돌 제약을 찾지 못했으므로 `(sourceNamespace,key)` 정책 승인 전 최적화를 차단한다. BITEMM의 안전한 ABUS 전체행 집계만 별도 view를 사용할 수 있고 GCL 대표행은 엔티티 조회를 유지한다. `ProjectBudgetSummaryService`는 `applyBudgetSummaryViews`, BCOSTM selector는 `pickView`라는 비충돌 이름을 쓴다.
 - **4단계 상세의 line**: 로컬 `BESTTM`, `BPAYTM`은 현재 0건이고 추정 행 폭은 각각 12,291/12,292 bytes다. Estimate 재수집은 최상위 `TABLE ACCESS BY INDEX ROWID`, child `PK_BESTTM` unique scan이었다. 데이터사전의 물리 PK가 `(RQM_BG_REQ_DOC_NO,DOC_VRS_SNO)` 2컬럼인 반면 JPA `BesttmId`는 팀·비목을 포함한 4컬럼이어서 1:N 계약과 충돌한다. 따라서 Estimate line projection은 스키마 정합성 결정 전 차단한다. Payment line은 5필드 projection을 진행할 수 있다. 두 `opnnCone`은 모두 응답 사용 필드이고 쓰기 복원·동기화 메서드는 엔티티 반환을 유지한다.
 - **결재 응답 보강**: `CAPPLA`는 로컬 0건이지만 12컬럼 중 3개만 쓰고 `PK_COL_NM`의 물리 길이가 16,000 bytes다. 실제 table code는 `BPROJM`/`BCOSTM`이다. Project detail은 table+PK+SNO, Project batch는 table+PK IN 후 PK별 첫 문서번호 DESC, Cost batch는 table+PK IN 후 PK+SNO별 첫 문서번호 DESC라는 서로 다른 계약이다. 세 SQL 모두 계획 해시 `2583179400`, INDEX FULL SCAN DESC, Bytes 8,196→8,111/Cost 1이었다. `CAPPLA.apfDcmNo`와 `CAPPLM.apfMngNo`는 fixture에서 정확히 일치해야 한다. 신청/결재 쓰기 경로는 그대로 둔다.
 - **관리자 파일·토큰**: 파일은 전체 61/활성 57건, 토큰은 14건이다. 파일 목록은 저장 본문·경로를, 토큰 목록은 API 토큰을 응답하지 않지만 전체 엔티티를 적재한다. 특히 토큰 목록은 원문이 아니라 갱신 조회값 일부만 마스킹하므로 최소 선택이 보안상 노출면도 줄인다.
@@ -98,28 +98,29 @@
 ## Task 13 승인 안전성 보완
 
 1. Java erasure 충돌을 막기 위해 기존 `applyBudgetSummary(Response,List<Bitemm>)`, `pick(List<Entity>)`와 별도 이름인 `applyBudgetSummaryViews(...)`, `CostRepresentativeSelector.pickView(...)`, `UserRepresentativeSelector.pickView(...)`를 쓴다.
-2. BITEMM/BBUGTM의 순서독립 전체행 집계만 projection으로 전환한다. 무정렬 `findFirst`/`putIfAbsent` 대표행은 정책 승인 전 기존 엔티티 쿼리를 유지하고 정렬을 추가하지 않는다.
-3. 팀 대표 row는 `temC,eno,usrNm,bbrNm,ptCNm` exact 5이며 Reviewer/Committee가 `temC`로 grouping한 뒤 projection 전용 selector를 호출한다.
+2. BITEMM은 순서독립 ABUS 전체행 집계만 projection으로 전환한다. BBUGTM은 집계와 대표행이 같은 snapshot을 공유하므로 `getIoeCategories/getSummary/getProjectSummary` 전체가 entity 1조회/view 0조회를 유지한다. projection+entity 2조회와 임의 정렬을 금지한다.
+3. 팀 대표 row는 `temC,eno,usrNm,bbrNm,ptCNm` exact 5다. `UserRepository.java`의 명시 JPQL이 CUSERI→CORGNI LEFT JOIN으로 `bbrNm`을 alias projection하며 fixture는 `BBR_C=120,TEM_C=12004`다.
 4. BBUGTM 읽기 필드는 `pkColNm,fntTbNm,ioeC,bgDupAmt,asgRt` 5개다. `fntTbCrySno`는 쓰기/upsert 전용이다.
-5. Plan 회귀 fixture는 실제 `{"prjSnapshots":[...]}` Map 형식과 신규/계속 코드 해석을 사용한다.
-6. CAPPLA table code는 `BPROJM`/`BCOSTM`이고 `apfDcmNo=CAPPLM.apfMngNo`를 보장한다. Project detail PK+SNO, Project batch PK별 최신, Cost batch PK+SNO별 최신을 분리한다.
+5. Plan 회귀 fixture는 raw `pulDtt` 001/002와 codeService map `10→신규,20→계속`을 사용해 normalize 후 3/2/1을 검증한다.
+6. CAPPLA table code는 `BPROJM`/`BCOSTM`이고 `apfDcmNo=CAPPLM.apfMngNo`를 보장한다. Query shape 3개와 소비자 4곳(Project detail/batch, Cost detail/batch)을 분리하고 `CostService.java:591-605`도 전환·회귀 검증한다.
 7. Estimate line 재수집은 `TABLE ACCESS BY INDEX ROWID`와 child `PK_BESTTM` unique scan이었다. 물리 2컬럼 PK와 JPA 4컬럼 Id 불일치 때문에 구현은 차단한다.
 8. Task 13 계약에는 BITEMM ABUS IN, ProjectKey DISTINCT, team 대표, CAPPLA 세 변형, BCOSTM을 포함해 신규 repository method별 hash/cardinality/access/sort/distinct/bytes를 기록한다.
-9. Token mask 회귀는 ECY null/20/21/64자 경계를 각각 검증하고 미사용 API token sentinel을 분리한다.
+9. Token view는 유효한 Spring Data `findAllProjectedBy()`를 사용한다. `AdminServiceTest.getTokens_토큰마스킹반환`이 ECY null/20/21/64자 경계와 미사용 API token sentinel을 검증한다.
 10. Contract/Deliberation/Payment는 domain별 row 파일, Custom/Impl signature, DTO factory, Service 전환, 기존/신규 테스트를 각각 열거한다.
-11. Board fixture는 title/body/author의 `alpha` 일치와 `ANC DESC,UNQ DESC,GRP ASC` 세 키를 literal로 검증한다.
+11. Board fixture는 `isAdmin=false`, title/body/author의 `alpha`, `ANC DESC,UNQ DESC,GRP ASC` 세 키와 deleted/private/not-started/ended 제외 predicate를 literal로 검증한다.
 12. 4단계 fixture는 `V100 LST=N DEL=N`, `V101 LST=Y DEL=N`, `V200 LST=Y DEL=Y`를 사용하며 결과를 최대버전이 아니라 플래그 일치행으로 표현한다.
 13. ServiceRequest version fixture는 100/101/200의 등록·변경시각과 표시버전 `2.00→1.01→1.00`을 함께 검증한다.
-14. LoginHistory는 repository page IT와 별도로 `AdminServiceTest`에서 사용자명 batch 1회/single 0회를 검증한다.
-15. 위 제약의 상세 exact signature, literal fixture, RED 사유, 전후 plan matrix는 ignored scratch `C:\it\.superpowers\sdd\task-12-report.md`를 Task 13 실행 계약으로 사용한다.
+14. LoginHistory는 repository page IT와 별도로 `AdminServiceTest`에서 known→name, unknown→ENO, null→null과 사용자명 batch 1회/single 0회를 검증한다.
+15. BITEMM→BPROJM 변환 key와 BCOSTM PK의 namespace 비충돌을 증명할 DB 제약이 없으므로 `(sourceNamespace,key)` 정책을 다섯 번째 사용자 결정으로 둔다. 상세 계약은 ignored scratch를 사용한다.
 
 ## 결론과 승인 게이트
 
-- 명백 후보는 **26개 호출 경로 묶음**, 경계선은 **9개 호출 경로 묶음**이다. 명백 후보 안에서도 무정렬 첫행 의미가 정의되지 않은 BITEMM GCL 대표행, BBUGTM `findFirst`/`putIfAbsent`, BPROJM 대표 이름은 **부분차단**이며 해당 하위경로는 기존 엔티티 조회를 유지한다. Estimate line은 로컬 물리 PK와 JPA Id 불일치 때문에 스키마 결정 전 차단한다.
+- 명백 후보는 **26개 호출 경로 묶음**, 경계선은 **9개 호출 경로 묶음**이다. BITEMM GCL 대표행과 BPROJM 대표 이름은 부분차단이다. BBUGTM은 세 소비 메서드 전체가 entity 1조회/view 0조회를 유지하는 전체차단이다. Estimate line은 로컬 물리 PK와 JPA Id 불일치 때문에 차단한다.
 - 1차 구현 우선순위는 **요구사항 버전/게시글 → 사용자·조직/팀대표 응답 → 계획·BBUGTM/BITEMM의 순서독립 전체행 집계·BCOSTM → 결재 응답 및 Contract/Deliberation/Payment 상세 → Payment line → 로그인 이력 → 관리자 파일·토큰** 순으로 제안한다.
 - 각 신규 조회는 기존 WHERE/IN, 정렬, null 처리와 대표 버전 선택 순서를 보존하고, 기존 엔티티 조회와 결과 필드가 같은 Oracle 통합 테스트를 먼저 작성해야 한다.
-- **대표행 사용자 결정 필요**: BITEMM GCL, BBUGTM, BPROJM 각각에 대해 결정적 대표행 정책을 별도로 승인해야 한다. BPROJM 권고는 `LST_YN='Y'` 우선 후 `SNO DESC`, 이름 null이면 다음 행/원본키 fallback이다. 승인 전에는 세 하위경로 모두 엔티티 로드를 유지하고 임의 정렬을 추가하지 않는다.
+- **대표행 사용자 결정 필요**: BITEMM GCL, BBUGTM, BPROJM 각각에 대해 결정적 대표행 정책을 별도로 승인해야 한다. 승인 전 BBUGTM `getIoeCategories/getSummary/getProjectSummary`는 전체 entity 1조회/view 0조회이고 나머지 차단 경로도 엔티티 로드를 유지한다.
 - **Estimate 사용자 결정 필요**: 물리 `PK_BESTTM(문서,버전)`을 JPA `BesttmId(문서,버전,팀,비목)`와 맞게 변경할지, 현재 단일 line 물리 계약을 따를지 결정해야 한다. 결정 전 Estimate line projection과 다중 line fixture를 실행하지 않는다.
+- **namespace 사용자 결정 필요**: `getProjectSummary`의 BITEMM→BPROJM group key와 BCOSTM PK를 `(sourceNamespace,key)` 복합키로 분리할지 승인해야 한다. 비충돌 불변식이 없으므로 승인 전 해당 메서드 최적화를 시작하지 않는다.
 - **Task 13 사용자 승인: 대기**
 - **승인된 실행 계약 커밋: 대기**
 - 승인된 계획 커밋 해시가 이 절에 기록되기 전에는 Task 13 구현을 시작하지 않는다.
