@@ -1449,6 +1449,10 @@ TPRMPP_BASKPL	프로젝트관리_협의회제외요청변경로그	LST_CHG_USID	
 TPRMPP_BASKPL	프로젝트관리_협의회제외요청변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
 TPRMPP_BBIZPM	프로젝트관리_사업계획기본	ABUS_MNG_NO	사업관리번호	Y	N		VARCHAR2	30	
 TPRMPP_BBIZPM	프로젝트관리_사업계획기본	ABUS_NM	사업명		Y		VARCHAR2	100	
+TPRMPP_BBIZPM	프로젝트관리_사업계획기본	ABUS_PUL_NCS_INF	사업추진필요성정보		Y		CLOB		
+TPRMPP_BBIZPM	프로젝트관리_사업계획기본	ABUS_PUL_DRCN_INF	사업추진방향정보		Y		CLOB		
+TPRMPP_BBIZPM	프로젝트관리_사업계획기본	ABUS_PUL_CONE_INF	사업추진내용정보		Y		CLOB		
+TPRMPP_BBIZPM	프로젝트관리_사업계획기본	ABUS_XPT_EFF_INF	사업기대효과정보		Y		CLOB		
 TPRMPP_BBIZPM	프로젝트관리_사업계획기본	REDT_CONE_INF	보고서내용정보		Y		CLOB		
 TPRMPP_BBIZPM	프로젝트관리_사업계획기본	BG_NO	예산번호		Y		VARCHAR2	15	
 TPRMPP_BBIZPM	프로젝트관리_사업계획기본	TOT_RQM_AMT	총소요금액		Y		NUMBER	18	3
@@ -1463,6 +1467,10 @@ TPRMPP_BBIZPM	프로젝트관리_사업계획기본	LST_CHG_DTM	최종변경일�
 TPRMPP_BBIZPL	프로젝트관리_사업계획기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
 TPRMPP_BBIZPL	프로젝트관리_사업계획기본변경로그	ABUS_MNG_NO	사업관리번호		Y		VARCHAR2	30	
 TPRMPP_BBIZPL	프로젝트관리_사업계획기본변경로그	ABUS_NM	사업명		Y		VARCHAR2	100	
+TPRMPP_BBIZPL	프로젝트관리_사업계획기본변경로그	ABUS_PUL_NCS_INF	사업추진필요성정보		Y		CLOB		
+TPRMPP_BBIZPL	프로젝트관리_사업계획기본변경로그	ABUS_PUL_DRCN_INF	사업추진방향정보		Y		CLOB		
+TPRMPP_BBIZPL	프로젝트관리_사업계획기본변경로그	ABUS_PUL_CONE_INF	사업추진내용정보		Y		CLOB		
+TPRMPP_BBIZPL	프로젝트관리_사업계획기본변경로그	ABUS_XPT_EFF_INF	사업기대효과정보		Y		CLOB		
 TPRMPP_BBIZPL	프로젝트관리_사업계획기본변경로그	REDT_CONE_INF	보고서내용정보		Y		CLOB		
 TPRMPP_BBIZPL	프로젝트관리_사업계획기본변경로그	BG_NO	예산번호		Y		VARCHAR2	15	
 TPRMPP_BBIZPL	프로젝트관리_사업계획기본변경로그	TOT_RQM_AMT	총소요금액		Y		NUMBER	18	3
