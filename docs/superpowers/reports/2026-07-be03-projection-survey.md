@@ -20,7 +20,7 @@
 | # | 위치(클래스.메서드) | 조회 방식 | 반환 형태 | 사용/전체 컬럼 | LOB·조인 폭 | 호출 빈도 | 실행계획 요약 | 판정 |
 | - | ------------------- | --------- | --------- | -------------- | ----------- | --------- | ------------- | ---- |
 | 1 | `BoardPostRepositoryImpl.searchPosts` → `BoardPostService.searchPosts` → `BoardPostDto.ListItem` | QueryDSL `selectFrom(Cblbcm)` | 페이지 다건(1~100) | 14/23 | 미사용 `NAC_CONE` 4,000자 포함, 조인 0 | 높음(게시판 목록) | hash 3214418861, FULL + WINDOW SORT; TABLE FULL 행 추정 Bytes 2,888, 20행 페이지 최상위 Bytes 58,020/Cost 5(analytic 열 포함) | **명백** |
-| 2 | `UserRepository.findByBbrC` → `UserService.getUsersByOrganization` → `UserDto.ListResponse` | 파생 조회 + EntityGraph | 부서 다건 | 7/23 +조인 1 | 미사용 암호·`DTS_DTL_CONE` 2,000자, 조직 1 JOIN | 높음(직원 선택) | hash 1258700705, INDEX RANGE + MERGE OUTER, Rows 1/Bytes 1,867/Cost 2 | **명백** |
+| 2 | `UserRepository.findByBbrC` → `UserService.getUsersByOrganization` → `UserDto.ListResponse` | 파생 조회 + EntityGraph | 부서 다건 | 7/23 +조인 1 | 미사용 암호·`DTS_DTL_CONE` 2,000자, 조직 1 JOIN | 높음(직원 선택) | `BBR_C='120'` 재측정 hash 1479025259, INDEX RANGE + HASH OUTER, Rows3/Bytes5,601→1,005/Cost3 | **명백** |
 | 3 | `UserRepositoryImpl.searchByName` → `UserService.searchUsersByName` → `UserDto.ListResponse` | QueryDSL `selectFrom(CuserI)` | 검색 다건 | 7/23 +조인 1 | 미사용 암호·대형 문자열; 조직 LAZY N+1 가능 | 높음(자동완성·멘션) | hash 2075770119, CUSERI FULL, Rows 1/Bytes 1,570/Cost 4, 조직 조회 별도 | **명백** |
 | 4 | `UserRepository.findByEno` → `UserService.getUser` → `UserDto.DetailResponse` | 파생 조회 + EntityGraph | 단건 | 11/23 +조인 2 | 암호·역할·감사 미사용, 조직/상위조직 2 JOIN | 중간(사용자 상세) | hash 710862926, PK UNIQUE + NESTED LOOPS OUTER 2회, Rows 1/Bytes 2,164/Cost 3 | **명백** |
 | 5 | `UserRepository.findByEnoIn/findAllById/findByTemCInAndDelYn` → Admin/Application/Committee/Reviewer/Evaluation/Plan/Schedule/Project/Cost/문서 **응답** | 파생 배치 엔티티 조회 | 다건 | 용도별 1~7/23; 팀대표 exact 5 | 미사용 암호·대형 문자열, 표시명이 필요한 응답만 조직 JOIN | 높음(목록 응답 조립 공통) | 이름 hash 4258768852/Bytes 1,570/Cost 3; 팀 full hash 2075770119/Bytes 20,410/Cost 4 → 5필드+조직 hash 3422623319/Bytes 3,705/Cost 7 | **명백** |
@@ -71,7 +71,7 @@
 - **계획 목록**: 활성 3건의 `REDT_CONE_INF` 실제 길이는 평균 약 29.7K, 최대 약 30.7K였다. 목록 건수 계산에 이 CLOB이 필요하므로 CLOB 자체는 projection에 포함하되, 목록에서 쓰지 않는 5개 텍스트 컬럼을 빼야 한다. 옵티마이저 Bytes 17,103은 실제 CLOB 길이를 반영하지 못한다.
 - **예산작업 요약**: `BBUGTM`은 전체 214/활성 64건, 특정 연도 최대 35건이다. 읽기 계산 필드는 `pkColNm,fntTbNm,ioeC,bgDupAmt,asgRt` 5개이며 `fntTbCrySno`는 쓰기/upsert에서만 사용한다. 그러나 `getIoeCategories`의 `findFirst`, `getSummary`의 편성률 `findFirst`와 MPL용 첫행, `getProjectSummary`의 `rateByPrefix`, `firstBudgetByGcl`, `orcTbMap` `putIfAbsent`가 모두 집계와 같은 무정렬 list snapshot에 의존한다. projection+entity 두 조회로 분리하면 snapshot/순서가 달라질 수 있으므로 세 메서드 전체가 기존 엔티티 1조회를 유지한다. 특히 `getSummary`는 approved-source 필터 후 같은 집합에 `srcPks` 교집합을 적용한 뒤 모든 집계·대표를 계산해야 한다. 또한 `getProjectSummary`는 BITEMM을 사업번호로 바꾼 key와 BCOSTM PK가 문자열상 충돌할 수 있고 절대 비충돌 제약을 찾지 못했으므로 `(sourceNamespace,key)` 정책 승인 전 최적화를 차단한다. BITEMM의 안전한 ABUS 전체행 집계만 별도 view를 사용할 수 있고 GCL 대표행은 엔티티 조회를 유지한다. `ProjectBudgetSummaryService`는 `applyBudgetSummaryViews`, BCOSTM selector는 `pickView`라는 비충돌 이름을 쓴다.
 - **4단계 상세의 line**: 로컬 `BESTTM`, `BPAYTM`은 현재 0건이고 추정 행 폭은 각각 12,291/12,292 bytes다. Estimate 재수집은 최상위 `TABLE ACCESS BY INDEX ROWID`, child `PK_BESTTM` unique scan이었다. 데이터사전의 물리 PK가 `(RQM_BG_REQ_DOC_NO,DOC_VRS_SNO)` 2컬럼인 반면 JPA `BesttmId`는 팀·비목을 포함한 4컬럼이어서 1:N 계약과 충돌한다. 따라서 Estimate line projection은 스키마 정합성 결정 전 차단한다. Payment line은 5필드 projection을 진행할 수 있다. 두 `opnnCone`은 모두 응답 사용 필드이고 쓰기 복원·동기화 메서드는 엔티티 반환을 유지한다.
-- **결재 응답 보강**: `CAPPLA`는 로컬 0건이지만 12컬럼 중 3개만 쓰고 `PK_COL_NM`의 물리 길이가 16,000 bytes다. 실제 table code는 `BPROJM`/`BCOSTM`이다. Project detail은 table+PK+SNO, Project batch는 table+PK IN 후 PK별 첫 문서번호 DESC, Cost batch는 table+PK IN 후 PK+SNO별 첫 문서번호 DESC라는 서로 다른 계약이다. 세 SQL 모두 계획 해시 `2583179400`, INDEX FULL SCAN DESC, Bytes 8,196→8,111/Cost 1이었다. `CAPPLA.apfDcmNo`와 `CAPPLM.apfMngNo`는 fixture에서 정확히 일치해야 한다. 신청/결재 쓰기 경로는 그대로 둔다.
+- **결재 응답 보강**: `CAPPLA`는 로컬 0건이지만 12컬럼 중 3개만 쓰고 `PK_COL_NM`의 물리 길이가 16,000 bytes다. 실제 table code는 `BPROJM`/`BCOSTM`이다. Project detail과 Cost detail은 공통 table+PK+SNO shape를 table code만 바꿔 공유한다. Project batch는 table+PK IN 후 PK별 첫 문서번호 DESC, Cost batch는 table+PK IN 후 PK+SNO별 첫 문서번호 DESC다. 즉 query shape 3개, 소비자는 Project detail/batch와 Cost detail/batch 4곳이다. 모두 hash `2583179400`, `IX_TPRMPP_CAPPLA_01` FULL DESC, Bytes 8,196→8,111/Cost1이다.
 - **관리자 파일·토큰**: 파일은 전체 61/활성 57건, 토큰은 14건이다. 파일 목록은 저장 본문·경로를, 토큰 목록은 API 토큰을 응답하지 않지만 전체 엔티티를 적재한다. 특히 토큰 목록은 원문이 아니라 갱신 조회값 일부만 마스킹하므로 최소 선택이 보안상 노출면도 줄인다.
 - **로그인 이력**: 20행 page SQL은 hash `190441828`, FULL + WINDOW SORT, Cost 294였다. 전체 엔티티는 table Rows 1,701/Bytes 1.294M/Temp 1.376M이고, 7필드 SQL은 같은 hash/cardinality에서 Cost 232, Bytes 1.000M/Temp 1.056M이었다. 사용자명은 page의 ENO를 `UserNameView` 한 번으로 배치 조회해야 현재 행별 `resolveUserName` N+1까지 제거된다.
 - **요구사항 문서 버전**: `Brdocm`은 JPA 매핑 18컬럼(물리 19)이고 `VersionResponse`는 `docMngNo,docVrsSno,fstEnrDtm,lstChgDtm,delYn` 5개만 쓴다. 로컬 26건/활성 24건/11문서, 문서별 최대 11버전이며 CLOB 최대 길이는 266,794자다. 전체 hash `2391463171`, INDEX RANGE DESC, Bytes 3,815/Cost 0이고 5필드 SQL은 동일 hash/Cost에서 Bytes 75다.
@@ -102,7 +102,7 @@
 3. 팀 대표 row는 `temC,eno,usrNm,bbrNm,ptCNm` exact 5다. `UserRepository.java`의 명시 JPQL이 CUSERI→CORGNI LEFT JOIN으로 `bbrNm`을 alias projection하며 fixture는 `BBR_C=120,TEM_C=12004`다.
 4. BBUGTM 읽기 필드는 `pkColNm,fntTbNm,ioeC,bgDupAmt,asgRt` 5개다. `fntTbCrySno`는 쓰기/upsert 전용이다.
 5. Plan 회귀 fixture는 raw `pulDtt` 001/002와 codeService map `10→신규,20→계속`을 사용해 normalize 후 3/2/1을 검증한다.
-6. CAPPLA table code는 `BPROJM`/`BCOSTM`이고 `apfDcmNo=CAPPLM.apfMngNo`를 보장한다. Query shape 3개와 소비자 4곳(Project detail/batch, Cost detail/batch)을 분리하고 `CostService.java:591-605`도 전환·회귀 검증한다.
+6. CAPPLA table code는 `BPROJM`/`BCOSTM`이고 `apfDcmNo=CAPPLM.apfMngNo`를 보장한다. Project/Cost detail은 공통 table+PK+SNO shape, 두 batch는 별도 shape이며 네 소비자를 모두 전환·검증한다.
 7. Estimate line 재수집은 `TABLE ACCESS BY INDEX ROWID`와 child `PK_BESTTM` unique scan이었다. 물리 2컬럼 PK와 JPA 4컬럼 Id 불일치 때문에 구현은 차단한다.
 8. Task 13 계약에는 BITEMM ABUS IN, ProjectKey DISTINCT, team 대표, CAPPLA 세 변형, BCOSTM을 포함해 신규 repository method별 hash/cardinality/access/sort/distinct/bytes를 기록한다.
 9. Token view는 유효한 Spring Data `findAllProjectedBy()`를 사용한다. `AdminServiceTest.getTokens_토큰마스킹반환`이 ECY null/20/21/64자 경계와 미사용 API token sentinel을 검증한다.
@@ -116,11 +116,13 @@
 ## 결론과 승인 게이트
 
 - 명백 후보는 **26개 호출 경로 묶음**, 경계선은 **9개 호출 경로 묶음**이다. BITEMM GCL 대표행과 BPROJM 대표 이름은 부분차단이다. BBUGTM은 세 소비 메서드 전체가 entity 1조회/view 0조회를 유지하는 전체차단이다. Estimate line은 로컬 물리 PK와 JPA Id 불일치 때문에 차단한다.
-- 1차 구현 우선순위는 **요구사항 버전/게시글 → 사용자·조직/팀대표 응답 → 계획·BBUGTM/BITEMM의 순서독립 전체행 집계·BCOSTM → 결재 응답 및 Contract/Deliberation/Payment 상세 → Payment line → 로그인 이력 → 관리자 파일·토큰** 순으로 제안한다.
+- 1차 구현 우선순위는 **요구사항 버전/게시글 → 사용자·조직/팀대표 응답 → 계획·BITEMM ABUS 순서독립 전체행 집계·BCOSTM → 결재 응답 및 Contract/Deliberation/Payment 상세 → Payment line → 로그인 이력 → 관리자 파일·토큰** 순으로 제안한다. BBUGTM은 결정 #2와 #5 승인 후 별도 재계획한다.
 - 각 신규 조회는 기존 WHERE/IN, 정렬, null 처리와 대표 버전 선택 순서를 보존하고, 기존 엔티티 조회와 결과 필드가 같은 Oracle 통합 테스트를 먼저 작성해야 한다.
-- **대표행 사용자 결정 필요**: BITEMM GCL, BBUGTM, BPROJM 각각에 대해 결정적 대표행 정책을 별도로 승인해야 한다. 승인 전 BBUGTM `getIoeCategories/getSummary/getProjectSummary`는 전체 entity 1조회/view 0조회이고 나머지 차단 경로도 엔티티 로드를 유지한다.
-- **Estimate 사용자 결정 필요**: 물리 `PK_BESTTM(문서,버전)`을 JPA `BesttmId(문서,버전,팀,비목)`와 맞게 변경할지, 현재 단일 line 물리 계약을 따를지 결정해야 한다. 결정 전 Estimate line projection과 다중 line fixture를 실행하지 않는다.
-- **namespace 사용자 결정 필요**: `getProjectSummary`의 BITEMM→BPROJM group key와 BCOSTM PK를 `(sourceNamespace,key)` 복합키로 분리할지 승인해야 한다. 비충돌 불변식이 없으므로 승인 전 해당 메서드 최적화를 시작하지 않는다.
+- **결정 #1 — BITEMM**: GCL별 대표 BITEMM을 고르는 정책이다.
+- **결정 #2 — BBUGTM**: BBUGTM 자체 `findFirst`, `rateByPrefix`, `firstBudgetByGcl` 대표 정책만 소유한다. 승인 전 세 소비 메서드는 entity 1조회/view 0조회다.
+- **결정 #3 — BPROJM**: 배치 사업 이름 대표 정책만 소유한다.
+- **결정 #4 — BESTTM**: 물리 `PK_BESTTM(문서,버전)`을 JPA `BesttmId(문서,버전,팀,비목)`와 맞게 변경할지, 현재 단일 line 물리 계약을 따를지 소유한다.
+- **결정 #5 — namespace**: `getProjectSummary`의 `orcTbMap/projectCategoryMap` key를 `(sourceNamespace,key)` 복합키로 분리할지 소유한다. 비충돌 불변식이 없으므로 승인 전 최적화를 시작하지 않는다.
 - **Task 13 사용자 승인: 대기**
 - **승인된 실행 계약 커밋: 대기**
 - 승인된 계획 커밋 해시가 이 절에 기록되기 전에는 Task 13 구현을 시작하지 않는다.
