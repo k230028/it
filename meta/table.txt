@@ -84,6 +84,9 @@ TPRMPP_CINFMM	프로젝트관리_공통알림기본	INQ_DTM	조회일시		Y		DAT
 TPRMPP_CINFMM	프로젝트관리_공통알림기본	IT_PTL_SD_TC	IT포탈발송구분코드		Y		VARCHAR2	2	
 TPRMPP_CINFMM	프로젝트관리_공통알림기본	SD_DTM	발송일시		Y		DATE		
 TPRMPP_CINFMM	프로젝트관리_공통알림기본	SD_DOC_CONE	발송문서내용		Y		VARCHAR2	4000	
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	INFM_SD_STS_C	알림발송상태코드		Y		VARCHAR2	2	
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	RE_TRY_NOT	재시도횟수		Y		NUMBER	5	
+TPRMPP_CINFMM	프로젝트관리_공통알림기본	ERR_CONE	오류내용		Y		VARCHAR2	100	
 TPRMPP_CINFMM	프로젝트관리_공통알림기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
 TPRMPP_CINFMM	프로젝트관리_공통알림기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
 TPRMPP_CINFMM	프로젝트관리_공통알림기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
