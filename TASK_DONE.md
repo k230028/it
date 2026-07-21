@@ -15,6 +15,18 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-07-21 Clean Code Wave 0 (검증 기반 구축)
+
+> Clean Code 부채 이행계획(`docs/superpowers/plans/2026-07-21-clean-code-wave0-verification-foundation.md`)의 Wave 0을 완료했습니다. Wave 2 리팩터링의 안전망(커버리지 게이트·PDF 회귀 스냅샷·핵심 E2E 명령)을 구축했습니다.
+
+| 상태 | ID | 과제 | 완료 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | CQ-04 | PDF/HWPX/Excel 산출물 회귀 테스트 기준 수립 | 기존 `useItBudgetApprovalFormPdf.test.ts`에 docDefinition 정규화 구조 스냅샷(고정 표시값·표 구조·스타일·페이지 구분 보존, 함수는 `[Function]`으로 구조만 고정)을 추가하고 재실행 고정을 확인했다. HWPX/Excel은 기존 단위 테스트 5개 파일 104건이 기준선 역할을 함을 확인했다. it_frontend 커밋 `7141c7a`. |
+| ✅ Done | CQ-05 | E2E 핵심 3개 시나리오를 정기 실행 경로에 편입 | `test:e2e:core` npm script로 로그인·프로젝트 조회/생성·결재 처리 3개 spec을 단일 명령으로 고정하고 실행 절차를 `it_frontend/README.md`에 문서화했다. API 전면 모킹(mockApi.ts) + 테스트 쿠키 주입 방식이라 백엔드·Oracle 기동이 불필요하다. it_frontend 커밋 `6921ab6`. |
+| ✅ Done | CQ-13 | JaCoCo 커버리지 검증을 기본 `check` 게이트에 연결 | `jacocoTestCoverageVerification`에 `dependsOn test`를 추가하고 `check`가 커버리지 검증에 의존하도록 연결했다. 사전 실측에서 확인된 CLASS 위반 2건은 임시 기준선 없이 테스트 보강으로 해소했다: `FeasibilityService`(자체점검 upsert·검증 분기 8건 추가, BRANCH 0.50→1.00·COMPLEXITY 0.56→1.00), `AuthService`(토큰 패밀리 중복 예외 1건 추가, COMPLEXITY 0.69→0.72). it_backend 커밋 `1f0301d`. |
+
+- 최종 검증: it_backend `./gradlew check` BUILD SUCCESSFUL(커버리지 게이트 포함), it_frontend `npm run check`·`npm test` 통과, `npm run test:e2e:core` 14건 통과(최초 실행 1건 플레이키 재실행 확인).
+
 ### ✅ 2026-07-20 백엔드 잔여과제 조치(Phase A~C)
 
 > `BE-09`의 비결정 대표행 선택, `BE-10`의 팀 조회 N+1·검토자 API 계약, `BE-11`의 파일 메타 NULL 정책을 정리하고, 조사에서 승인된 `BE-03` 안전 후보를 응답 전용 프로젝션으로 전환했습니다. `BE-06`은 최신 전수 기준선으로 상위 오염원과 요청 DTO 경고를 분류·정리했습니다. `BE-07`·`BE-08`의 기존 완료 판정도 함께 종료 이관합니다.
