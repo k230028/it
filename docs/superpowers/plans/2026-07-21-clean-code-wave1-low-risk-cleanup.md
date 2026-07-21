@@ -261,6 +261,8 @@ export const TOAST_LIFE = {
     NORMAL: 3000,
     /** 경고·안내 등 조금 더 읽을 시간이 필요한 알림 */
     LONG: 5000,
+    /** 상세 안내처럼 기존 6초 표시를 유지해야 하는 알림 */
+    EXTENDED: 6000,
     /** 오류 등 반드시 읽어야 하는 알림 */
     ERROR: 8000,
 } as const;
@@ -273,11 +275,22 @@ import { describe, it, expect } from 'vitest';
 import { TOAST_LIFE } from '~/utils/toast';
 
 describe('TOAST_LIFE', () => {
+    it('기존 표시 시간을 동일하게 보존한다', () => {
+        expect(TOAST_LIFE).toEqual({
+            SHORT: 2000,
+            NORMAL: 3000,
+            LONG: 5000,
+            EXTENDED: 6000,
+            ERROR: 8000,
+        });
+    });
+
     it('표시 시간이 용도별 오름차순이다', () => {
-        // Arrange & Act & Assert
+        // 표시 시간의 상대 순서를 함께 검증한다.
         expect(TOAST_LIFE.SHORT).toBeLessThan(TOAST_LIFE.NORMAL);
         expect(TOAST_LIFE.NORMAL).toBeLessThan(TOAST_LIFE.LONG);
-        expect(TOAST_LIFE.LONG).toBeLessThan(TOAST_LIFE.ERROR);
+        expect(TOAST_LIFE.LONG).toBeLessThan(TOAST_LIFE.EXTENDED);
+        expect(TOAST_LIFE.EXTENDED).toBeLessThan(TOAST_LIFE.ERROR);
     });
 });
 ```
@@ -287,14 +300,14 @@ Expected: PASS
 
 - [ ] **Step 3: 장시간 표시 사용처 확정**
 
-Run: `cd C:\it\it_frontend; npx rg -n "life: (5000|6000|8000)" app` (rg가 없으면 Grep 도구 사용)
+Run: `cd C:\it\it_frontend; rg -n "life: (5000|6000|8000)" app` (rg가 없으면 PowerShell `Select-String` 사용 — `npx rg`는 npm registry를 조회하므로 사용 금지)
 Expected: 21개소 내외 목록 확보 (조사 시점 기준: 5000×18, 6000×2, 8000×1)
 
 - [ ] **Step 4: 사용처 치환**
 
 각 파일에서:
 - `life: 5000` → `life: TOAST_LIFE.LONG`
-- `life: 6000` → `life: TOAST_LIFE.LONG` (6000은 LONG(5000)으로 통일 — 1초 차이는 UX 의미 차이가 없고 등급 체계 단순화가 우선)
+- `life: 6000` → `life: TOAST_LIFE.EXTENDED` (기능 불변을 위해 기존 6초 유지)
 - `life: 8000` → `life: TOAST_LIFE.ERROR`
 - 각 파일 상단에 명시 import 추가(Vitest에서 Nuxt auto-import가 동작하지 않으므로): `import { TOAST_LIFE } from '~/utils/toast';`
 
@@ -334,8 +347,8 @@ git commit -m "refactor: Toast 표시시간 상수 TOAST_LIFE 도입 및 장시�
 Run:
 ```bash
 cd C:\it\it_frontend
-npx rg -n "IconActivity|icon-activity" app tests
-npx rg -n "ReviewVersionHistory|review-version-history" app tests
+rg -n "IconActivity|icon-activity" app tests
+rg -n "ReviewVersionHistory|review-version-history" app tests
 ```
 Expected: 각 컴포넌트의 정의 파일 자신(및 내부 docblock)만 매칭. 그 외 매칭이 나오면 **삭제하지 말고** 해당 사용처를 TASK.md CQ-10에 기록 후 이 태스크 중단.
 

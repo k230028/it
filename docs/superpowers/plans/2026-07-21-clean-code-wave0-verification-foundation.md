@@ -42,6 +42,7 @@ Expected: 실측 수치 확보 (예: `Total 74%`)
 
 **Files:**
 - Modify: `it_backend/build.gradle` — `jacocoTestCoverageVerification` 블록(현재 171~208행)과 그 직후
+- Conditional Modify: 커버리지 미달 클래스의 기존 테스트 — Task 1에서 확인된 위반 지표를 70%까지 보강할 때만 수정
 
 - [ ] **Step 1: 검증 태스크에 test 의존성 추가**
 
@@ -65,11 +66,22 @@ tasks.named('check') {
 }
 ```
 
-- [ ] **Step 3 (Task 1이 FAILED인 경우에만): 시작 임계값 조정**
+- [ ] **Step 3 (Task 1이 FAILED인 경우에만): 미달 지표 보강 또는 임시 기준선 설정**
 
-원칙: 기준을 없애지 않고, 실측 기반 시작값에서 점진 상향한다.
+원칙: 알려진 미달 클래스를 CLASS 규칙에서 통째로 제외하지 않는다. 먼저 위반 분기를 직접 테스트해 70%를 충족하고, 당장 보강할 수 없는 경우에만 해당 클래스·지표에 한정한 임시 규칙을 둔다.
 
-- BUNDLE(전역) 규칙 위반 시 — 첫 번째 `rule`의 `minimum = 0.70`을 실측치에서 0.05 단위로 내림한 값으로 바꾸고 주석을 남긴다:
+2026-07-21 사전 진단 기준으로 번들 라인은 96%이며 아래 CLASS 위반만 확인됐다. 실행 시 Task 1 결과로 반드시 최신화한다.
+
+- `com.kdb.it.domain.council.service.FeasibilityService`: BRANCH 0.50, COMPLEXITY 0.58
+- `com.kdb.it.common.system.service.AuthService`: COMPLEXITY 0.69
+
+우선순위:
+
+1. 위반 클래스의 기존 테스트에 누락 분기·예외 경로를 추가해 모든 CLASS 지표를 0.70 이상으로 만든다.
+2. 테스트 보강이 이번 Wave 범위를 넘어가면 일반 CLASS 0.70 규칙에서는 해당 클래스만 제외하고, 같은 클래스에 대한 전용 `includes` 규칙을 추가한다. 전용 규칙에는 LINE과 이미 0.70 이상인 지표는 0.70을 유지하고, 미달 지표만 Task 1 실측값을 소수점 둘째 자리에서 내림한 값으로 설정한다.
+3. 임시 규칙마다 날짜·실측값·목표 0.70·TASK.md 추적 번호를 주석으로 남긴다. 임시 규칙이 하나라도 남으면 CQ-13을 Done 처리하지 않는다.
+
+BUNDLE(전역) 규칙까지 위반한 경우에만 첫 번째 `rule`의 `minimum = 0.70`을 실측치에서 0.05 단위로 내림한 값으로 바꾼다:
 
 ```gradle
 			limit {
@@ -80,16 +92,41 @@ tasks.named('check') {
 			}
 ```
 
-- CLASS 규칙 위반 시 — 위반 클래스를 해당 rule에 명시적으로 제외하고, 제외 목록을 TASK.md CQ-13 행의 근거/조건에 그대로 기록한다:
+- CLASS 임시 규칙 예시(수치는 Task 1 실측으로 교체):
 
 ```gradle
 		rule {
 			element = 'CLASS'
-			// 시작 제외: 2026-07-21 기준 커버리지 미달 클래스 — 점진 해소 대상 (TASK.md CQ-13)
+			// 임시 예외 클래스는 아래 전용 규칙에서 별도 기준으로 계속 검증한다
 			excludes = [
-				'com.kdb.it.<위반 클래스 FQCN을 Task 1 기록에서 그대로 옮김>',
+				'com.kdb.it.domain.council.service.FeasibilityService',
 			]
+			// 기존 LINE/BRANCH/COMPLEXITY 0.70 limit 유지
+		}
+		rule {
+			element = 'CLASS'
+			includes = ['com.kdb.it.domain.council.service.FeasibilityService']
+			limit {
+				counter = 'LINE'
+				value = 'COVEREDRATIO'
+				minimum = 0.70
+			}
+			limit {
+				// 임시 기준: 2026-07-21 실측 0.50, 목표 0.70 (TASK.md CQ-13)
+				counter = 'BRANCH'
+				value = 'COVEREDRATIO'
+				minimum = 0.50
+			}
+			limit {
+				// 임시 기준: 2026-07-21 실측 0.58, 목표 0.70 (TASK.md CQ-13)
+				counter = 'COMPLEXITY'
+				value = 'COVEREDRATIO'
+				minimum = 0.58
+			}
+		}
 ```
+
+`AuthService`에도 같은 방식의 전용 규칙을 추가하되 LINE/BRANCH는 0.70을 유지하고 COMPLEXITY만 최신 실측값으로 설정한다. 클래스 전체를 검증 대상에서 사라지게 하는 `excludes`만 추가하고 끝내면 안 된다.
 
 - [ ] **Step 4: 게이트 동작 확인**
 
@@ -101,137 +138,75 @@ Expected: 출력에 `:jacocoTestCoverageVerification` 실행이 포함되고 `BU
 ```bash
 cd C:\it\it_backend
 git add build.gradle
+# Step 3에서 테스트를 보강했다면 실제로 수정한 파일만 함께 스테이징
+git add src/test/java/com/kdb/it/domain/council/service/FeasibilityServiceTest.java src/test/java/com/kdb/it/common/system/service/AuthServiceTest.java
 git commit -m "chore: JaCoCo 커버리지 검증을 check 게이트에 연결"
 ```
+
+두 테스트 중 수정하지 않은 파일은 `git add` 대상에서 빼고 실행한다.
 
 ---
 
 ### Task 3: PDF docDefinition 구조 회귀 테스트 (CQ-04)
 
-기존 `tests/unit/features/approval/forms/itBudget/useItBudgetApprovalFormPdf.test.ts`는 생성 "흐름"을 검증한다. 이 태스크는 **생성된 문서의 내용(텍스트·구조)**을 스냅샷으로 고정해, Wave 2에서 `useItBudgetApprovalFormPdf.ts`(1,288줄)를 분해할 때 전후 동일성을 판별하는 기준을 만든다.
+기존 `tests/unit/features/approval/forms/itBudget/useItBudgetApprovalFormPdf.test.ts`는 올바른 프로젝트·비용·결재선 픽스처와 pdfmake 0.3 Promise형 `getBlob()` mock을 이미 갖고 있다. 별도 테스트 파일에 mock과 픽스처를 복제하지 않고 기존 파일에 **정규화된 docDefinition 구조 스냅샷**을 추가해, Wave 2에서 `useItBudgetApprovalFormPdf.ts`(1,288줄)를 분해할 때 전후 동일성을 판별한다.
 
 **Files:**
-- Create: `it_frontend/tests/unit/features/approval/forms/itBudget/useItBudgetApprovalFormPdf.regression.test.ts`
-- 참고(수정 없음): 기존 테스트 `useItBudgetApprovalFormPdf.test.ts` — 모킹 블록(14~43행)과 픽스처가 있으면 **그대로 재사용**하고 아래 코드의 모킹·픽스처를 대체한다.
+- Modify: `it_frontend/tests/unit/features/approval/forms/itBudget/useItBudgetApprovalFormPdf.test.ts`
+- Create: `it_frontend/tests/unit/features/approval/forms/itBudget/__snapshots__/useItBudgetApprovalFormPdf.test.ts.snap` (첫 실행에서 Vitest가 생성)
 
 - [ ] **Step 1: 회귀 테스트 작성**
 
+기존 mock과 `project`/`cost`/`approvalLine` 픽스처는 수정하지 않는다. 특히 현재 구현은 `await pdfGenerator.getBlob()`을 사용하므로 콜백형 mock을 새로 만들지 말고 기존 `mocks.getBlob.mockResolvedValue(...)`를 그대로 사용한다.
+
+describe 블록 앞에 다음 정규화 헬퍼를 추가한다. 함수는 고정 문자열로 바꿔 스냅샷을 결정적으로 만들고, 객체 키를 정렬하되 `content`, 표 body/widths, `colSpan`/`rowSpan`, 스타일 값, `pageBreak`, footer/layout 존재 등 문서 구조는 보존한다.
+
 ```ts
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { ProjectDetail } from '~/composables/useProjects';
-import type { ItCost } from '~/composables/useCost';
-import type { ApprovalLine } from '~/types/approvalForm';
-
 /**
- * CQ-04: PDF 산출물 구조 회귀 기준.
- * pdfMake.createPdf에 전달되는 docDefinition을 캡처해
- * 텍스트 추출 결과를 스냅샷으로 고정한다.
- * useItBudgetApprovalFormPdf.ts 분해(Wave 2, CQ-02) 전후에
- * 이 스냅샷이 달라지면 동작이 변한 것이다.
+ * pdfmake 문서 정의를 결정적인 스냅샷 값으로 정규화한다.
+ * 함수 구현은 직렬화하지 않되 함수가 존재한다는 구조 정보는 보존한다.
  */
-const captured: { docDef: unknown } = { docDef: null };
+function normalizePdfNode(node: unknown): unknown {
+    if (typeof node === 'function') return '[Function]';
+    if (node == null || typeof node !== 'object') return node;
+    if (Array.isArray(node)) return node.map(normalizePdfNode);
 
-vi.mock('pdfmake/build/pdfmake', () => ({
-    default: {
-        createPdf: vi.fn((docDef: unknown) => {
-            captured.docDef = docDef;
-            return { getBlob: (cb: (b: Blob) => void) => cb(new Blob(['pdf'])) };
-        }),
-        addVirtualFileSystem: vi.fn(),
-        addFonts: vi.fn(),
-        vfs: {},
-        fonts: {},
-    },
-}));
-vi.mock('pdfmake/build/vfs_fonts', () => ({ default: {} }));
-vi.mock('primevue/usetoast', () => ({ useToast: () => ({ add: vi.fn() }) }));
-
-// 폰트 fetch 실패 → Roboto 폴백 경로로 고정(결정적 실행)
-vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new Error('font fetch disabled in test'))));
-
-/** docDefinition 트리에서 모든 텍스트 노드를 순서대로 추출 */
-function extractTexts(node: unknown): string[] {
-    if (node == null) return [];
-    if (typeof node === 'string') return node === '' ? [] : [node];
-    if (typeof node === 'number') return [String(node)];
-    if (Array.isArray(node)) return node.flatMap(extractTexts);
-    if (typeof node === 'object') {
-        const o = node as Record<string, unknown>;
-        const table = o.table as Record<string, unknown> | undefined;
-        return [
-            ...extractTexts(o.text),
-            ...extractTexts(o.content),
-            ...extractTexts(o.stack),
-            ...extractTexts(o.columns),
-            ...extractTexts(table?.body),
-        ];
-    }
-    return [];
+    return Object.fromEntries(
+        Object.entries(node as Record<string, unknown>)
+            .filter(([, value]) => value !== undefined)
+            .sort(([left], [right]) => left.localeCompare(right))
+            .map(([key, value]) => [key, normalizePdfNode(value)]),
+    );
 }
+```
 
-/** 고정 픽스처 — 기존 useItBudgetApprovalFormPdf.test.ts에 픽스처가 있으면 그것을 재사용 */
-const fixtureProjects = [
-    {
-        abusMngNo: 'A2026-001',
-        abusNm: '차세대 IT포탈 고도화',
-        svnDpmC: 'D001',
-        bseYy: '2026',
-    },
-] as unknown as ProjectDetail[];
+기존 describe 마지막에 다음 테스트를 추가한다:
 
-const fixtureApprovalLine = {
-    drafterName: '홍길동',
-    drafterDate: '2026-07-21',
-} as unknown as ApprovalLine;
+```ts
+it('고정 픽스처의 docDefinition 구조와 표시값이 스냅샷과 일치한다 (CQ-04)', async () => {
+    // 준비
+    const { generateReport } = usePdfReport();
 
-const fixtureCosts = [] as ItCost[];
+    // 실행
+    await generateReport([project as any], approvalLine, [cost as any]);
 
-describe('useItBudgetApprovalFormPdf 구조 회귀 (CQ-04)', () => {
-    beforeEach(() => {
-        captured.docDef = null;
-        vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-url');
-    });
-
-    it('고정 픽스처의 docDefinition 텍스트 추출 결과가 스냅샷과 일치한다', async () => {
-        // Arrange
-        const { useItBudgetApprovalFormPdf } = await import(
-            '~/features/approval/forms/itBudget/useItBudgetApprovalFormPdf'
-        );
-        const { generateReport } = useItBudgetApprovalFormPdf();
-
-        // Act
-        await generateReport(fixtureProjects, fixtureApprovalLine, fixtureCosts, {});
-
-        // Assert
-        expect(captured.docDef).not.toBeNull();
-        expect(extractTexts(captured.docDef)).toMatchSnapshot();
-    });
-
-    it('문서 구조 불변식: 스타일 정의와 본문이 존재한다', async () => {
-        // Arrange
-        const { useItBudgetApprovalFormPdf } = await import(
-            '~/features/approval/forms/itBudget/useItBudgetApprovalFormPdf'
-        );
-        const { generateReport } = useItBudgetApprovalFormPdf();
-
-        // Act
-        await generateReport(fixtureProjects, fixtureApprovalLine, fixtureCosts, {});
-
-        // Assert
-        const docDef = captured.docDef as Record<string, unknown>;
-        expect(Array.isArray(docDef.content)).toBe(true);
-        expect((docDef.content as unknown[]).length).toBeGreaterThan(0);
-        expect(docDef.styles).toBeDefined();
-    });
+    // 검증
+    const docDefinition = mocks.createPdf.mock.calls[0][0];
+    const normalized = normalizePdfNode(docDefinition);
+    const serialized = JSON.stringify(normalized);
+    expect(serialized).toContain('정보화사업');
+    expect(serialized).toContain('공급사');
+    expect(serialized).toContain('기안자');
+    expect(normalized).toMatchSnapshot();
 });
 ```
 
-주의: `generateReport` 시그니처는 `(projects, approvalLine, costs = [], options)`다(원본 195행). 픽스처 필드가 실제 타입과 어긋나 렌더 내용이 빈약해도 무방하다 — 회귀 기준은 "같은 입력 → 같은 출력"의 고정이지 완전한 데이터가 아니다. 단, 픽스처는 이 파일에 하드코딩해 절대 변하지 않게 한다.
+테스트 코드의 기존 `any`는 테스트용 부분 픽스처에 한해 ESLint 설정에서 허용된다. 프로덕션 `any` 제거 범위와 혼동하지 않는다.
 
 - [ ] **Step 2: 첫 실행으로 스냅샷 생성**
 
-Run: `cd C:\it\it_frontend; npx vitest run tests/unit/features/approval/forms/itBudget/useItBudgetApprovalFormPdf.regression.test.ts`
-Expected: PASS, `1 snapshot written` — `__snapshots__/useItBudgetApprovalFormPdf.regression.test.ts.snap` 생성
+Run: `cd C:\it\it_frontend; npx vitest run tests/unit/features/approval/forms/itBudget/useItBudgetApprovalFormPdf.test.ts`
+Expected: PASS, `1 snapshot written` — `__snapshots__/useItBudgetApprovalFormPdf.test.ts.snap` 생성
 
 - [ ] **Step 3: 재실행으로 스냅샷 고정 확인**
 
@@ -240,8 +215,13 @@ Expected: PASS, `1 snapshot passed` (written 아님)
 
 - [ ] **Step 4: 스냅샷 내용 검수**
 
-생성된 `.snap` 파일을 Read로 열어 텍스트 배열이 비어있지 않고 제목·헤더 문자열이 포함됐는지 확인한다. 텍스트가 0~2개뿐이면 픽스처 필드가 실제 타입과 어긋난 것이므로 기존 테스트의 픽스처를 가져와 보강한 뒤 Step 2부터 재수행.
-Expected: 스냅샷에 문서 제목/결재선/표 헤더 등 의미 있는 문자열 존재
+생성된 `.snap` 파일을 열어 다음을 검수한다.
+
+- 프로젝트·비용·결재선의 고정 값(`정보화사업`, `공급사`, `기안자`)이 들어 있다.
+- `content`, `table.body`, `widths`, `colSpan`/`rowSpan`, `styles`, `defaultStyle`, `pageBreak`가 실제 생성 결과에 존재하는 범위에서 보존된다.
+- footer와 table layout 함수는 `[Function]`으로 남아 구조적 존재가 확인된다. 구체 콜백 반환값은 기존 테스트의 footer/layout 검증이 계속 담당한다.
+
+Expected: 단순 텍스트 목록이 아니라 문서 구조와 표시값을 함께 고정한 스냅샷
 
 - [ ] **Step 5: HWPX/Excel 기존 기준선 확인**
 
@@ -252,7 +232,7 @@ Expected: 전부 PASS — HWPX/Excel은 기존 테스트가 이미 회귀 기준
 
 ```bash
 cd C:\it
-git add it_frontend/tests/unit/features/approval/forms/itBudget/
+git add it_frontend/tests/unit/features/approval/forms/itBudget/useItBudgetApprovalFormPdf.test.ts it_frontend/tests/unit/features/approval/forms/itBudget/__snapshots__/
 git commit -m "test: IT예산 결재 PDF docDefinition 구조 회귀 스냅샷 추가 (CQ-04)"
 ```
 
@@ -320,14 +300,17 @@ Expected: 모두 성공. (`npm run format:check`는 기존 드리프트 FE-03(33
 
 - [ ] **Step 2: TASK.md 행 갱신**
 
-CQ-04, CQ-05, CQ-13 행의 우선순위를 `✅ Done`으로 바꾸고 근거/조건을 완료 근거로 교체:
-- CQ-04: `2026-07-21 PDF docDefinition 구조 스냅샷 회귀 테스트 추가(useItBudgetApprovalFormPdf.regression.test.ts). HWPX/Excel은 기존 단위 테스트가 기준선 역할 확인`
+CQ-04와 CQ-05 행의 우선순위를 `✅ Done`으로 바꾸고 근거/조건을 완료 근거로 교체한다. CQ-13은 임시 커버리지 규칙 유무에 따라 분기한다.
+
+- CQ-04: `2026-07-21 기존 useItBudgetApprovalFormPdf.test.ts에 PDF docDefinition 정규화 구조 스냅샷 추가. 고정 표시값·표 구조·스타일·페이지 구분을 검증하고 HWPX/Excel은 기존 단위 테스트가 기준선 역할 확인`
 - CQ-05: `2026-07-21 test:e2e:core 명령 고정(로그인·프로젝트·결재 3개 spec). API 모킹 기반이라 Oracle·백엔드 불필요, 절차는 it_frontend/README.md`
-- CQ-13: `2026-07-21 check → jacocoTestCoverageVerification 의존성 연결` (Task 2 Step 3을 수행했다면 조정한 임계값·제외 클래스 목록도 함께 기록)
+- CQ-13:
+  - 모든 BUNDLE/CLASS 기준이 0.70이면 `✅ Done`: `2026-07-21 check → jacocoTestCoverageVerification 의존성 연결, BUNDLE/CLASS 70% 검증 통과`
+  - 임시 전용 규칙이 남으면 기존 우선순위를 유지: `2026-07-21 check 게이트 연결 완료. 임시 기준 클래스·지표·현재값·목표 0.70을 명시하고 테스트 보강 후 예외 제거 필요`
 
 - [ ] **Step 3: TASK_DONE.md에 이관 기록 추가**
 
-기존 형식(날짜 절 + 항목별 근거)을 따라 `2026-07-21 Clean Code Wave 0` 절을 추가하고 위 세 항목의 완료 근거와 커밋 해시를 기록한다.
+기존 형식(날짜 절 + 항목별 근거)을 따라 `2026-07-21 Clean Code Wave 0` 절을 추가하고 완료된 항목의 근거와 커밋 해시를 기록한다. CQ-13에 임시 규칙이 남은 경우 TASK_DONE.md로 이관하지 않는다.
 
 - [ ] **Step 4: Commit (루트 저장소)**
 
@@ -336,3 +319,5 @@ cd C:\it
 git add TASK.md TASK_DONE.md
 git commit -m "docs: Clean Code Wave 0 완료 이관 (CQ-04, CQ-05, CQ-13)"
 ```
+
+위 메시지는 CQ-13까지 70% 기준을 충족한 경우에만 사용한다. 임시 커버리지 규칙이 남으면 `docs: Clean Code Wave 0 완료 이관 (CQ-04, CQ-05) 및 CQ-13 현황 갱신`으로 커밋한다.
