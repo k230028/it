@@ -1,6 +1,6 @@
 # ✅ IT Portal 완료·종료 내역 (Archive)
 
-> 🗓️ **기준일:** 2026-07-19
+> 🗓️ **기준일:** 2026-07-21
 > 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️) 항목을 보관합니다.
 
 ### 🔑 범례 (Legend)
@@ -14,6 +14,22 @@
 ---
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
+
+### ✅ 2026-07-20 백엔드 잔여과제 조치(Phase A~C)
+
+> `BE-09`의 비결정 대표행 선택, `BE-10`의 팀 조회 N+1·검토자 API 계약, `BE-11`의 파일 메타 NULL 정책을 정리하고, 조사에서 승인된 `BE-03` 안전 후보를 응답 전용 프로젝션으로 전환했습니다. `BE-06`은 최신 전수 기준선으로 상위 오염원과 요청 DTO 경고를 분류·정리했습니다. `BE-07`·`BE-08`의 기존 완료 판정도 함께 종료 이관합니다.
+
+| 상태 | Phase | 종료 항목 | 완료 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | A | BE-09 비용·사업계획 대표행 결정성 | 비용 대표행 선택기를 공용화하고 최신·일련번호 tie-break를 고정했으며 사업계획 `BG_NO` 연계 키도 결정적 규칙으로 교체했다. 백엔드 병합 커밋 `78306bd`. |
+| ✅ Done | B | BE-10 팀 조회 배치화·전역 검토자 API | `findByTemCInAndDelYn` 배치 조회, 팀장 우선·사번 tie-break, 전역 `/api/reviews/reviewers` 계약과 프론트 연동을 적용했다. 백엔드 병합 `d949cab`, 프론트 병합 `be2f4b5`. 구 문서별 경로 제거는 관측 조건이 남아 `TASK.md` BE-18로 추적한다. |
+| ✅ Done | B | BE-11 `CFILEM` NULL 정책 통일 | 실제 Oracle과 읽기 소비 경로에 맞춰 `FL_NM`, `FL_PYS_NM`, `FL_KPN_PTH`의 ORM null 계약과 응답 처리를 일치시켰다. 백엔드 병합 `d949cab`. |
+| ✅ Done | C | BE-03 안전 프로젝션 구현 | 게시글, 사용자·조직·팀 대표, 계획·안전 예산, 결재 응답, 계약·심의·지급 상세, 관리자 파일·토큰·로그인 이력, 요구사항 버전 조회를 응답 전용 프로젝션으로 분리했다. 백엔드 병합 `540d456`; 후보 판정 보고서 `docs/superpowers/reports/2026-07-be03-projection-survey.md`; Oracle 29개 repository signature·30개 before/after 시나리오 PASS 기록 `it_backend/.superpowers/sdd/task-13-step8-oracle-matrix.md`. |
+| ✅ Done | C | BE-06 Javadoc 경고 분류·정리 | Task 14 기준 1,176건에서 `Bprojm`, `ContractController`, `CouncilProjectRow`, `UmsPayload`, `Btermm`과 `ApplicationDto` 요청 DTO의 122건을 해소했다. 최종 1,054건 중 `ApplicationDto` 11건은 역할별 허용 잔여이며 신규 미분류는 0건이다. 백엔드 병합 `540d456`; 최종 기록 `it_backend/.superpowers/sdd/task-17-final-verification.md`. |
+| ✅ Done | 선행 확인 | BE-07 CFILEM 컬럼명 정합·BE-08 BTERMM 인덱스 검토 | 활성 Java/SQL과 실제 `TPRMPP_CFILEM` 컬럼명이 일치하고, `TPRMPP_BTERMM(BG_NO,BG_SNO)` 인덱스가 현재 조회와 데이터 규모에 충분해 추가 인덱스가 불필요함을 확인했다. |
+
+- 최종 백엔드 검증: `./gradlew test --rerun-tasks` 2,170건(실패 0, 오류 0, Oracle 수동 통합 1건 skip), `./gradlew javadoc --rerun-tasks` 성공·1,054 warnings.
+- Phase B 통합 검증: 로컬 Oracle `integrationTest` 32건(실패·오류·skip 0), 프론트 Vitest 1,633건 통과.
 
 ### ✅ 2026-07-19 보안·에러 처리 Remediation Phase 1
 
