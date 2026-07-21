@@ -15,6 +15,19 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-07-21 Clean Code Wave 2 (구조·타입 개선)
+
+> Clean Code 부채 이행계획(`docs/superpowers/plans/2026-07-21-clean-code-wave2-structure-types.md`)의 Wave 2를 완료했습니다. Wave 0에서 구축한 안전망(PDF 구조 스냅샷·`test:e2e:core`·커버리지 게이트) 위에서 모두 기능 불변으로 수행했습니다. 분해 전 검증 기준은 `docs/superpowers/notes/2026-07-21-wave2-qa-checklist.md`에 고정했습니다.
+
+| 상태 | ID | 과제 | 완료 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | CQ-11 | `default`·`admin` 레이아웃의 중복 앱 셸 공통화 | 템플릿·스타일이 100% 동일하던 두 레이아웃의 골격을 `components/AppShell.vue`로 추출하고 각 레이아웃을 얇은 래퍼로 전환했다. 레이아웃 이름(`default`/`admin`)과 페이지의 `layout: 'admin'` 선언, 라우트 가드 구조는 그대로 유지된다. 일반·관리자 화면 E2E(core 14건 + access-control·realtime-logs 9건) 통과. it_frontend 커밋 `c26d0d5`. |
+| ✅ Done | CQ-03 | 프로덕션 `any` 타입 우회 제거 | 4개 배치로 나눠 제거했다. 배치① 결재·사업집행(`ccd17ae`, `c45d78e`) — 공용 `getErrorMessage(unknown, fallback)`를 `utils/common.ts`에 추가해 `catch (e: any)` 패턴을 대체. 배치② Tiptap·Excel·PDF(`486b629`, `344d759`, `cd919b7`) — `@tiptap/core`·exceljs 제공 타입 적용, pdfmake 0.3 런타임과 0.2 타입 선언의 불일치는 `pdf/compat.ts` 단일 경계로 격리. 배치③ 가이드 문서(`8e14f43`). 배치④ 예산·인라인편집·info·잔여(`20a4f42`, `ac75df1`, `965e4a3`). 정당 사유 잔여는 3건(파일·사유는 TASK.md 기재)이며 각 지점에 사유 주석이 있다. |
+| ✅ Done | CQ-02 | 대형 프론트 composable/page 분해 | 4개 파일을 façade·ctx 팩토리 패턴으로 분해했다(모두 기능 불변, 템플릿·페이지 무변경). ① IT예산 PDF: 1,290 → **661줄**, `pdf/` 4모듈(fonts·textPrimitives·headerSection·projectSection) — 각 커밋마다 CQ-04 스냅샷 `passed`(재작성 없음) 확인(`1005f73`~`83df597`). ② 계획 상세: 2,158 → **1,239줄**, `features/plan/` 5모듈(Excel·HWPX·PDF·인쇄·TOC)(`f1c4ad0`~`0f9834b`). ③ 사업 폼: 2,192 → **1,229줄**, `features/project/` 6모듈(모델·코드필드·직원검색·저장·계속사업·로드)(`06edd16`~`7233cd8`). ④ 전산업무비 목록: façade **380줄** + `costList/` 7모듈 — 공개 키 82개 기준선 테스트로 계약 불변을 고정했고 소비 페이지 `pages/info/cost/index.vue`는 0변경(`84b4679`~`d51d07f`). |
+
+- 최종 검증: `npm run check` 0 errors, `npm test` 128 파일/1,645건 통과, `npm run test:e2e:core` 14건 통과. 도메인별로 `budget`·`cost`·`documents`·`projects`·`tiptap-variable` spec을 각 분해 단계에서 함께 실행했다.
+- 수동 QA 체크리스트(`docs/superpowers/notes/2026-07-21-wave2-qa-checklist.md`)의 화면 확인 항목은 사용자 수행 대상으로 남아 있다.
+
 ### ✅ 2026-07-21 Clean Code Wave 1 (저위험 일괄 정리)
 
 > Clean Code 부채 이행계획(`docs/superpowers/plans/2026-07-21-clean-code-wave1-low-risk-cleanup.md`)의 Wave 1을 완료했습니다. 모든 태스크는 동작 변경 없는 기능 불변 정리입니다. CQ-01·CQ-06은 Wave 3 조건부 항목으로 착수 트리거를 TASK.md에 확정했습니다.
