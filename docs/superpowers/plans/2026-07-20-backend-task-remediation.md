@@ -1594,7 +1594,7 @@ git commit -m "docs: BE-03 프로젝션 실행 계약 승인 반영"
 
 - [ ] **2.1 RED row contracts:** `UserDto.ListRow` exact7 `eno,bbrC,bbrNm,temC,temNm,usrNm,ptCNm`; `DetailRow`은 그 7개와 `etrMilAddrNm,inleNo,cpnTpn,dtsDtlCone,prlmHrkOgzCCone,prlmHrkOgzCNm`이다. 상위코드는 조직 alias `o.prlmHrkOgzCCone`, 상위명은 `p.bbrNm`이다.
 - [ ] **2.2 RED view contracts:** `UserNameView(eno,usrNm)`, `UserOrgCodeView(eno,temC,bbrC)`, `AdminUserView(eno,usrNm,ptCNm,temC,temNm,bbrC,etrMilAddrNm,inleNo,cpnTpn,fstEnrDtm,lstChgDtm)`와 `findNameViewsByEnoIn(Collection<String>)`, `findNameViewByEno(String)`, `findOrgCodeViewsByEnoIn(Collection<String>)`, `findAdminUserViewsByDelYn(String)`를 추가한다. Custom signature는 `findListRowsByBbrC`, `searchListRowsByName`, `findDetailRowByEno`로 고정한다.
-- [ ] **2.3 RED team contract:** `CommitteeUserRow` exact5 getter `temC,eno,usrNm,bbrNm,ptCNm`; `UserRepository.java`에 다음 명시 JPQL과 signature를 테스트한다.
+- [ ] **2.3 RED team/council-member contracts:** `CommitteeUserRow` exact5 getter `temC,eno,usrNm,bbrNm,ptCNm`; `UserRepository.java`에 다음 명시 JPQL과 signature를 테스트한다.
 
 ```java
 @Query("SELECT u.temC AS temC, u.eno AS eno, u.usrNm AS usrNm, o.bbrNm AS bbrNm, u.ptCNm AS ptCNm "
@@ -1604,10 +1604,20 @@ List<CommitteeUserRow> findCommitteeUserRowsByTemCInAndDelYn(
         @Param("temCs") Collection<String> temCs, @Param("delYn") String delYn);
 ```
 
+협의회 저장 위원 응답은 팀 대표와 필드·필터가 다르므로 같은 row를 재사용하지 않는다. `CouncilMemberUserRow`는 exact4 getter `eno,usrNm,bbrNm,ptCNm`만 노출하고 다음 명시 JPQL을 사용한다. 기존 `findByEnoIn`과 동일하게 DEL filter와 정렬을 추가하지 않으며, 조직이 없는 사용자도 유지하도록 LEFT JOIN을 쓴다.
+
+```java
+@Query("SELECT u.eno AS eno, u.usrNm AS usrNm, o.bbrNm AS bbrNm, u.ptCNm AS ptCNm "
+        + "FROM CuserI u LEFT JOIN CorgnI o ON o.prlmOgzCCone = u.bbrC "
+        + "WHERE u.eno IN :enos")
+List<CouncilMemberUserRow> findCouncilMemberUserRowsByEnoIn(
+        @Param("enos") Collection<String> enos);
+```
+
 - [ ] **2.4 RED organization/selector:** `OrganizationNameView(prlmOgzCCone,bbrNm)`, `findNameViewsByPrlmOgzCConeIn`, `findNameViewByPrlmOgzCCone`; `public static Optional<UserRepository.CommitteeUserRow> pickView(List<UserRepository.CommitteeUserRow> users)`. 선택은 팀장 우선→ENO ASC이며 기존 `pick(List<CuserI>)`는 유지한다.
-- [ ] **2.5 fixture:** 조직 `120/디지털부`; 사용자 `BE03001/홍길동/팀장/BBR=120/TEM=12004/N`, `BE03002/김길동/사원/120/12004/Y`, `BE03003/null조직`; team 18010은 `BE03010/팀원`, `BE03011/팀장`. 부서·이름 검색은 현행대로 DEL filter/order가 없어 deleted BE03002도 포함한다. team bind `(12004,18001,18010,18501),DEL=N`에서 12004 `bbrNm=디지털부`, 대표 BE03001, 18010 대표 BE03011을 검증한다.
-- [ ] **2.6 GREEN consumers:** `ReviewerService.getReviewers`와 `CommitteeService.resolveTeamLeads`는 `CommitteeUserRow::getTemC` grouping + `pickView`; `ReviewerDto.Response.fromView(CommitteeUserRow,String)` 및 Committee row factory를 사용한다. 나머지는 이름/조직 read-response map만 view로 바꾼다. `AuthorOrgResolver`, `AuthService`, `CustomUserDetailsService`, Board 멘션 존재검증과 생성·수정 snapshot은 바꾸지 않는다.
-- [ ] **2.7 verify/commit:** `./gradlew test --tests '*UserServiceTest' --tests '*UserRepresentativeSelectorTest' --tests '*ReviewerServiceTest' --tests '*CommitteeServiceTest' integrationTest --tests '*UserReadProjectionIt' --tests '*OrganizationNameProjectionIt' --tests '*CommitteeUserProjectionIt'`; 이어 영향받은 consumer 테스트를 실행한다. commit `perf: 사용자 조직 응답 조회 프로젝션 분리 (BE-03)`.
+- [ ] **2.5 fixture:** 조직 `120/디지털부`; 사용자 `BE03001/홍길동/팀장/BBR=120/TEM=12004/N`, `BE03002/김길동/사원/120/12004/Y`, `BE03003/null조직`; team 18010은 `BE03010/팀원`, `BE03011/팀장`, 조직 없는 `BE03012/무소속/대리/BBR=null`이다. 부서·이름 및 `CouncilMemberUserRow`는 현행대로 DEL filter/order가 없어 deleted BE03002도 포함한다. team bind `(12004,18001,18010,18501),DEL=N`에서 12004 `bbrNm=디지털부`, 대표 BE03001, 18010 대표 BE03011을 검증한다. 위원 ENO IN은 BE03001/BE03002/BE03012를 반환하고 UNKNOWN을 제외하며, BE03012는 `usrNm=무소속,bbrNm=null,ptCNm=대리`여야 한다.
+- [ ] **2.6 GREEN consumers:** `ReviewerService.getReviewers`와 `CommitteeService.resolveTeamLeads`는 `CommitteeUserRow::getTemC` grouping + `pickView`; `ReviewerDto.Response.fromView(CommitteeUserRow,String)` 및 Committee row factory를 사용한다. `CommitteeService.getCommittee`와 `ScheduleService.getScheduleStatus`는 `findCouncilMemberUserRowsByEnoIn`을 정확히 1회 사용하고 `findByEnoIn`/조직 지연 조회를 사용하지 않는다. 사용자 미존재 시 기존처럼 ENO는 유지하고 `usrNm,bbrNm,ptCNm`은 null이며, 조직만 없으면 이름·직위는 유지하고 `bbrNm`만 null이다. 나머지는 이름/조직 read-response map만 view로 바꾼다. `AuthorOrgResolver`, `AuthService`, `CustomUserDetailsService`, Board 멘션 존재검증과 생성·수정 snapshot은 바꾸지 않는다.
+- [ ] **2.7 verify/commit:** `./gradlew test --tests '*UserServiceTest' --tests '*UserRepresentativeSelectorTest' --tests '*ReviewerServiceTest' --tests '*CommitteeServiceTest' --tests '*ScheduleServiceTest' integrationTest --tests '*UserReadProjectionIt' --tests '*OrganizationNameProjectionIt' --tests '*CommitteeUserProjectionIt'`; 이어 영향받은 consumer 테스트를 실행한다. `CouncilMemberUserRow` 하위계약 구현 커밋은 `db45a6802702f85d0d714c439db6cc5e9c239fc5` (`perf: 협의회 위원 응답 프로젝션 분리 (BE-03)`)이다. 이는 이미 승인된 안전 후보 #5의 entity+organization N+1 제거를 추적 가능하게 명시한 것이며 새 정책 결정이나 차단·경계선 범위 확장이 아니다. commit `perf: 사용자 조직 응답 조회 프로젝션 분리 (BE-03)`.
 
 #### Step 3: 계획·BITEMM ABUS·사업 단건 이름·BCOSTM #10,#12~#14
 
@@ -1739,6 +1749,7 @@ List<CommitteeUserRow> findCommitteeUserRowsByTemCInAndDelYn(
 | User 이름 row | contains 길,no DEL/order | `2075770119` 1/1,570/4 FULL→`862519252` 1/335/5 HASH OUTER; none/none |
 | User 상세 row | ENO=BE03001 | `710862926`; 1/2,164/3→1/1,649/3; PK UNIQUE+NL OUTER2; none/none |
 | User name IN / org-code IN / name single | ENO 001,002 / 001 | `4258768852` 1/1,570/3→70 또는25/3 PK IN; `1767995418` 1/1,570/1→70/1 PK UNIQUE |
+| Council member response IN | ENO IN(001,002), no DEL/order | 기존 entity `4258768852` 1/1,570/3 PK IN + 조직별 single `2808597226` 1/297/1 PK UNIQUE(N+1) → exact4 `2277926248` 1/279/4; `PK_CUSERI` INLIST/ROWID + NL OUTER + `PK_CORGNI` UNIQUE; none/none |
 | Admin users / team rows | DEL=N / TEM 4개,DEL=N | `2075770119` 25/39,250/4→10,175/4 FULL; team `2075770119` 13/20,410/4→`3422623319` 13/3,705/7 HASH OUTER |
 | Org name IN / single | code 12004,P000 / 12004 | `3974003270` 1/297/2→104/2 PK IN; `2808597226` 1/297/1→104/1 PK UNIQUE |
 | Plan list | DEL=N,FST DESC | `2291581576`; 3/17,103/4→3/6,417/4; FULL; ORDER BY/none |
@@ -1761,7 +1772,7 @@ List<CommitteeUserRow> findCommitteeUserRowsByTemCInAndDelYn(
 
 - [ ] **9.1 unit:** `cd C:\it\it_backend && ./gradlew clean test`.
 - [ ] **9.2 Oracle IT:** `./gradlew integrationTest`.
-- [ ] **9.3 source audit:** 신규 view/row가 exact 필드만 노출하는지, 차단된 다섯 정책 경로와 쓰기/인증 경로에 신규 projection 호출이 없는지 `rg`와 mock verify로 확인한다.
+- [ ] **9.3 source audit:** 신규 view/row가 exact 필드만 노출하는지, 차단된 다섯 정책 경로와 쓰기/인증 경로에 신규 projection 호출이 없는지 `rg`와 mock verify로 확인한다. 특히 `CouncilMemberUserRow`는 exact4이고 `findCouncilMemberUserRowsByEnoIn`은 명시 LEFT JOIN/no DEL/no order이며, 호출부가 `CommitteeService.getCommittee`와 `ScheduleService.getScheduleStatus` 두 읽기 응답 경로로 제한되고 entity `findByEnoIn`이 호출되지 않는지 확인한다.
 - [ ] **9.4 worktree:** 백엔드 변경 파일만 후보별 커밋에 포함하고 외부 저장소 문서나 무관한 사용자 변경을 stage하지 않는다.
 - [ ] **9.5 경계선:** Task 12의 경계선 9개(#24,#26~#29,#31~#34)는 구현하지 않고 Task 17의 `TASK.md` 등록 대상으로 유지한다.
 
