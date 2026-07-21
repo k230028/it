@@ -112,6 +112,7 @@
 13. ServiceRequest version fixture는 100/101/200의 등록·변경시각과 표시버전 `2.00→1.01→1.00`을 함께 검증한다.
 14. LoginHistory는 repository page IT와 별도로 `AdminServiceTest`에서 known→name, unknown→ENO, null→null과 사용자명 batch 1회/single 0회를 검증한다.
 15. BITEMM→BPROJM 변환 key와 BCOSTM PK의 namespace 비충돌을 증명할 DB 제약이 없으므로 `(sourceNamespace,key)` 정책을 다섯 번째 사용자 결정으로 둔다. 상세 계약은 ignored scratch를 사용한다.
+16. 협의회 저장 위원 응답은 승인된 안전 후보 #5 안에서 `CouncilMemberUserRow(eno,usrNm,bbrNm,ptCNm)` exact4와 `findCouncilMemberUserRowsByEnoIn(Collection<String>)` 명시 JPQL LEFT JOIN으로 분리한다. 기존 entity IN + 조직 지연 조회 N+1을 제거하되 DEL filter와 정렬을 추가하지 않고, 조직이 없는 사용자와 사용자 미존재 fallback 의미를 보존한다. 구현은 `db45a6802702f85d0d714c439db6cc5e9c239fc5`, 실행 계약 추적성 보완은 `a450433150023a27ad78acaabadc2143d454015e`이다. 이는 새 정책 결정이 아니며 차단·경계선 범위를 확장하지 않는다.
 
 ## 결론과 승인 게이트
 
@@ -125,5 +126,6 @@
 - **결정 #5 — namespace**: `getProjectSummary`의 `orcTbMap/projectCategoryMap` key를 `(sourceNamespace,key)` 복합키로 분리할지 소유한다. 비충돌 불변식이 없으므로 승인 전 최적화를 시작하지 않는다.
 - **Task 13 사용자 승인: 2026-07-21 안전 범위 구현 승인**
 - **승인된 실행 계약 커밋: `b8b26cfcb9394f908f53000eb0d1fbb751080af3`** (`docs: BE-03 프로젝션 실행 계약 승인 반영`)
+- **승인 범위 내 계약 추적성 보완: `a450433150023a27ad78acaabadc2143d454015e`** — 구현 중 확인된 협의회 위원 exact4 LEFT JOIN 하위계약을 기존 Step 2 파일·테스트·Oracle matrix와 연결했다. 실제 구현 커밋은 `db45a6802702f85d0d714c439db6cc5e9c239fc5`이며, `CommitteeService.getCommittee`와 `ScheduleService.getScheduleStatus`의 entity+organization N+1 제거만 소급 명시한다.
 - 승인 범위는 게시글, 사용자·조직·팀 대표 read response, 계획, BITEMM ABUS 전체행 집계, BPROJM 단건 이름, BCOSTM 대표 view, Contract/Deliberation/Payment 상세와 Payment line, 결재 응답, 관리자 파일·토큰·로그인 이력, 요구사항 버전 이력이다.
 - 결정 #1 BITEMM GCL, #2 BBUGTM, #3 BPROJM 배치 이름, #4 BESTTM, #5 namespace는 모두 보류한다. 이 경계에서는 기존 엔티티 조회·encounter order·문자열 key 동작을 유지하고 신규 projection/정렬/2-query 분리를 만들지 않는다. 차단된 배치 경로에만 필요한 `ProjectKeyView`도 이번 실행에서 제외한다.
