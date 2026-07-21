@@ -15,6 +15,21 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-07-21 Clean Code Wave 1 (저위험 일괄 정리)
+
+> Clean Code 부채 이행계획(`docs/superpowers/plans/2026-07-21-clean-code-wave1-low-risk-cleanup.md`)의 Wave 1을 완료했습니다. 모든 태스크는 동작 변경 없는 기능 불변 정리입니다. CQ-01·CQ-06은 Wave 3 조건부 항목으로 착수 트리거를 TASK.md에 확정했습니다.
+
+| 상태 | ID | 과제 | 완료 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | CQ-07 | Java 포맷터 도입과 매직 넘버 상수화 | Spotless(google-java-format 1.28.0 AOSP 4칸 들여쓰기) 도입 후 전체 634개 파일 일괄 포맷을 단독 커밋으로 분리했다(it_backend `ac3d058`). spotlessCheck는 check 게이트에 자동 연결된다. 편성률 매직 넘버는 `DEFAULT_DUP_RT`·`PERCENT_BASE` 상수로 정리했고(it_backend `755f278`), Toast 표시시간은 `TOAST_LIFE` 상수를 도입해 장시간 표시(5000/6000/8000) 21개소를 선도 전환했다(it_frontend `d61da36`). 잔여 3000/4000 리터럴은 신규 코드 상수 필수 규칙(it_frontend/CLAUDE.md)으로 점진 관리한다. |
+| ✅ Done | CQ-08 | `AdminMenuController.move` 요청 본문 검증 규칙 재정의 | "null=루트 이동" 규칙을 현행 유지로 확정하고 코드 변경 없이 `MoveRequest` Javadoc·Swagger 스키마 설명과 컨트롤러 Javadoc에 명시했다. 빈 본문({})도 루트 이동으로 해석되며 잘못된 대상·순환 계층은 서비스 계층이 검증한다. it_backend 커밋 `a980da3`. |
+| ✅ Done | CQ-10 | 미사용 프론트 컴포넌트 제거 | 자동 등록명(디렉터리 접두사·Lazy 변형 포함) 전수 grep으로 참조 0건을 재확인한 뒤 `IconActivity.vue`, `ReviewVersionHistory.vue`를 제거했다. 타입 검사·단위 테스트 통과. it_frontend 커밋 `d14d847`. |
+| ✅ Done | CQ-12 | 백엔드 Gradle 프로젝트 설명 교체 | `description = 'IT Project Portal backend API'`(ASCII)로 교체. it_backend 커밋 `31e0b07`. |
+| ✅ Done | CQ-14 | 미사용 REST Docs·Asciidoctor 빌드 설정 제거 | `src/docs`·REST Docs 테스트 미사용을 재확인하고 asciidoctor 플러그인, snippetsDir ext, restdocs 의존성 2건, test outputs.dir, asciidoctor 태스크 블록을 제거했다. `clean check` 통과, `tasks --all`에서 asciidoctor 태스크 소멸 확인. it_backend 커밋 `95929fd`. |
+
+- 최종 검증: it_backend `./gradlew check` BUILD SUCCESSFUL(테스트·커버리지 게이트·spotlessCheck 포함), it_frontend `npm run check`·`npm test`(128 파일/1,636건) 통과.
+- Wave 3 조건부 확정: CQ-01(대형 서비스 분해)·CQ-06(Bcostm.update record 전환)은 해당 도메인 기능 변경 착수 시 함께 수행하는 트리거를 TASK.md에 기록했다.
+
 ### ✅ 2026-07-21 Clean Code Wave 0 (검증 기반 구축)
 
 > Clean Code 부채 이행계획(`docs/superpowers/plans/2026-07-21-clean-code-wave0-verification-foundation.md`)의 Wave 0을 완료했습니다. Wave 2 리팩터링의 안전망(커버리지 게이트·PDF 회귀 스냅샷·핵심 E2E 명령)을 구축했습니다.
