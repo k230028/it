@@ -203,10 +203,11 @@ PK 컬럼은 Oracle에서 암묵적으로 `NOT NULL`이므로 판정에서 제�
 
 ### 6.1 검증 스택 실행 결과 (2026-07-24)
 
-- `cd it_backend && ./gradlew test` — 전체 통과는 아닙니다. `FrontendUrlPropertyResolutionTest`에서
-  4개 테스트가 실패했습니다. 이 테스트는 Spring `StandardEnvironment`가 OS 환경변수를 그대로 읽어오는데,
-  현재 로컬 머신에 `APP_FRONTEND_URL`/`CORS_ALLOWED_ORIGINS`가 실제로 설정되어 있어 "미설정" 전제의 단언이
-  성립하지 않는 **이 프로젝트 이전부터 존재한 환경 의존 실패**입니다. 이 4건을 제외한 나머지는 전부 통과했습니다.
+- `cd it_backend && ./gradlew test` — **전체 통과는 아닙니다.** `2189 tests completed, 4 failed, 1 skipped`
+  (`BUILD FAILED in 2m 47s`). 실패 4건은 모두 `FrontendUrlPropertyResolutionTest`입니다. 이 테스트는 Spring
+  `StandardEnvironment`가 OS 환경변수를 그대로 읽어오는데, 현재 로컬 머신에 `APP_FRONTEND_URL`/`CORS_ALLOWED_ORIGINS`가
+  실제로 설정되어 있어 "미설정" 전제의 단언이 성립하지 않는 **이 프로젝트 이전부터 존재한 환경 의존 실패**입니다
+  (마지막 관련 커밋이 이번 작업 이전 시점이며 별도 후속 과제로 추적). 이 4건을 제외한 나머지는 전부 통과했습니다.
 - `cd it_frontend && npm run check && npm test` — `npm run check`는 통과했고 `budget/status.vue`의
   기존 ESLint 경고 3건(이 작업 범위 밖)만 남아 있습니다. `npm test`는 128개 파일 / 1,645개 테스트 전부 통과했습니다.
 
