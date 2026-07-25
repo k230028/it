@@ -15,6 +15,30 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-07-26 에러 표면화·복구 (ERR-09, ERR-10)
+
+> `TASK.md`의 ⚠️ 에러 처리 ERR-09·ERR-10을 구현·검증하고 종료 이관했습니다. 설계: `docs/superpowers/specs/2026-07-25-security-error-remediation-sec08-err10-design.md` §4(Phase B)·§5(Phase C), 계획: `docs/superpowers/plans/2026-07-25-security-error-phase-b-backend-surfacing.md`·`docs/superpowers/plans/2026-07-25-security-error-phase-c-frontend-states.md`. it_backend 브랜치 `feat/err08-err09-backend-surfacing`를 main에 병합(머지 `6fa3cf9`, ERR-09 NativeRowMapper 중앙 진단)하고, `feat/err10-council-sync-auth`를 main에 병합(머지 `0a98a43`, ERR-10 C4-1). it_frontend 브랜치 `feat/err08-banner-err10-frontend`를 main에 병합(머지 `a90f79c`, ERR-10 C1~C4-2 + ERR-08 스냅샷 배너).
+
+| 상태 | ID | 과제 | 완료 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | ERR-09 | 네이티브 조회 타입 변환 실패를 실제 NULL과 구분 | `NativeRowMapper`의 날짜 문자열·미지원 JDBC 타입 변환 실패를 원본 값·타입 문맥과 함께 중앙에서 진단(경고)하도록 전환하고 변환 회귀 테스트를 추가했다. it_backend main 병합(`6fa3cf9`). |
+| ✅ Done | ERR-10 | 프론트 핵심 업무의 실패 폴백을 사용자 오류 상태로 승격 | 4개 레인 모두 "조용히 삼키기" 대신 사용자 오류 상태로 표면화: (C1) 통화 조회 single-flight + last-known-good 상태머신(`useProjectCurrencies`, eager 옵션 하위호환), (C2) Tiptap 단건 해석 ERROR 승격·재시도와 인스턴스 스코프 시퀀스 가드(`useTiptapVariables`/`TiptapEditor.vue`, 기존 배치 STALE 계약 보존), (C3) 최신 revision PDF만 미리보기·상신 + Blob URL 누수 방지 순수 상태머신(`utils/reportPdfState.ts`/`projects/report.vue`), (C4) 협의회 상태 동기화 실패를 auth/permanent/transient로 분류·재시도 배너·epoch 가드(`utils/statusSyncError.ts`/`ResultReviewProgress.vue`) + 백엔드 `syncReviewStatus` 관리자 권한 강제(C4-1). |
+
+- 최종 검증: it_frontend `npm run check`(타입·ESLint 0 errors)·`npm test`(135파일 1746 통과)·신규 e2e 5종(통화·Tiptap·PDF·스냅샷·협의회 sync) 통과. it_backend `./gradlew test`·`spotlessCheck` BUILD SUCCESSFUL. 태스크별 2단계 리뷰(스펙 준수·코드 품질) + 최종 홀리스틱 프론트 리뷰 READY-TO-MERGE(교차 레인 일관성·하위호환·회귀 없음 확인).
+- 잔여 후속(비차단): `TerminalFormDialog` eager:false 다이얼로그가 `cost`를 초기 로드 후 다시 null로 만들 경우의 상태 리셋 방지(key-stable 래퍼/문서화), `ResultReviewProgress`의 `asctId`를 반응형으로 바꾸는 미래 caller에서 자동 트리거 지연 가능성 문서화, 분당 1회 toast 스로틀 공용 헬퍼 추출(DRY) — 별도 과제로 추적.
+
+### ✅ 2026-07-25 보안 트랜잭션 무결성 (SEC-08, SEC-09)
+
+> `TASK.md`의 🔒 보안 SEC-08·SEC-09를 구현·검증하고 종료 이관했습니다. 설계: `docs/superpowers/specs/2026-07-25-security-error-remediation-sec08-err10-design.md` §3(Phase A), 계획: `docs/superpowers/plans/2026-07-25-security-error-phase-a-security-txn.md`. it_backend 브랜치 `feat/sec09-sec08-txn-integrity`를 main에 병합(머지 커밋 `34822a4`).
+
+| 상태 | ID | 과제 | 완료 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | SEC-09 | 로그인 실패 이력의 롤백 독립성과 계정 잠금 동작 보장 | `AuthService.login()`을 `@Transactional(noRollbackFor = LoginRejectedException.class)` 단일 트랜잭션으로 바꿔 로그인 거부(실패 이력)만 커밋하고 DB·프로그래밍 예외는 전체 롤백한다. 비인증 인증 흐름의 감사자를 명시적으로 기록(`JpaAuditConfig`가 `AnonymousAuthenticationToken` 제외, `Clognh` 로그인 이력=`SYSTEM`, `Crtokm` 토큰=소유자 `eno`)해 NOT NULL 감사컬럼 위반을 방지한다. 실 Oracle IT `AuthLoginFailureIsolationIT`가 익명 컨텍스트에서 public 로그인 실패 5건 커밋(감사자 SYSTEM)+6회째 계정 잠금+DB 오류 시 전체 롤백을 검증. `LoginHistoryWriter`/`REQUIRES_NEW`는 도입하지 않음(단일 트랜잭션 방식). |
+| ✅ Done | SEC-08 | Refresh Token 재사용 탐지 시 패밀리 폐기 커밋 보장 | 회전과 폐기를 2개 트랜잭션으로 분리했다. `RefreshTokenRotator.rotate()`(`@Transactional`, PESSIMISTIC_WRITE)가 재사용/만료를 삭제 없이 마커 예외로 신호해 회전 트랜잭션을 롤백(비관적 락 해제)하고, 비트랜잭션 오케스트레이터 `AuthService.refreshAccessToken()`이 락 해제 뒤 `RefreshTokenRevoker.revokeByEno()`(`REQUIRES_NEW`+flush)로 패밀리를 확정 폐기한 뒤 `InvalidRefreshTokenException`으로 거부한다. grace 내 동시 재제출은 패밀리를 유지(`ConcurrentRefreshException`). 실 Oracle IT `RefreshTokenIsolationIT`가 재사용·만료 시 패밀리 커밋 삭제(COUNT=0)와 2스레드 동시 회전의 교착 부재(타임아웃 가드)·단일 활성 토큰을 검증. SEC-01(단일 활성)·SEC-04(tokenUse=refresh) 불변식 보존. |
+
+- 최종 검증: it_backend `./gradlew clean check integrationTest` BUILD SUCCESSFUL(unit·JaCoCo 커버리지 게이트·spotlessCheck·로컬 Oracle `@Tag("it")` 통합). 최종 홀리스틱 보안 리뷰 READY(교차 통합·회귀 없음, SEC-08/SEC-09 모두 실 DB 근거로 종결).
+- 잔여 후속(비차단): `loadAthIds` 중복 제거(DRY), `refreshAccessToken` 비트랜잭션 전제조건 런타임 가드, revoker 폐기 실패 시 쿠키 삭제 정책 — 별도 과제로 추적.
+
 ### ✅ 2026-07-25 백엔드 2026-07-21 범위 잔여과제 정리 (Wave 1~3)
 
 > 2026-07-21 계획 범위의 `TASK.md` 백엔드 과제 중 즉시 구현 가능한 항목과 ERR-08을 해소하고, BE-02·BE-06을 상시 규칙으로 `it_backend/CLAUDE.md`에 이관했습니다. 이후 추가된 BE-19~22는 별도 과제로 유지합니다. 설계: `docs/superpowers/specs/2026-07-21-backend-backlog-cleanup-design.md`, 계획: `docs/superpowers/plans/2026-07-21-backend-backlog-cleanup.md`.
