@@ -112,7 +112,7 @@ it_backend/
 
 ---
 
-## Lane C1 — 통화 단일 조회와 복구 가능한 상태
+## Task 1: Lane C1 — 통화 단일 조회와 복구 가능한 상태
 
 ### Task C1-1 — `useProjectCurrencies`를 단일 진실 공급원으로 만든다
 
@@ -196,7 +196,7 @@ git commit -m "refactor: 통화 소비 화면의 오류·재시도 상태 통합
 
 ---
 
-## Lane C2 — Tiptap 단건 해석 ERROR와 재시도
+## Task 2: Lane C2 — Tiptap 단건 해석 ERROR와 재시도
 
 ### Task C2-1 — 단건 삽입 실패만 `ERROR`로 승격한다
 
@@ -258,7 +258,7 @@ git commit -m "fix: Tiptap 단건 해석 ERROR와 복구 흐름 구현 (ERR-10)"
 
 ---
 
-## Lane C3 — 최신 PDF만 상신 가능한 revision 상태
+## Task 3: Lane C3 — 최신 PDF만 상신 가능한 revision 상태
 
 ### Task C3-1 — PDF 상태 머신을 순수 유틸로 고정한다
 
@@ -337,7 +337,7 @@ git commit -m "fix: 최신 revision PDF만 미리보기·상신 허용 (ERR-10)"
 
 ---
 
-## Lane C4 — 결과 상태 동기화 보안과 오류 분류
+## Task 4: Lane C4 — 결과 상태 동기화 보안과 오류 분류
 
 ### Task C4-1 — 서버 관리자 경계를 추가한다
 
@@ -426,7 +426,7 @@ git commit -m "fix: 결과 상태 동기화 오류 분류와 복구 UI 구현 (E
 
 ---
 
-## 최종 게이트
+## Task 5: 최종 게이트
 
 ```powershell
 cd C:\it\it_backend
