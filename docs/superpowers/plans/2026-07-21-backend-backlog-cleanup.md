@@ -1,8 +1,8 @@
-# TASK.md 백엔드 섹션 전면 정리 구현 계획
+# TASK.md 2026-07-21 기준 백엔드 잔여과제 정리 구현 계획
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** TASK.md [백엔드] 잔여 9건(+ERR-08)을 구현·규칙화·결정·재분류로 전부 종결한다.
+**Goal:** 2026-07-21 계획 수립 당시의 TASK.md [백엔드] 잔여 10건(BE-02·03·06·12~18)과 ERR-08을 구현·규칙화·결정·재분류한다. 계획 수립 후 추가된 BE-19~22는 별도 과제로 유지하며 이 계획의 완료 판정에 포함하지 않는다.
 
 **Architecture:** 위험 오름차순 4개 Wave. Wave 1(BE-15·14·16 저위험 정합), Wave 2(BE-13+ERR-08·BE-12 성능), Wave 3(BE-02·06 규칙화 종결), Wave 4(BE-17 결정 세션·BE-03/18 External 재분류). 스펙: `docs/superpowers/specs/2026-07-21-backend-backlog-cleanup-design.md`.
 
@@ -15,10 +15,47 @@
 - 모든 신규 주석·JavaDoc은 한글. public/service 메서드 JavaDoc은 입력값·반환값·실패 조건 기록 (`it_backend/CLAUDE.md` §9).
 - 모든 코드 작업은 TDD: 실패 테스트 작성 → 실패 확인 → 최소 구현 → 통과 확인 → 커밋.
 - Gradle 명령은 `it_backend` 디렉토리에서 실행: 단위 `./gradlew test`, Oracle IT `./gradlew integrationTest`. Oracle IT는 로컬 Oracle 기동 시에만 실행된다(미기동이면 skip — 반드시 기동 상태에서 실행할 것).
-- 적용된 Flyway 스크립트는 수정 금지. 신규는 `V{YYYYMMDD_NNN}__{CamelCase}.sql`.
+- 적용된 Flyway 스크립트는 수정 금지. 신규는 `V{YYYYMMDD_NNN}__{CamelCase}.sql`. 2026-07-21 버전은 `_004`까지, 2026-07-24 버전은 `_002`까지 사용 중이므로 BE-14 신규 파일은 `V20260725_001`을 사용한다.
+- Flyway DDL은 객체 소유 스키마 `ITPOWN`을 명시한다. `ALL_*` 데이터사전 조회는 `OWNER='ITPOWN'`, DDL 대상은 `ITPOWN.<객체명>`으로 작성한다. sqlplus 직접 실행 전에는 `ALTER SESSION SET CURRENT_SCHEMA=ITPOWN`을 실행한다.
 - 엔티티 파생 조회에서 `Ccodem.cId`는 JavaBeans 규칙 문제로 파생 쿼리 불가 → 명시적 JPQL 필수 (`CodeRepository` 클래스 JavaDoc 참조).
+- 설계 문서 작성 후 확인된 현재 상태(마이그레이션 버전, BESTTM 완료, BE-19~22 추가, 실제 검증 방식)는 이 실행 계획에 반영했다. 두 문서의 세부 실행 지시가 충돌하면 본 계획을 기준으로 한다.
 - 커밋 메시지는 기존 관례(`perf:`/`fix:`/`test:`/`docs:`/`chore:` + 한글 요약 + `(BE-XX)` 태그)를 따르고 다음 트레일러로 끝낸다:
   `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`
+
+## 이미 존재하는 기반
+
+- 신청·결재 배치 프로젝션 계약은 `ApplicationReadProjectionIt`에서 CAPPLA/CAPPLM/CDECIM을 검증한다.
+- 조직·사용자 배치 이름 조회 계약은 `OrganizationNameProjectionIt`, `UserReadProjectionIt`에서 검증한다.
+- 사업 목록 배치 조립 패턴은 `ProjectService.enrichProjectListBatch`에 이미 있으며, Task 8은 이를 상세 응답 계약에 맞게 확장한다.
+- Oracle 리포지토리 IT는 기존 `AbstractOracleRepositoryTest` 하네스를 재사용한다.
+- `check` 태스크는 단위 테스트, JaCoCo 검증, Spotless 검사를 포함하므로 최종 품질 게이트의 기준 명령으로 사용한다.
+- BE-17 결정 #4(BESTTM PK 정합)는 `V20260724_001` 마이그레이션과 백엔드 커밋 `07850ad`로 이미 완료되었다. Task 13에서는 재결정하지 않고 완료 근거만 문서화한다.
+
+## 이 계획에서 하지 않는 일
+
+- 계획 수립 후 추가된 BE-19~22의 구현·종결.
+- 운영 지표가 없는 BE-03 경계선 프로젝션의 실제 구현.
+- 관측 조건을 충족하지 않은 BE-18 구 검토자 API 제거.
+- 기존 Javadoc 경고 전체 일괄 제거.
+- 공통코드 삭제 행 부활 정책이나 동시 업로드 충돌 정책 변경. Task 3은 현행 의미를 보존하는 배치화와 입력 검증까지만 수행한다.
+
+## 실행 의존성과 병렬화
+
+```text
+초기 병렬 작업
+├─ Lane A: Task 1 → Task 2
+├─ Lane B: Task 3
+├─ Lane C: Task 4 → Task 5 → Task 6
+└─ Lane D: Task 7
+
+합류 후
+├─ Task 8  (Task 6의 DataCorruptionException + Task 7의 특성화 테스트 필요)
+└─ Task 9  (Task 8과 병렬 가능)
+        ↓
+Task 10 → Task 11 → Task 12 → Task 13
+```
+
+Task 8은 Task 6과 동일 테스트 파일을 정비하므로 Task 6 완료 전 시작하지 않는다. `it_database`와 루트 문서 커밋은 저장소별로 분리하고, 각 병렬 작업자는 자신이 맡은 파일만 커밋한다.
 
 ---
 
@@ -31,6 +68,8 @@
 **Interfaces:**
 - Consumes: 없음 (첫 태스크)
 - Produces: `Bplana.prjMngNo`/`reqDocNo`의 `@Column(length = 30)` 계약. 물리 DDL(`it_database/ITPOWN_DDL_live.sql:1008-1009`의 `VARCHAR2(30 CHAR)`)·형제 엔티티 `Bplanm.reqDocNo`(length=30)와 일치.
+
+이 태스크의 완료 근거는 **ORM 메타데이터 정합화**다. `@Column(length=30)`은 Bean Validation이 아니므로 31~32자 입력을 애플리케이션 계층에서 거부한다는 근거로 사용하지 않는다. 현재 BPLANA 쓰기 경로는 DB에 존재하는 사업/전산업무비 관리번호와 서버 채번 계획관리번호를 소비하므로 물리 30자 계약 안의 식별자만 연결한다. 외부 입력 길이 검증이 필요해지면 해당 요청 DTO의 `@Size(max=30)` 계약으로 별도 보강한다.
 
 - [ ] **Step 0: 작업 브랜치 생성**
 
@@ -105,7 +144,7 @@ git -C C:/it/it_backend commit -m "fix: Bplana 복합키 길이를 물리 DDL(30
 ### Task 2: BE-14 — `TPRMPP_BPLANA` 역방향 조회 인덱스 + Oracle IT
 
 **Files:**
-- Create: `it_database/migrations/V20260721_001__AddBplanaReqDocNoIndex.sql`
+- Create: `it_database/migrations/V20260725_001__AddBplanaReqDocNoIndex.sql`
 - Test: `it_backend/src/test/java/com/kdb/it/domain/budget/plan/repository/BplanaReqDocNoLookupIt.java` (신규)
 
 **Interfaces:**
@@ -187,36 +226,42 @@ Expected: PASS (기존 파생 조회의 계약 검증이므로 인덱스 없이 
 sqlplus 접속(`sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1` — 비밀번호는 환경변수/대화식 입력, 스크립트에 저장 금지) 후:
 
 ```sql
-EXPLAIN PLAN FOR SELECT * FROM TPRMPP_BPLANA WHERE REQ_DOC_NO = 'X' AND DEL_YN = 'N';
+ALTER SESSION SET CURRENT_SCHEMA=ITPOWN;
+EXPLAIN PLAN FOR
+SELECT *
+  FROM ITPOWN.TPRMPP_BPLANA
+ WHERE REQ_DOC_NO = (SELECT MIN(REQ_DOC_NO) FROM ITPOWN.TPRMPP_BPLANA)
+   AND DEL_YN = 'N';
 SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY(NULL, NULL, 'BASIC +ROWS +COST +PREDICATE'));
 ROLLBACK;
 ```
 
-Expected: `TABLE ACCESS FULL TPRMPP_BPLANA` (보조 인덱스 부재). 출력을 작업 로그에 기록.
+Expected: 현재 로컬 63행·보조 인덱스 부재 기준으로 `TABLE ACCESS FULL TPRMPP_BPLANA`. 실제 존재하는 요청문서번호를 사용한 출력의 Rows/Cost/Predicate를 작업 로그에 기록한다.
 
 - [ ] **Step 4: Flyway 스크립트 작성**
 
-`V20260721_001__AddBplanaReqDocNoIndex.sql` 신규 (같은 날짜 선행 스크립트가 이미 있으면 `_002` 등으로 조정). `V20260629_002`의 멱등 패턴 재사용:
+`V20260725_001__AddBplanaReqDocNoIndex.sql` 신규. 파일 작성 직전 `it_database/migrations`를 다시 확인해 같은 버전이 생겼으면 2026-07-25의 다음 일련번호로 올린다. 멱등 패턴은 유지하되 현행 스키마 규칙에 맞춰 `ITPOWN`을 명시한다.
 
 ```sql
--- V20260721_001__AddBplanaReqDocNoIndex.sql
+-- V20260725_001__AddBplanaReqDocNoIndex.sql
 -- BPLANA 요청문서번호 역방향 조회 인덱스 (BE-14).
 --   BplanaRepository.findAllByReqDocNoAndDelYn / findAllByReqDocNoInAndDelYn:
 --   WHERE REQ_DOC_NO = :doc AND DEL_YN = 'N' — PK 선두가 ABUS_MNG_NO라 기존 PK로 커버 불가.
--- EXPLAIN 검증(2026-07-21): FULL SCAN → INDEX RANGE SCAN 전환 확인.
+-- EXPLAIN 검증(실행일 기입): 적용 전/후 Rows·Cost·선택 계획을 실제 결과로 기록한다.
 -- 가산형(추가만)·멱등: 동일 인덱스명 존재 시 생성을 건너뛴다.
 DECLARE
     FUNCTION idx_exists(p_idx VARCHAR2) RETURN BOOLEAN IS
         n NUMBER;
     BEGIN
         SELECT COUNT(*) INTO n FROM ALL_INDEXES
-         WHERE OWNER = SYS_CONTEXT('USERENV','CURRENT_SCHEMA')
+         WHERE OWNER = 'ITPOWN'
            AND INDEX_NAME = p_idx;
         RETURN n > 0;
     END;
 BEGIN
     IF NOT idx_exists('IX_TPRMPP_BPLANA_01') THEN
-        EXECUTE IMMEDIATE 'CREATE INDEX IX_TPRMPP_BPLANA_01 ON TPRMPP_BPLANA (REQ_DOC_NO, DEL_YN, ABUS_MNG_NO)';
+        EXECUTE IMMEDIATE 'CREATE INDEX ITPOWN.IX_TPRMPP_BPLANA_01'
+            || ' ON ITPOWN.TPRMPP_BPLANA (REQ_DOC_NO, DEL_YN, ABUS_MNG_NO)';
     END IF;
 END;
 /
@@ -224,8 +269,9 @@ END;
 
 - [ ] **Step 5: 로컬 적용 + 적용 후 실행계획 확인**
 
-로컬 적용: `local-ext`/`local-int` 프로파일 bootRun 1회 기동 또는 sqlplus에서 스크립트 직접 실행(`@C:\it\it_database\migrations\V20260721_001__AddBplanaReqDocNoIndex.sql`). 이후 Step 3과 같은 EXPLAIN 재실행.
-Expected: `INDEX RANGE SCAN IX_TPRMPP_BPLANA_01`. 전/후 계획을 스크립트 상단 주석의 "EXPLAIN 검증" 줄에 실측값으로 갱신.
+로컬 적용: `local-ext`/`local-int` 프로파일 bootRun 1회 기동 또는 sqlplus에서 `ALTER SESSION SET CURRENT_SCHEMA=ITPOWN` 후 스크립트 직접 실행(`@C:\it\it_database\migrations\V20260725_001__AddBplanaReqDocNoIndex.sql`). 이후 Step 3과 같은 EXPLAIN을 재실행한다.
+
+Expected: 인덱스가 정확한 컬럼 순서로 생성되고 결과 계약은 불변이다. 로컬 테이블이 작아 옵티마이저가 FULL SCAN을 계속 선택할 수 있으므로 `INDEX RANGE SCAN` 자체를 유일한 성공 조건으로 삼지 않는다. 전/후 Rows·Cost와 선택 계획을 스크립트 상단 및 Task 12 완료 기록에 사실대로 남기고, 인덱스 미선택을 성능 향상으로 과장하지 않는다.
 
 - [ ] **Step 6: IT 재실행 (인덱스 후 결과 불변 확인)**
 
@@ -234,7 +280,7 @@ Run: `./gradlew integrationTest --tests "*BplanaReqDocNoLookupIt*"` → PASS
 - [ ] **Step 7: 커밋 (repo 2곳)**
 
 ```bash
-git -C C:/it/it_database add migrations/V20260721_001__AddBplanaReqDocNoIndex.sql
+git -C C:/it/it_database add migrations/V20260725_001__AddBplanaReqDocNoIndex.sql
 git -C C:/it/it_database commit -m "perf: BPLANA 요청문서번호 역방향 조회 인덱스 추가 (BE-14)"
 git -C C:/it/it_backend add src/test/java/com/kdb/it/domain/budget/plan/repository/BplanaReqDocNoLookupIt.java
 git -C C:/it/it_backend commit -m "test: BPLANA 역방향 조회 Oracle IT 추가 (BE-14/BE-02)"
@@ -245,9 +291,12 @@ git -C C:/it/it_backend commit -m "test: BPLANA 역방향 조회 Oracle IT 추�
 ### Task 3: BE-16 — 공통코드 일괄 업로드 배치화
 
 **Files:**
+- Modify: `it_backend/src/main/java/com/kdb/it/common/admin/dto/AdminDto.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/common/admin/controller/AdminController.java`
 - Modify: `it_backend/src/main/java/com/kdb/it/common/code/repository/CodeRepository.java`
 - Modify: `it_backend/src/main/java/com/kdb/it/common/admin/service/AdminService.java:219-252` (`bulkUpsertCodes`)
 - Test: `it_backend/src/test/java/com/kdb/it/common/admin/service/AdminServiceTest.java` (기존 209-229행 케이스 갱신 + 신규 케이스)
+- Test: `it_backend/src/test/java/com/kdb/it/common/admin/controller/AdminControllerTest.java`
 
 **Interfaces:**
 - Consumes: `AdminDto.CodeRequest(cId, cdva, cNm, cdvaNm, cdvaDes, cdvaDtl, cdvaDtlC, cTp, cTpDes, hrkC, sttDt, endDt, cSqn)`, `Ccodem.update(cNm, cdvaDes, cdvaDtl, cdvaNm, cTp, cTpDes, hrkC, cSqn, endDt, cdvaDtlC)` (10-arg 오버로드)
@@ -295,6 +344,8 @@ git -C C:/it/it_backend commit -m "test: BPLANA 역방향 조회 Oracle IT 추�
     }
 ```
 
+`AdminControllerTest`에는 빈 목록과 키 누락 요청이 HTTP 400이고 `adminService.bulkUpsertCodes`를 호출하지 않는 계약을 추가한다. `AdminDto.BulkCodeRequest.codes`는 `@NotEmpty`, 중첩 `CodeRequest`는 `@Valid`, `sttDt`는 기존 서비스 필수키 검증과 맞춰 `@NotBlank`로 고정한다.
+
 - [ ] **Step 2: 실패 확인**
 
 Run: `./gradlew test --tests "*AdminServiceTest*"`
@@ -302,7 +353,31 @@ Expected: FAIL — `findAllByCIdInAndDelYn` 컴파일 오류(메서드 미존재
 
 - [ ] **Step 3: 구현**
 
-3-1. `CodeRepository.java`에 명시적 JPQL 배치 조회 추가 (`cId`는 파생 쿼리 불가 — 클래스 JavaDoc 참조):
+3-1. 요청 DTO와 컨트롤러 검증 계약 추가:
+
+```java
+    public record CodeRequest(
+            @NotBlank String cId,
+            @NotBlank String cdva,
+            // ... 기존 필드 유지
+            @NotBlank String sttDt,
+            // ... 기존 필드 유지
+    ) {}
+
+    public record BulkCodeRequest(
+            @NotEmpty java.util.List<@Valid CodeRequest> codes) {}
+```
+
+```java
+    public ResponseEntity<Map<String, Integer>> bulkUpsertCodes(
+            @Valid @RequestBody AdminDto.BulkCodeRequest req) {
+        return ResponseEntity.ok(adminService.bulkUpsertCodes(req));
+    }
+```
+
+실제 record 매개변수 순서는 바꾸지 않고 어노테이션만 추가한다. 필요한 import는 `jakarta.validation.Valid`, `jakarta.validation.constraints.NotEmpty`, `jakarta.validation.constraints.NotBlank`다.
+
+3-2. `CodeRepository.java`에 명시적 JPQL 배치 조회 추가 (`cId`는 파생 쿼리 불가 — 클래스 JavaDoc 참조):
 
 ```java
     /**
@@ -317,7 +392,7 @@ Expected: FAIL — `findAllByCIdInAndDelYn` 컴파일 오류(메서드 미존재
                                                   @Param("delYn") String delYn);
 ```
 
-3-2. `AdminService.bulkUpsertCodes` 재작성 (행별 SELECT·개별 save 제거, 카운터·검증·응답 계약 보존):
+3-3. `AdminService.bulkUpsertCodes` 재작성 (행별 SELECT·개별 save 제거, 카운터·검증·응답 계약 보존):
 
 ```java
         /**
@@ -383,7 +458,7 @@ Expected: FAIL — `findAllByCIdInAndDelYn` 컴파일 오류(메서드 미존재
 
 주의: 기존 코드는 검증을 행 처리 직전에 수행했으나 위 코드는 선두에서 전량 검증한다. 이로써 "일부 저장 후 검증 실패" 대신 "전량 검증 후 처리"가 되며 `@Transactional` 롤백 하에서 최종 관측 결과는 동일하다. `Ccodem`에 `getCId()`/`getCdva()`/`getSttDt()` getter가 있는지 확인하고(없으면 Lombok `@Getter` 확인) import(`java.util.Set`, `java.util.ArrayList`)를 정리한다.
 
-3-3. 기존 테스트 `bulkUpsertCodes_신규수정건수반환`(209-229행)의 스텁을 배치 방식으로 갱신:
+3-4. 기존 테스트 `bulkUpsertCodes_신규수정건수반환`(209-229행)의 스텁을 배치 방식으로 갱신:
 
 ```java
         Ccodem existingCode = Ccodem.builder().cId("CODE001").cdva("001").sttDt(sttDt).build();
@@ -399,7 +474,7 @@ Run: `./gradlew test` → BUILD SUCCESSFUL
 - [ ] **Step 5: 커밋**
 
 ```bash
-git -C C:/it/it_backend add src/main/java/com/kdb/it/common/code/repository/CodeRepository.java src/main/java/com/kdb/it/common/admin/service/AdminService.java src/test/java/com/kdb/it/common/admin/service/AdminServiceTest.java
+git -C C:/it/it_backend add src/main/java/com/kdb/it/common/admin src/main/java/com/kdb/it/common/code/repository/CodeRepository.java src/test/java/com/kdb/it/common/admin
 git -C C:/it/it_backend commit -m "perf: 공통코드 일괄 업로드 행별 SELECT·save 제거 (BE-16)"
 ```
 
@@ -689,12 +764,15 @@ git -C C:/it/it_backend commit -m "perf: 기준 계획 탐색 N+1·동률 비결
 ### Task 6: ERR-08 — 스냅샷 손상과 빈 결과 구분
 
 **Files:**
+- Create: `it_backend/src/main/java/com/kdb/it/exception/DataCorruptionException.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/exception/GlobalExceptionHandler.java`
 - Modify: `it_backend/src/main/java/com/kdb/it/domain/council/service/PlanEvaluationService.java` (`parseSnapshotBusinesses`, `countCostDetails`, `resolveBusinessNames`, 클래스에 `@Slf4j` 추가)
 - Test: `it_backend/src/test/java/com/kdb/it/domain/council/service/PlanEvaluationServiceTest.java`
+- Test: `it_backend/src/test/java/com/kdb/it/exception/GlobalExceptionHandlerTest.java`
 
 **Interfaces:**
 - Consumes: Task 5까지의 `PlanEvaluationService`
-- Produces: 파싱 실패 정책 — `getPlanTargets` 경로(심의 대상·전산업무비 건수)는 `IllegalStateException`(문서번호 포함) 전파, `buildResultSummary` 경로(사업명 해석)는 WARN 로그 + 관리번호 폴백 유지
+- Produces: 파싱 실패 정책 — `getPlanTargets` 경로(심의 대상·전산업무비 건수)는 `DataCorruptionException`(문서번호 포함) 전파 + HTTP 500, `buildResultSummary` 경로(사업명 해석)는 WARN 로그 + 관리번호 폴백 유지. Task 8의 중복 활성 사업 감지에도 같은 서버 데이터 손상 예외를 사용한다.
 
 - [ ] **Step 1: 실패 테스트 작성**
 
@@ -707,7 +785,7 @@ git -C C:/it/it_backend commit -m "perf: 기준 계획 탐색 N+1·동률 비결
                 planResponse("PLN-2026-0002", "2026", "신규", "{손상된JSON"));
 
         assertThatThrownBy(() -> service.getPlanTargets(PLAN_ASCT_ID))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(DataCorruptionException.class)
                 .hasMessageContaining("PLN-2026-0002");
     }
 
@@ -734,6 +812,8 @@ git -C C:/it/it_backend commit -m "perf: 기준 계획 탐색 N+1·동률 비결
     }
 ```
 
+`GlobalExceptionHandlerTest`에는 `DataCorruptionException`이 HTTP 500으로 매핑되고 응답 메시지에 진단 대상 계획관리번호가 포함되는 테스트를 추가한다. `IllegalStateException`의 기존 400 비즈니스 규칙 계약은 바꾸지 않는다.
+
 주의: `PLAN_ASCT_ID`·`planResponse(...)` 헬퍼는 기존 테스트 파일의 계획협의회 픽스처 형식에 맞춰 정의/재사용한다. DTO 접근자 이름(`businesses()`/`summaryHtml()`)이 다르면 `CouncilDto` 실제 정의를 따른다.
 
 - [ ] **Step 2: 실패 확인**
@@ -743,9 +823,38 @@ Expected: FAIL — 손상 JSON에서 예외 없이 빈 목록 반환
 
 - [ ] **Step 3: 구현**
 
-3-1. 클래스에 `@lombok.extern.slf4j.Slf4j` 추가.
+3-1. 서버 데이터 손상 전용 예외와 HTTP 500 매핑을 추가한다:
 
-3-2. `parseSnapshotBusinesses`에 문서번호 문맥을 추가하고 파싱 실패를 전파 (호출부 2곳 — `getPlanTargets`의 `plan.getRedtConeInf()`, `baselineBudgetByBusiness`의 `baseline.getRedtConeInf()` — 모두 reqDocNo 인자 전달로 변경):
+```java
+package com.kdb.it.exception;
+
+/**
+ * DB에 저장된 데이터가 애플리케이션 계약을 만족하지 않아 안전하게 처리할 수 없을 때 발생하는 예외.
+ */
+public class DataCorruptionException extends RuntimeException {
+
+    public DataCorruptionException(String message) {
+        super(message);
+    }
+
+    public DataCorruptionException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
+```
+
+```java
+    @ExceptionHandler(DataCorruptionException.class)
+    public ResponseEntity<Map<String, Object>> handleDataCorruption(
+            DataCorruptionException e) {
+        log.error("서버 데이터 정합성 오류: {}", e.getMessage(), e);
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+    }
+```
+
+3-2. `PlanEvaluationService` 클래스에 `@lombok.extern.slf4j.Slf4j`를 추가한다.
+
+3-3. `parseSnapshotBusinesses`에 문서번호 문맥을 추가하고 파싱 실패를 전파 (호출부 2곳 — `getPlanTargets`의 `plan.getRedtConeInf()`, `baselineBudgetByBusiness`의 `baseline.getRedtConeInf()` — 모두 reqDocNo 인자 전달로 변경):
 
 ```java
     /**
@@ -754,7 +863,7 @@ Expected: FAIL — 손상 JSON에서 예외 없이 빈 목록 반환
      * @param json     계획 스냅샷 JSON (null/blank면 빈 목록)
      * @param reqDocNo 진단 문맥용 계획관리번호
      * @return 정보화사업 노드 목록
-     * @throws IllegalStateException 스냅샷 JSON 파싱에 실패한 경우 (손상 데이터 — 빈 계획과 구분)
+     * @throws DataCorruptionException 스냅샷 JSON 파싱에 실패한 경우 (손상 데이터 — 빈 계획과 구분)
      */
     private List<JsonNode> parseSnapshotBusinesses(String json, String reqDocNo) {
         List<JsonNode> result = new ArrayList<>();
@@ -776,15 +885,16 @@ Expected: FAIL — 손상 JSON에서 예외 없이 빈 목록 반환
         } catch (Exception e) {
             // 손상 스냅샷을 유효한 빈 계획과 구분해 명시적으로 실패시킨다 (ERR-08)
             log.error("계획 스냅샷 파싱 실패: reqDocNo={}", reqDocNo, e);
-            throw new IllegalStateException("계획 스냅샷(JSON)이 손상되었습니다: reqDocNo=" + reqDocNo, e);
+            throw new DataCorruptionException(
+                    "계획 스냅샷(JSON)이 손상되었습니다: reqDocNo=" + reqDocNo, e);
         }
         return result;
     }
 ```
 
-3-3. `countCostDetails`도 동일하게 `reqDocNo` 인자 추가 + catch에서 `log.error` 후 `IllegalStateException` 전파 (호출부 `getPlanTargets` 마지막 줄 갱신).
+3-4. `countCostDetails`도 동일하게 `reqDocNo` 인자 추가 + catch에서 `log.error` 후 `DataCorruptionException` 전파 (호출부 `getPlanTargets` 마지막 줄 갱신).
 
-3-4. `resolveBusinessNames`의 catch는 폴백을 유지하되 WARN 로그 추가:
+3-5. `resolveBusinessNames`의 catch는 폴백을 유지하되 WARN 로그 추가:
 
 ```java
         } catch (Exception e) {
@@ -793,19 +903,19 @@ Expected: FAIL — 손상 JSON에서 예외 없이 빈 목록 반환
         }
 ```
 
-3-5. 세 메서드의 기존 `// TODO:` 주석(158, 172, 213, 383행 부근)을 제거한다 (213행은 Task 5에서 이미 제거됨).
+3-6. 세 메서드의 기존 `// TODO:` 주석(158, 172, 213, 383행 부근)을 제거한다 (213행은 Task 5에서 이미 제거됨).
 
-3-6. 예외 응답 계약 확인: `getPlanTargets`는 이미 89행에서 `IllegalStateException`을 던지고 있으므로 새 예외도 같은 전역 핸들러 매핑을 탄다. `GlobalExceptionHandler`(또는 `@RestControllerAdvice`)에서 `IllegalStateException`의 HTTP 매핑을 확인하고, 매핑이 없어 500으로 노출되면 그대로 두되(서버 데이터 손상이므로 5xx가 적절) 응답 본문에 문서번호 문맥이 포함되는지만 확인한다.
+3-7. 예외 응답 계약 확인: 기존 `IllegalStateException`은 비즈니스 규칙 위반으로 HTTP 400을 유지하고, `DataCorruptionException`만 전용 핸들러를 통해 HTTP 500으로 응답한다. 서비스 테스트와 `GlobalExceptionHandlerTest`를 함께 실행해 두 상태가 섞이지 않는지 확인한다.
 
 - [ ] **Step 4: 통과 확인 + 전체 회귀**
 
-Run: `./gradlew test --tests "*PlanEvaluationServiceTest*"` → PASS
+Run: `./gradlew test --tests "*PlanEvaluationServiceTest*" --tests "*GlobalExceptionHandlerTest*"` → PASS
 Run: `./gradlew test` → BUILD SUCCESSFUL
 
 - [ ] **Step 5: 커밋**
 
 ```bash
-git -C C:/it/it_backend add src/main/java/com/kdb/it/domain/council/service/PlanEvaluationService.java src/test/java/com/kdb/it/domain/council/service/PlanEvaluationServiceTest.java
+git -C C:/it/it_backend add src/main/java/com/kdb/it/domain/council/service/PlanEvaluationService.java src/main/java/com/kdb/it/exception src/test/java/com/kdb/it/domain/council/service/PlanEvaluationServiceTest.java src/test/java/com/kdb/it/exception/GlobalExceptionHandlerTest.java
 git -C C:/it/it_backend commit -m "fix: 평가 스냅샷 손상과 빈 결과 구분 (ERR-08)"
 ```
 
@@ -885,7 +995,7 @@ git -C C:/it/it_backend commit -m "fix: 평가 스냅샷 손상과 빈 결과 �
     @DisplayName("단건 getProject와 일괄 getProjectsByIds의 항목 필드가 일치한다 (parity)")
     void 단건_일괄_동등성() {
         // stubProject("PRJ-A") + 배치 스텁 구성 후:
-        // ProjectDto.Response single = service.getProject("PRJA-...");
+        // ProjectDto.Response single = service.getProject("PRJ-A");
         // ProjectDto.Response bulk = service.getProjectsByIds(bulkRequest("PRJ-A")).items().getFirst();
         // assertThat(bulk).usingRecursiveComparison()
         //         .ignoringFields("dupBgAmt", "assetDupBg", "costDupBg") // bseYy 지정 시 일괄 경로만 채우는 필드
@@ -896,6 +1006,20 @@ git -C C:/it/it_backend commit -m "fix: 평가 스냅샷 손상과 빈 결과 �
 주의: `BulkResponse`의 접근자 이름(`items()`/`failedIds()`)과 `Bprojm` 빌더 필수 필드는 실제 DTO·엔티티 정의를 열어 맞춘다. 나머지 3개 테스트의 주석 처리된 본문은 첫 번째 완전한 예시와 같은 스텁 구조로 작성한다 — 구조가 동일하므로 stubProject/bulkRequest 헬퍼를 재사용하면 각 10줄 내외다.
 
 각 케이스의 스텁은 현행 코드가 사용하는 단건 경로 finder(`projectRepository.findByAbusMngNoAndDelYn`, `capplaRepository.findViewsByFntTbNmAndPkColNmAndFntTbCrySnoOrderByApfDcmNoDesc`, `bprojaRepository.findByAbusMngNoAndDelYn`, `bitemmRepository.findByAbusMngNoAndFntTbCrySnoAndDelYn` 등)와 Task 8 이후 사용할 배치 finder(`findByAbusMngNoInAndDelYn`, `findViewsByFntTbNmAndPkColNmInOrderByApfDcmNoDesc`, `findNameViewsByPrlmOgzCConeIn`, `findNameViewsByEnoIn` 등)를 **같은 픽스처 데이터로 모두** 스텁한다(`lenient()` 사용 — 전환 전에는 배치 스텁이, 전환 후에는 단건 스텁 일부가 미사용이 되므로). 이렇게 하면 이 테스트는 전환 전후 모두 의미 있게 통과해야 하는 안전망이 된다.
+
+parity 픽스처는 ID와 삭제여부만 채우는 최소 엔티티로 끝내지 않는다. 아래 필드를 모두 non-null 대표값으로 구성해 단건·일괄 응답의 실제 조립 계약을 고정한다.
+
+| 영역 | 반드시 채울 계약 |
+| --- | --- |
+| 신청·결재 | 최신 CAPPLA의 프로젝트 SNO 일치, CAPPLM 상태, CDECIM 결재선 순서 |
+| 조직·사용자 | 주관부서명 스냅샷 우선, 구데이터 조직 폴백, 담당자·팀장·등록자 이름 |
+| 코드명 | `rprStsTcNm`, `exePttYnNm`, `abusTcNm`, 원본값을 이름으로 쓰는 4개 필드 |
+| 상태 | BPROJA 대표상태와 단계별 상태코드 전체 |
+| 품목 | 현재 프로젝트 SNO 품목만 포함, IOE 코드명, 다른 SNO 품목 제외 |
+| 합계 | 자본예산·일반관리비·총요청금액 |
+| 부분 성공 | 미존재 ID, 요청 순서, 중복 요청 ID |
+
+`usingRecursiveComparison()`에서 무시할 필드는 기존 일괄 경로 전용 편성예산 3개로 제한한다. 그 밖의 필드가 달라지면 테스트 픽스처를 약화하지 말고 구현을 수정한다.
 
 - [ ] **Step 2: 현행 코드에서 통과 확인**
 
@@ -915,10 +1039,12 @@ git -C C:/it/it_backend commit -m "test: 사업 일괄 조회 특성화 테스�
 
 **Files:**
 - Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/project/service/ProjectService.java:740-786` + 신규 private `enrichProjectBulkDetail`
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/project/dto/ProjectDto.java` (`BulkGetRequest` 검증)
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/project/controller/ProjectController.java` (`@Valid`)
 - Test: `ProjectServiceBulkParityTest.java`(쿼리 횟수 케이스 추가), 기존 `ProjectServiceTest`·`ProjectServiceCoverageTest`·`PlanServiceTest`·`PlanEvaluationServiceTest`·`ProjectControllerTest` 스텁 정비
 
 **Interfaces:**
-- Consumes: `projectRepository.findByAbusMngNoInAndDelYn(Collection,String)`, `capplaRepository.findViewsByFntTbNmAndPkColNmInOrderByApfDcmNoDesc(String,List)`(view에 `getFntTbCrySno()` 존재), `capplmRepository.findSummaryViewsByApfMngNoIn(List)`, `cdecimRepository.findReadViewsByDcdMngNoInOrderByDcrSqnSnoAsc(List)`, `bprojaRepository.findByAbusMngNoInAndDelYn(Collection,String)`, `bitemmRepository.findByAbusMngNoInAndDelYn(Collection,String)`, `corgnIRepository.findNameViewsByPrlmOgzCConeIn(Collection)`, `cuserIRepository.findNameViewsByEnoIn(Collection)`, `representativeStatus(List<Bproja>)`, `enrichItemIoeCNames(List)`, `projectBudgetSummaryService.applyBudgetSummary(Response, List<Bitemm>)`
+- Consumes: Task 6의 `DataCorruptionException`, `projectRepository.findByAbusMngNoInAndDelYn(Collection,String)`, `capplaRepository.findViewsByFntTbNmAndPkColNmInOrderByApfDcmNoDesc(String,List)`(view에 `getFntTbCrySno()` 존재), `capplmRepository.findSummaryViewsByApfMngNoIn(List)`, `cdecimRepository.findReadViewsByDcdMngNoInOrderByDcrSqnSnoAsc(List)`, `bprojaRepository.findByAbusMngNoInAndDelYn(Collection,String)`, `bitemmRepository.findByAbusMngNoInAndDelYn(Collection,String)`, `corgnIRepository.findNameViewsByPrlmOgzCConeIn(Collection)`, `cuserIRepository.findNameViewsByEnoIn(Collection)`, `CodeNameMapBuilder`, `representativeStatus(List<Bproja>)`, `enrichItemIoeCNames(List)`, `projectBudgetSummaryService.applyBudgetSummary(Response, List<Bitemm>)`
 - Produces: `getProjectsByIds` 시그니처·응답 계약 불변, 내부만 배치화. 호출 3곳(`PlanEvaluationService:185`, `PlanService:229`, `ProjectController:209`) 무변경.
 
 - [ ] **Step 1: 실패 테스트 작성 — 쿼리 횟수(호출 횟수) 회귀**
@@ -939,11 +1065,20 @@ git -C C:/it/it_backend commit -m "test: 사업 일괄 조회 특성화 테스�
         verify(bitemmRepository, times(1)).findByAbusMngNoInAndDelYn(anyCollection(), eq("N"));
         verify(corgnIRepository, times(1)).findNameViewsByPrlmOgzCConeIn(anyCollection());
         verify(cuserIRepository, times(1)).findNameViewsByEnoIn(anyCollection());
+        // 같은 IOE C_ID를 사용하는 품목은 프로젝트 수와 무관하게 코드 조회 1회
+        verify(ccodemRepository, times(1)).findByCIdWithValidDate(eq("IOE_351_1100"), isNull());
         // ID별 단건 경로가 더 이상 호출되지 않음
         verify(projectRepository, never()).findByAbusMngNoAndDelYn(any(), any());
         verify(bitemmRepository, never()).findByAbusMngNoAndFntTbCrySnoAndDelYn(any(), any(), any());
     }
 ```
+
+추가 실패 테스트:
+
+- 같은 `ABUS_MNG_NO`의 활성 `BPROJM` 2행을 배치 finder가 반환하면 임의의 첫 행을 고르지 않고 `DataCorruptionException`을 던진다.
+- 빈 목록은 빈 `items`/`failedIds`를 반환하고 어떤 리포지토리도 호출하지 않는다.
+- `/bulk-get` API의 null·빈 목록·공백 ID는 Bean Validation 400이며 서비스가 호출되지 않는다.
+- 서로 다른 프로젝트가 같은 IOE C_ID를 사용해도 `findByCIdWithValidDate` 호출 수가 프로젝트 수에 비례하지 않는다.
 
 - [ ] **Step 2: 실패 확인**
 
@@ -952,14 +1087,26 @@ Expected: FAIL — 현행 구현은 ID별 `findByAbusMngNoAndDelYn` 3회 호출
 
 - [ ] **Step 3: 구현**
 
-3-1. `getProjectsByIds` 본문 교체 (기존 DUP_BG 블록 754-784행은 그대로 유지):
+3-1. API 요청 검증을 추가한다. `BulkGetRequest.prjMngNos`는 `@NotEmpty`이고 각 원소는 `@NotBlank @Size(max=30)`으로 제한한다. `ProjectController.bulkGetProjects`의 요청 본문에는 `@Valid`를 적용한다. 서비스 직접 호출의 빈 목록은 DB를 조회하지 않고 빈 응답을 반환한다.
+
+3-2. `getProjectsByIds` 본문 교체 (기존 DUP_BG 블록 754-784행은 그대로 유지):
 
 ```java
     public ProjectDto.BulkResponse getProjectsByIds(ProjectDto.BulkGetRequest request) {
+        if (request.getPrjMngNos().isEmpty()) {
+            return new ProjectDto.BulkResponse(List.of(), List.of());
+        }
+
         // BPROJM 일괄 조회 후 요청 순서·중복 의미를 보존해 조립 (ID별 getProject 반복 제거 — BE-12)
         Map<String, Bprojm> projectById = projectRepository
                 .findByAbusMngNoInAndDelYn(request.getPrjMngNos(), "N").stream()
-                .collect(Collectors.toMap(p -> p.getAbusMngNo(), p -> p, (a, b) -> a));
+                .collect(Collectors.toMap(
+                        Bprojm::getAbusMngNo,
+                        java.util.function.Function.identity(),
+                        (a, b) -> {
+                            throw new DataCorruptionException(
+                                    "활성 사업 기본행이 둘 이상입니다: abusMngNo=" + a.getAbusMngNo());
+                        }));
 
         List<Bprojm> projects = new ArrayList<>();
         List<ProjectDto.Response> responses = new ArrayList<>();
@@ -985,7 +1132,9 @@ Expected: FAIL — 현행 구현은 ID별 `findByAbusMngNoAndDelYn` 3회 호출
     }
 ```
 
-3-2. 신규 private `enrichProjectBulkDetail` 추가 — `getProject()` 단건 조립(197-241행)과 **필드·순서·폴백 의미가 동일**하도록, `enrichProjectListBatch`(796행~)의 배치 패턴을 상세 조립에 맞춰 재구성:
+merge 함수로 첫 행을 선택하지 않는다. 중복 활성행은 기존 단건 조회도 정상적으로 하나를 고를 수 없는 데이터 정합성 오류이므로 HTTP 500으로 명시적 실패한다.
+
+3-3. 신규 private `enrichProjectBulkDetail` 추가 — `getProject()` 단건 조립(197-241행)과 **필드·순서·폴백 의미가 동일**하도록, `enrichProjectListBatch`(796행~)의 배치 패턴을 상세 조립에 맞춰 재구성:
 
 ```java
     /**
@@ -1030,9 +1179,12 @@ Expected: FAIL — 현행 구현은 ID별 `findByAbusMngNoAndDelYn` 3회 호출
                 bitemmRepository.findByAbusMngNoInAndDelYn(prjMngNos, "N").stream()
                         .collect(Collectors.groupingBy(v -> v.getAbusMngNo()));
 
-        // 5. 부서명·사용자명 배치 (단건 setCodeNames가 참조하는 필드 전체를 수집)
+        // 5. 부서명·사용자명·공통코드명 배치 (단건 setCodeNames의 필드 전체)
         Set<String> orgCodes = new java.util.HashSet<>();
         Set<String> userEnos = new java.util.HashSet<>();
+        Set<String> rprStsCdvas = new java.util.HashSet<>();
+        Set<String> exePttCdvas = new java.util.HashSet<>();
+        Set<String> abusCdvas = new java.util.HashSet<>();
         for (ProjectDto.Response r : responses) {
             if (r.getDvmDpmC() != null && !r.getDvmDpmC().isEmpty()) orgCodes.add(r.getDvmDpmC());
             if (r.getSvnDpmC() != null && !r.getSvnDpmC().isEmpty()) orgCodes.add(r.getSvnDpmC());
@@ -1040,13 +1192,26 @@ Expected: FAIL — 현행 구현은 ID별 `findByAbusMngNoAndDelYn` 3회 호출
             if (r.getTlrUsid() != null && !r.getTlrUsid().isEmpty()) userEnos.add(r.getTlrUsid());
             if (r.getUsid() != null && !r.getUsid().isEmpty()) userEnos.add(r.getUsid());
             if (r.getDvmTlrUsid() != null && !r.getDvmTlrUsid().isEmpty()) userEnos.add(r.getDvmTlrUsid());
+            if (r.getRprStsTc() != null && !r.getRprStsTc().isEmpty()) rprStsCdvas.add(r.getRprStsTc());
+            if (r.getExePttYn() != null && !r.getExePttYn().isEmpty()) exePttCdvas.add(r.getExePttYn());
+            if (r.getAbusTc() != null && !r.getAbusTc().isEmpty()) abusCdvas.add(r.getAbusTc());
         }
         Map<String, String> orgNameMap = corgnIRepository.findNameViewsByPrlmOgzCConeIn(orgCodes).stream()
                 .collect(Collectors.toMap(v -> v.getPrlmOgzCCone(), v -> v.getBbrNm()));
         Map<String, String> userNameMap = cuserIRepository.findNameViewsByEnoIn(userEnos).stream()
                 .collect(Collectors.toMap(v -> v.getEno(), v -> v.getUsrNm()));
+        Map<String, String> rprStsNameMap = rprStsCdvas.isEmpty()
+                ? Map.of()
+                : codeNameMapBuilder.build(CommonCodeGroups.REPORT_STS, rprStsCdvas);
+        Map<String, String> exePttNameMap = exePttCdvas.isEmpty()
+                ? Map.of()
+                : codeNameMapBuilder.build(CommonCodeGroups.EXE_POSSIBLE, exePttCdvas);
+        Map<String, String> abusNameMap = abusCdvas.isEmpty()
+                ? Map.of()
+                : codeNameMapBuilder.build(CommonCodeGroups.ABUS, abusCdvas);
 
         // 6. 조립 — 단건 getProject와 동일 순서·의미
+        List<ProjectDto.BitemmDto> allItemDtos = new ArrayList<>();
         for (int i = 0; i < projects.size(); i++) {
             Bprojm project = projects.get(i);
             ProjectDto.Response response = responses.get(i);
@@ -1084,6 +1249,17 @@ Expected: FAIL — 현행 구현은 ID별 `findByAbusMngNoAndDelYn` 3회 호출
                 response.setUsidNm(userNameMap.get(response.getUsid()));
             if (response.getDvmTlrUsid() != null && userNameMap.containsKey(response.getDvmTlrUsid()))
                 response.setDvmTlrUsidNm(userNameMap.get(response.getDvmTlrUsid()));
+            // 단건 setCodeNames가 원본값을 표시명으로 쓰는 네 필드
+            response.setBzTpCNm(response.getBzTpC());
+            response.setBzDttNmNm(response.getBzDttNm());
+            response.setSklTpTcNm(response.getSklTpTc());
+            response.setCstTpTcNm(response.getCstTpTc());
+            if (response.getRprStsTc() != null)
+                response.setRprStsTcNm(rprStsNameMap.get(response.getRprStsTc()));
+            if (response.getExePttYn() != null)
+                response.setExePttYnNm(exePttNameMap.get(response.getExePttYn()));
+            if (response.getAbusTc() != null)
+                response.setAbusTcNm(abusNameMap.get(response.getAbusTc()));
 
             // 6-4. BPROJA 대표상태·단계별 상태코드 (단건과 동일)
             List<com.kdb.it.domain.budget.project.entity.Bproja> bprojaRows =
@@ -1099,23 +1275,33 @@ Expected: FAIL — 현행 구현은 ID별 `findByAbusMngNoAndDelYn` 3회 호출
                             .toList();
             List<ProjectDto.BitemmDto> itemDtos = bitemms.stream()
                     .map(ProjectDto.BitemmDto::fromEntity).toList();
-            enrichItemIoeCNames(itemDtos);
             response.setItems(itemDtos);
+            allItemDtos.addAll(itemDtos);
             projectBudgetSummaryService.applyBudgetSummary(response, bitemms);
         }
+        // 모든 프로젝트의 IOE 코드를 합친 뒤 C_ID별 1회 조회한다. 프로젝트별 반복 호출 금지.
+        enrichItemIoeCNames(allItemDtos);
     }
 ```
 
 구현 시 확인 사항:
-- 단건 `setCodeNames`(1021행~)가 위 6-3에 나열한 필드 외의 것을 더 설정하면(파일에서 1021~1094행 전체 확인) 그 필드도 같은 방식으로 배치 맵에 추가한다. parity 테스트가 안전망이다.
+- 단건 `setCodeNames`와 위 6-3의 필드 목록을 구현 직전에 다시 대조한다. 새 필드가 추가됐다면 같은 배치 맵에 포함하고 rich parity 테스트로 고정한다.
+- `enrichItemIoeCNames`는 루프 밖에서 정확히 1회만 호출한다. 내부 조회 횟수는 전체 입력의 distinct IOE C_ID 수에만 비례하고 프로젝트 수에는 비례하지 않아야 한다.
 - `enrichProjectListBatch`는 목록 경로 전용으로 그대로 두고 수정하지 않는다.
 - `getProject()` 단건 경로도 수정하지 않는다.
 
-3-3. 기존 테스트 정비: `ProjectServiceTest`의 getProjectsByIds 7케이스, `ProjectServiceCoverageTest:1056`, `PlanServiceTest`(5 스텁), `PlanEvaluationServiceTest`(2 스텁 + 1 verify), `ProjectControllerTest:170`을 실행해 실패하는 스텁을 배치 finder 스텁으로 교체한다. **검증 대상(응답 계약)은 바꾸지 않고 스텁만 교체**한다.
+3-4. 기존 테스트 정비: `ProjectServiceTest`의 getProjectsByIds 7케이스, `ProjectServiceCoverageTest:1056`, `PlanServiceTest`(5 스텁), `PlanEvaluationServiceTest`(2 스텁 + 1 verify), `ProjectControllerTest:170`을 실행해 실패하는 스텁을 배치 finder 스텁으로 교체한다. **검증 대상(응답 계약)은 바꾸지 않고 스텁만 교체**한다.
 
 - [ ] **Step 4: 통과 확인 + 전체 회귀**
 
-Run: `./gradlew test --tests "*ProjectServiceBulkParityTest*"` → PASS (특성화 4건 + 횟수 1건 모두)
+검증 전략:
+
+- `ProjectServiceBulkParityTest`의 rich fixture 재귀 비교로 단건 조립과 일괄 조립의 응답 의미가 같은지 검증한다.
+- Mockito 호출 횟수 검증으로 입력 N 증가와 무관하게 영역별 배치 finder가 1회씩 호출되고, IOE 조회는 전체 distinct C_ID 수에만 비례함을 검증한다.
+- 실제 Oracle SQL 결과 계약은 기존 `ApplicationReadProjectionIt`, `OrganizationNameProjectionIt`, `UserReadProjectionIt`와 Task 2·4·9의 신규 Oracle IT가 담당한다.
+- Hibernate Statistics를 직접 사용하지 않으므로 쿼리 수를 추정치로 표현하지 않는다. 이 계획의 성능 회귀 기준은 위 협력자 호출 횟수와 Oracle IT의 실제 SQL 계약이다.
+
+Run: `./gradlew test --tests "*ProjectServiceBulkParityTest*"` → PASS (특성화·중복 오류·입력 검증·호출 횟수 전부)
 Run: `./gradlew test` → BUILD SUCCESSFUL
 Run: `./gradlew integrationTest` → BUILD SUCCESSFUL (로컬 Oracle 기동 상태)
 
@@ -1254,16 +1440,15 @@ git -C C:/it/it_backend commit -m "docs: 신규 조회 IT 필수·Javadoc 경고
 - Consumes: Task 1~10의 모든 커밋
 - Produces: main에 병합된 구현 — Task 12의 문서 이관 전제
 
-- [ ] **Step 1: 최종 검증 3종 실행**
+- [ ] **Step 1: 최종 검증 게이트 실행**
 
 ```bash
 cd C:/it/it_backend
-./gradlew test --rerun-tasks
+./gradlew clean check --rerun-tasks
 ./gradlew integrationTest
-./gradlew jacocoTestCoverageVerification
 ```
 
-Expected: 모두 BUILD SUCCESSFUL. 실패 시 병합하지 않고 해당 태스크로 돌아가 수정한다. 결과 수치(테스트 건수·skip)를 기록해 Task 12의 TASK_DONE 메모에 사용한다.
+Expected: 모두 BUILD SUCCESSFUL. `check`에서 단위 테스트·JaCoCo 기준·Spotless 검사가 함께 통과해야 한다. 실패 시 병합하지 않고 해당 태스크로 돌아가 수정한다. 결과 수치(테스트 건수·skip)와 품질 게이트 결과를 기록해 Task 12의 TASK_DONE 메모에 사용한다.
 
 - [ ] **Step 2: main 병합**
 
@@ -1282,7 +1467,7 @@ git -C C:/it/it_backend merge --no-ff chore/backend-backlog-cleanup -m "merge: �
 
 **Interfaces:**
 - Consumes: Task 11 병합 완료, Task 2·4의 EXPLAIN 실측 기록
-- Produces: 백엔드 섹션에 BE-03·BE-17·BE-18 3건만 잔존 (BE-17은 Task 13에서 처리)
+- Produces: 이 계획의 완료분만 이관. BE-03·BE-18, BE-17 미결정분, 계획 수립 후 추가된 BE-19~22는 유지한다.
 
 - [ ] **Step 1: TASK.md 백엔드 섹션 정리**
 
@@ -1302,26 +1487,26 @@ BE-03 행을 다음으로 교체:
 
 - [ ] **Step 2: TASK_DONE.md 이관 기록 추가**
 
-문서 상단(최근 기록 위치)에 기존 2026-07-20 백엔드 조치 기록과 같은 형식으로 추가:
+`TASK_DONE.md` 상단 기준일을 실제 완료일로 갱신하고, 최근 기록 위치에 기존 2026-07-20 백엔드 조치 기록과 같은 형식으로 추가한다. 아래 `YYYY-MM-DD`는 실행 당일 실제 날짜로 치환한다.
 
 ```markdown
-### ✅ 2026-07-21 백엔드 잔여과제 전면 정리 (Wave 1~3)
+### ✅ YYYY-MM-DD 백엔드 2026-07-21 범위 잔여과제 정리 (Wave 1~3)
 
-> `TASK.md` [백엔드] 잔여 중 즉시 구현 가능 5건과 ERR-08을 해소하고, BE-02·BE-06을 상시 규칙으로 `it_backend/CLAUDE.md`에 이관했습니다. 설계: `docs/superpowers/specs/2026-07-21-backend-backlog-cleanup-design.md`, 계획: `docs/superpowers/plans/2026-07-21-backend-backlog-cleanup.md`.
+> 2026-07-21 계획 범위의 `TASK.md` [백엔드] 과제 중 즉시 구현 가능한 항목과 ERR-08을 해소하고, BE-02·BE-06을 상시 규칙으로 `it_backend/CLAUDE.md`에 이관했습니다. 이후 추가된 BE-19~22는 별도 과제로 유지합니다. 설계: `docs/superpowers/specs/2026-07-21-backend-backlog-cleanup-design.md`, 계획: `docs/superpowers/plans/2026-07-21-backend-backlog-cleanup.md`.
 
 | 상태 | Wave | 과제 | 조치 |
 | ---- | ---- | ---- | ---- |
 | ✅ Done | 1 | BE-15 Bplana 복합키 길이 정합화 | ORM length 32→30 (물리 DDL·Bplanm과 일치), `BplanaColumnContractTest`로 계약 고정. |
-| ✅ Done | 1 | BE-14 BPLANA 역방향 조회 인덱스 | `V20260721_001__AddBplanaReqDocNoIndex.sql` `(REQ_DOC_NO, DEL_YN, ABUS_MNG_NO)`. EXPLAIN: FULL→INDEX RANGE 확인. IT `BplanaReqDocNoLookupIt`. |
+| ✅ Done | 1 | BE-14 BPLANA 역방향 조회 인덱스 | `V20260725_001__AddBplanaReqDocNoIndex.sql` `(REQ_DOC_NO, DEL_YN, ABUS_MNG_NO)`. EXPLAIN: (Task 2 실측 Rows·Cost·선택 계획 기입). IT `BplanaReqDocNoLookupIt`. |
 | ✅ Done | 1 | BE-16 공통코드 업로드 배치화 | 선조회 1회(`findAllByCIdInAndDelYn`) + 메모리 upsert + `saveAll`. 요청 내 중복 키 의미 보존. |
 | ✅ Done | 2 | BE-13 기준 계획 탐색 N+1·동률 제거 | `findBaselineReqDocNos` 조인 단건 조회 + `IT_PTL_ASCT_ID DESC` tie-break. 인덱스 판정: (Task 4 Step 4 실측 결과 기입). IT `CouncilBaselineLookupIt`. |
-| ✅ Done | 2 | ERR-08 스냅샷 손상·빈 결과 구분 | 심의 대상 경로 파싱 실패는 문서번호 포함 예외 전파, 결과서 사업명은 WARN+관리번호 폴백, 기준 계획 조회 예외 스킵 제거. |
-| ✅ Done | 2 | BE-12 사업 일괄 상세 N+1 제거 | `enrichProjectBulkDetail` 영역별 IN 배치(ID당 6~8쿼리 → 영역별 각 1회). 특성화·parity·호출 횟수 테스트 `ProjectServiceBulkParityTest`. |
+| ✅ Done | 2 | ERR-08 스냅샷 손상·빈 결과 구분 | 심의 대상 경로 파싱 실패는 문서번호 포함 `DataCorruptionException`으로 HTTP 500, 결과서 사업명은 WARN+관리번호 폴백, 기준 계획 조회 예외 스킵 제거. |
+| ✅ Done | 2 | BE-12 사업 일괄 상세 N+1 제거 | `enrichProjectBulkDetail` 영역별 IN 배치. 중복 활성 사업은 데이터 손상으로 실패하고, IOE 코드는 전체 프로젝트를 합쳐 C_ID별 조회. rich parity·호출 횟수 테스트 `ProjectServiceBulkParityTest`. |
 | ✅ Done | 3 | BE-02 통합 테스트 하네스 규칙화 | 미보유 IT 3건 보충(BPLANA·기준계획·BPLEVM) 후 "신규 조회 IT 필수" 규칙을 `it_backend/CLAUDE.md` §9로 이관·종결. |
 | ✅ Done | 3 | BE-06 Javadoc 정책 이관 | "신규 미분류 경고 불허 + 기능 변경 시 점진 정리" 정책을 `it_backend/CLAUDE.md` §9로 이관·종결. 잔여 수치는 항목 종결로 추적 종료. |
 
-- 재분류: BE-03·BE-18은 🏛️ External로 전환(재개 조건 명시). BE-17은 결정 세션 후 별도 기록.
-- 최종 검증: (Task 11 Step 1 실측 결과 기입 — test/integrationTest/jacoco)
+- 재분류: BE-03·BE-18은 🏛️ External로 전환(재개 조건 명시). BE-17은 결정 세션 후 별도 기록. BE-19~22는 이 계획과 무관한 별도 과제로 유지.
+- 최종 검증: (Task 11 Step 1 실측 결과 기입 — clean check/integrationTest, 테스트 건수·skip·품질 게이트)
 ```
 
 주의: "(… 실측 결과 기입)" 두 곳은 이관 시점의 실제 실행 결과로 채운다. 채우지 않은 채 커밋하지 않는다.
@@ -1335,7 +1520,7 @@ git -C C:/it commit -m "docs: 백엔드 잔여과제 Wave 1~3 완료 이관 및 
 
 ---
 
-### Task 13: BE-17 — 프로젝션 보류 정책 5건 결정 세션
+### Task 13: BE-17 — 미결 프로젝션 정책 4건 결정 세션
 
 **Files:**
 - Modify: `C:\it\TASK.md` (BE-17 행 — 결정 결과에 따라 삭제 또는 구체 과제로 교체)
@@ -1343,42 +1528,44 @@ git -C C:/it commit -m "docs: 백엔드 잔여과제 Wave 1~3 완료 이관 및 
 - Modify: `C:\it\docs\superpowers\reports\2026-07-be03-projection-survey.md` (§결론과 승인 게이트에 결정 결과 추기)
 
 **Interfaces:**
-- Consumes: 조사 리포트의 결정 #1~#5 정의(§결론과 승인 게이트)와 차단 계약
-- Produces: 결정 5건의 확정 상태. 승인분은 TASK.md 신규 구체 과제, 현행 유지 확정분은 TASK_DONE.md 종결 기록.
+- Consumes: 조사 리포트의 결정 #1·#2·#3·#5 정의(§결론과 승인 게이트)와 차단 계약. 결정 #4는 완료 근거만 소비한다.
+- Produces: 미결 4건의 확정 상태. 승인분은 TASK.md 신규 구체 과제, 현행 유지 확정분은 TASK_DONE.md 종결 기록. 완료된 #4는 BE-17 범위에서 제거한다.
 
 **주의: 이 태스크는 사용자 대화가 필요하므로 서브에이전트에 위임하지 않고 메인 세션에서 수행한다.**
 
 - [ ] **Step 1: 결정별 추천안 준비**
 
-조사 리포트 §결론과 승인 게이트(122-126행)의 결정 #1~#5 각각에 대해 "현행 유지 vs 정책 확정" 추천안과 근거를 2~3문장으로 정리한다. 준비 기준:
+조사 리포트 §결론과 승인 게이트의 결정 #1·#2·#3·#5 각각에 대해 "현행 유지 vs 정책 확정" 추천안과 근거를 2~3문장으로 정리한다. 준비 기준:
 - #1 BITEMM GCL 대표행: 대표행 선택 정책(최신/최소 SNO 등)을 정할 실익이 있는지 — 현행 encounter order 유지 시 영향 범위.
 - #2 BBUGTM 대표행: `findFirst`/`rateByPrefix`/`firstBudgetByGcl`의 대표 정책. 승인 전 entity 1조회 유지 계약.
 - #3 BPROJM 배치 사업명 대표행: 배치 이름 조회 분리(`ProjectKeyView`)의 전제.
-- #4 BESTTM PK 정합: 물리 2컬럼 PK를 JPA 4컬럼 Id에 맞출지(마이그레이션 필요) 또는 JPA를 물리에 맞출지.
 - #5 namespace 분리: `(sourceNamespace,key)` 복합키 전환 여부 — 비충돌 불변식 부재가 근거.
+
+결정 #4 BESTTM PK 정합은 `V20260724_001`과 백엔드 커밋 `07850ad`를 확인해 "이미 완료"로 기록하고 사용자 선택지에서 제외한다.
 
 - [ ] **Step 2: 사용자 결정 세션 진행**
 
-AskUserQuestion으로 결정 #1~#5를 제시(추천안 우선 표기)하고 답변을 받는다. 한 번에 최대 4문항이므로 2회로 나눠 진행한다.
+AskUserQuestion으로 미결 결정 #1·#2·#3·#5를 제시(추천안 우선 표기)하고 답변을 받는다. 한 세션의 최대 4문항 안에서 진행한다.
 
 - [ ] **Step 3: 결정 결과 기록**
 
-- 조사 리포트 §결론과 승인 게이트 끝에 "**결정 확정 (2026-MM-DD)**: #1=…, #2=…, #3=…, #4=…, #5=…" 형식으로 추기.
-- 승인된 결정: TASK.md 백엔드 섹션에 구체 과제로 신규 등록(예: "BE-19 | 🟡 Medium | 성능 | BBUGTM 대표행 정책 구현 | 결정 #2 승인(정책: …). 재계획 후 구현").
+- 조사 리포트 §결론과 승인 게이트 끝에 "**결정 확정 (YYYY-MM-DD)**: #1=…, #2=…, #3=…, #5=…. #4=이미 완료(`V20260724_001`, `07850ad`)." 형식으로 추기.
+- 승인된 결정: TASK.md 백엔드 섹션에 구체 과제로 신규 등록한다. BE-19~22가 이미 존재하므로 새 번호는 BE-23부터 현재 최대 번호 다음 순번을 사용한다.
 - 현행 유지로 확정된 결정: BE-17 행을 삭제하고 TASK_DONE.md에 "결정 세션 결과 현행 유지 확정" 기록.
+- 승인분이 하나라도 있으면 BE-17의 포괄 행을 삭제하고 각각의 구체 과제로 치환한다. 모두 현행 유지면 BE-17을 삭제하고 결정 기록만 완료 이관한다.
 
 - [ ] **Step 4: 커밋 (루트 repo)**
 
 ```bash
 git -C C:/it add TASK.md TASK_DONE.md docs/superpowers/reports/2026-07-be03-projection-survey.md
-git -C C:/it commit -m "docs: BE-17 프로젝션 보류 정책 5건 결정 확정 반영"
+git -C C:/it commit -m "docs: BE-17 미결 프로젝션 정책 4건 결정 확정 반영"
 ```
 
 ---
 
 ## 완료 기준 (스펙 §검증 게이트)
 
-1. `./gradlew test --rerun-tasks` + `./gradlew integrationTest` + `./gradlew jacocoTestCoverageVerification` 전부 통과 (Task 11).
-2. TASK.md 백엔드 섹션 잔존 항목: 🏛️ External 2건(BE-03·BE-18) + BE-17 결정 결과에 따른 재등록분만.
+1. `./gradlew clean check --rerun-tasks` + `./gradlew integrationTest` 전부 통과. `check`에 포함된 단위 테스트·JaCoCo·Spotless 게이트도 모두 통과 (Task 11).
+2. TASK.md 백엔드 섹션 잔존 항목: 🏛️ External 2건(BE-03·BE-18) + BE-19~22 + BE-17 결정 결과로 생성된 BE-23 이후 구체 과제.
 3. ERR-08 행 제거, 완료분 TASK_DONE.md 이관 완료.
 4. `it_backend` main에 Wave 1~3 병합, `it_database`에 인덱스 마이그레이션 커밋, 루트에 문서 커밋.

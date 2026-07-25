@@ -15,6 +15,14 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-07-25 TASK.md 완료 항목 정리 이관
+
+> `TASK.md` Clean Code 부채 §에서 `✅ Done` 항목을 활성 목록에서 제거하고 정리했습니다. CQ-02·03·04·05·07·08·10·11·12·13·14는 아래 2026-07-21 Clean Code Wave 0·1·2 절에 이미 완료 근거가 등재되어 있어(중복 잔존분) `TASK.md`에서만 제거했습니다. 아직 미이관 상태였던 `CQ-09`만 아래에 완료 근거를 신규 등재합니다.
+
+| 상태 | ID | 과제 | 완료 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | CQ-09 | 파일 업로드 서비스 추출 후 `FileService`의 dead code 제거 | 2026-07-19 확인: 업로드 경로 생성·디렉터리 준비·UUID 채번은 `FileUploadUnitService`로 이동했고 `FileService`의 잔여 private 메서드·필드·import는 모두 사용 중이라 제거 대상 dead code가 없음을 확인했다. 추출 커밋 `d25dc87`, 후속 정리 `bb5b64c`(2026-07-25 두 커밋 모두 it_backend 저장소에 존재 재확인). |
+
 ### ✅ 2026-07-21 Clean Code Wave 2 (구조·타입 개선)
 
 > Clean Code 부채 이행계획(`docs/superpowers/plans/2026-07-21-clean-code-wave2-structure-types.md`)의 Wave 2를 완료했습니다. Wave 0에서 구축한 안전망(PDF 구조 스냅샷·`test:e2e:core`·커버리지 게이트) 위에서 모두 기능 불변으로 수행했습니다. 분해 전 검증 기준은 `docs/superpowers/notes/2026-07-21-wave2-qa-checklist.md`에 고정했습니다.
