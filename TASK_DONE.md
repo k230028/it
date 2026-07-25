@@ -1,6 +1,6 @@
 # ✅ IT Portal 완료·종료 내역 (Archive)
 
-> 🗓️ **기준일:** 2026-07-21
+> 🗓️ **기준일:** 2026-07-25
 > 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️) 항목을 보관합니다.
 
 ### 🔑 범례 (Legend)
@@ -14,6 +14,25 @@
 ---
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
+
+### ✅ 2026-07-25 백엔드 2026-07-21 범위 잔여과제 정리 (Wave 1~3)
+
+> 2026-07-21 계획 범위의 `TASK.md` 백엔드 과제 중 즉시 구현 가능한 항목과 ERR-08을 해소하고, BE-02·BE-06을 상시 규칙으로 `it_backend/CLAUDE.md`에 이관했습니다. 이후 추가된 BE-19~22는 별도 과제로 유지합니다. 설계: `docs/superpowers/specs/2026-07-21-backend-backlog-cleanup-design.md`, 계획: `docs/superpowers/plans/2026-07-21-backend-backlog-cleanup.md`.
+
+| 상태 | Wave | 과제 | 조치 |
+| ---- | ---- | ---- | ---- |
+| ✅ Done | 1 | BE-15 `Bplana` 복합키 길이 정합화 | ORM length를 32→30으로 변경해 물리 DDL·`Bplanm`과 일치시키고 `BplanaColumnContractTest`로 계약을 고정했다. |
+| ✅ Done | 1 | BE-14 BPLANA 역방향 조회 인덱스 | `V20260725_001__AddBplanaReqDocNoIndex.sql`로 `(REQ_DOC_NO, DEL_YN, ABUS_MNG_NO)` 인덱스를 멱등 이력화했다. 로컬 63행에서 `INDEX RANGE SCAN`, SELECT Cost 3을 확인했고 `BplanaReqDocNoLookupIt`로 실제 Oracle 조회를 검증했다. DB 커밋 `cbd81a1`. |
+| ✅ Done | 1 | BE-16 공통코드 업로드 배치화 | 선조회 1회(`findAllByCIdInAndDelYn`) + 메모리 upsert + `saveAll`로 전환하고 요청 내 중복 키의 마지막 값 반영 의미를 보존했다. |
+| ✅ Done | 2 | BE-13 기준 계획 탐색 N+1·동률 제거 | `findBaselineReqDocNos` 조인 단건 조회와 `IT_PTL_ASCT_ID DESC` tie-break를 적용했다. 로컬 BASCTM 3행에서 Cost 5, BPLANM full scan + 기존 `IX_TPRMPP_BASCTM_01` range scan을 확인해 추가 인덱스는 만들지 않았고 `CouncilBaselineLookupIt`로 계약을 고정했다. |
+| ✅ Done | 2 | ERR-08 스냅샷 손상·빈 결과 구분 | 심의 대상 경로의 JSON 파싱 실패는 문서번호를 포함한 `DataCorruptionException`으로 HTTP 500을 반환하고, 결과서 사업명은 WARN+관리번호 폴백을 유지했으며 기준 계획 조회의 예외 스킵을 제거했다. |
+| ✅ Done | 2 | BE-12 사업 일괄 상세 N+1 제거 | 사업·결재선·조직·코드·품목·예산·IOE 명칭을 영역별 IN 배치 조회 후 메모리 조립하도록 전환했다. 입력 순서·중복·실패 ID 계약과 단건/일괄 상세 parity, IOE 공통코드 조회 횟수, 중복 활성 사업 데이터 손상 계약을 `ProjectServiceTest`·`ProjectServiceCoverageTest`로 검증했다. |
+| ✅ Done | 3 | BE-02 통합 테스트 하네스 규칙화 | 미보유 Oracle IT 3건(BPLANA 역방향 조회·기준 계획·사업별 평가의견)을 보충하고 “신규 QueryDSL·JPQL·네이티브 조회는 실제 Oracle IT 필수” 규칙을 `it_backend/CLAUDE.md` §9로 이관했다. |
+| ✅ Done | 3 | BE-06 Javadoc 정책 이관 | “신규 미분류 경고 불허 + 기능 변경 시 의미 있는 공개 계약부터 점진 정리” 정책을 `it_backend/CLAUDE.md` §9로 이관하고 수치형 잔여 과제 추적을 종료했다. |
+
+- 재분류: BE-03·BE-18은 재개 조건을 명시해 🏛️ External로 전환했다. BE-17의 완료된 BESTTM PK 정합화는 결정 대상에서 제외하고, 나머지 네 정책은 사용자 결정 후 별도 기록한다. BE-19~22는 이 계획과 무관한 별도 과제로 유지한다.
+- 최종 코드: `it_backend` 병합 커밋 `31641eb`; 인덱스 이력은 `it_database` 커밋 `cbd81a1`.
+- 최종 검증: `./gradlew clean check --rerun-tasks` BUILD SUCCESSFUL(8분 27초, 단위 테스트 2,205건·실패 0·오류 0·skip 1, JaCoCo·Spotless 통과), 이어서 `./gradlew integrationTest --rerun-tasks` BUILD SUCCESSFUL(57건·실패 0·오류 0·skip 0).
 
 ### ✅ 2026-07-25 TASK.md 완료 항목 정리 이관
 
