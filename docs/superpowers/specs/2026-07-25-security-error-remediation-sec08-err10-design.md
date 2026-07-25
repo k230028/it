@@ -119,31 +119,32 @@ Phase 내·간 항목은 파일이 서로 겹치지 않아 병렬 진행이 가�
 
 ### 4.1 ERR-08 (+BE-13) · 평가 스냅샷 손상과 정상 빈 결과를 구분, 기준 계획 결정적 조회
 
-기준선: `2026-07-21-backend-backlog-cleanup-design.md` §4.1(선승인). 대상 파일: `domain/council/service/PlanEvaluationService.java`(539줄, **로거 없음** — 모든 폴백이 완전 침묵), DTO `domain/council/dto/CouncilDto.java`, 소비자 `domain/council/controller/CouncilController.java`(5개 엔드포인트: 899/921/943/979/1004).
+> **2026-07-25 현행 재확인(중요 정정)**: 최초 조사가 stale한 옛 코드 상태를 보고했다. 실제 코드를 직접 읽어 확인한 결과, ERR-08은 **대부분 이미 조치되어 있고 BE-13은 완료 상태**다. 아래 현황은 실제 현행 기준이며, 남은 작업은 "손상 스냅샷 시 화면 전체 500" → "부분 데이터 + 불완전 플래그(우아한 저하)"로의 **설계 개선**이다(사용자 결정).
 
-**현황/격차 (확인됨)**
+대상 파일: `domain/council/service/PlanEvaluationService.java`(`@Slf4j` **있음**, line 40), DTO `domain/council/dto/CouncilDto.java`, 소비자 `domain/council/controller/CouncilController.java`.
 
-| 경로 | 위치 | 현재 폴백 |
+**현황/격차 (실제 현행 확인)**
+
+| 경로 | 위치 | 현재 동작 |
 | --- | --- | --- |
-| 사업 목록 파싱 | `parseSnapshotBusinesses` 141-164 (catch 159-162) | 빈 목록 |
-| 전산업무비 건수 | `countCostDetails` 167-178 (catch 174-177) | 0 |
-| 사업명 해석 | `resolveBusinessNames` 385-411 (catch 406-409) | 빈 맵 → 호출부 관리번호 폴백(line 423) |
-| 기준 계획 탐색 | `findBaselinePlan` 199-223 | 완료협의회 순회하며 `planService.getPlan` 호출, **모든 예외 skip**(catch 217-220), tie-break 없음 |
+| 사업 목록 파싱 | `parseSnapshotBusinesses` 151-174 | 빈/null=빈 목록(정상). 파싱 실패 → `log.error` + **`DataCorruptionException` throw**(169-171, 광역 `catch(Exception)`) → 엔드포인트 500 |
+| 전산업무비 건수 | `countCostDetails` 184-195 | 빈/null=0(정상). 파싱 실패 → `log.error` + **`DataCorruptionException` throw**(191-193, 광역 `catch(Exception)`) |
+| 사업명 해석 | `resolveBusinessNames` 398-423 | `getPlan`은 try 밖(403, 실패 전파). 파싱 실패 → `log.warn` + 빈 맵 → 호출부 관리번호 폴백(419-420) |
+| 기준 계획 탐색 | `findBaselinePlan` 219-235 | **이미 결정적 조인 쿼리** `councilRepository.findBaselineReqDocNos("02","13",bseYy,"신규",...,PageRequest.of(0,1))`(`CouncilRepository.java:76`). 0행=null, `getPlan` 실패 전파. **N+1·catch-all 없음 → BE-13 완료** |
 
-- 구분 근거(seam): `PlanService.getPlan`(`domain/budget/plan/service/PlanService.java:179-188`)은 미존재 시 `ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 계획입니다: "+reqDocNo)`를 던진다. "미존재"는 404로 식별 가능하고 DB·권한·시스템 예외는 다른 타입 → 전파해야 한다.
-- DTO(`PlanTargetsResponse` 714-724, `PlanResultSummaryResponse` 707-711)에 `status`/`warning`/`incomplete` 필드가 없어 손상 스냅샷이 정상 빈 계획과 API 경계에서 구분 불가.
-- `parseSnapshotBusinesses`와 `resolveBusinessNames`가 같은 `redtConeInf` JSON을 공용 `SNAPSHOT_MAPPER`(line 378)로 **중복 파싱**.
+- **BE-13 완료**: `findBaselineReqDocNos`(JPQL, `ORDER BY c.fstEnrDtm DESC, c.itPtlAsctId DESC` + Pageable 단건)와 통합 테스트(`CouncilBaselineLookupIt`)가 이미 존재. 본 항목에서는 **검증만** 수행하고 완료 이관한다.
+- 남은 격차: (a) `parseSnapshotBusinesses`·`countCostDetails`의 파싱 실패가 화면 전체를 500으로 만든다(부분 데이터 미제공). (b) 두 곳이 광역 `catch(Exception)`이라 파싱 아닌 예외까지 "손상"으로 오분류할 여지(try 본문이 순수 파싱이라 실현 위험은 낮으나 계약상 부정확). (c) 응답 DTO(`PlanTargetsResponse`, `PlanResultSummaryResponse`)에 불완전 신호 필드가 없어 부분 데이터를 표현할 수 없다. (d) `parseSnapshotBusinesses`와 `resolveBusinessNames`가 같은 `redtConeInf`를 공용 `SNAPSHOT_MAPPER`로 중복 파싱.
 
-**목표**: 미존재만 정상 빈 결과로 폴백하고, 파싱 실패는 문맥 로그 + 응답의 명시적 불완전 상태로 노출하며, DB·권한 예외는 전파한다. 기준 계획 탐색의 N+1·비결정성을 제거한다(BE-13 종료).
+**목표(우아한 저하)**: 파싱 실패 시 화면 전체를 실패시키지 않고, **파싱된 부분은 반환**하되 응답에 **명시적 불완전 플래그**로 표시한다. 로그는 유지, DB·권한 예외는 계속 전파. BE-13은 검증 후 완료 이관한다.
 
 **조치 설계**
 
-1. `@Slf4j` 로거 추가.
-2. **기준 계획 탐색 재작성(BE-13 동반)**: 순회+`getPlan` N+1을 **단일 협의회↔계획 조인 쿼리**로 대체. 필터 `bseYy` + `itPtlPlnTpC='신규'` + 완료 계획협의회(`dbrTc='02'`, `prgStsTc='13'`, `delYn='N'`), 정렬 `ORDER BY FST_ENR_DTM DESC, IT_PTL_ASCT_ID DESC FETCH FIRST 1 ROW ONLY`(결정적 tie-break). 결과 0행=정상 미존재, DB 오류=전파(catch 없음). 쿼리는 기존 Row 프로젝션/리포지토리 패턴을 따라 배치(정확한 조인 컬럼은 계획 단계에서 확정).
-3. **JSON 파싱 3곳**: 빈/null 스냅샷=정상 빈 결과(무경고). **파싱 실패(Jackson 예외)만** 좁게 catch → `log.warn`(문맥: `asctId`, `reqDocNo`, 원인) + 응답 불완전 표시. `Exception` 광역 catch 금지 — DB·권한 예외는 전파. 중복 스냅샷 파싱을 단일 헬퍼로 통합.
-4. **불완전 신호 필드**: `PlanTargetsResponse`·`PlanResultSummaryResponse`에 명시적 불완전 표시(예: `boolean snapshotIncomplete` 또는 `List<String> warnings`) 추가. JSON 신규 필드라 하위 호환. CouncilController가 그대로 통과.
-5. **프론트 최소 표면화**: 협의회 결과 화면이 불완전 플래그일 때 배너("일부 스냅샷을 해석하지 못했습니다")를 노출(기능적 완결성). 프론트 warnings 패턴과 정합.
-6. **테스트 갱신**: 현재 침묵을 강제하는 `PlanEvaluationServiceTest` 3건 갱신 — `getPlanTargets_invalidSnapshotReturnsEmptyTargets`(246-267, 손상→불완전 플래그 + 부분데이터), `getPlanTargets_adjustmentUsesLatestMatchingBaseline`(188-244, `getPlan` throw stub → 단일 쿼리 기반으로 재작성, DB 예외는 전파 검증), `buildResultSummary_escapesHtmlAndFallsBackToBusinessId`(490-511).
+1. **파싱 실패 처리 전환(핵심)**: `parseSnapshotBusinesses`·`countCostDetails`의 광역 `catch(Exception)` + `DataCorruptionException` throw를 **`catch(JsonProcessingException)`(정확한 클래스는 import 기준)** → `log.warn`(문맥 `reqDocNo`) + **부분 결과 반환 + 불완전 신호 세팅**으로 바꾼다. 파싱 아닌 예외는 전파(광역 catch 제거로 자동). `resolveBusinessNames`의 warn+관리번호 폴백도 동일 불완전 신호에 편입.
+2. **불완전 신호 필드**: `PlanTargetsResponse`·`PlanResultSummaryResponse`(record)에 `boolean snapshotIncomplete` 컴포넌트 추가(JSON 신규 필드라 하위 호환). `CouncilController`는 그대로 통과.
+3. **중복 파싱 통합**: 두 곳의 스냅샷 파싱을 단일 헬퍼(`ParsedSnapshot`/`parseSnapshot`)로 통합.
+4. **BE-13 검증**: `findBaselineReqDocNos`의 결정적 정렬·전파 계약을 기존 단위·`CouncilBaselineLookupIt`로 회귀 확인(신규 구현 없음). 완료 이관 근거로 기록.
+5. **프론트 최소 표면화**: 협의회 결과 화면이 `snapshotIncomplete=true`일 때 배너("일부 스냅샷을 해석하지 못했습니다") 노출.
+6. **테스트 갱신**: `PlanEvaluationServiceTest`에서 파싱 실패를 검증하는 테스트를 "`DataCorruptionException` 기대"에서 "`snapshotIncomplete=true` + 부분 데이터" 기대로 전환(현재 코드가 이미 throw하므로 RED가 뒤집힌다는 점을 실행자에게 명시). DB 예외 전파 테스트는 유지.
 
 **영향 파일**: `domain/council/service/PlanEvaluationService.java`, `domain/council/dto/CouncilDto.java`, 기준계획 조인 쿼리 리포지토리, `domain/council/controller/CouncilController.java`(변경 최소), 협의회 결과 화면 컴포넌트(배너), 관련 테스트.
 
@@ -226,13 +227,13 @@ Phase 내·간 항목은 파일이 서로 겹치지 않아 병렬 진행이 가�
 
 ---
 
-## 7. 미결 항목 (구현 계획에서 확정)
+## 7. 미결 항목 (계획 작성 중 확정 완료)
 
-1. **SEC-08 탐지 read 잠금 모드 확정**: `refreshAccessToken`의 토큰 로드가 `PESSIMISTIC_WRITE`인지 확인(2-TX 필요성 확정). 잠금 없으면 단순 `REQUIRES_NEW`로 축약 가능하나 2-TX가 두 경우를 포섭.
-2. **ERR-08 기준계획 조인 컬럼**: 협의회↔계획 연결 키(reqDocNo/BG_NO 등)와 완료 상태 코드의 정확한 조인·필터 컬럼을 로컬 스키마로 확정.
-3. **ERR-08 불완전 신호 형태**: `boolean snapshotIncomplete` vs `List<String> warnings` 중 프론트 표면화에 맞는 형태 확정.
-4. **ERR-08 조인 인덱스 여부**: EXPLAIN 결과에 따라 조건부 Flyway 인덱스 추가/생략.
-5. **ERR-10 Tiptap 실패 상태 명칭·칩 표시**: `ResolvedValue` 상태 enum 확장값과 칩 UI 표기 확정.
+1. **SEC-08 탐지 read 잠금 모드** — **확정**: `RefreshTokenRepository.findByEcyRnwPubTokCone`/`findByFamNmAndAvlYn`가 `@Lock(PESSIMISTIC_WRITE)`. 2-TX 분리가 필수(단순 `REQUIRES_NEW` 삭제는 self-deadlock).
+2. **ERR-08 기준계획 조인** — **확정(이미 구현)**: `CouncilRepository.findBaselineReqDocNos`(JPQL, `Basctm`↔계획, `ORDER BY c.fstEnrDtm DESC, c.itPtlAsctId DESC` + Pageable). BE-13 완료 → 검증만.
+3. **ERR-08 불완전 신호 형태** — **확정**: `boolean snapshotIncomplete`.
+4. **ERR-08 조인 인덱스** — **불필요(BE-13 완료)**: 기존 쿼리·인덱스로 충족. 신규 Flyway 없음.
+5. **ERR-10 Tiptap 실패 상태 명칭** — **확정**: `'ERROR'` 상태 도입. 단, `resolveTokens`(4개 읽기전용 화면이 STALE 계약 의존)는 불변으로 두고 에디터 단건 경로(`resolveInsertedToken`)에서만 STALE→ERROR 승격.
 
 ---
 
