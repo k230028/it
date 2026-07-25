@@ -83,7 +83,7 @@ it_frontend/
     pages/info/cost/form.vue
     components/cost/TerminalFormDialog.vue
     composables/useTiptapVariables.ts
-    components/common/tiptap/
+    components/
       VariableNodeView.vue
       TiptapEditor.vue
     pages/info/projects/report.vue
@@ -203,7 +203,7 @@ git commit -m "refactor: 통화 소비 화면의 오류·재시도 상태 통합
 **Files**
 
 - Modify: `app/composables/useTiptapVariables.ts`
-- Modify: `app/components/common/tiptap/VariableNodeView.vue`
+- Modify: `app/components/VariableNodeView.vue`
 - Modify: matching unit tests
 
 **RED**
@@ -224,7 +224,7 @@ git commit -m "refactor: 통화 소비 화면의 오류·재시도 상태 통합
 
 **Files**
 
-- Modify: `app/components/common/tiptap/TiptapEditor.vue`
+- Modify: `app/components/TiptapEditor.vue`
 - Create/Modify: `tests/unit/components/TiptapEditor.test.ts`
 - Create: `tests/e2e/error-recovery-tiptap.spec.ts`
 
@@ -247,8 +247,8 @@ npm test -- --run tests/unit/composables/useTiptapVariables.test.ts `
                   tests/unit/components/TiptapEditor.test.ts
 npx playwright test tests/e2e/error-recovery-tiptap.spec.ts
 git add app/composables/useTiptapVariables.ts `
-        app/components/common/tiptap/VariableNodeView.vue `
-        app/components/common/tiptap/TiptapEditor.vue `
+        app/components/VariableNodeView.vue `
+        app/components/TiptapEditor.vue `
         tests/unit/composables/useTiptapVariables.test.ts `
         tests/unit/components/VariableNodeView.test.ts `
         tests/unit/components/TiptapEditor.test.ts `
