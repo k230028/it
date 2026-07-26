@@ -230,6 +230,7 @@
 | ✅ Done | 🟡 Medium | LOG-02 라이브 피드 행 클릭에서 로그번호 포함 상세 이동 연결 | `it_frontend` `6f7d736`; `RealtimeDetailDrawer.vue`, `RealtimeFeedTable.vue`, `admin/logs/[logKey].vue`, E2E. 검증: `npm run test:e2e -- tests/e2e/admin/realtime-logs.spec.ts` |
 | ✅ Done | 🟢 Low | LOG-03 SSE/WebSocket 전환 운영 임계치·feature flag 설계 문서화 | 루트 `3d137d6`; `docs/superpowers/notes/2026-07-07-realtime-log-explain.md`. 실제 push 구현은 별도 잔여로 유지 |
 | ✅ Done | 🟢 Low | LOG-04 로그 보존 정책·아카이브 분리 View 운영 방향 문서화 | 루트 `3d137d6`; 신규 테이블 없이 운영 정책 노트 작성. 실제 보존기간 시행은 별도 잔여로 유지 |
+| ✅ Done | 🟢 Low | LOG-05 실시간 로그 즐겨찾기·필터 브라우저 저장 | `it_frontend` `c1f14a9`; key `it-portal:realtime-log-preferences:v1`, schema `{ version: 1; favoriteLogKeys: string[]; filter: 'all' \| 'favorites' }`. 동일 브라우저 프로필의 UI 선호만 저장하며 서버·계정 간 동기화하지 않고 사용자·권한·인증정보·로그 행은 저장하지 않음. 검증: 단위 10/10, E2E 5/5, 전체 1,801, `npm run check` |
 | ✅ Done | 🟡 Medium | LOG-06 `V_ITPAPP_LOG_FEED` 실행계획/인덱스 현황 기록 | 루트 `3d137d6`; 기존 `V20260629_005`와 `IX_CCODEL_CHG_DTM` 유효성 확인, 신규 DDL 없음 |
 | ✅ Done | 🟡 Medium | LOG-07 실시간 로그 Playwright E2E 실행 | `it_frontend` `6f7d736`; `tests/e2e/admin/realtime-logs.spec.ts`. 검증: `npm run test:e2e -- tests/e2e/admin/realtime-logs.spec.ts` |
 | ✅ Done | 🟡 Medium | BRD-01 게시판 본문 4000자 정책 검증 추가 | `it_backend` `61d26d4`, `it_frontend` `487bcb1`; `BoardPostDto`, board form/edit UI, controller tests. 검증: `./gradlew test --tests "*Board*" --no-daemon --max-workers=1`, `npm run test:e2e -- tests/e2e/board.spec.ts` |
