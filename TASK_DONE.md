@@ -25,6 +25,7 @@
 | ✅ Done | ERR-10 | 프론트 핵심 업무의 실패 폴백을 사용자 오류 상태로 승격 | 4개 레인 모두 "조용히 삼키기" 대신 사용자 오류 상태로 표면화: (C1) 통화 조회 single-flight + last-known-good 상태머신(`useProjectCurrencies`, eager 옵션 하위호환), (C2) Tiptap 단건 해석 ERROR 승격·재시도와 인스턴스 스코프 시퀀스 가드(`useTiptapVariables`/`TiptapEditor.vue`, 기존 배치 STALE 계약 보존), (C3) 최신 revision PDF만 미리보기·상신 + Blob URL 누수 방지 순수 상태머신(`utils/reportPdfState.ts`/`projects/report.vue`), (C4) 협의회 상태 동기화 실패를 auth/permanent/transient로 분류·재시도 배너·epoch 가드(`utils/statusSyncError.ts`/`ResultReviewProgress.vue`) + 백엔드 `syncReviewStatus` 관리자 권한 강제(C4-1). |
 
 - 최종 검증: it_frontend `npm run check`(타입·ESLint 0 errors)·`npm test`(135파일 1746 통과)·신규 e2e 5종(통화·Tiptap·PDF·스냅샷·협의회 sync) 통과. it_backend `./gradlew test`·`spotlessCheck` BUILD SUCCESSFUL. 태스크별 2단계 리뷰(스펙 준수·코드 품질) + 최종 홀리스틱 프론트 리뷰 READY-TO-MERGE(교차 레인 일관성·하위호환·회귀 없음 확인).
+- 최종 게이트 재검증(2026-07-26): it_frontend `npm run typecheck`·`npm run lint`·`npm test -- --run`·지정 Playwright 4개 spec을 모두 종료 코드 0으로 통과했다(Playwright 9건 통과). 기준일자 필수화 뒤 누락된 `TerminalFormDialog` 정상 통화 픽스처에는 유효 `cdvaDtl`을 보강해 실제 응답 계약과 맞췄다(`4e91e9c`). lint의 `budget/status.vue` `:footerClass` 3건은 FE-07 소유 경고로 제품 코드 변경 없이 보류했다. it_backend `./gradlew test`·`./gradlew spotlessCheck`도 각각 종료 코드 0으로 통과했다.
 - 잔여 후속(비차단): `TerminalFormDialog` eager:false 다이얼로그가 `cost`를 초기 로드 후 다시 null로 만들 경우의 상태 리셋 방지(key-stable 래퍼/문서화), `ResultReviewProgress`의 `asctId`를 반응형으로 바꾸는 미래 caller에서 자동 트리거 지연 가능성 문서화, 분당 1회 toast 스로틀 공용 헬퍼 추출(DRY) — 별도 과제로 추적.
 
 ### ✅ 2026-07-25 보안 트랜잭션 무결성 (SEC-08, SEC-09)
