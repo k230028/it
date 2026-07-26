@@ -8,6 +8,13 @@
 
 **Tech Stack:** Nuxt 4, Vue 3 Composition API, TypeScript 6, Pinia 3, PrimeVue 4, Tiptap 3, Vitest 4, Vue Test Utils, Playwright 1.58, Spring Boot 4.1, Java 25, Spring Data JPA, Oracle, Flyway
 
+## 실행 종료 기록 (2026-07-26)
+
+- 구현과 검증을 완료한 범위는 `TASK_DONE.md`의 완료 이력에 따라 통합한다.
+- `REV-01`, `REV-04`, `TIP-02`, `TIP-03`, `TIP-05`, `TIP-07`, `TIP-08`, `TIP-09`는 사용자 결정으로 후속 범위에서 폐기했다.
+- 폐기 항목은 완료로 판정하지 않는다. 알려진 정책 불일치·접근성 제한·제품 결함과 expected-failure 증거는 분석 문서와 테스트에 보존한다.
+- 아래 체크박스와 원래 완료 정의는 계획 수립 당시 실행 계약의 이력이며, 이번 종료 범위는 이 절과 `TASK_DONE.md`가 우선한다.
+
 ## Global Constraints
 
 - 모든 신규 JavaDoc/TSDoc/인라인 주석은 한글로 작성한다.
@@ -284,18 +291,18 @@ git add docs/03-analysis/project-list-performance-baseline.md
 git commit -m "docs: 사업 카드 목록 성능 기준선 기록 (FE-04)"
 ```
 
-### 단계 1. 핵심 실패 상태 승격
+### Task 1: ERR-10 핵심 실패 상태 승격
 
 대상: ERR-10
 
-상세 구현은 기존 계획 `docs/superpowers/plans/2026-07-25-security-error-phase-c-frontend-states.md`를 단일 실행 기준으로 사용한다.
+상세 구현은 완료 계획 `docs/superpowers/plans/done/2026-07-25-security-error-phase-c-frontend-states.md`를 단일 실행 기준으로 사용한다.
 
 - [ ] **Step 1: `superpowers:subagent-driven-development` 또는 `superpowers:executing-plans`로 ERR-10 상세 계획의 C1~C4를 실행한다.**
 - [ ] **Step 2: 통화, Tiptap, PDF, 결과 상태 동기화의 상세 계획 테스트 명령을 모두 실행한다.**
 - [ ] **Step 3: 상세 계획의 네 lane 커밋과 최종 검증 결과를 `TASK_DONE.md`에 기록한다.**
 - [ ] **Step 4: 실패가 KRW·빈 목록·STALE·이전 PDF로 정상처럼 보이는 잔여 폴백이 없음을 `rg`와 E2E로 확인한다.**
 
-### 단계 2. 비용 코드 정합성
+### Task 2: FE-10·FE-08·FE-09 비용 코드 정합성
 
 #### 작업 2-1. 해당없음 상수 도입
 
@@ -489,6 +496,8 @@ git commit -m "fix: 단말 Excel 지급주기 기본값 보정 (FE-09)"
 
 ### 단계 3. 공통 화면 안정화
 
+#### Task 3: TIP-06·FE-07 화면 경고 제거
+
 #### 작업 3-1. Tiptap 확장 중복 제거
 
 대상: TIP-06
@@ -583,7 +592,7 @@ git add app/pages/budget/status.vue tests/unit/pages/budgetStatusFooterTotals.te
 git commit -m "style: 예산 현황 footer 속성명 정리 (FE-07)"
 ```
 
-#### 작업 3-3. 계약방법 오류 행 식별
+#### Task 4: FE-11 계약방법 오류 행 식별
 
 대상: FE-11
 
@@ -644,7 +653,7 @@ git commit -m "fix: 계약방법 누락 행 안내 강화 (FE-11)"
 
 ### 단계 4. 운영 데이터와 목록 성능
 
-#### 작업 4-1. 정보 홈 공지·일정 API 연결
+#### Task 5: FE-01 정보 홈 공지·일정 API 연결
 
 대상: FE-01
 
@@ -707,7 +716,7 @@ git add app/composables/useInfoHomeFeed.ts app/pages/info/index.vue tests/unit/c
 git commit -m "feat: 정보 홈 공지와 협의회 일정 운영 데이터 연결 (FE-01)"
 ```
 
-#### 작업 4-2. 카드 목록 “더보기” 도입
+#### Task 6: FE-04 카드 목록 “더보기” 도입
 
 대상: FE-04
 
@@ -772,7 +781,7 @@ git add app/components/common/ProjectListContainer.vue app/composables/useProgre
 git commit -m "perf: 사업 카드 목록 점진 노출 도입 (FE-04)"
 ```
 
-### 단계 5. 게시판 첨부파일
+### Task 7: BRD-11 게시판 첨부파일
 
 대상: BRD-11
 
@@ -870,7 +879,7 @@ git commit -m "feat: 게시판 첨부파일 작성·조회 UI 연결 (BRD-11)"
 
 ### 단계 6. 검토 워크플로
 
-#### 작업 6-1. 작성자 팀명 실제 응답
+#### Task 8: REV-02 작성자 팀명 실제 응답
 
 대상: REV-02
 
@@ -940,7 +949,7 @@ git add app/types/review.ts app/composables/useReviewCommentApi.ts tests/unit/co
 git commit -m "feat: 검토의견 작성자 팀명 표시 (REV-02)"
 ```
 
-#### 작업 6-2. 검토 세션 서버 영속화
+#### Task 9: REV-01 검토 세션 서버 영속화
 
 대상: REV-01
 
@@ -956,7 +965,7 @@ git commit -m "feat: 검토의견 작성자 팀명 표시 (REV-02)"
 
 - [ ] **Step 4: 전용 계획 완료 전에는 메모리 전용 버튼을 서버 영속화처럼 표시하지 않고 REV-01을 `BLOCKED-BY-CONTRACT`로 유지한다.**
 
-#### 작업 6-3. 검토의견 첨부 연결
+#### Task 10: REV-03 검토의견 첨부 연결
 
 대상: REV-03
 
@@ -1041,7 +1050,7 @@ git add app/composables/useFiles.ts app/composables/useReviewCommentApi.ts app/s
 git commit -m "feat: 검토의견 첨부파일 작성·조회 UI 연결 (REV-03)"
 ```
 
-### 단계 7. Tiptap 운영 데이터와 E2E
+### Task 11: TIP-03·TIP-02·TIP-05 Tiptap 운영 데이터와 E2E
 
 #### 작업 7-1. 변수 카테고리 운영 데이터 검증
 
@@ -1196,7 +1205,7 @@ if (Test-Path 'docs/03-analysis/tiptap-accessibility-findings.md') { git add doc
 git commit -m "test: Tiptap 접근성·반응형 수동 검증 기록 (TIP-05)"
 ```
 
-### 단계 8. 실시간 로그 개인화
+### Task 12: LOG-05 실시간 로그 개인화
 
 대상: LOG-05
 
@@ -1260,7 +1269,7 @@ git add app/composables/useRealtimeLogPreferences.ts app/components/admin/realti
 git commit -m "feat: 실시간 로그 즐겨찾기 필터 저장 (LOG-05)"
 ```
 
-### 단계 9. 공통화와 디자인 정책
+### Task 13: FE-02·FE-05·FE-06 공통화와 디자인 정책
 
 #### 작업 9-1. 의미가 같은 포맷터만 공통화
 
@@ -1385,7 +1394,7 @@ git add app/assets/css/tags.css app/components/common/ProjectListCard.vue tests/
 git commit -m "style: 사업 카드 상태 색상 정책 통합 (FE-06)"
 ```
 
-### 단계 10. Prettier 일괄 정리
+### Task 14: FE-03 Prettier 일괄 정리
 
 대상: FE-03
 

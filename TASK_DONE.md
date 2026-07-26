@@ -1,7 +1,7 @@
 # ✅ IT Portal 완료·종료 내역 (Archive)
 
-> 🗓️ **기준일:** 2026-07-25
-> 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️) 항목을 보관합니다.
+> 🗓️ **기준일:** 2026-07-26
+> 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️)·폐기(⛔) 항목을 보관합니다.
 
 ### 🔑 범례 (Legend)
 
@@ -10,14 +10,71 @@
 | ✅ Done | 완료 |
 | ✔️ Resolved | 해소(거짓양성 등) |
 | ☑️ Accepted | 감내(업스트림 미해결) |
+| ⛔ Discarded | 사용자 범위 결정으로 폐기 |
 
 ---
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ⛔ 2026-07-26 프론트엔드 잔여과제 범위 종료
+
+> 사용자 결정에 따라 아래 항목은 구현 완료로 간주하지 않고 후속 범위에서 폐기했다. 알려진 제한과 검증 증거는 추후 의사결정에 참고할 수 있도록 보존한다.
+
+| 상태 | ID | 폐기 범위 | 보존 근거 |
+| :--: | :--: | --- | --- |
+| ⛔ Discarded | REV-01 | 사전협의 검토자·세션 상태 서버 영속화와 실제 인증 완료 흐름 | 계약·메타용어 미승인 상태에서 구현하지 않는다는 계획 게이트를 준수했으며 메모리 전용 흐름은 현행 유지 |
+| ⛔ Discarded | REV-04 | 검토의견 첨부 배치 조회의 URL 길이·Oracle `IN` 1,000개 상한 보강 | 현재 배치 계약은 유지하며 대규모 부모 요청 최적화는 수행하지 않음 |
+| ⛔ Discarded | TIP-02 | Tiptap 사업 변수·실DB·HWPX 전체 인수조건 완성 | 자동화 subset과 expected-failure 증거는 `docs/03-analysis/tiptap-operational-validation.md`에 보존 |
+| ⛔ Discarded | TIP-03 | `CAP_BUDGET`의 `IOE_CPIT` 포함 정책 결정과 런타임 정렬 | 2026년 `IOE_CPIT` 0건으로 합계는 일치하지만 3종·4종 정책 불일치는 미해결 상태로 보존 |
+| ⛔ Discarded | TIP-05 | 변수 칩·다크모드·키보드·ARIA·모바일 실화면 재검증 | 브라우저 미가용으로 미수행한 검증 범위와 코드 점검 결과는 `docs/03-analysis/tiptap-accessibility-findings.md`에 보존 |
+| ⛔ Discarded | TIP-07 | 변수 NodeView `data-token` DOM 계약과 비동기 해석 즉시 반영 | 알려진 결함과 expected-failure 테스트는 보존하되 제품 수정은 수행하지 않음 |
+| ⛔ Discarded | TIP-08 | 변수 칩 다크 대비와 Suggestion 팝업 접근성·모바일 경계 | 측정된 대비·ARIA·viewport clamp 제한은 보존하되 제품 수정은 수행하지 않음 |
+| ⛔ Discarded | TIP-09 | HWPX 내보내기 전 최신 변수값 재해석 | stale `data-snapshot` 출력 결함과 expected-failure 테스트는 보존하되 제품 수정은 수행하지 않음 |
+
+### ✅ 2026-07-26 프론트엔드 잔여과제 통합 조치 완료 이관
+
+> 기존 FE-01 완료 기록은 KPI·진행현황 API 전환 범위다. 아래 FE-01은 그 후속인 공지·협의회 일정 운영 피드 범위를 별도로 기록한다.
+
+| 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✅ Done | REV-02 | 검토의견 응답의 작성자 사번·이름·현재 팀명을 배치 프로젝션으로 조회하고 프론트 `authorTeam` 문자열 매핑·표시를 연결했다. | backend `805ba14`; frontend `96cd7ad` | 작성자 프로젝션 배치 호출 단위 테스트, 백엔드·프론트 focused/full 테스트와 정적 검증 통과, 작업 리뷰 Approved |
+| ✅ Done | REV-03 | 검토의견별 첨부 배치 조회, 상위 문서 기반 읽기 권한, 댓글 작성자·관리자 쓰기 권한, 작성·조회·삭제 UI와 부모별 독립 재시도/폐기를 연결했다. 후속 통합 리뷰에서 재시도 세션 격리와 실제 HTTP 권한 경계도 보강했다. | backend `1e38af2`, `989df67`, `cd7d402`, `df26a06`; frontend `10a96f0`, `0168b2f`, `e1d4038` | backend focused 25/25·전체 테스트·Spotless·Oracle/MockMvc download/preview 403 통과, frontend focused 50/50·전체 142파일/1,791건·`npm run check`·Playwright 2/2 통과, mutation RED와 재리뷰 Approved |
+| ✅ Done | FE-01 | 정보 홈의 정적 공지·일정을 공개 공지 게시물과 접근 가능한 확정 협의회 일정 API로 교체하고 영역별 로딩·오류·빈 상태·재시도를 제공했다. 후속 통합 리뷰에서 화면 재활성화 시 피드 갱신을 보강했다. | backend `96048c6`; frontend `f8fa350`, `e728738`, `d4360ca` | 공개 게시물 Oracle 통합 3건·백엔드 전체 테스트/Spotless, frontend focused 6건·전체 테스트·`npm run check`·정보 홈 Playwright 3/3 통과 |
+| ✅ Done | FE-04 | 사업계획·소요예산·협의회 목록을 필터·정렬 후 최초 20건, 20건 단위 더보기로 점진 노출하고 검색·필터 변경 시 노출 수를 초기화했다. 네트워크 페이지네이션은 실서버 p95 측정 전까지 별도 게이트로 남겼다. | root `d8fa8b8`, `910b367`, `7f2fd06`; frontend `c029c5f`, `fa1367b` | 1,000건에서 화면별 20카드, 필터 중앙값 21.2~27.0ms; 전체 frontend 1,775건·`npm run check` 통과, 재현 가능한 env-gated 성능 하네스와 리뷰 Approved |
+| ✅ Done | FE-07 | `budget/status.vue`의 PrimeVue footer 바인딩 3곳을 `:footer-class`로 정정하고 합계 회귀 테스트를 갱신했다. | frontend `7be77dc` | 대상 ESLint 0 warning/0 error, footer 합계 Vitest 2/2, 전체 137파일/1,759건·`npm run check` 통과 |
+| ✅ Done | FE-08 | `useCostRowEditing().addRow()`의 맨 앞 삽입, 사용자 코드, 선택 연도/기본 연도, `abusTc`·`dfrCleC` 해당없음 기본값을 실제 composable 테스트로 잠갔다. | frontend `5c799ca`, `631a996` | focused Vitest 4/4, `unshift`→`push` 통제 변이 RED 확인, cost Playwright 6/6·전체 테스트·`npm run check` 통과 |
+| ✅ Done | FE-09 | Excel 지급주기 전용 매퍼를 추가해 공백·미매칭 값을 해당없음 코드로 저장하고 실제 워크시트 행 번호의 집계 경고를 표시했다. 공용 nullable `codeId()` 계약은 유지했다. | frontend `500f486`, `631a996` | 매퍼 Vitest 3/3, 실제 XLSX Playwright에서 물리 행 번호와 저장 payload `dfrCleC='0'` 검증, 통제 변이 RED·cost Playwright 6/6·`npm run check` 통과 |
+| ✅ Done | FE-10 | 백엔드 `CodeDefaults.NOT_APPLICABLE`에 대응하는 `NOT_APPLICABLE_CODE='0'`을 추가하고 비용·단말·자원 생성 경로의 업무상 해당없음 기본값 8곳을 통합했다. | frontend `ec13c87` | focused 테스트 11건, 잔여 `abusTc: '0'`/`dfrCleC: '0'` 검색 0건, 전체 테스트·`npm run check` 통과 |
+| ✅ Done | FE-11 | 계약방법 누락 저장 시 삭제되지 않은 원본 행 번호와 총 건수를 안내하고 첫 오류 combobox 스크롤·포커스, `aria-invalid`, 선택 즉시 오류 해제를 구현했다. | frontend `5e23825`, `fb0d31c` | unit 1/1, bizplan Playwright 1/1, 전체 138파일/1,760건·`npm run check`·Prettier/diff check 통과, 접근성 수정 재리뷰 Approved |
+| ✅ Done | TIP-06 | StarterKit의 `link`·`underline` 등록을 비활성화하고 기존 독립 Link/Underline 옵션을 유지해 Tiptap 중복 확장 경고를 제거했다. | frontend `116009e` | 실제 editor 마운트 RED→GREEN 8/8, 상세·편집 재진입 Playwright 3/3, 전체 137파일/1,759건·`npm run check` 통과 |
+| ✅ Done | BRD-11 | 기존 공통 파일 API로 게시글 첨부 작성·조회·추가·삭제를 연결하고 서버 `flApgYn`/`flNbr` 캐시, 파일 크기 메타, 부분 실패 재시도를 보강했다. 후속 통합 리뷰에서 route의 부모 전환 반응성·동기화를 보완했다. | database `6e1a9c5`; backend `3366c73`, `b92c8ce`, `ae8e29c`; frontend `8087aa4`, `015aabd`, `6f9142c`, `628204f` | migration 로컬 2회 적용·`APG_FL_SZ NUMBER(10)` 확인, backend 전체 2,269건·Spotless, frontend 전체 1,784건·board Playwright 9/9·`npm run check` 통과, 동시성·중복 파일명·부모 식별자 재시도 리뷰 Approved |
+
+### ✅ 2026-07-26 프론트 Prettier 포맷 드리프트 정리 (FE-03)
+
+| 상태 | ID | 과제 | 완료 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | FE-03 | Prettier 포맷 드리프트 일괄 정리 | 기능 변경이 끝난 시점의 `prettier --list-different` 기준선 39개를 보존한 뒤 `npm run format`을 한 번 적용했다. Git 콘텐츠 diff는 기준선의 부분집합인 13개였고 기준선 밖 변경은 0개였다. |
+
+- 프론트 커밋: `3038532`.
+- 검증: `npm run format:check`·`npm run check` 통과, `npm test` 143파일·1,811건 통과, staged/commit diff check 통과.
+- 포맷 전용 리뷰: 줄바꿈·들여쓰기·공백 정리만 포함하고 의미 변경이 없음을 확인해 Approved.
+
+### ✅ 2026-07-26 프론트 포맷터·사업카드 색상 정책 정리 (FE-02, FE-05, FE-06)
+
+| 상태 | ID | 과제 | 완료 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | FE-02 | 잔여 파일 크기·통화·금액 표시 중복 공통화 | 검토의견 팝오버·메신저는 공용 `formatFileSize`를 사용하고, 의미가 같은 네 상세 화면의 통화 표시는 신규 `formatCurrencyAmount`로 통합했다. 표현 의미가 다른 로컬 포맷터는 유지했다. |
+| ✅ Done | FE-05 | 목록 예산 축약 포맷터 이름 충돌 해소 | 두 목록 화면의 동명 로컬 `formatBudget`을 제거하고 경계·음수 계약을 고정한 공용 `formatBudgetCompact`로 승격해 기존 단위 변환용 `formatBudget`과 이름·용도를 분리했다. |
+| ✅ Done | FE-06 | `ProjectListCard` 상태·칩 톤을 의미 클래스 정책으로 통합 | 상태 5톤과 보조 칩 4톤을 `.project-card-status--*`·`.project-card-chip--*`로 옮기고 `tags.css`의 일반 `span`용 `@apply` 규칙으로 관리한다. PrimeVue `.kdb-tag-*`의 `!important`와 CTA `.v3-cta--*` 색상 계약은 변경하지 않았다. |
+
+- 프론트 커밋: `d9b8a52`(FE-02·FE-05), `39024e9`(FE-06).
+- 검증: `npm test` 143파일·1,811건 통과, `npm run check` 통과, `npm run lint:css` 통과, 지정 포맷터 중복 검색 0건.
+- 비차단 확인: 기존 밝은/어두운 pixel baseline 또는 screenshot 시나리오가 없어 픽셀 비교는 실행하지 않았고, 전체 tone 의미 매핑과 CTA 불변을 단위/CSS 게이트로 고정했다.
+- 기존의 “FE-02 예산 목록/승인 화면 금액 0 표시 정책 보정” 완료 기록은 별도 과거 범위이므로 아래 기록을 유지한다.
+
 ### ✅ 2026-07-26 에러 표면화·복구 (ERR-09, ERR-10)
 
-> `TASK.md`의 ⚠️ 에러 처리 ERR-09·ERR-10을 구현·검증하고 종료 이관했습니다. 설계: `docs/superpowers/specs/2026-07-25-security-error-remediation-sec08-err10-design.md` §4(Phase B)·§5(Phase C), 계획: `docs/superpowers/plans/2026-07-25-security-error-phase-b-backend-surfacing.md`·`docs/superpowers/plans/2026-07-25-security-error-phase-c-frontend-states.md`. it_backend 브랜치 `feat/err08-err09-backend-surfacing`를 main에 병합(머지 `6fa3cf9`, ERR-09 NativeRowMapper 중앙 진단)하고, `feat/err10-council-sync-auth`를 main에 병합(머지 `0a98a43`, ERR-10 C4-1). it_frontend 브랜치 `feat/err08-banner-err10-frontend`를 main에 병합(머지 `a90f79c`, ERR-10 C1~C4-2 + ERR-08 스냅샷 배너).
+> `TASK.md`의 ⚠️ 에러 처리 ERR-09·ERR-10을 구현·검증하고 종료 이관했습니다. 설계: `docs/superpowers/specs/2026-07-25-security-error-remediation-sec08-err10-design.md` §4(Phase B)·§5(Phase C), 계획: `docs/superpowers/plans/done/2026-07-25-security-error-phase-b-backend-surfacing.md`·`docs/superpowers/plans/done/2026-07-25-security-error-phase-c-frontend-states.md`. it_backend 브랜치 `feat/err08-err09-backend-surfacing`를 main에 병합(머지 `6fa3cf9`, ERR-09 NativeRowMapper 중앙 진단)하고, `feat/err10-council-sync-auth`를 main에 병합(머지 `0a98a43`, ERR-10 C4-1). it_frontend 브랜치 `feat/err08-banner-err10-frontend`를 main에 병합(머지 `a90f79c`, ERR-10 C1~C4-2 + ERR-08 스냅샷 배너).
 
 | 상태 | ID | 과제 | 완료 근거 |
 | :--: | :--: | --- | --- |
@@ -25,6 +82,8 @@
 | ✅ Done | ERR-10 | 프론트 핵심 업무의 실패 폴백을 사용자 오류 상태로 승격 | 4개 레인 모두 "조용히 삼키기" 대신 사용자 오류 상태로 표면화: (C1) 통화 조회 single-flight + last-known-good 상태머신(`useProjectCurrencies`, eager 옵션 하위호환), (C2) Tiptap 단건 해석 ERROR 승격·재시도와 인스턴스 스코프 시퀀스 가드(`useTiptapVariables`/`TiptapEditor.vue`, 기존 배치 STALE 계약 보존), (C3) 최신 revision PDF만 미리보기·상신 + Blob URL 누수 방지 순수 상태머신(`utils/reportPdfState.ts`/`projects/report.vue`), (C4) 협의회 상태 동기화 실패를 auth/permanent/transient로 분류·재시도 배너·epoch 가드(`utils/statusSyncError.ts`/`ResultReviewProgress.vue`) + 백엔드 `syncReviewStatus` 관리자 권한 강제(C4-1). |
 
 - 최종 검증: it_frontend `npm run check`(타입·ESLint 0 errors)·`npm test`(135파일 1746 통과)·신규 e2e 5종(통화·Tiptap·PDF·스냅샷·협의회 sync) 통과. it_backend `./gradlew test`·`spotlessCheck` BUILD SUCCESSFUL. 태스크별 2단계 리뷰(스펙 준수·코드 품질) + 최종 홀리스틱 프론트 리뷰 READY-TO-MERGE(교차 레인 일관성·하위호환·회귀 없음 확인).
+- 최종 게이트 재검증(2026-07-26): 이관 전 root `0439417`, frontend 제품/E2E `8d3eda3`·최종 테스트 `4e91e9c`, backend `52552cc`에서 수행한 정확한 명령·종료 코드·레인 C1~C4 PASS 수락은 [`2026-07-26-err10-final-gate.md`](docs/superpowers/evidence/2026-07-26-err10-final-gate.md)에 고정했다. 해당 영수증에 따라 it_frontend `npm run typecheck`·`npm run lint`·`npm test -- --run`·지정 Playwright 4개 spec(9건), it_backend `./gradlew test`·`./gradlew spotlessCheck`가 모두 종료 코드 0이다. 기준일자 필수화 뒤 누락된 `TerminalFormDialog` 정상 통화 fixture에는 유효 `cdvaDtl`을 보강했다(`4e91e9c`). lint의 `budget/status.vue` `:footerClass` 3건은 FE-07 소유 경고로 제품 코드 변경 없이 보류했다.
+- 최종 수정 라운드(2026-07-26): frontend `a6f0cba`에서 PDF 생성 실패 뒤 결재선을 바꾸지 않는 명시적 `다시 시도`를 추가하고, Tiptap의 삭제 ERROR 토큰 정리·문서/변수 맵 전환 중 구 비동기 응답 격리를 보강했다. TDD RED(신규 3건 실패) 뒤 GREEN(집중 19/19)과 영향 E2E 5/5를 확인했으며, 최종 `npm run check`·전체 Vitest 135파일/1,751건·지정 ERR-10 Playwright 9/9가 모두 종료 코드 0이다. 정확한 명령과 SHA는 같은 [`최종 게이트 영수증`](docs/superpowers/evidence/2026-07-26-err10-final-gate.md)의 “최종 수정 라운드 추가 증빙”에 고정했다.
 - 잔여 후속(비차단): `TerminalFormDialog` eager:false 다이얼로그가 `cost`를 초기 로드 후 다시 null로 만들 경우의 상태 리셋 방지(key-stable 래퍼/문서화), `ResultReviewProgress`의 `asctId`를 반응형으로 바꾸는 미래 caller에서 자동 트리거 지연 가능성 문서화, 분당 1회 toast 스로틀 공용 헬퍼 추출(DRY) — 별도 과제로 추적.
 
 ### ✅ 2026-07-25 보안 트랜잭션 무결성 (SEC-08, SEC-09)
@@ -228,6 +287,7 @@
 | ✅ Done | 🟡 Medium | LOG-02 라이브 피드 행 클릭에서 로그번호 포함 상세 이동 연결 | `it_frontend` `6f7d736`; `RealtimeDetailDrawer.vue`, `RealtimeFeedTable.vue`, `admin/logs/[logKey].vue`, E2E. 검증: `npm run test:e2e -- tests/e2e/admin/realtime-logs.spec.ts` |
 | ✅ Done | 🟢 Low | LOG-03 SSE/WebSocket 전환 운영 임계치·feature flag 설계 문서화 | 루트 `3d137d6`; `docs/superpowers/notes/2026-07-07-realtime-log-explain.md`. 실제 push 구현은 별도 잔여로 유지 |
 | ✅ Done | 🟢 Low | LOG-04 로그 보존 정책·아카이브 분리 View 운영 방향 문서화 | 루트 `3d137d6`; 신규 테이블 없이 운영 정책 노트 작성. 실제 보존기간 시행은 별도 잔여로 유지 |
+| ✅ Done | 🟢 Low | LOG-05 실시간 로그 즐겨찾기·필터 브라우저 저장 | `it_frontend` `c1f14a9`; key `it-portal:realtime-log-preferences:v1`, schema `{ version: 1; favoriteLogKeys: string[]; filter: 'all' \| 'favorites' }`. 동일 브라우저 프로필의 UI 선호만 저장하며 서버·계정 간 동기화하지 않고 사용자·권한·인증정보·로그 행은 저장하지 않음. 검증: 단위 10/10, E2E 5/5, 전체 1,801, `npm run check` |
 | ✅ Done | 🟡 Medium | LOG-06 `V_ITPAPP_LOG_FEED` 실행계획/인덱스 현황 기록 | 루트 `3d137d6`; 기존 `V20260629_005`와 `IX_CCODEL_CHG_DTM` 유효성 확인, 신규 DDL 없음 |
 | ✅ Done | 🟡 Medium | LOG-07 실시간 로그 Playwright E2E 실행 | `it_frontend` `6f7d736`; `tests/e2e/admin/realtime-logs.spec.ts`. 검증: `npm run test:e2e -- tests/e2e/admin/realtime-logs.spec.ts` |
 | ✅ Done | 🟡 Medium | BRD-01 게시판 본문 4000자 정책 검증 추가 | `it_backend` `61d26d4`, `it_frontend` `487bcb1`; `BoardPostDto`, board form/edit UI, controller tests. 검증: `./gradlew test --tests "*Board*" --no-daemon --max-workers=1`, `npm run test:e2e -- tests/e2e/board.spec.ts` |
