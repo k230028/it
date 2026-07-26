@@ -8,6 +8,13 @@
 
 **Tech Stack:** Nuxt 4, Vue 3 Composition API, TypeScript 6, Pinia 3, PrimeVue 4, Tiptap 3, Vitest 4, Vue Test Utils, Playwright 1.58, Spring Boot 4.1, Java 25, Spring Data JPA, Oracle, Flyway
 
+## 실행 종료 기록 (2026-07-26)
+
+- 구현과 검증을 완료한 범위는 `TASK_DONE.md`의 완료 이력에 따라 통합한다.
+- `REV-01`, `REV-04`, `TIP-02`, `TIP-03`, `TIP-05`, `TIP-07`, `TIP-08`, `TIP-09`는 사용자 결정으로 후속 범위에서 폐기했다.
+- 폐기 항목은 완료로 판정하지 않는다. 알려진 정책 불일치·접근성 제한·제품 결함과 expected-failure 증거는 분석 문서와 테스트에 보존한다.
+- 아래 체크박스와 원래 완료 정의는 계획 수립 당시 실행 계약의 이력이며, 이번 종료 범위는 이 절과 `TASK_DONE.md`가 우선한다.
+
 ## Global Constraints
 
 - 모든 신규 JavaDoc/TSDoc/인라인 주석은 한글로 작성한다.

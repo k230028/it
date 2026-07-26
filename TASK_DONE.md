@@ -1,7 +1,7 @@
 # ✅ IT Portal 완료·종료 내역 (Archive)
 
 > 🗓️ **기준일:** 2026-07-26
-> 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️) 항목을 보관합니다.
+> 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️)·폐기(⛔) 항목을 보관합니다.
 
 ### 🔑 범례 (Legend)
 
@@ -10,10 +10,26 @@
 | ✅ Done | 완료 |
 | ✔️ Resolved | 해소(거짓양성 등) |
 | ☑️ Accepted | 감내(업스트림 미해결) |
+| ⛔ Discarded | 사용자 범위 결정으로 폐기 |
 
 ---
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
+
+### ⛔ 2026-07-26 프론트엔드 잔여과제 범위 종료
+
+> 사용자 결정에 따라 아래 항목은 구현 완료로 간주하지 않고 후속 범위에서 폐기했다. 알려진 제한과 검증 증거는 추후 의사결정에 참고할 수 있도록 보존한다.
+
+| 상태 | ID | 폐기 범위 | 보존 근거 |
+| :--: | :--: | --- | --- |
+| ⛔ Discarded | REV-01 | 사전협의 검토자·세션 상태 서버 영속화와 실제 인증 완료 흐름 | 계약·메타용어 미승인 상태에서 구현하지 않는다는 계획 게이트를 준수했으며 메모리 전용 흐름은 현행 유지 |
+| ⛔ Discarded | REV-04 | 검토의견 첨부 배치 조회의 URL 길이·Oracle `IN` 1,000개 상한 보강 | 현재 배치 계약은 유지하며 대규모 부모 요청 최적화는 수행하지 않음 |
+| ⛔ Discarded | TIP-02 | Tiptap 사업 변수·실DB·HWPX 전체 인수조건 완성 | 자동화 subset과 expected-failure 증거는 `docs/03-analysis/tiptap-operational-validation.md`에 보존 |
+| ⛔ Discarded | TIP-03 | `CAP_BUDGET`의 `IOE_CPIT` 포함 정책 결정과 런타임 정렬 | 2026년 `IOE_CPIT` 0건으로 합계는 일치하지만 3종·4종 정책 불일치는 미해결 상태로 보존 |
+| ⛔ Discarded | TIP-05 | 변수 칩·다크모드·키보드·ARIA·모바일 실화면 재검증 | 브라우저 미가용으로 미수행한 검증 범위와 코드 점검 결과는 `docs/03-analysis/tiptap-accessibility-findings.md`에 보존 |
+| ⛔ Discarded | TIP-07 | 변수 NodeView `data-token` DOM 계약과 비동기 해석 즉시 반영 | 알려진 결함과 expected-failure 테스트는 보존하되 제품 수정은 수행하지 않음 |
+| ⛔ Discarded | TIP-08 | 변수 칩 다크 대비와 Suggestion 팝업 접근성·모바일 경계 | 측정된 대비·ARIA·viewport clamp 제한은 보존하되 제품 수정은 수행하지 않음 |
+| ⛔ Discarded | TIP-09 | HWPX 내보내기 전 최신 변수값 재해석 | stale `data-snapshot` 출력 결함과 expected-failure 테스트는 보존하되 제품 수정은 수행하지 않음 |
 
 ### ✅ 2026-07-26 프론트엔드 잔여과제 통합 조치 완료 이관
 
