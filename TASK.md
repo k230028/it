@@ -22,6 +22,7 @@ _SEC-04·SEC-05 완료 근거는 [`TASK_DONE.md`](TASK_DONE.md)의 2026-07-19 Re
 | REV-01 | 🟡 Medium | 기능 | 사전협의 검토자/세션 status 서버 영속화             | 선행조건: 검토 플로우 실제 인증 연동. `stores/review.ts`의 `completeReview`/`submitForReview`가 메모리 전용이고, `review.vue`의 currentUser와 `ReviewToolbar.vue`의 검토완료 흐름이 모의/수동 상태 |
 | REV-02 | 🟡 Medium | 기능 | 검토의견 응답에 작성자 팀명(`authorTeam`) 필드 추가 | `ReviewCommentDto.Response`와 `useReviewCommentApi.ts`가 임시값 사용                                                                                                                               |
 | REV-03 | 🟡 Medium | 기능 | 검토의견 첨부파일 응답 매핑 추가                    | `useReviewCommentApi.ts`가 `attachments`를 빈 배열로 고정                                                                                                                                          |
+| REV-04 | 🟡 Medium | 성능 | 검토의견 첨부 배치 조회 요청 크기 상한 설계         | 현재 반복 `pkCone` GET 쿼리는 URL 길이와 Oracle `IN` 1,000개 제한을 함께 받는다. 부모 수가 커지기 전에 POST body 기반 배치 계약으로 전환하거나, 순서·중복 제거·빈 부모 응답 계약을 유지하는 bounded chunking을 도입하고 경계값 테스트를 추가한다.                   |
 
 ## ⚠️ 에러 처리
 
