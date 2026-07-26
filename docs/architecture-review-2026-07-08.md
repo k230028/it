@@ -7,35 +7,38 @@
 
 > **재점검 요지**: 문서 정합성 계열은 진전이 있었다 — `meta.csv` 경로 오류가 실제 경로(`meta/meta.txt`)로 정정됐고(양 문서), 백엔드 로그 폴더는 추적 해제 + `.gitignore` 등록 + logback 기본 경로 지정으로 실질 해소, AGENTS.md 포트 오기(8080→28080)도 정정됐다. 반면 **저장소 위생(DB 덤프·평문 비밀번호·벤더 바이너리)과 코드 구조(800줄 위반, DB 빈 스키마 재구축)** 는 대부분 그대로다. 프론트 800줄 위반은 28→24개로 줄었으나 백엔드는 7개를 유지(일부 라인 증가).
 
+> **조치 반영(2026-07-26)**: 재점검 open 지적은 `docs/superpowers/plans/done/2026-07-26-architecture-review-remediation.md` 이행(4개 저장소 12개 커밋)으로 종료 — #1·#2·#4·#5·#7·#8·#9·#15 해소, #13 조치 불요 판단, 구조 리팩터 #10~#12와 codegen #14는 TASK.md 위임(CQ-01·CQ-15·CQ-16·FE-12).
+
 ---
 
 ## 0. 재점검 요약 (2026-07-26)
 
 | #   | 심각도  | 항목                             | 상태           | 핵심 근거                                                                                                                                               |
 | --- | ---- | ------------------------------ | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | HIGH | 백엔드 런타임 로그 git 커밋              | 🟡 부분해소      | 추적 해제 + `.gitignore(/LOG_PATH_IS_UNDEFINED/)` + logback 기본값 지정. 로컬 폴더(1.52MB)만 잔존                                                                   |
-| 2   | MED  | 4-repo 구조 미문서화                 | ⚠️ 잔존        | `versions.lock`/`.gitmodules` 없음, CLAUDE.md/AGENTS.md 미기재                                                                                           |
+| 1   | HIGH | 백엔드 런타임 로그 git 커밋              | ✅ 해소         | 폴더 부재·미추적·logback 기본경로 재실측 확인(2026-07-26, 커밋 불요)                                                                                                    |
+| 2   | MED  | 4-repo 구조 미문서화                 | ✅ 해소         | CLAUDE.md §2 토폴로지 명문화 + `versions.lock`/`scripts/update-versions-lock.ps1` 도입 (057a576·f500804)                                                     |
 | 3   | MED  | `meta.csv` SoT 경로 부재           | ✅ 해소         | CLAUDE.md:32·AGENTS.md:33 모두 `meta/meta.txt`로 정정, gap_analysis 디렉토리 제거                                                                              |
-| 4   | MED  | AGENTS.md 낡은 사본                | 🟡 부분해소      | 포트 8080→28080 정정. 그러나 여전히 82행 상이(이전 71)                                                                                                             |
-| 5   | MED  | 작업 추적 채널 분산                    | ⚠️ 잔존        | TaskNotes·루트 일회성 문서(+ETC.md 신규) 잔존, prds 36 / superpowers plans 72·specs 49                                                                         |
+| 4   | MED  | AGENTS.md 낡은 사본                | ✅ 해소         | AGENTS.md를 19줄 CLAUDE.md 참조 포인터로 축소해 드리프트 해소 (d8fd537)                                                                                              |
+| 5   | MED  | 작업 추적 채널 분산                    | ✅ 해소         | CLAUDE.md §4.3 채널 역할 표 명시 + 일회성 문서 3건(DB_GAP·CLEAN_CODE_REVIEW·ETC) `docs/prompts/` 이동 (a42365b)                                                    |
 | 6   | MED  | it_database `.git` 비대          | 🟡 부분해소      | `apply-ddl-live.log` 추적 해제. `EXPDAT.DMP`는 **git 관리 유지 확정**(팀 결정) — 임계치(예: .git>200MB/분기 1회) 도달 시 `git filter-repo`로 과거 블롭 정리(force-push+재클론). 런북 README §4.2 |
-| 7   | MED  | DB 비밀번호 평문 하드코딩                | ⚠️ 잔존        | `kdb1234!!` 6파일 7행 그대로 추적                                                                                                                           |
-| 8   | MED  | 벤더 SSO 바이너리 + 미사용 lombok.jar   | ⚠️ 잔존        | `sso/` 24 tracked(.class 5), `lib/lombok.jar`(2MB) 추적·미참조                                                                                           |
-| 9   | MED  | 프론트 빌드 캐시 커밋 + 스크립트 산재         | 🟡 부분해소      | ps1은 루트→`oss/`로 이동. `tsconfig.test.tsbuildinfo`·`preview/*.html` 5건 추적 잔존                                                                           |
-| 10  | MED  | 800줄 위반 — 백엔드                  | ⚠️ 잔존(7개)    | 목록 갱신: `AdminService` 신규 진입, `CostDto` 이탈, ProjectService/CouncilController 증가                                                                      |
-| 11  | MED  | 800줄 위반 — 프론트                  | 🟡 개선(28→24) | 대형 composable(useCostListPage·usePdfReport) 이탈. pages 16/24                                                                                         |
-| 12  | MED  | components/ 루트 평면 파일           | ⚠️ 잔존(24→25) | `components/editor` 미분리, 에디터/앱크롬 혼재 지속                                                                                                              |
-| 13  | MED  | DB 빈 스키마 재구축 불가                | ⚠️ 잔존        | 최초 마이그레이션 여전히 `V20260622_006`(ALTER-first), full-CREATE baseline 없음                                                                                 |
-| 14  | MED  | 프론트 타입 수동 이중관리                 | ⚠️ 잔존        | `app/types/` 18파일, codegen 의존성 없음                                                                                                                   |
-| 15  | MED  | it_database README가 삭제 스크립트 참조 | ⚠️ 잔존        | `connect-db.ps1/.bat` 부재, README 25·30·222·231행 참조 잔존                                                                                               |
+| 7   | MED  | DB 비밀번호 평문 하드코딩                | ✅ 해소         | `.par` USERID 제거·ps1 환경변수 기본값+공백차단 가드·README 플레이스홀더 (7685642·e3864a6). 명령행 노출 개선은 TASK.md SEC-11 위임                                                |
+| 8   | MED  | 벤더 SSO 바이너리 + 미사용 lombok.jar   | ✅ 해소         | `lib/lombok.jar` 삭제, `sso/` 추적 해제(로컬 사본 유지, `sso/README.md` 보존 거버넌스만 추적) (b1c1d01·4cd6523). 아티팩트 저장소 이전은 TASK.md BE-23 위임                            |
+| 9   | MED  | 프론트 빌드 캐시 커밋 + 스크립트 산재         | ✅ 해소         | `tsconfig.test.tsbuildinfo` 추적 해제, `preview/*.html` 5건 `docs/preview/` 이동 (938961a)                                                                 |
+| 10  | MED  | 800줄 위반 — 백엔드                  | ⏩ TASK.md 위임 | 대형 서비스·컨트롤러 분해는 TASK.md CQ-01(착수 트리거 명시)로 위임 (cc6d9a9)                                                                                              |
+| 11  | MED  | 800줄 위반 — 프론트                  | ⏩ TASK.md 위임 | 잔여 24개 파일 분해는 TASK.md CQ-15로 위임 (cc6d9a9)                                                                                                           |
+| 12  | MED  | components/ 루트 평면 파일           | ⏩ TASK.md 위임 | `components/editor`·`components/layout` 분리는 TASK.md CQ-16으로 위임 (cc6d9a9)                                                                            |
+| 13  | MED  | DB 빈 스키마 재구축 불가                | ➖ 조치 불요 판단(2026-07-26) | 빈 스키마 경로는 스냅샷(`ITPOWN_DDL_live.sql`)+baseline 운용으로 충분하다고 판단, 조치 계획 범위에서 제외                                                                          |
+| 14  | MED  | 프론트 타입 수동 이중관리                 | ⏩ TASK.md 위임 | OpenAPI codegen 도입 검토는 TASK.md FE-12(비교 스파이크)로 위임 (cc6d9a9)                                                                                         |
+| 15  | MED  | it_database README가 삭제 스크립트 참조 | ✅ 해소         | README 4곳 참조를 직접 sqlplus 접속으로 교체, `<pw>` 플레이스홀더 통일 (4216991·10e921f)                                                                               |
 
 ---
 
 ## HIGH — 즉시 조치 권장
 
-### 1. 백엔드 런타임 로그가 git에 커밋된 채 계속 증가 중 — 🟡 부분해소
+### 1. 백엔드 런타임 로그가 git에 커밋된 채 계속 증가 중 — ✅ 해소
 - **최초 근거**: `it_backend/LOG_PATH_IS_UNDEFINED/it-backend.log`(~1.1MB)가 git 추적 상태이고 실행마다 갱신.
-- **현재**: git **추적 해제됨**(`git -C it_backend ls-files -- LOG_PATH_IS_UNDEFINED/` 공란) + `it_backend/.gitignore:48`에 `/LOG_PATH_IS_UNDEFINED/` 등록. 근본 원인도 처리됨 — `logback-spring.xml:16`이 `LOG_PATH` 기본값(local `c:/itp_log`, prod `/log/springitp`) 지정. **잔여**: 로컬 작업트리에 폴더/파일(현재 1.52MB)이 남아 있으나 untracked. 로컬 정리만 하면 종결.
+- **현재**: git **추적 해제됨**(`git -C it_backend ls-files -- LOG_PATH_IS_UNDEFINED/` 공란) + `it_backend/.gitignore:48`에 `/LOG_PATH_IS_UNDEFINED/` 등록. 근본 원인도 처리됨 — `logback-spring.xml:16`이 `LOG_PATH` 기본값(local `c:/itp_log`, prod `/log/springitp`) 지정.
+- **조치(2026-07-26)**: 재실측으로 로컬 폴더 부재·미추적·logback 기본경로를 모두 확인해 종결(확인만, 커밋 불요).
 
 ---
 
@@ -43,20 +46,20 @@
 
 ### 저장소·문서 정합성
 
-**2. 4개 분리 저장소 구조가 문서화되어 있지 않음 — ⚠️ 잔존**
+**2. 4개 분리 저장소 구조가 문서화되어 있지 않음 — ✅ 해소**
 - **현재**: `C:/it/.gitignore` 1~3행이 여전히 it_frontend/it_backend/it_database 제외. 루트에 `versions.lock`·`manifest`·`.gitmodules` 없음. CLAUDE.md §2는 단일 트리로 기술(§90의 부수 언급 외 토폴로지 명문화 없음), AGENTS.md도 미기재.
-- **권장 조치**: (변동 없음) 서브레포 커밋 SHA manifest(`versions.lock`) 도입 + 루트 CLAUDE.md에 4-repo 구조·릴리스 동기화 절차 명문화 + MEMORY의 "중첩 저장소는 it_backend"를 3개 전부로 정정.
+- **조치(2026-07-26)**: CLAUDE.md §2에 4-repo 토폴로지 명문화, `versions.lock` + `scripts/update-versions-lock.ps1`(BOM 없는 UTF-8 고정) 도입 (C:\it 057a576·f500804).
 
 **3. SoT가 존재하지 않는 파일을 가리킴 — ✅ 해소**
 - **현재**: `C:\it\meta.csv`는 여전히 부재하나, CLAUDE.md:32·AGENTS.md:33이 모두 실존 파일 `` `C:\it\meta\meta.txt` ``(5.47MB)를 가리키도록 **정정 완료**. `meta/gap_analysis/` 디렉토리 자체가 제거되어 `table.csv` 오참조 재발 소지도 사라짐(`meta/table.txt` 존재).
 
-**4. AGENTS.md가 CLAUDE.md의 낡은 사본 — 🟡 부분해소**
+**4. AGENTS.md가 CLAUDE.md의 낡은 사본 — ✅ 해소**
 - **현재**: 백엔드 포트 오기 **정정 완료**(8080 0건, 4곳 모두 28080: AGENTS.md 40·41·57·111). 다만 `diff CLAUDE.md AGENTS.md`가 **82행 상이**(이전 71행, CLAUDE.md 162 vs AGENTS.md 132)로 여전히 드리프트. "얇은 포인터 문서화"는 미이행.
-- **권장 조치**: AGENTS.md를 "본문은 CLAUDE.md 참조" 수준으로 축소하거나 REVIEW.md 워크플로우 체크리스트에 동기화 편입.
+- **조치(2026-07-26)**: AGENTS.md를 19줄의 "본문은 CLAUDE.md를 SoT로 따른다" 포인터 문서로 축소해 이중관리·드리프트 해소 (C:\it d8fd537).
 
-**5. 작업 추적 채널이 5~6개로 분산 — ⚠️ 잔존(일부 증가)**
+**5. 작업 추적 채널이 5~6개로 분산 — ✅ 해소**
 - **현재**: TASK.md·TASK_DONE.md·TaskNotes(Obsidian) 유지. prds 36건(md), docs/superpowers plans 72·specs 49로 증가. 루트 일회성 지시문서(REVIEW.md·TEST.md·DB_GAP.md·CLEAN_CODE_REVIEW.md) 잔존 + **ETC.md 신규 추가**. CLAUDE.md §2/§4.3에는 여전히 TASK.md·docs만 등재.
-- **권장 조치**: 채널별 역할을 §4.3에 1줄씩 명시. TaskNotes 폐기/흡수, 일회성 지시문서는 `docs/prompts/`로 이동.
+- **조치(2026-07-26)**: CLAUDE.md §4.3에 채널별 역할 표 명시, 일회성 지시문서 3건(DB_GAP.md·CLEAN_CODE_REVIEW.md·ETC.md)을 `docs/prompts/`로 이동(REVIEW.md·TEST.md는 README 공식 워크플로우로 유지) (C:\it a42365b).
 
 ### 저장소 위생
 
@@ -71,43 +74,48 @@
 - **반려된 대안**: 외부화(공유경로/GitHub Release)·Git LFS·orphan `db-dump` 브랜치 — 검토했으나 팀 규모가 작아 A의 단순성(외부 인프라·워크플로우 변경 불요)을 우선.
 - **상태**: 방식 확정. 현재 84MB는 첫 정기 정리 시 회수(그전까지 유지). 사내 GitLab 이관 후에도 A 유지 가능하며, 필요 시 그 시점에 재검토.
 
-**7. DB 비밀번호 평문이 git 추적 파일에 하드코딩 — ⚠️ 잔존**
-- **현재**: `kdb1234!!`가 여전히 6파일 7행 추적: `README.MD:130,136`, `apply-ddl-live.ps1:6`, `export-ddl-live.ps1:6`, `export.par:1`, `import.par:1`, `import_data_only.par:1`. CLAUDE.md §4.2(환경변수 주입) 원칙과 불일치 지속.
-- **권장 조치**: (변동 없음) ps1 기본값 제거 → 필수 파라미터/`DB_PASSWORD` 환경변수. `*.par`는 USERID 제거. README는 플레이스홀더로 교체.
+**7. DB 비밀번호 평문이 git 추적 파일에 하드코딩 — ✅ 해소**
+- **현재(당시)**: 평문 비밀번호(원문은 본 문서에서 비표기)가 6파일 7행 추적: `README.MD:130,136`, `apply-ddl-live.ps1:6`, `export-ddl-live.ps1:6`, `export.par:1`, `import.par:1`, `import_data_only.par:1`. CLAUDE.md §4.2(환경변수 주입) 원칙과 불일치 지속.
+- **조치(2026-07-26)**: `.par` 3건 USERID 제거(접속은 실행 시 인자), ps1 2건은 `DB_PASSWORD` 환경변수 기본값 + 공백 문자열 차단 가드, README는 `<pw>` 플레이스홀더로 교체 (it_database 7685642·e3864a6). 명령행 인자 노출 개선은 TASK.md SEC-11로, 히스토리 잔존분 정리+자격 회전은 계획서 "선택" 절로 유지.
 
-**8. 벤더 SSO 배포물(.class)과 미사용 lombok.jar 추적 — ⚠️ 잔존**
-- **현재**: `it_backend/sso/` 24개 파일 추적(.class 5종: Business/CheckAuth/Logout/ConfigureSetting/ConfigureSettingListner, config.properties 2, .java/.jsp/web.xml 포함). `lib/lombok.jar`(2,040,253바이트) 추적·디스크 존재. `build.gradle:153,157`은 lombok을 정상 Gradle 의존성(`compileOnly`+`annotationProcessor`)으로 관리 → 커밋된 `lib/lombok.jar`은 **중복·미사용**.
-- **권장 조치**: SSO 배포물은 저장소 밖(사내 아티팩트 저장소)으로 이전, `lib/lombok.jar` 제거.
+**8. 벤더 SSO 배포물(.class)과 미사용 lombok.jar 추적 — ✅ 해소**
+- **현재(당시)**: `it_backend/sso/` 24개 파일 추적(.class 5종: Business/CheckAuth/Logout/ConfigureSetting/ConfigureSettingListner, config.properties 2, .java/.jsp/web.xml 포함). `lib/lombok.jar`(2,040,253바이트) 추적·디스크 존재. `build.gradle:153,157`은 lombok을 정상 Gradle 의존성(`compileOnly`+`annotationProcessor`)으로 관리 → 커밋된 `lib/lombok.jar`은 **중복·미사용**.
+- **조치(2026-07-26)**: `lib/lombok.jar` 삭제, `sso/` 추적 해제(로컬 사본 유지) 후 `sso/README.md`(보존 거버넌스)만 추적 복원 (it_backend b1c1d01·4cd6523). 사내 아티팩트 저장소 이전은 TASK.md BE-23으로 위임.
 
-**9. 프론트 빌드 캐시 커밋 + 운영 스크립트 산재 — 🟡 부분해소**
-- **현재**: ps1 스크립트는 **루트에서 `it_frontend/oss/`로 이동**(check-npm-repo-coverage·lib-npm-platform·make-local-npm-repo·rebuild-local-npm-repo 4종). 그러나 `tsconfig.test.tsbuildinfo`(19KB)는 **여전히 추적**이며 `.gitignore` 미등록, `preview/*.html` 5건도 추적 잔존.
-- **권장 조치**: `tsconfig.test.tsbuildinfo`를 `.gitignore` 추가 + 추적 해제. `preview/`는 `docs/`로 이동.
+**9. 프론트 빌드 캐시 커밋 + 운영 스크립트 산재 — ✅ 해소**
+- **현재(당시)**: ps1 스크립트는 **루트에서 `it_frontend/oss/`로 이동**(check-npm-repo-coverage·lib-npm-platform·make-local-npm-repo·rebuild-local-npm-repo 4종). 그러나 `tsconfig.test.tsbuildinfo`(19KB)는 **여전히 추적**이며 `.gitignore` 미등록, `preview/*.html` 5건도 추적 잔존.
+- **조치(2026-07-26)**: `tsconfig.test.tsbuildinfo` `.gitignore` 등록 + 추적 해제, `preview/*.html` 5건 `docs/preview/`로 이동 (it_frontend 938961a). 미리보기 위치 규약 통일은 TASK.md FE-13으로 후속 등재.
 
 ### 코드 구조
 
-**10. 800줄 상한 위반 — 백엔드 7개(유지) — ⚠️ 잔존**
+**10. 800줄 상한 위반 — 백엔드 7개(유지) — ⏩ TASK.md 위임(CQ-01, 2026-07-26)**
 - **현재 목록**(라인 재측정): `ProjectService.java` **1,350**, `CouncilController.java` **1,215**, `CostService.java` **1,046**, `BudgetWorkService.java` **1,016**, `CouncilDto.java` **926**, `ProjectDto.java` **875**, `AdminService.java` **808**(신규 진입). 이전 목록의 `CostDto.java`는 **667줄로 감소해 이탈**. 총 개수는 7개로 동일하나 ProjectService(+172)·CouncilController(+239)·CostService(+88)가 증가.
 - **권장 조치**: CouncilController 기능군별 분할, ProjectService·BudgetWorkService 조회/변경 추출, 대형 Dto record 축소. (clean-code-review-2026-07-07.md §3.2와 통합 과제)
+- **위임(2026-07-26)**: TASK.md CQ-01(착수 트리거 명시)로 위임 등재 (C:\it cc6d9a9).
 
-**11. 800줄 상한 위반 — 프론트 28→24개 — 🟡 개선**
+**11. 800줄 상한 위반 — 프론트 28→24개 — ⏩ TASK.md 위임(CQ-15, 2026-07-26)**
 - **현재**: 총 **24개**(이전 28), `pages/` 소속 **16개**. 대형 composable이 대거 이탈 — `useCostListPage.ts`(1,790→358), `usePdfReport.ts`(삭제)로 composable 초과는 `useTiptapTableTools.ts`(816) 하나뿐. 상위: `utils/hwpx.ts` 1,400, `pages/info/documents/[id]/index.vue` 1,350, `pages/budget/status.vue` 1,207, `components/TiptapToolbar.vue` 1,196, `pages/info/plan/[id].vue` 1,185, `pages/info/plan/form.vue` 1,176, `pages/info/projects/form.vue` 1,158, `components/TiptapEditor.vue` 1,148 등.
 - **권장 조치**: 최대 페이지부터 섹션 컴포넌트/ composable 추출 지속.
+- **위임(2026-07-26)**: TASK.md CQ-15로 위임 등재 (C:\it cc6d9a9).
 
-**12. components/ 루트에 평면 파일 24→25개 — ⚠️ 잔존**
+**12. components/ 루트에 평면 파일 24→25개 — ⏩ TASK.md 위임(CQ-16, 2026-07-26)**
 - **현재**: 루트 평면 **25개**로 오히려 1개 증가. Tiptap/노드뷰 계열 9(TiptapEditor·TiptapToolbar·TiptapTableFloatingToolbar·AttachmentNodeView·Block/InlineMathNodeView·ResizableImageNodeView·VariableNodeView·MentionAutocomplete), Excalidraw 2가 앱 크롬 10(App*·PageHeader·GlobalSearchBar·Notification*)과 동일 층위. `components/editor/` 미신설.
 - **권장 조치**: `components/editor/`·`components/layout/` 신설해 이동. tiptap-extensions 계열도 editor 하위로.
+- **위임(2026-07-26)**: TASK.md CQ-16으로 위임 등재 (C:\it cc6d9a9).
 
-**13. DB 빈 스키마 재구축 불가 + 스냅샷-마이그레이션 이중 SoT 드리프트 — ⚠️ 잔존**
+**13. DB 빈 스키마 재구축 불가 + 스냅샷-마이그레이션 이중 SoT 드리프트 — ➖ 조치 불요 판단(2026-07-26)**
 - **현재**: `migrations/`(61개)의 최초 스크립트가 여전히 `V20260622_006__AddMplAmtToBitemm.sql`이며 `ALTER TABLE TPRMPP_BITEMM ADD (...)`로 시작(컬럼 존재 가드는 있으나 **테이블 존재를 전제**) → 빈 스키마에서 실패. `V*_001` 전체 CREATE 부트스트랩 없음. CLAUDE.md §4.4가 인용한 `baseline-version=20260620.001`에 해당하는 `V20260620*` 스크립트도 부재. 전체 DDL 덤프 `ITPOWN_DDL_live.sql`(CREATE TABLE 89개, 추적)은 존재하나 **Flyway 체인 밖**이라 빈 스키마 경로에서 적용되지 않음.
 - **권장 조치**: 부트스트랩 경로를 "빈 스키마 = 스냅샷(ITPOWN_DDL_live.sql) → Flyway baseline → 이후 V*"로 README·CLAUDE.md §4.4에 정정 + "스냅샷+baseline == 마이그레이션 적용 결과" 검증 절차 추가. **드리프트 복구(데이터 포함)는 #6의 `EXPDAT.DMP` impdp 경로와 정합**되도록, 덤프 생성 시 기록하는 마이그레이션 헤드 태그를 공유해 "덤프 = 어느 V*까지 반영"을 명시한다. (DDL-only `ITPOWN_DDL_live.sql`과 data 포함 `EXPDAT.DMP`의 역할 구분도 함께 문서화.)
+- **판단(2026-07-26)**: 빈 스키마 경로는 스냅샷(`ITPOWN_DDL_live.sql`)+Flyway baseline 운용으로 충분하다고 보아 **조치 불요**로 판단, 아키텍처 리뷰 조치 계획 범위에서 제외.
 
-**14. 프론트 API 타입과 백엔드 DTO의 수동 이중 관리 — ⚠️ 잔존**
+**14. 프론트 API 타입과 백엔드 DTO의 수동 이중 관리 — ⏩ TASK.md 위임(FE-12, 2026-07-26)**
 - **현재**: `app/types/` **18개** 수기 타입 파일(이전 ~16). `package.json`에 openapi-typescript/orval/codegen 의존성 없음. 백엔드 Swagger UI는 노출 중.
 - **권장 조치**: openapi-typescript 등 codegen 도입 검토로 드리프트 축소.
+- **위임(2026-07-26)**: TASK.md FE-12(openapi-typescript vs orval 비교 스파이크)로 위임 등재 (C:\it cc6d9a9).
 
-**15. it_database README가 삭제된 접속 스크립트를 참조 — ⚠️ 잔존**
-- **현재**: `connect-db.ps1`/`connect-db.bat` 여전히 부재하나 `README.MD`가 4곳(25·30·222·231행)에서 참조 지속.
-- **권장 조치**: 해당 절을 현재 접속 방법(직접 sqlplus, CLAUDE.md §3.1.1)으로 갱신하거나 스크립트 복원.
+**15. it_database README가 삭제된 접속 스크립트를 참조 — ✅ 해소**
+- **현재(당시)**: `connect-db.ps1`/`connect-db.bat` 여전히 부재하나 `README.MD`가 4곳(25·30·222·231행)에서 참조 지속.
+- **조치(2026-07-26)**: README 4곳 참조를 직접 sqlplus 접속(루트 CLAUDE.md §3.1.1)으로 교체하고 `<pw>` 플레이스홀더로 표기 통일 (it_database 4216991·10e921f).
 
 ---
 
