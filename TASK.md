@@ -20,8 +20,6 @@ _SEC-04·SEC-05 완료 근거는 [`TASK_DONE.md`](TASK_DONE.md)의 2026-07-19 Re
 | ID     | 우선순위  | 유형 | 과제                                                | 근거/조건                                                                                                                                                                                          |
 | ------ | :-------: | ---- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | REV-01 | 🟡 Medium | 기능 | 사전협의 검토자/세션 status 서버 영속화             | 선행조건: 검토 플로우 실제 인증 연동. `stores/review.ts`의 `completeReview`/`submitForReview`가 메모리 전용이고, `review.vue`의 currentUser와 `ReviewToolbar.vue`의 검토완료 흐름이 모의/수동 상태 |
-| REV-02 | 🟡 Medium | 기능 | 검토의견 응답에 작성자 팀명(`authorTeam`) 필드 추가 | `ReviewCommentDto.Response`와 `useReviewCommentApi.ts`가 임시값 사용                                                                                                                               |
-| REV-03 | 🟡 Medium | 기능 | 검토의견 첨부파일 응답 매핑 추가                    | `useReviewCommentApi.ts`가 `attachments`를 빈 배열로 고정                                                                                                                                          |
 | REV-04 | 🟡 Medium | 성능 | 검토의견 첨부 배치 조회 요청 크기 상한 설계         | 현재 반복 `pkCone` GET 쿼리는 URL 길이와 Oracle `IN` 1,000개 제한을 함께 받는다. 부모 수가 커지기 전에 POST body 기반 배치 계약으로 전환하거나, 순서·중복 제거·빈 부모 응답 계약을 유지하는 bounded chunking을 도입하고 경계값 테스트를 추가한다.                   |
 
 ## ⚠️ 에러 처리
@@ -32,13 +30,6 @@ _활성 에러 처리 과제가 없습니다. ERR-09·ERR-10 완료 근거는 [`
 
 | ID    | 우선순위  | 유형   | 과제                                                                                                             | 근거/조건                                                                                                                                                                                                                                                      |
 | ----- | :-------: | ------ | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FE-01 | 🟡 Medium | 기능   | `info/index.vue` 공지/일정 데이터를 실제 API 또는 운영 데이터 소스로 전환                                        | KPI·진행현황은 기존 API composable 기반으로 전환 완료. 공지/일정 영역은 운영 데이터 소스 결정 필요                                                                                                                                                             |
-| FE-04 | 🟡 Medium | 성능   | 사업 목록 표준 카드 양식(`ProjectListContainer`)에 페이지네이션/더보기 도입                                      | 2026-07-12 estimate 목록의 테이블→카드 전환으로 기존 `paginator :rows="20"`이 소실되어 전체 목록을 한 번에 렌더링. 백엔드 목록 API도 LIMIT 없음. 데이터 누적 시 카드 DOM 부하 발생 — `ProjectListContainer`에 선택적 페이지네이션 또는 "더보기" 패턴 추가 검토 |
-| FE-07 |  🟢 Low   | 스타일 | 예산 현황 푸터 속성명 ESLint 경고 정리                                                                           | 2026-07-20 `npm run check` 기준 `app/pages/budget/status.vue`의 `:footerClass` 3곳에서 `vue/attribute-hyphenation` 경고 발생. 기능 변경 시 `:footer-class`로 정리하고 화면 회귀 확인                                                                                |
-| FE-08 | 🟡 Medium | 테스트 | `useCostRowEditing.ts`의 `addRow()` 신규 행 기본값 잠금 테스트 추가                                              | `it_frontend/app/composables/costList/useCostRowEditing.ts:267,271`의 `addRow()`가 신규 행의 `abusTc`/`dfrCleC`를 `'0'`(해당없음)으로 초기화하지만 이를 고정하는 Vitest가 없음. `it_frontend/CLAUDE.md` §7(composable 로직 변경 시 Vitest 단위 테스트 필수)이 요구하는 잠금 테스트 보강 필요                        |
-| FE-09 | 🟡 Medium | 정합성 | Excel 일괄 업로드 경로가 화면에 빈 코드를 남김                                                                   | `it_frontend/app/components/cost/TerminalTableSection.vue:346`의 Excel 업로드 매핑이 공유 `codeId()` 헬퍼로 `dfrCleC`를 채우는데, 매칭 실패 시 빈 문자열을 반환해 저장·재조회 전까지 화면에 빈 코드가 남는다. `codeId()`는 nullable 코드 컬럼에도 쓰이는 공용 헬퍼라 이 경로에서만 일괄 수정하는 것은 부적절 — 전용 처리 또는 헬퍼 계약 재검토 필요 |
-| FE-10 |  🟢 Low   | 정리   | 프론트 `'0'`(해당없음) 리터럴 반복을 공용 상수로 통합                                                            | 5개 파일 8곳에서 `'0'` 리터럴 반복: `TerminalFormDialog.vue:204,208`, `TerminalTableSection.vue:219`, `useCostRowEditing.ts:267,271`, `info/cost/form.vue:444,461`, `ResourceTableSection.vue:151`. 백엔드 `CodeDefaults.NOT_APPLICABLE`에 대응하는 프론트 상수 도입 검토                              |
-| FE-11 |  🟢 Low   | UX     | 계약방법 미선택 저장 실패 토스트에 행 식별 정보 없음                                                            | `it_frontend/app/pages/project/bizplan/[abusMngNo].vue:438-443`의 `계약방법을 선택하지 않은 계약 행이 있습니다` 토스트가 어느 행인지 지목하지 않아 계약 행이 많은 화면에서 사용자가 직접 찾아야 한다. 실패한 행 번호를 메시지에 포함하거나 해당 행의 계약방법 필드를 인라인 하이라이트하는 방안 검토 (UX 폴리시, 저우선순위)                              |
 
 ## ⚙️ 백엔드
 
@@ -68,7 +59,6 @@ _CQ-02~05·07~14 완료 근거는 [`TASK_DONE.md`](TASK_DONE.md)의 2026-07-21 C
 | TIP-02 | 🟡 Medium | 테스트 | Tiptap 사업 변수·실DB·HWPX E2E 인수조건 완성                            | 자동화 subset은 구현했으나 실제 NodeView DOM `data-token`이 없고 HWPX가 최신 resolve값 대신 stale `data-snapshot`을 사용한다. TIP-07·TIP-09 해소 후 expected-failure를 정상 회귀 테스트로 전환. `docs/03-analysis/tiptap-operational-validation.md` 참조 |
 | TIP-03 | 🟡 Medium | 정책   | Tiptap CAP_BUDGET 분류 정책을 운영 조회와 정렬                           | 승인/seed/검증 SQL은 `IOE_DVC/HW/SW/CPIT` 4종, `BudgetStatusQueryRepositoryImpl`은 `IOE_DVC/HW/SW` 3종이다. 현재 2026년 CPIT 0건이라 합계가 우연히 일치하며 정책 결정·런타임 정렬 전에는 완료할 수 없음 |
 | TIP-05 |  🟢 Low   | 검증   | 변수 칩 표시·다크모드 대비·키보드 삽입·aria-label·모바일 팝업 실화면 재검증 | TIP-07·TIP-08 해소 후 1280×800 밝은/어두운 모드와 390×844에서 실제 브라우저 재검증. 2026-07-26 자동 E2E·코드 점검 발견사항은 `docs/03-analysis/tiptap-accessibility-findings.md` 참조 |
-| TIP-06 |  🟢 Low   | 품질   | Tiptap `link`·`underline` 확장 중복 등록 제거                               | 2026-07-20 `/qa`에서 요구사항 정의서 상세 진입 시 중복 확장명 콘솔 경고 재현. 확장 등록 경로를 단일화하고 상세·편집 회귀 테스트 추가 |
 | TIP-07 | 🟡 Medium | 결함   | 변수 NodeView의 토큰 DOM 계약과 비동기 해석 즉시 반영 보강                | 렌더링 DOM에 `data-token`이 없고 비동기 해석 결과가 후속 ProseMirror transaction 전까지 LOADING으로 남을 수 있음. `VariableNodeView.vue` 속성 전달과 storage 반응성 경로를 수정하고 RED 회귀 테스트 추가 |
 | TIP-08 | 🟡 Medium | 접근성 | 변수 칩 다크모드 대비와 Suggestion 팝업 접근성·모바일 경계 보강           | 다크 배경에서 OK 1.99:1·MISSING 2.46:1·STALE 2.01:1·FORBIDDEN 1.52:1. 팝업에 listbox/option 의미·이름이 없고 right/bottom viewport clamp가 없음. 키보드·390×844 실화면 회귀 포함 |
 | TIP-09 | 🟡 Medium | 결함   | HWPX 내보내기 전에 Tiptap 변수를 최신값으로 재해석                         | source `data-snapshot=99억원`, resolve 응답 `125억원`에서 section XML이 99억원을 출력한다. `test.fail` 회귀 assertion이 125억원 포함·99억원 미포함을 실행하며, 제품 수정 시 unexpected pass로 전환되어 annotation 제거를 요구해야 함 |
@@ -88,7 +78,6 @@ _CQ-02~05·07~14 완료 근거는 [`TASK_DONE.md`](TASK_DONE.md)의 2026-07-21 C
 | BRD-03 |  🟢 Low   | 성능 | 조회수 카운터 Redis 전환                         | 다중 인스턴스 운영 시                                                  |
 | BRD-05 |  🟢 Low   | 기능 | 첨부파일 다운로드 카운트 컬럼(`FL_DWN_NBR`) 추가 | 자료실 인기 자료 통계                                                  |
 | BRD-06 |  🟢 Low   | 기능 | 댓글 첨부파일 지원                               | `ORC_DTT="공통게시판댓글"` 추가                                        |
-| BRD-11 | 🟡 Medium | 기능 | 게시판 첨부파일 UI/API 연결                      | 현재 게시물 타입에 `flApgYn`, `flNbr`만 있고 파일 업로드 흐름은 미연동 |
 
 ## 🔌 EAI
 

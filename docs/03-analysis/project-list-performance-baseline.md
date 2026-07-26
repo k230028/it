@@ -1,6 +1,6 @@
 # 사업 카드 목록 성능 기준선 (FE-04)
 
-측정일: 2026-07-26  
+측정일: 2026-07-26
 대상: 사업계획(`/project/bizplan`), 소요예산 산정(`/project/estimate`), 정보화실무협의회(`/info/council-request`)
 
 ## 목적과 판정 기준
