@@ -15,6 +15,19 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-07-26 프론트 포맷터·사업카드 색상 정책 정리 (FE-02, FE-05, FE-06)
+
+| 상태 | ID | 과제 | 완료 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | FE-02 | 잔여 파일 크기·통화·금액 표시 중복 공통화 | 검토의견 팝오버·메신저는 공용 `formatFileSize`를 사용하고, 의미가 같은 네 상세 화면의 통화 표시는 신규 `formatCurrencyAmount`로 통합했다. 표현 의미가 다른 로컬 포맷터는 유지했다. |
+| ✅ Done | FE-05 | 목록 예산 축약 포맷터 이름 충돌 해소 | 두 목록 화면의 동명 로컬 `formatBudget`을 제거하고 경계·음수 계약을 고정한 공용 `formatBudgetCompact`로 승격해 기존 단위 변환용 `formatBudget`과 이름·용도를 분리했다. |
+| ✅ Done | FE-06 | `ProjectListCard` 상태·칩 톤을 의미 클래스 정책으로 통합 | 상태 5톤과 보조 칩 4톤을 `.project-card-status--*`·`.project-card-chip--*`로 옮기고 `tags.css`의 일반 `span`용 `@apply` 규칙으로 관리한다. PrimeVue `.kdb-tag-*`의 `!important`와 CTA `.v3-cta--*` 색상 계약은 변경하지 않았다. |
+
+- 프론트 커밋: `d9b8a52`(FE-02·FE-05), `39024e9`(FE-06).
+- 검증: `npm test` 143파일·1,811건 통과, `npm run check` 통과, `npm run lint:css` 통과, 지정 포맷터 중복 검색 0건.
+- 비차단 확인: 기존 밝은/어두운 pixel baseline 또는 screenshot 시나리오가 없어 픽셀 비교는 실행하지 않았고, 전체 tone 의미 매핑과 CTA 불변을 단위/CSS 게이트로 고정했다.
+- 기존의 “FE-02 예산 목록/승인 화면 금액 0 표시 정책 보정” 완료 기록은 별도 과거 범위이므로 아래 기록을 유지한다.
+
 ### ✅ 2026-07-26 에러 표면화·복구 (ERR-09, ERR-10)
 
 > `TASK.md`의 ⚠️ 에러 처리 ERR-09·ERR-10을 구현·검증하고 종료 이관했습니다. 설계: `docs/superpowers/specs/2026-07-25-security-error-remediation-sec08-err10-design.md` §4(Phase B)·§5(Phase C), 계획: `docs/superpowers/plans/2026-07-25-security-error-phase-b-backend-surfacing.md`·`docs/superpowers/plans/2026-07-25-security-error-phase-c-frontend-states.md`. it_backend 브랜치 `feat/err08-err09-backend-surfacing`를 main에 병합(머지 `6fa3cf9`, ERR-09 NativeRowMapper 중앙 진단)하고, `feat/err10-council-sync-auth`를 main에 병합(머지 `0a98a43`, ERR-10 C4-1). it_frontend 브랜치 `feat/err08-banner-err10-frontend`를 main에 병합(머지 `a90f79c`, ERR-10 C1~C4-2 + ERR-08 스냅샷 배너).
