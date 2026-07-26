@@ -20,6 +20,10 @@ it/
 └── TASK.md             ← 미구현/기술부채/장기 과제
 ```
 
+### 4-repo 토폴로지
+
+`C:\it`는 문서·도구만 추적하고 `it_frontend`/`it_backend`/`it_database`는 각각 독립 원격 저장소입니다(루트 `.gitignore`로 제외). 호환 커밋 조합은 `versions.lock`에 기록하며 `scripts/update-versions-lock.ps1`로 갱신합니다. 교차 저장소 변경은 백엔드 계약(API) 커밋을 먼저 만들고, 이를 참조하는 프론트 커밋을 뒤이어 만듭니다.
+
 각 영역의 단일 진실 공급원(Single Source of Truth):
 
 | 토픽                                                                | SoT                                                                                                                               |
