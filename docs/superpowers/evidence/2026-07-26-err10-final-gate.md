@@ -27,6 +27,27 @@
 
 lint 경고는 `app/pages/budget/status.vue` 822·992·1150행의 `:footerClass` 하이픈화 3건뿐이다. 오류는 없으며 FE-07 소유의 deferred minor이므로 ERR-10에서 수정하지 않았다.
 
+## 최종 수정 라운드 추가 증빙
+
+최종 리뷰에서 확인된 PDF 복구 진입점과 Tiptap 문서 수명 경계를 보완했다. 아래 행은 이전 frontend SHA 행을 대체하는 **최종 프론트 검증 기준**이다.
+
+| 저장소 | SHA | 범위 |
+| --- | --- | --- |
+| frontend | `a6f0cba339b92d3600532cc9023721dba5e676cc` | ERR-10 최종 수정 2건을 포함한 전체 프론트 검증 기준 |
+
+| 명령 | 종료 | 식별 가능한 출력·수량 |
+| --- | :--: | --- |
+| `npm test -- --run tests/unit/components/TiptapEditor.test.ts tests/unit/pages/infoProjectsReport.test.ts` (RED 전) | 1 | 새 Tiptap 2건·PDF 1건이 각각 기존 동작 부재로 실패 |
+| 같은 명령 (GREEN 후) | 0 | `2 passed`, `19 passed (19)` |
+| `npx playwright test tests/e2e/error-recovery-tiptap.spec.ts tests/e2e/report-pdf-latest.spec.ts` | 0 | `5 passed (56.1s)` |
+| `npm run check` | 0 | typecheck 통과, ESLint 0 errors·기존 `budget/status.vue` 경고 3건 |
+| `npm test -- --run` | 0 | `135 passed`, `1751 passed (1751)` |
+| `npx playwright test tests/e2e/error-recovery-currency.spec.ts tests/e2e/error-recovery-tiptap.spec.ts tests/e2e/report-pdf-latest.spec.ts tests/e2e/result-review-sync.spec.ts` | 0 | `9 passed (1.1m)` |
+
+- `8552f20`: ERROR 토큰을 에디터 업데이트 시 실제 문서 토큰과 교집합으로 정리하고, 외부 문서·`variableValues` 교체 시 비동기 해석 세대를 무효화했다. 완료 응답은 현재 문서의 활성 토큰일 때만 병합한다.
+- `a6f0cba`: PDF 최신 생성 실패 상태에 명시적 `다시 시도` 버튼을 추가했다. 이 버튼은 결재선·양식 데이터를 변경하지 않고 `generatePdf()`를 호출하며 기존 revision·상신 가드를 그대로 사용한다. PDF E2E도 결재자 변경 대신 이 버튼을 클릭하도록 수정했다.
+- ERR-10 신규/수정 테스트의 Arrange/Act/Assert 주석을 준비/실행/검증으로 정리했다. 생성된 `tsconfig.test.tsbuildinfo`는 검증 후 복원했고 프론트 작업 트리는 clean 상태다.
+
 ## 핵심 E2E 수령 결과
 
 | spec | 통과 | 확인한 계약 |

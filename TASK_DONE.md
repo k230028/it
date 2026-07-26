@@ -26,6 +26,7 @@
 
 - 최종 검증: it_frontend `npm run check`(타입·ESLint 0 errors)·`npm test`(135파일 1746 통과)·신규 e2e 5종(통화·Tiptap·PDF·스냅샷·협의회 sync) 통과. it_backend `./gradlew test`·`spotlessCheck` BUILD SUCCESSFUL. 태스크별 2단계 리뷰(스펙 준수·코드 품질) + 최종 홀리스틱 프론트 리뷰 READY-TO-MERGE(교차 레인 일관성·하위호환·회귀 없음 확인).
 - 최종 게이트 재검증(2026-07-26): 이관 전 root `0439417`, frontend 제품/E2E `8d3eda3`·최종 테스트 `4e91e9c`, backend `52552cc`에서 수행한 정확한 명령·종료 코드·레인 C1~C4 PASS 수락은 [`2026-07-26-err10-final-gate.md`](docs/superpowers/evidence/2026-07-26-err10-final-gate.md)에 고정했다. 해당 영수증에 따라 it_frontend `npm run typecheck`·`npm run lint`·`npm test -- --run`·지정 Playwright 4개 spec(9건), it_backend `./gradlew test`·`./gradlew spotlessCheck`가 모두 종료 코드 0이다. 기준일자 필수화 뒤 누락된 `TerminalFormDialog` 정상 통화 fixture에는 유효 `cdvaDtl`을 보강했다(`4e91e9c`). lint의 `budget/status.vue` `:footerClass` 3건은 FE-07 소유 경고로 제품 코드 변경 없이 보류했다.
+- 최종 수정 라운드(2026-07-26): frontend `a6f0cba`에서 PDF 생성 실패 뒤 결재선을 바꾸지 않는 명시적 `다시 시도`를 추가하고, Tiptap의 삭제 ERROR 토큰 정리·문서/변수 맵 전환 중 구 비동기 응답 격리를 보강했다. TDD RED(신규 3건 실패) 뒤 GREEN(집중 19/19)과 영향 E2E 5/5를 확인했으며, 최종 `npm run check`·전체 Vitest 135파일/1,751건·지정 ERR-10 Playwright 9/9가 모두 종료 코드 0이다. 정확한 명령과 SHA는 같은 [`최종 게이트 영수증`](docs/superpowers/evidence/2026-07-26-err10-final-gate.md)의 “최종 수정 라운드 추가 증빙”에 고정했다.
 - 잔여 후속(비차단): `TerminalFormDialog` eager:false 다이얼로그가 `cost`를 초기 로드 후 다시 null로 만들 경우의 상태 리셋 방지(key-stable 래퍼/문서화), `ResultReviewProgress`의 `asctId`를 반응형으로 바꾸는 미래 caller에서 자동 트리거 지연 가능성 문서화, 분당 1회 toast 스로틀 공용 헬퍼 추출(DRY) — 별도 과제로 추적.
 
 ### ✅ 2026-07-25 보안 트랜잭션 무결성 (SEC-08, SEC-09)
