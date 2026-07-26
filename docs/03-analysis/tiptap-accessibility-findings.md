@@ -65,7 +65,6 @@
 - 카테고리·연도·항목 선택 후 실제 변수 삽입과 해석 금액
 - 사업 선택 후 저장 HTML의 정확한 `data-token`
 - MISSING 원본 토큰·tooltip·aria-label
-- HWPX `Contents/section0.xml`의 미해석 토큰 0건과 기대 금액 포함
 - 키보드 단계 이동은 자동 E2E로 확인했고, Escape 처리는 기존 구현 경로를 코드로 확인
 
 실제 브라우저가 제공되는 환경에서 TIP-07·TIP-08 수정 후 TIP-05 체크리스트 전체를 다시 수행한다.

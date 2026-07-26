@@ -68,10 +68,13 @@ _CQ-02~05·07~14 완료 근거는 [`TASK_DONE.md`](TASK_DONE.md)의 2026-07-21 C
 
 | ID     | 우선순위  | 유형   | 과제                                                                    | 근거/조건                                |
 | ------ | :-------: | ------ | ----------------------------------------------------------------------- | ---------------------------------------- |
+| TIP-02 | 🟡 Medium | 테스트 | Tiptap 사업 변수·실DB·HWPX E2E 인수조건 완성                            | 자동화 subset은 구현했으나 실제 NodeView DOM `data-token`이 없고 HWPX가 최신 resolve값 대신 stale `data-snapshot`을 사용한다. TIP-07·TIP-09 해소 후 expected-failure를 정상 회귀 테스트로 전환. `docs/03-analysis/tiptap-operational-validation.md` 참조 |
+| TIP-03 | 🟡 Medium | 정책   | Tiptap CAP_BUDGET 분류 정책을 운영 조회와 정렬                           | 승인/seed/검증 SQL은 `IOE_DVC/HW/SW/CPIT` 4종, `BudgetStatusQueryRepositoryImpl`은 `IOE_DVC/HW/SW` 3종이다. 현재 2026년 CPIT 0건이라 합계가 우연히 일치하며 정책 결정·런타임 정렬 전에는 완료할 수 없음 |
 | TIP-05 |  🟢 Low   | 검증   | 변수 칩 표시·다크모드 대비·키보드 삽입·aria-label·모바일 팝업 실화면 재검증 | TIP-07·TIP-08 해소 후 1280×800 밝은/어두운 모드와 390×844에서 실제 브라우저 재검증. 2026-07-26 자동 E2E·코드 점검 발견사항은 `docs/03-analysis/tiptap-accessibility-findings.md` 참조 |
 | TIP-06 |  🟢 Low   | 품질   | Tiptap `link`·`underline` 확장 중복 등록 제거                               | 2026-07-20 `/qa`에서 요구사항 정의서 상세 진입 시 중복 확장명 콘솔 경고 재현. 확장 등록 경로를 단일화하고 상세·편집 회귀 테스트 추가 |
 | TIP-07 | 🟡 Medium | 결함   | 변수 NodeView의 토큰 DOM 계약과 비동기 해석 즉시 반영 보강                | 렌더링 DOM에 `data-token`이 없고 비동기 해석 결과가 후속 ProseMirror transaction 전까지 LOADING으로 남을 수 있음. `VariableNodeView.vue` 속성 전달과 storage 반응성 경로를 수정하고 RED 회귀 테스트 추가 |
 | TIP-08 | 🟡 Medium | 접근성 | 변수 칩 다크모드 대비와 Suggestion 팝업 접근성·모바일 경계 보강           | 다크 배경에서 OK 1.99:1·MISSING 2.46:1·STALE 2.01:1·FORBIDDEN 1.52:1. 팝업에 listbox/option 의미·이름이 없고 right/bottom viewport clamp가 없음. 키보드·390×844 실화면 회귀 포함 |
+| TIP-09 | 🟡 Medium | 결함   | HWPX 내보내기 전에 Tiptap 변수를 최신값으로 재해석                         | source `data-snapshot=99억원`, resolve 응답 `125억원`에서 section XML이 99억원을 출력한다. `test.fail` 회귀 assertion이 125억원 포함·99억원 미포함을 실행하며, 제품 수정 시 unexpected pass로 전환되어 annotation 제거를 요구해야 함 |
 
 ## 📡 실시간 로그
 
