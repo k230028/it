@@ -1,6 +1,6 @@
 # ✅ IT Portal 완료·종료 내역 (Archive)
 
-> 🗓️ **기준일:** 2026-07-25
+> 🗓️ **기준일:** 2026-07-26
 > 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️) 항목을 보관합니다.
 
 ### 🔑 범례 (Legend)
@@ -14,6 +14,16 @@
 ---
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
+
+### ✅ 2026-07-26 Tiptap 운영 데이터·E2E 검증 (TIP-02, TIP-03)
+
+| 상태 | ID | 과제 | 완료 근거 |
+| :--: | :--: | --- | --- |
+| ✅ Done | TIP-03 | Tiptap 변수 카테고리 매핑 운영 데이터 검증 | 로컬 Oracle `ITPAPP@127.0.0.1:11521/XEPDB1`, 기준연도 2026의 최신·활성 사업/품목과 `CO_C_ID_NM='IOE_C'` 코드를 실제 집계했다. IT_BUDGET 23건·54,357,800,000원, CAP_BUDGET 15건·53,157,800,000원, OPEX 8건·1,200,000,000원이며 미매핑 코드는 0그룹이다. `IT_BUDGET = CAP_BUDGET + OPEX`가 건수와 합계에서 모두 성립한다. 재실행 가능한 SQL은 백엔드 `src/test/resources/sql/verify_tiptap_budget_categories.sql`에 보존했다. |
+| ✅ Done | TIP-02 | 사업 변수·실DB 갱신·HWPX E2E 자동화 | 사업 선택 후 실제 삽입과 저장 HTML의 `data-token`, 화면 해석 금액을 검증하고 MISSING 오류 상태를 강화했다. HWPX 다운로드를 JSZip으로 열어 `Contents/section0.xml`에 미해석 `{{...}}`가 없고 기대 금액이 포함됨을 확인했다. `E2E_LOCAL_DB=true` 시나리오는 로컬 Oracle 품목 금액을 변경하고 실제 API 해석 반영을 확인한 뒤 `finally`에서 시작값으로 복구하고 동일값을 재조회한다. Mock E2E 5건과 `@local-db` 1건이 통과했다. |
+
+- TDD 증거: 사업 해석 응답을 의도적으로 125억원에서 126억원으로 변이하자 실제 변수 칩 금액 assertion이 정확히 RED가 되었고, 원복 후 지정 E2E가 GREEN으로 복귀했다.
+- TIP-05 실화면 검증은 브라우저 연결 수단이 제공되지 않은 환경 제한과 실제 접근성 결함 때문에 종료하지 않았다. 자동 E2E·코드/CSS 점검으로 발견한 `data-token` DOM 누락, 비동기 해석 지연, 다크모드 대비, 팝업 의미·모바일 경계 문제는 [`tiptap-accessibility-findings.md`](docs/03-analysis/tiptap-accessibility-findings.md)에 기록하고 TIP-07·TIP-08로 추적한다. TIP-05는 두 결함 해소 후 실제 화면 재검증으로 유지한다.
 
 ### ✅ 2026-07-26 에러 표면화·복구 (ERR-09, ERR-10)
 

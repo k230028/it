@@ -68,10 +68,10 @@ _CQ-02~05·07~14 완료 근거는 [`TASK_DONE.md`](TASK_DONE.md)의 2026-07-21 C
 
 | ID     | 우선순위  | 유형   | 과제                                                                    | 근거/조건                                |
 | ------ | :-------: | ------ | ----------------------------------------------------------------------- | ---------------------------------------- |
-| TIP-02 | 🟡 Medium | 테스트 | E2E 시나리오 2/3/5 자동화                                               | 대상: 사업별, 실DB 갱신, HWPX 내보내기   |
-| TIP-03 | 🟡 Medium | 검증   | Tiptap 변수 카테고리 매핑 운영 데이터 검증                              | IT_BUDGET 일반관리비 포함 여부 확인 필요 |
-| TIP-05 |  🟢 Low   | 검증   | 변수 칩 표시·다크모드 대비·키보드 삽입·aria-label·모바일 팝업 수동 검증 | 병합 후 UI 접근성/반응형 확인 필요       |
+| TIP-05 |  🟢 Low   | 검증   | 변수 칩 표시·다크모드 대비·키보드 삽입·aria-label·모바일 팝업 실화면 재검증 | TIP-07·TIP-08 해소 후 1280×800 밝은/어두운 모드와 390×844에서 실제 브라우저 재검증. 2026-07-26 자동 E2E·코드 점검 발견사항은 `docs/03-analysis/tiptap-accessibility-findings.md` 참조 |
 | TIP-06 |  🟢 Low   | 품질   | Tiptap `link`·`underline` 확장 중복 등록 제거                               | 2026-07-20 `/qa`에서 요구사항 정의서 상세 진입 시 중복 확장명 콘솔 경고 재현. 확장 등록 경로를 단일화하고 상세·편집 회귀 테스트 추가 |
+| TIP-07 | 🟡 Medium | 결함   | 변수 NodeView의 토큰 DOM 계약과 비동기 해석 즉시 반영 보강                | 렌더링 DOM에 `data-token`이 없고 비동기 해석 결과가 후속 ProseMirror transaction 전까지 LOADING으로 남을 수 있음. `VariableNodeView.vue` 속성 전달과 storage 반응성 경로를 수정하고 RED 회귀 테스트 추가 |
+| TIP-08 | 🟡 Medium | 접근성 | 변수 칩 다크모드 대비와 Suggestion 팝업 접근성·모바일 경계 보강           | 다크 배경에서 OK 1.99:1·MISSING 2.46:1·STALE 2.01:1·FORBIDDEN 1.52:1. 팝업에 listbox/option 의미·이름이 없고 right/bottom viewport clamp가 없음. 키보드·390×844 실화면 회귀 포함 |
 
 ## 📡 실시간 로그
 
