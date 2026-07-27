@@ -1,6 +1,6 @@
 # ✅ IT Portal 완료·종료 내역 (Archive)
 
-> 🗓️ **기준일:** 2026-07-26
+> 🗓️ **기준일:** 2026-07-27
 > 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️)·폐기(⛔) 항목을 보관합니다.
 
 ### 🔑 범례 (Legend)
@@ -15,6 +15,14 @@
 ---
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
+
+### ✅ 2026-07-27 BE-17 프로젝션 보류 정책 4건 확정·대표행 결정론화 구현
+
+> 2026-07-27 사용자 확정 정책: ① BITEMM GCL 대표행 = `LST_YN='Y'` 우선(없으면 SNO 최대 폴백) ② BBUGTM 편성률 대표행 = 최신 편성 실행(`bgNo` 최대, 동률 시 `sno` 최대) ③ BPROJM 배치 사업명 = `LST_YN='Y'` 행 이름(없으면 관리번호 폴백)으로 단건 조회와 통일 ④ `getProjectSummary` 그룹 키 = `(orcTb, pkVl)` 복합키 분리. 차단 해제된 BBUGTM·`ProjectKeyView` 프로젝션은 BE-03 보수적 프로젝션 후속 재계획 시 포함한다. 범위 외로 발견된 `getSummary` 표시명 병합 블록의 잔여 encounter-order 채택은 BE-24로 분리 등록했다.
+
+| 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✅ Done | BE-17 | 대표행 셀렉터 3종 신설(`BudgetRepresentativeSelector`·`ItemRepresentativeSelector`·`ProjectRepresentativeSelector`)과 `BudgetWorkService`의 encounter-order 채택 지점 교체(getIoeCategories 편성률, getProjectSummary 헤더 편성률·품목 편성행·BITEMM 그룹핑·배치 사업명, computeMplAdjustment 품목 대표행·비목 분류 편성행), `SourceKey(orcTb, pkVl)` 복합키 분리 및 `orcTbMap` 제거 | it_backend `feature/be17-representative-row-policies` 브랜치 `bdf3c92`…`579accd` 11커밋 | TDD RED→GREEN 단계별 실증(구버전 구현 복원 실패 실증 포함), 신규 단위 테스트 21건 추가·전체 `./gradlew test` BUILD SUCCESSFUL, Task별 스펙·품질 2단계 리뷰 및 전체 최종 리뷰 READY TO MERGE. 구현 계획: `docs/superpowers/plans/2026-07-27-be17-representative-row-policies.md` |
 
 ### ⛔ 2026-07-26 프론트엔드 잔여과제 범위 종료
 
