@@ -16,6 +16,14 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-07-27 BE-03 보수적 프로젝션 1차 적용 (6개 묶음 + 가이드 목록 계약 분리)
+
+> 사용자 승인(2026-07-27: "6건 전부 구현" + "가이드 목록 계약 분리 지금 함께")에 따라 경계선 6개 묶음 전부에 응답 전용 프로젝션을 적용했다. 응답 JSON은 가이드 목록(승인된 계약 변경, `feat!`)을 제외하고 전부 불변이며, 읽기·쓰기 공유 메서드는 기존 엔티티 경로를 유지했다. 잔여 과제(운영 관측 조정, Project/Cost·알림함 계약 분리, BBUGTM 재계획, versions.lock)는 `TASK.md` BE-03 참조. 조사 중 발견된 부수 이슈는 BE-25(캐시 공백)·BE-26(N+1)·BE-27(IT fixture 격리)로 분리 등록.
+
+| 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✅ Done | BE-03(1차) | ① Estimate 상세 `EstimateDetailView`(7컬럼) ② Application 읽기 `ApplicationReadView`(8컬럼, 죽은 오버로드 제거) ③ 공통코드 REST `CcodemResponseRow`(18컬럼, 캐시·직접 소비자 불변) ④ 게시판 메타·댓글 목록 `BoardMetaListRow`/`BoardCommentListRow` ⑤ 조직 소비자별 `OrganizationListView`/`OrganizationAdminView`(인메모리 delYn 필터→쿼리 필터) ⑥ 가이드 목록 계약 분리(`GuideDocListView`+`ListResponse`, 본문 CLOB 제외) + 프론트 전환(목록 Summary 타입, 선택 시 단건 본문 조회, 상세 로드 실패 시 빈 본문 덮어쓰기 차단) | it_backend `feature/be03-conservative-projections` `7e73d18`…`b6714db`(11커밋); it_frontend `feature/be03-guide-list-split` `c23413a`·`8b45d3a` | 신규 조회마다 Oracle IT 동등성 케이스(로컬 Oracle 실제 실행 GREEN, `Projections.constructor` 순서 검출 fixture 보강 포함), 백엔드 전체 `./gradlew test`·`integrationTest` GREEN, 프론트 `npm run check`+`npm test` 1834건 GREEN, Task별 2단계 리뷰(프론트 CRITICAL 빈 본문 덮어쓰기 경로 발견·수정 포함) 및 전체 최종 리뷰 READY TO MERGE. 계획: `docs/superpowers/plans/2026-07-27-be03-conservative-projections.md` |
+
 ### ✅ 2026-07-27 BE-17 프로젝션 보류 정책 4건 확정·대표행 결정론화 구현
 
 > 2026-07-27 사용자 확정 정책: ① BITEMM GCL 대표행 = `LST_YN='Y'` 우선(없으면 SNO 최대 폴백) ② BBUGTM 편성률 대표행 = 최신 편성 실행(`bgNo` 최대, 동률 시 `sno` 최대) ③ BPROJM 배치 사업명 = `LST_YN='Y'` 행 이름(없으면 관리번호 폴백)으로 단건 조회와 통일 ④ `getProjectSummary` 그룹 키 = `(orcTb, pkVl)` 복합키 분리. 차단 해제된 BBUGTM·`ProjectKeyView` 프로젝션은 BE-03 보수적 프로젝션 후속 재계획 시 포함한다. 범위 외로 발견된 `getSummary` 표시명 병합 블록의 잔여 encounter-order 채택은 BE-24로 분리 등록했다.
