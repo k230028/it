@@ -56,9 +56,10 @@ it/
 | 서비스     | URL                        | 시작 명령                            |
 | ---------- | -------------------------- | ------------------------------------ |
 | WebTobe    | https://it.kdb.co.kr:20443 | -----------                          |
-| 프론트엔드 | (CSR)                      | `cd it_frontend && npm run generate` |
+| 프론트엔드 | (CSR)                      | `cd it_frontend; $env:SPRING_PROFILES_ACTIVE="prod"; npm run generate` |
 | 백엔드 API | http://localhost:28080     | `cd it_backend && java -jar ooo.war` |
 
+- 프론트 정적 생성의 프로파일은 백엔드와 같은 `SPRING_PROFILES_ACTIVE`를 사용합니다. PowerShell에서는 환경변수를 먼저 설정한 뒤 `npm run generate`를 실행하며, 미지정·미지원 프로파일은 `scripts/generate.mjs`가 실패로 종료합니다.
 - DB 스키마 분리 (전 환경 공통): 접속 계정은 `ITPAPP`, 객체 소유 스키마는 `ITPOWN`(`ITPOWN.테이블명`으로 접근).
   베이스 설정이 `CURRENT_SCHEMA=ITPOWN`으로 세션을 전환하므로 코드에 스키마 접두어를 쓰지 않습니다.
   상세는 `it_backend/CLAUDE.md` §2 참조.
@@ -107,8 +108,9 @@ it/
 ### 4.4 데이터베이스 마이그레이션 (Flyway)
 
 > **현황**: 백엔드에 Flyway 런타임(`flyway-core`, `flyway-database-oracle`)이 통합되어 있습니다.
-> Gradle `processResources`가 `it_database/migrations/V*.sql`을 `classpath:db/migration`으로 포함하고,
-> `local-ext`/`local-int` 프로파일 기동 시 신규 마이그레이션을 적용합니다. `dev`/`prod` DB는 DBA가 적용합니다.
+> Gradle `processResources`가 `it_database/migrations/V*.sql`을 빌드 산출물의 `classpath:db/migration`으로 포함합니다.
+> `local-ext`/`local-int` 프로파일의 개발 기동은 IDE와 `bootRun`에서 동일하게 동작하도록 형제 디렉터리의
+> `filesystem:../it_database/migrations`를 직접 읽어 신규 마이그레이션을 적용합니다. `dev`/`prod` DB는 DBA가 적용합니다.
 
 - **경로**: `it_database/migrations/`
 - **네이밍 규칙**: `V{YYYYMMDD_NNN}__{설명}.sql`
@@ -173,5 +175,6 @@ it/
 | `npm test`                                 | `it_frontend` | 프론트 단위 테스트                    |
 | `npm run test:e2e`                         | `it_frontend` | 핵심 사용자 흐름 E2E 테스트           |
 | `./gradlew test`                           | `it_backend`  | 백엔드 단위·슬라이스 테스트           |
+| `./gradlew check`                          | `it_backend`  | 포맷·테스트·커버리지 품질 게이트       |
 | `./gradlew integrationTest`                | `it_backend`  | 실제 Oracle 매핑·QueryDSL 통합 테스트 |
 | `./gradlew jacocoTestCoverageVerification` | `it_backend`  | 설정된 커버리지 기준 확인             |
