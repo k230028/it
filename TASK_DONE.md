@@ -16,6 +16,18 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-07-29 ERR-11·ERR-12·FE-12(스파이크)·FE-13·FE-14 조치
+
+> 계획 `docs/superpowers/plans/2026-07-29-err11-12-fe12-14-remediation.md`를 서브에이전트 기반(구현 → 스펙 리뷰 → 품질 리뷰 → 재작업 루프)으로 실행했다. 구현은 `it_frontend` 브랜치 `feature/err-fe-remediation-20260729`에 있으며 **아직 main에 병합되지 않았다** — 병합 후 `scripts/update-versions-lock.ps1`로 `versions.lock`을 갱신해야 한다. 리뷰 과정에서 계획 자체의 오진 2건(FE-14 수정 지점, ERR-11 재조회 상호작용)과 Nuxt `useAsyncData` 계약 오해 1건이 드러나 계획을 정정하며 진행했고, 파생 과제는 ERR-13·FE-15~19로 등록했다.
+
+| 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✅ Done | FE-14 | Tiptap 변수 칩이 재시도 성공값을 반영하지 않던 간헐 버그 해소. 원인은 병합 로직이 아니라 **반응성 경계**였다: Tiptap core의 `Extendable.storage` getter가 `addStorage()` 반환값을 객체 스프레드로 복사해 확장 정의의 반응형이 사라지고, `@tiptap/vue-3`의 `editor.storage`는 `beforeTransaction`에서만 trigger되는 `customRef`라 값 재할당이 `VariableNodeView`의 computed를 무효화하지 못했다(무관한 트랜잭션 발생 시에만 우연히 갱신 → flaky). `VariableExtension.onBeforeCreate`에서 살아 있는 `editor.storage.tiptapVariable`을 `shallowReactive`로 교체 | it_frontend `92331bb`(무효 시도) → `94a626e`(mock 경계 회귀) → `3577eea`(최종) | 실제 `@tiptap/vue-3` Editor 경로 단위 테스트 2건(설치 전 미전파/설치 후 전파), `error-recovery-tiptap.spec.ts` `--repeat-each=5` 5회 연속 통과(+리뷰어 3회 추가), 전체 148 files/1886 tests. 리뷰어가 Tiptap core 소스와 자체 프로브로 `beforeCreate`가 NodeView 마운트보다 선행하고 `editor.storage.tiptapVariable === editor.extensionStorage.tiptapVariable`임을 독립 검증 |
+| ✅ Done | ERR-11 | 전산업무비 일괄 저장의 부분 실패 복구. ① 실패 행별 사유(`_saveError`)·편집값·`_status`를 편집 모드에 보존하고 성공 행만 정리 ② `costsRaw` watcher가 실패 행을 서버 데이터로 덮어쓰지 않도록 보존(스냅샷은 서버 원본 기준 유지) ③ 재조회 실패를 `error` ref로 판정해 배너·재시도(`retryRefreshAfterSave`) 제공, 성공한 쓰기는 재전송하지 않음 ④ 취소 경로의 미처리 예외 처리 ⑤ 화면 표면화(실패 배너·재조회 실패 배너·실패 행 강조 `row-save-failed`) | it_frontend `8af9d9f`·`17940b0`·`7e85e97`·`482d324`·`9602152`·`334eea2`·`ae4317e` | 단위·통합 테스트 15건(부분 실패·전체 실패·성공 회귀·재조회 실패·중복 저장 차단·유령 배너 해제·취소 경로·실제 watcher 통합), 리뷰어가 소스만 되돌려 RED 재현 및 `StyledDataTable` 실제 DOM 렌더로 `tr.row-save-failed` 적용 확인, 전체 149 files/1905 tests |
+| ✅ Done | ERR-12 | 계속사업 자동완성의 조회 실패를 "결과 없음"과 구분. `continueSearchError`로 사유를 남기고 인라인 `Message`+[다시 시도](로딩 상태 포함) 제공, 사업구분 전환 시 낡은 오류 정리 | it_frontend `32aee86`·`d67a23e` | 단위 테스트 4건(빈 결과·실패·재시도·오류 초기화), watcher 초기화 한 줄 제거로 RED 실측, 전체 150 files/1909 tests |
+| ✅ Done | FE-13 | `it_frontend/docs/design/`을 `docs/preview/`로 통합하고 `docs/guides/README.md`에 위치 규약 명시(참조 0건 사전 확인) | it_frontend `8034ae0` | `git grep`으로 두 경로 참조 0건 확인, rename으로 이력 보존, `docs/design` 제거 확인 |
+| ✅ Done | FE-12(스파이크) | openapi-typescript vs orval 실측 비교 완료 — **openapi-typescript 조건부 채택, orval 보류**. 도입 실행은 FE-15로 재등록 | 루트 `fa27c6d` (리포트) | 실측: 스펙 paths 159·operations 235·schemas 234(OpenAPI 3.1), openapi-typescript 1파일 13,328줄·런타임 의존성 0, orval 37파일 15,594줄·mutator 위임 구조 확인. 프론트 저장소 무변경 확인. 리포트 `docs/superpowers/reports/2026-07-fe12-openapi-codegen-spike.md` |
+
 ### ✅ 2026-07-27 BE-03 보수적 프로젝션 1차 적용 (6개 묶음 + 가이드 목록 계약 분리)
 
 > 사용자 승인(2026-07-27: "6건 전부 구현" + "가이드 목록 계약 분리 지금 함께")에 따라 경계선 6개 묶음 전부에 응답 전용 프로젝션을 적용했다. 응답 JSON은 가이드 목록(승인된 계약 변경, `feat!`)을 제외하고 전부 불변이며, 읽기·쓰기 공유 메서드는 기존 엔티티 경로를 유지했다. 잔여 과제(운영 관측 조정, Project/Cost·알림함 계약 분리, BBUGTM 재계획, versions.lock)는 `TASK.md` BE-03 참조. 조사 중 발견된 부수 이슈는 BE-25(캐시 공백)·BE-26(N+1)·BE-27(IT fixture 격리)로 분리 등록.
