@@ -143,8 +143,8 @@
   <div class="hero">
     <div class="lead">
       <div class="k">미조정 기능점수 UFP</div>
-      <div class="v">1,304<small>FP</small></div>
-      <div class="sub">데이터 328 + 트랜잭션 976</div>
+      <div class="v">1,305<small>FP</small></div>
+      <div class="sub">데이터 328 + 트랜잭션 977</div>
     </div>
     <div>
       <div class="k">물리 테이블</div>
@@ -368,7 +368,7 @@
 
   <section>
     <div class="sec-head"><span class="sec-no">STEP 3</span><h2>트랜잭션 기능 (EI / EO / EQ)</h2>
-      <span class="sec-note">976 FP</span></div>
+      <span class="sec-note">977 FP</span></div>
     <div class="tw">
     <table>
       <thead>
@@ -388,22 +388,22 @@
         </tr>
         <tr>
           <td><span class="type eo">EO</span> <span class="muted">외부출력</span></td>
-          <td class="n">30</td>
-          <td class="n">6</td><td class="n">16</td><td class="n">8</td>
-          <td><div class="bar"><i class="l" style="width:20%"></i><i class="a" style="width:53.333333333333336%"></i><i class="h" style="width:26.666666666666668%"></i></div></td>
-          <td class="n"><b>160</b></td>
+          <td class="n">31</td>
+          <td class="n">6</td><td class="n">16</td><td class="n">9</td>
+          <td><div class="bar"><i class="l" style="width:19.35483870967742%"></i><i class="a" style="width:51.61290322580645%"></i><i class="h" style="width:29.03225806451613%"></i></div></td>
+          <td class="n"><b>167</b></td>
         </tr>
         <tr>
           <td><span class="type eq">EQ</span> <span class="muted">외부조회</span></td>
-          <td class="n">73</td>
-          <td class="n">19</td><td class="n">38</td><td class="n">16</td>
-          <td><div class="bar"><i class="l" style="width:26.027397260273972%"></i><i class="a" style="width:52.054794520547944%"></i><i class="h" style="width:21.91780821917808%"></i></div></td>
-          <td class="n"><b>305</b></td>
+          <td class="n">72</td>
+          <td class="n">19</td><td class="n">38</td><td class="n">15</td>
+          <td><div class="bar"><i class="l" style="width:26.38888888888889%"></i><i class="a" style="width:52.77777777777778%"></i><i class="h" style="width:20.833333333333336%"></i></div></td>
+          <td class="n"><b>299</b></td>
         </tr>
         <tr class="total">
           <td>트랜잭션 기능 소계</td><td class="n">239</td>
           <td class="n">110</td><td class="n">79</td><td class="n">50</td>
-          <td></td><td class="n">976</td>
+          <td></td><td class="n">977</td>
         </tr>
       </tbody>
     </table>
@@ -416,9 +416,10 @@
       <tbody>
         <tr><td><span class="type ei">EI</span></td><td class="desc">ILF 갱신·상태변경 —
           등록/수정/삭제/상태전이/상세저장/로그인/업로드/읽음처리.
-          <b>게시글 상세조회는 조회수 갱신을 동반하여 EI</b>로 판정.</td></tr>
+          <b>게시물 조회수 증가는 상세 GET에서 분리된 POST 명령이므로 EI</b>로 판정.</td></tr>
         <tr><td><span class="type eo">EO</span></td><td class="desc">계산·집계·파생이 개입하는 출력 —
-          예산현황·편성률·증감률·부서 KPI·대시보드·실시간 로그 집계·Tiptap 변수치환·Gemini AI 생성.</td></tr>
+          예산현황·편성률·증감률·부서 KPI·대시보드·실시간 로그 집계·Tiptap 변수치환·Gemini AI 생성.
+          <b>상태 변경 없는 게시물 상세 GET도 수정 가능 여부(<span class="type">canModify</span>)를 파생하므로 EO</b>로 판정.</td></tr>
         <tr><td><span class="type eq">EQ</span></td><td class="desc">계산 없는 단순 조회 —
           목록·상세·검색·파일 다운로드·이미지 미리보기.</td></tr>
       </tbody>
@@ -431,7 +432,7 @@
 
   <section>
     <div class="sec-head"><span class="sec-no">분포</span><h2>업무 영역별 규모</h2>
-      <span class="sec-note">278 기능 · 1,304 FP</span></div>
+      <span class="sec-note">278 기능 · 1,305 FP</span></div>
     <div class="tw">
     <table>
       <thead><tr><th>영역</th><th class="n">데이터</th><th class="n">트랜잭션</th><th class="n">계</th><th class="n">FP</th><th style="width:34%">비중</th></tr></thead>
@@ -439,8 +440,8 @@
         <tr>
           <td><b>공통·인프라</b><div class="desc">시스템관리·결재·게시판·코드·인증·메뉴·알림·파일·AI</div></td>
           <td class="n">21</td><td class="n">133</td><td class="n">154</td>
-          <td class="n"><b>690</b></td>
-          <td><div class="bar"><i style="width:100.0%;background:var(--accent)"></i></div><span class="cx">52.9%</span></td>
+          <td class="n"><b>691</b></td>
+          <td><div class="bar"><i style="width:100.0%;background:var(--accent)"></i></div><span class="cx">53.0%</span></td>
         </tr>
         <tr>
           <td><b>협의회</b><div class="desc">타당성검토·평가위원·일정·평가의견·결과서·Q&amp;A</div></td>
@@ -452,7 +453,7 @@
           <td><b>예산관리</b><div class="desc">사업·전산관리비 CRUD, 예산현황·편성률 집계, IT부문 비교</div></td>
           <td class="n">4</td><td class="n">27</td><td class="n">31</td>
           <td class="n"><b>195</b></td>
-          <td><div class="bar"><i style="width:28.3%;background:var(--accent)"></i></div><span class="cx">15.0%</span></td>
+          <td><div class="bar"><i style="width:28.2%;background:var(--accent)"></i></div><span class="cx">14.9%</span></td>
         </tr>
         <tr>
           <td><b>집행 4단계</b><div class="desc">산정 · 심의 · 계약 · 지급</div></td>
@@ -461,7 +462,7 @@
           <td><div class="bar"><i style="width:19.7%;background:var(--accent)"></i></div><span class="cx">10.4%</span></td>
         </tr>
         <tr class="total"><td>합계</td><td class="n">39</td><td class="n">239</td>
-          <td class="n">278</td><td class="n">1,304</td><td></td></tr>
+          <td class="n">278</td><td class="n">1,305</td><td></td></tr>
       </tbody>
     </table>
     </div>
@@ -470,9 +471,9 @@
   <section>
     <div class="sec-head"><span class="sec-no">STEP 4</span><h2>미조정 기능점수 (UFP)</h2></div>
     <div class="formula"><span class="c">UFP = ILF + EIF + EI + EO + EQ</span>
-    = <b>318</b> + <b>10</b> + <b>511</b> + <b>160</b> + <b>305</b>
-    = 데이터기능(<b>328</b>) + 트랜잭션기능(<b>976</b>)
-    = <b>1,304 FP</b></div>
+    = <b>318</b> + <b>10</b> + <b>511</b> + <b>167</b> + <b>299</b>
+    = 데이터기능(<b>328</b>) + 트랜잭션기능(<b>977</b>)
+    = <b>1,305 FP</b></div>
     <div class="comp" style="margin-top:24px">
       <div class="row">
         <span class="lab"><span class="type ilf">ILF</span> 내부논리파일</span>
@@ -491,13 +492,13 @@
       </div>
       <div class="row">
         <span class="lab"><span class="type eo">EO</span> 외부출력</span>
-        <div class="track"><div class="fill" style="width:12.3%;background:var(--eo)">160</div></div>
-        <span class="amt">12.3%</span>
+        <div class="track"><div class="fill" style="width:12.8%;background:var(--eo)">167</div></div>
+        <span class="amt">12.8%</span>
       </div>
       <div class="row">
         <span class="lab"><span class="type eq">EQ</span> 외부조회</span>
-        <div class="track"><div class="fill" style="width:23.4%;background:var(--eq)">305</div></div>
-        <span class="amt">23.4%</span>
+        <div class="track"><div class="fill" style="width:22.9%;background:var(--eq)">299</div></div>
+        <span class="amt">22.9%</span>
       </div>
     </div>
   </section>
@@ -510,7 +511,7 @@
       FP당 단가 · 이윤율 · 부가세율은 지정값이며, 보정계수는 실제 제안 · 예산 산정 시
       해당 연도 고시 「소프트웨어사업 대가산정 가이드」 표와 사업 특성에 맞춰
       <b>반드시 교체</b>하십시오(<span class="type">generate-report.mjs</span>의 <span class="type">CONFIG</span>).
-      본 리포트의 확정 산출물은 <b>UFP 1,304</b>까지입니다.
+      본 리포트의 확정 산출물은 <b>UFP 1,305</b>까지입니다.
     </div>
 
     <h3>5-1. 보정 후 기능점수</h3>
@@ -527,7 +528,7 @@
       </tbody>
     </table>
     </div>
-    <div class="formula" style="margin-top:16px">보정 후 FP ≈ <b>1,304</b> × <b>0.996</b> ≈ <b>1,299 FP</b></div>
+    <div class="formula" style="margin-top:16px">보정 후 FP ≈ <b>1,305</b> × <b>0.996</b> ≈ <b>1,300 FP</b></div>
 
     <h3>5-2. 개발원가 및 최종 금액</h3>
     <div class="tw">
@@ -536,18 +537,18 @@
       <tbody>
         <tr><td>FP당 단가</td><td class="desc">보정 전 개발원가 단가</td>
           <td class="n">600,000 원/FP</td></tr>
-        <tr><td>개발원가</td><td class="desc">1,299 × 600,000</td>
-          <td class="n"><b>약 779.4 백만원</b></td></tr>
+        <tr><td>개발원가</td><td class="desc">1,300 × 600,000</td>
+          <td class="n"><b>약 780.0 백만원</b></td></tr>
         <tr><td>+ 이윤 20%</td><td class="desc">× 1.20</td>
-          <td class="n">약 935.3 백만원</td></tr>
+          <td class="n">약 936.0 백만원</td></tr>
         <tr class="total"><td>+ 부가세 10%</td><td class="desc">× 1.10</td>
-          <td class="n">약 1028.8 백만원</td></tr>
+          <td class="n">약 1029.6 백만원</td></tr>
       </tbody>
     </table>
     </div>
     <div class="note">
-      보정 미적용 <b>UFP 1,304</b> 기준으로는 개발원가 ≈ <b>약 782.4 백만원</b>,
-      이윤·부가세 포함 ≈ <b>약 1032.8 백만원</b>.
+      보정 미적용 <b>UFP 1,305</b> 기준으로는 개발원가 ≈ <b>약 783.0 백만원</b>,
+      이윤·부가세 포함 ≈ <b>약 1033.6 백만원</b>.
     </div>
   </section>
 
@@ -557,9 +558,9 @@
     <p>
       <b>2026-07-21</b> 산정본과 대조한 결과입니다 —
       추가 <b>1건</b> · 삭제 <b>0건</b> ·
-      수정 <b>1건</b> · 변동 없음 276건.
-      UFP는 <b>1,302 → 1,304</b>
-      (<b>+2 FP</b> · 0.2%)로 변동했습니다.
+      수정 <b>0건</b> · 변동 없음 277건.
+      UFP는 <b>1,302 → 1,305</b>
+      (<b>+3 FP</b> · 0.2%)로 변동했습니다.
       비교 키는 <span class="type">도메인/단위프로세스명</span>이므로 기능명을 바꾸면 삭제+추가로 잡힙니다.
     </p>
     <div class="tw">
@@ -572,13 +573,6 @@
               <td><b>게시물 조회수 증가</b></td>
               <td class="cx">신규 EI · FP +3</td>
               <td class="desc">상세 조회에서 분리된 조회수 증가 EI 신규</td>
-            </tr>
-            <tr>
-              <td><span class="type ilf">수정</span></td>
-              <td>board</td>
-              <td><b>게시물 상세 조회</b></td>
-              <td class="cx">유형 EO→EQ · FP 7→6 (FP -1)</td>
-              <td class="desc">상태 변경 제거로 EO→EQ 및 FP 7→6</td>
             </tr>
       </tbody>
     </table>

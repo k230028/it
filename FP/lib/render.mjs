@@ -601,9 +601,10 @@ ${typeTable('단위프로세스', ['EI', 'EO', 'EQ'], byType, txTotal, '트랜�
       <tbody>
         <tr><td><span class="type ei">EI</span></td><td class="desc">ILF 갱신·상태변경 —
           등록/수정/삭제/상태전이/상세저장/로그인/업로드/읽음처리.
-          <b>게시글 상세조회는 조회수 갱신을 동반하여 EI</b>로 판정.</td></tr>
+          <b>게시물 조회수 증가는 상세 GET에서 분리된 POST 명령이므로 EI</b>로 판정.</td></tr>
         <tr><td><span class="type eo">EO</span></td><td class="desc">계산·집계·파생이 개입하는 출력 —
-          예산현황·편성률·증감률·부서 KPI·대시보드·실시간 로그 집계·Tiptap 변수치환·Gemini AI 생성.</td></tr>
+          예산현황·편성률·증감률·부서 KPI·대시보드·실시간 로그 집계·Tiptap 변수치환·Gemini AI 생성.
+          <b>상태 변경 없는 게시물 상세 GET도 수정 가능 여부(<span class="type">canModify</span>)를 파생하므로 EO</b>로 판정.</td></tr>
         <tr><td><span class="type eq">EQ</span></td><td class="desc">계산 없는 단순 조회 —
           목록·상세·검색·파일 다운로드·이미지 미리보기.</td></tr>
       </tbody>
