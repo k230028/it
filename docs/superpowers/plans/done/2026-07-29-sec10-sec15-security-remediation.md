@@ -58,7 +58,7 @@
 | `it_backend/docs/guides/security/authentication-authorization.md` | 경로별 CSRF 위협 모델과 보강 트리거 SoT |
 | `it_database/apply-ddl-live.ps1`, `export-ddl-live.ps1` | 비밀번호를 받지 않는 SQL*Plus/SQLcl 호출 |
 | `it_database/README.MD` | Data Pump·DDL 프롬프트/Wallet 실행 절차 |
-| `scripts/verify-sec11-powershell.ps1` | 민감 인자 정적 검사, UTF-8 BOM, PowerShell 5.1 파싱 게이트 |
+| `scripts/verify-sec11-powershell.ps1` | 가짜 Oracle 클라이언트 argv 검사, UTF-8 BOM, PowerShell 5.1 파싱 게이트 |
 | `CLAUDE.md` (루트) | §3.1.1 로컬 Oracle 접속 절차를 프롬프트 방식으로 정정 |
 | `it_frontend/package-lock.json` | SEC-10 백포트 출시 후에만 변경 |
 
@@ -693,13 +693,21 @@ git commit -m "test: 쿠키 JWT CSRF 보안 경계 고정 (SEC-15)"
 - Default: `Username@Host:Port/ServiceName`만 프로세스 인자로 넘기고 Oracle 클라이언트가 콘솔에서 비밀번호를 프롬프트.
 - Wallet: `/@WalletAlias`만 넘기며 외부 비밀번호 저장소를 사용.
 
-- [ ] **Step 1: 정적 보안·인코딩 검증 스크립트를 먼저 작성한다**
+- [ ] **Step 1: 실행 기반 보안·인코딩 검증 스크립트를 먼저 작성한다**
 
 `scripts/verify-sec11-powershell.ps1`은 다음 3가지를 실패 조건으로 검사한다.
 
-1. `apply-ddl-live.ps1`, `export-ddl-live.ps1`, `it_database/README.MD`, 루트 `CLAUDE.md`에 `[string]$Password`, `-Password`, `$env:DB_PASSWORD`, `USERNAME/<password>@` 형태가 존재.
+1. PowerShell 명령 메타데이터에 `Password` 매개변수가 존재하거나, 임시 가짜 Oracle 클라이언트로 두 DDL 스크립트를 실제 실행했을 때 캡처한 argv에 `DB_PASSWORD` sentinel이 존재.
+2. 세 한글 PowerShell 파일 첫 3바이트가 `EF BB BF`가 아님.
+3. Windows PowerShell 5.1의 `System.Management.Automation.Language.Parser.ParseFile`이 오류를 반환.
 
-`USERNAME/<password>@` 검사는 실제 비밀번호뿐 아니라 플레이스홀더 형태도 잡는다. 현재 실측 잔존 위치는 다음과 같고 Step 4에서 전부 정리해야 이 게이트가 exit 0이 된다.
+가짜 Oracle 클라이언트는 임시 디렉터리의 `sqlplus.cmd`로 만들고 해당 디렉터리를 테스트 프로세스의 PATH 앞에 둔다. 클라이언트는 전달받은 argv를 임시 캡처 파일에 기록하고, export 스크립트가 넘긴 `@temp.sql`의 `SPOOL` 경로를 읽어 빈 DDL 산출물을 만든 뒤 0으로 종료한다. 검증 스크립트는 테스트 동안 다음 sentinel을 환경변수에 설정하되 스크립트 인자로 전달하지 않는다.
+
+```powershell
+$env:DB_PASSWORD = 'SEC11_PASSWORD_SENTINEL_7f3d'
+```
+
+실행 후 두 캡처 모두 `SEC11_PASSWORD_SENTINEL_7f3d`를 포함하지 않고, 연결 식은 프롬프트 모드의 `ITPAPP@127.0.0.1:11521/XEPDB1`만 포함해야 한다. README와 루트 `CLAUDE.md`는 사람 대상 운영 절차이므로 문자열 테스트를 만들지 않고 Task 6 리뷰에서 아래 현재 위치가 모두 프롬프트/Wallet 예시로 바뀌었는지 확인한다.
 
 | 파일 | 위치 | 현재 형태 |
 | --- | --- | --- |
@@ -707,8 +715,6 @@ git commit -m "test: 쿠키 JWT CSRF 보안 경계 고정 (SEC-15)"
 | `it_database/README.MD` | 239, 250, 272 | `impdp`/`expdp "ITPAPP/$env:DB_PASSWORD@..."` |
 | `it_database/README.MD` | 243, 278 | "환경변수 `DB_PASSWORD` 또는 `-Password` 인자로 전달" 서술 |
 | 루트 `CLAUDE.md` | §3.1.1 (3곳) | `sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1` |
-2. 세 한글 PowerShell 파일 첫 3바이트가 `EF BB BF`가 아님.
-3. Windows PowerShell 5.1의 `System.Management.Automation.Language.Parser.ParseFile`이 오류를 반환.
 
 대상 3개:
 
@@ -722,14 +728,14 @@ $scriptTargets = @(
 
 검증 스크립트 자체는 작업공간 루트를 `$PSScriptRoot\..`에서 계산하며 사용자별 절대 경로를 하드코딩하지 않는다.
 
-- [ ] **Step 2: 현재 상태에서 검증을 실행해 민감 인자와 BOM 누락으로 실패함을 확인한다**
+- [ ] **Step 2: 현재 상태에서 검증을 실행해 Password 매개변수 또는 BOM 누락으로 실패함을 확인한다**
 
 ```powershell
 cd C:\it
 pwsh -NoProfile -File .\scripts\verify-sec11-powershell.ps1
 ```
 
-Expected: `-Password`/`DB_PASSWORD` 또는 UTF-8 BOM 누락을 보고하고 non-zero exit.
+Expected: 명령 메타데이터의 `Password` 매개변수 또는 UTF-8 BOM 누락을 보고하고 non-zero exit. 기존 스크립트는 비밀번호가 필수이므로 가짜 클라이언트 실행 단계에 도달하지 못해도 올바른 RED다.
 
 - [ ] **Step 3: 두 DDL 스크립트에서 비밀번호 입력 책임을 제거한다**
 

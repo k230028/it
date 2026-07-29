@@ -1,6 +1,6 @@
 # ✅ IT Portal 완료·종료 내역 (Archive)
 
-> 🗓️ **기준일:** 2026-07-27
+> 🗓️ **기준일:** 2026-07-29
 > 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️)·폐기(⛔) 항목을 보관합니다.
 
 ### 🔑 범례 (Legend)
@@ -15,6 +15,20 @@
 ---
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
+
+### ✅ 2026-07-29 SEC-11~15 보안 조치 완료
+
+> 계획 `docs/superpowers/plans/done/2026-07-29-sec10-sec15-security-remediation.md`의 완료 항목만 이관했다. SEC-10은 1.x/2.x 호환 백포트가 공식 advisory에서 식별될 때까지 `TASK.md`에 유지한다.
+
+| 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✅ Done | SEC-11 | Oracle 도구의 비밀번호를 명령행·환경변수·임시 SQL에서 제거하고, 수동 실행은 콘솔 프롬프트, CI·무인 실행은 Wallet 별칭으로 분리했다. `it_database/README.MD`는 프롬프트/Wallet 사용을, 루트 `CLAUDE.md`는 수동 프롬프트와 무인 Wallet·권한 제한을 명시한다. Wallet 생성·배포·파일 검증은 운영/DBA 절차로 남긴다. | database `d5756ad`; root `604ff1e`, `641da8b` | `verify-sec11-powershell.ps1`이 fake Oracle client의 Process CommandLine, 프롬프트/Wallet 경로, 임시 SQL 무비밀을 확인했고 PS7·Windows PowerShell 5.1 모두 통과. BOM 없는 한글 포함 스크립트 파싱을 함께 검증. |
+| ✅ Done | SEC-12 | `SsoAgentClient.authorize()`·`isServerAlive()`, `SsoController.checkauth()`·`complete()`의 진단 로그에서 token/session/eno/body/IP 원문을 제거하고 결과 반환·리다이렉트 계약은 유지했다. | backend `c8861cc` | `authorize_민감정보로그미노출`, `isServerAlive_통신실패_예외메시지로그미노출`, `checkauth_검증실패_IP원문로그미노출`, `complete_next쿼리민감정보로그미노출_리다이렉트유지` 로그-capture 회귀 테스트. |
+| ✅ Done | SEC-13 | prod에서 `springdoc.api-docs.enabled=false`, `springdoc.swagger-ui.enabled=false`를 강제하고 상위 우선순위 override·키 누락·빈값이면 기동을 차단했다. prod 비활성 endpoint는 익명 401, 인증 404이며 local/dev 기본 문서 접근은 유지한다. | backend `e8d8aa4`, `9ec49c0`, `e8a35d3` | `prod는 OpenAPI 명세와 Swagger UI를 모두 비활성화한다`, `비활성 OpenAPI 경로의 익명 요청은 인증 경계에서 모두 401`, `비활성 OpenAPI 경로의 인증 요청은 리소스 경계에서 모두 404`, EnvironmentValidator prod override/누락/빈값 테스트. |
+| ✅ Done | SEC-14 | Java `SsoNextPathValidator`와 TypeScript `getSafeNextPath`로 safe-next 계약을 통일했다. 허용: `/`, 내부 경로, query/hash. 거부: 빈값·외부 URL·`//`·`/\\`·`/login` 및 배열/비문자 입력. 프론트 4개 진입점(`auth.global.ts`, `sso-auth-redirect.ts`, `login.vue` SSO 시작·수동 완료)이 공용 유틸만 호출한다. | backend `20827a8`, `8af6f6a`; frontend `3e5637a`, `fd542cd` | `getSafeNextPath` parameterized 19 cases, `SsoControllerTest`의 protocol-relative·역슬래시·로그인 재진입·빈 frontend URL 리다이렉트 회귀, `auth.global` 안전하지 않은 redirect 차단 테스트. |
+| ✅ Done | SEC-15 | 현재 `csrf.disable()`의 전제와 경로별 위험을 문서화하고, SameSite=None, credentialed `/api/**` Origin 확대/wildcard·pattern, cross-site iframe/별도 SPA, 상태 변경 GET, `/sso/** allowCredentials=true`의 5개 보강 트리거를 고정했다. 트리거 발생 시 같은 배포에서 CSRF token 또는 동등한 Origin/nonce 방어를 도입한다. | backend `c9bca15` | `authenticationAndSsoCookies_sameSiteLax`, `API와 SSO CORS는 자격증명·허용 Origin·메서드 경계를 분리한다`, 악성/허용 Origin 인증 POST 경계 테스트. |
+
+> 운영 보안 escalation: 역사적 문서·계획·완료 기록에서 평문 자격증명으로 보일 수 있는 값이 관찰되었으나 이번 범위 밖이다. 값을 이 문서에 재노출하지 않으며, 저장소 접근 이력·비밀 관리 담당자와 별도 비밀 스캔/접근 영향·필요 시 rotation 및 승인된 정리 절차를 평가한다. 이번 작업에서는 history rewrite·rotation을 수행하지 않았다.
 
 ### ✅ 2026-07-29 ERR-11·ERR-12·FE-12(스파이크)·FE-13·FE-14 조치
 
