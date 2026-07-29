@@ -1031,5 +1031,5 @@ git commit -m "docs: SEC-10~15 보안 조치 결과 기록"
 
 - GitHub Advisory GHSA-mh99-v99m-4gvg: 2026-07-24 갱신 상태에서 `brace-expansion <=5.0.7`, patched `5.0.8`만 명시(2026-07-30 재확인).
 - npm `brace-expansion` dist-tags: `maintenance-v1=1.1.17`, `maintenance-v2=2.1.3`. 공식 advisory의 patched version에는 아직 포함되지 않았으며 설치 상태는 1.1.16/2.1.2/5.0.8, `npm audit`은 총 23건(22 high, `brace-expansion` high 포함)이다(2026-07-30 확인).
-- SEC-15 최종 호환 HEAD: backend `b6cf5a1`, frontend `f079900`, database `0af106f`, root FP 증빙 `b33d148`. `BoardReplySequenceMigrationIT` 4건은 disposable 환경 부재로 skip됐으며 migration runtime은 배포 전 필수 게이트다.
+- SEC-15 최종 호환 HEAD: backend `bfcc9e1`, frontend `f079900`, database `0af106f`, root FP 증빙 `b33d148`. 후속 `cf62c96`은 `BoardReplySequenceMigrationIT`를 scheduler가 비활성화된 `@JdbcTest` 최소 JDBC slice로 격리했고, `bfcc9e1`은 새 업무 진입 전에 과거 복귀 세션·쿠키를 제거한다. migration IT 4건은 disposable 환경 부재로 skip됐으며 runtime은 배포 전 필수 게이트다.
 - springdoc 공식 properties: `springdoc.api-docs.enabled=false`, `springdoc.swagger-ui.enabled=false`.
