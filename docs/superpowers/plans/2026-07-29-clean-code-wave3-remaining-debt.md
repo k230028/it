@@ -1,21 +1,25 @@
-# Clean Code Wave 3 — CQ-01 ~ CQ-17 잔여 부채 조치 계획
+# Clean Code Wave 3 — CQ-01 ~ CQ-19 잔여 부채 조치 로드맵
 
 - 작성일: 2026-07-29
-- 대상: `TASK.md` §🧹 Clean Code 부채 (CQ-01 ~ CQ-17)
+- 대상: `TASK.md` §🧹 Clean Code 부채 (기존 CQ-01 ~ CQ-17 + 크로스체크 파생 CQ-18·CQ-19)
 - 선행: `plans/done/2026-07-21-clean-code-wave0/wave1/wave2-*.md` (CQ-02~05·07~14 완료)
-- 실측 기준: 2026-07-29 작업 트리(`main`, `d37fa18`)
+- 문서 성격: 상위 로드맵. 각 Wave는 별도 실행계획의 리뷰·검증을 통과한 뒤 착수
+- Wave A 실행 SoT: [`2026-07-29-clean-code-wave3-wave-a-backend-refactors.md`](2026-07-29-clean-code-wave3-wave-a-backend-refactors.md)
+- 크로스체크 기준: root `a7eda19`, backend `74814d3`, frontend `937f5f9` (`main`, feature branch merge 결과와 동일 tree)
 
 ## 1. 현황 요약
 
-CQ-01~17 중 **12건(CQ-02~05·07~14)은 완료 이관**되었고 활성 항목은 **5건(CQ-01·06·15·16·17)** 입니다.
+기존 CQ-01~17 중 **12건(CQ-02~05·07~14)은 완료 이관**되었고, 크로스체크에서 분리한 CQ-18·19를 포함한 활성 항목은 **7건(CQ-01·06·15·16·17·18·19)** 입니다.
 
 | ID    | 우선순위 | 현재 상태(2026-07-29 실측)                                      | 이번 계획의 처리 |
 | ----- | :------: | --------------------------------------------------------------- | ---------------- |
 | CQ-01 | 🟡 Medium | 4개 파일 합계 5,055줄 (직전 실측 대비 `BudgetWorkService` +37줄) | Wave D (트리거) |
-| CQ-06 | 🟢 Low    | `Bcostm.update` 20개 매개변수, 운영 호출부 2곳                   | **Wave A (즉시)** |
+| CQ-06 | 🟢 Low    | `Bcostm.update` 20개 매개변수, 운영 호출부 1곳                   | **Wave A (별도 실행계획)** |
 | CQ-15 | 🟡 Medium | 운영 소스 **30개** 파일이 800줄 초과 (24 → 29 → 30, 계속 악화)   | Wave B·C |
 | CQ-16 | 🟢 Low    | `components/` 루트 평면 파일 25개                                | Wave B |
-| CQ-17 | 🟢 Low    | 두 `loadAthIds` 구현이 **바이트 단위로 동일**(6줄)               | **Wave A (즉시)** |
+| CQ-17 | 🟢 Low    | 두 `loadAthIds` 구현이 **바이트 단위로 동일**(6줄)               | **Wave A (별도 실행계획)** |
+| CQ-18 | 🟢 Low    | 범용 UI 4개는 `editor`·`layout` 경계 밖이며 소비 범위가 큼       | CQ-16과 분리해 후속 판단 |
+| CQ-19 | 🟢 Low    | `Btermm.update` 15개 위치 인자, production 호출부 1곳             | CQ-06과 분리해 후속 판단 |
 
 ### 1.1 백엔드 실측 (CQ-01)
 
@@ -37,7 +41,7 @@ CQ-01~17 중 **12건(CQ-02~05·07~14)은 완료 이관**되었고 활성 항목�
 | 기타 컴포넌트 | 2 | `common/EmployeeSearchDialog.vue` 899 |
 | composable | 2 | `useTiptapTableTools.ts` 913 |
 | 유틸 | 1 | `utils/hwpx.ts` **1,502**(전체 최대, export는 단 4개) |
-| 테스트 | 4 | `useCostListPage.test.ts` 2,140 |
+| 테스트 | 4 | `useCostListPage.test.ts` 2,144 |
 
 ### 1.3 핵심 판단 — 단발 분해로는 해결되지 않습니다
 
@@ -49,50 +53,29 @@ CQ-01과 CQ-15는 **조치 항목으로 등록된 이후에도 계속 증가**�
 
 ## 2. Wave A — 즉시 실행 (저위험 · 확정 범위)
 
-두 항목 모두 범위가 닫혀 있고 외부 의존이 없습니다. 단일 PR 2건으로 처리합니다.
+두 항목 모두 범위가 닫혀 있고 외부 의존이 없습니다. 상세 구현·테스트·커밋 순서는 별도
+[`Wave A 실행계획`](2026-07-29-clean-code-wave3-wave-a-backend-refactors.md)을 단일 진실 공급원으로 사용합니다.
 
 ### A-1. CQ-17 — 역할 조회 로직 단일화
 
-**근거(실측):** `AuthService.java:496-502`와 `RefreshTokenRotator.java:180-186`의 `loadAthIds`가 공백까지 동일합니다.
-
-```java
-private List<String> loadAthIds(String eno) {
-    List<String> athIds =
-            roleRepository.findAllByIdEnoAndUseYnAndDelYn(eno, "Y", "N").stream()
-                    .map(value -> value.getAthId())
-                    .toList();
-    return athIds.isEmpty() ? List.of(CustomUserDetails.ATH_USER) : athIds;
-}
-```
-
-**작업 단계**
-
-1. `common/system/service/UserRoleResolver`(가칭) 컴포넌트 신설 — `List<String> resolveAthIds(String eno)` 단일 메서드, `RoleRepository`만 주입.
-2. `AuthService`의 호출부(`:188` 로그인, `:313` SSO 로그인)와 `RefreshTokenRotator:125`를 신규 컴포넌트 위임으로 교체하고 private 메서드 2개를 제거.
-3. 테스트: 활성 역할 다건 반환 / `useYn='N'`·`delYn='Y'` 제외 / **빈 결과 시 `ATH_USER` 폴백** 3케이스를 신규 컴포넌트 단위 테스트로 작성.
-
-**완료 기준:** `./gradlew check` 통과, `loadAthIds` grep 결과 0건.
-**예상 규모:** 신규 1파일 + 수정 2파일, 순증 약 -5줄.
+- `common.iam.service.UserRoleResolver`가 활성·미삭제 역할 조회와 `ATH_USER` 폴백을 단독 소유합니다.
+- 전환 대상은 `AuthService`의 로그인·세션 복원·개발 사용자 전환·SSO **4곳**과 `RefreshTokenRotator`의 Refresh **1곳**입니다.
+- 신규 resolver·테스트 2파일, production 소비자 2파일, 기존 소비자 테스트 2파일의 총 6파일이 변경됩니다.
+- 완료 기준은 resolver 경계·오류 테스트, 다섯 소비 경로 테스트, `loadAthIds` production grep 0건, `./gradlew check`입니다.
 
 ### A-2. CQ-06 — `Bcostm.update` 매개변수 record 전환
 
-**근거(실측):** `Bcostm.java:185-205`의 20개 매개변수. 운영 호출부는 `CostService.java:312`·`:383` **2곳뿐**이고, 선례인 `Bprojm.UpdateCommand`(`Bprojm.java:263`, `update(UpdateCommand cmd)` `:301`)가 이미 존재합니다.
-
-**⚠️ 게이트 해제 제안:** TASK.md는 CQ-06을 "CQ-01의 `CostService` 분해 착수 시"로 묶어두었습니다. 그러나 실측상 이 작업은 **엔티티 1개 + 호출부 2곳**으로 닫혀 있어 `CostService` 분해와 결합할 이유가 없습니다. Wave A로 선분리할 것을 권고합니다. (원 게이트 유지를 원하시면 Wave D로 이동시키면 되며, 나머지 계획은 영향받지 않습니다.)
-
-**작업 단계**
-
-1. `Bcostm.UpdateCommand` record 정의 — 필드 순서·타입은 기존 시그니처 그대로 유지(의미 변경 0).
-2. `update(UpdateCommand cmd)` 신설, 기존 20-arg `update(...)`는 **위임 오버로드로 남긴 뒤** 호출부 전환 완료 후 제거(`Bprojm` 선례 동일).
-3. `CostService.java:312`·`:383` 및 `CostServiceTest.java:758`·`:832`·`:1893` 호출부 전환.
-4. 기존 필드별 기본값 보정 로직(`CodeDefaults.orNotApplicable` 등)은 **record가 아닌 `update` 본문에 그대로 유지** — 보정 시점 이동은 회귀 위험.
-
-**완료 기준:** `./gradlew check` 통과, 20-arg 오버로드 제거 확인.
-**부수 발견(범위 외):** `CostServiceTest.java:830` 주석에 `Btermm.update` 인자 15개가 기록되어 있습니다. 동일 패턴이나 이번 범위에 포함하지 않고 §6에 등록합니다.
+- `Bcostm.java:185-205`의 20개 인자를 `@Builder Bcostm.UpdateCommand` record로 전환합니다.
+- production 호출부는 `CostService.java:312` **1곳**입니다. 기존 계획이 두 번째로 집계한 `:383`은 `Btermm.update`이며 CQ-19로 분리합니다.
+- `CostServiceTest`에서는 `Bcostm` 대상 `:758`·`:1893`만 command captor로 전환하고 `Btermm` 대상 `:832`는 그대로 둡니다.
+- `dfrCleC`·`abusTc`의 `CodeDefaults.orNotApplicable` 보정은 `update(UpdateCommand)` 본문에 유지합니다.
+- 완료 기준은 20개 필드·기본값 엔티티 테스트, 서비스 금액 회귀 테스트, 20인자 오버로드 제거, `./gradlew check`입니다.
 
 ---
 
 ## 3. Wave B — 프론트 구조 정리 (CQ-16 + CQ-15 사전작업)
+
+상세 구현·검증·커밋 순서는 [`Wave B 실행계획`](2026-07-29-clean-code-wave3-wave-b-frontend-structure.md)을 단일 진실 공급원으로 사용합니다.
 
 ### B-0. 순서 제약 (중요)
 
@@ -101,44 +84,61 @@ CQ-16의 이동 대상과 CQ-15의 에디터 군집은 **동일 파일 5개**(`T
 
 ### B-1. CQ-16 — 3단 분할 이동 (churn 기준 재설계)
 
-TASK.md는 25개 파일 일괄 이동을 전제하지만, 실측한 **참조 수가 파일마다 20배 차이**납니다. 비용이 낮은 것부터 분리 실행합니다.
+TASK.md는 25개 파일 일괄 이동을 전제했지만 소비 범위가 파일마다 크게 다릅니다. 참조 수는 기능 브랜치에서 계속 변하므로 이 로드맵에 고정하지 않고, 각 이동 실행계획을 작성할 때 tag·명시적 import·상대경로·테스트 mock을 다시 전수 실측합니다.
 
-| 단계 | 이동 대상 | 파일 수 | 템플릿 참조 합계 | 판단 |
-| ---- | -------- | ----: | ----: | ---- |
-| **B-1a** | `components/editor/` — `TiptapEditor`, `TiptapToolbar`, `TiptapTableFloatingToolbar`, `AttachmentNodeView`, `BlockMathNodeView`, `InlineMathNodeView`, `ResizableImageNodeView`, `VariableNodeView`, `ExcalidrawNodeView`, `ExcalidrawWrapper`, `MentionAutocomplete` + `extensions/tiptap-*.ts` 3종 | 14 | **2** | 즉시 실행 |
-| **B-1b** | `components/layout/` — `AppShell`, `AppHeader`, `AppSidebar`, `AppBreadcrumb`, `GlobalSearchBar`, `NotificationBell`, `NotificationDropdown`, `GeminiChat`, `SwitchUserDialog`, `ApplicationViewerDialog` | 10 | **11** | 즉시 실행 |
-| **B-1c** | `components/common/` 편입 후보 — `PageHeader`(40), `AppDialogFooter`(28), `TableCard`(16), `AppDialogHeader`(2) | 4 | **86** | **보류 권고** |
+| 단계 | 이동 대상 | 파일 수 | 판단 |
+| ---- | -------- | ----: | ---- |
+| **B-1a** | `components/editor/` — `TiptapEditor`, `TiptapToolbar`, `TiptapTableFloatingToolbar`, `AttachmentNodeView`, `BlockMathNodeView`, `InlineMathNodeView`, `ResizableImageNodeView`, `VariableNodeView`, `ExcalidrawNodeView`, `ExcalidrawWrapper`, `MentionAutocomplete` + `extensions/tiptap-*.ts` 3종 | 14 | 별도 실행계획 |
+| **B-1b** | `components/layout/` — `AppShell`, `AppHeader`, `AppSidebar`, `AppBreadcrumb`, `GlobalSearchBar`, `NotificationBell`, `NotificationDropdown`, `GeminiChat`, `SwitchUserDialog`, `ApplicationViewerDialog` | 10 | 별도 실행계획 |
+| **B-1c** | `components/common/` 편입 후보 — `PageHeader`, `AppDialogFooter`, `TableCard`, `AppDialogHeader` | 4 | **CQ-18로 보류** |
 
-**B-1c를 보류하는 이유:** 이 4개는 성격상 `editor`도 `layout`도 아닌 범용 UI이며, 이동 시 `it_frontend/CLAUDE.md` §5 "`components/common` 컴포넌트는 명시적 import" 규약에 따라 **86곳의 템플릿 사용처에 import 문을 추가**해야 합니다. 구조 개선 효과 대비 회귀 표면이 과도합니다. 별도 항목으로 분리 등록하고 CQ-16은 B-1a·B-1b 완료로 종결할 것을 권고합니다.
+**B-1c를 보류하는 이유:** 이 4개는 성격상 `editor`도 `layout`도 아닌 범용 UI이며 다수 화면이 자동 등록명으로 소비합니다. `common/` 편입 시 모든 소비 파일에 명시적 import를 추가해야 하므로 구조 개선 효과 대비 회귀 표면이 큽니다. CQ-16은 B-1a·B-1b만 다루고 편입 여부는 CQ-18에서 컴포넌트별로 판단합니다.
 
 **이동 시 필수 처리**
 
 - Nuxt 기본 `pathPrefix: true`이므로 이동하면 자동 등록명이 `EditorTiptapEditor`·`LayoutAppShell`로 바뀝니다(`nuxt.config.ts`에 Nuxt `components` 옵션 설정 없음 — `:99`의 `components`는 PrimeVue preset 토큰 블록입니다). 프로젝트 규약(`it_frontend/CLAUDE.md` §5)대로 **명시적 import로 전환**합니다(자동 등록명 의존 금지).
-- 경로 참조 갱신 대상: `app/**` 15곳 + `tests/unit/components/**` 5곳(`editor-error-state.test.ts`, `MentionAutocomplete.test.ts`, `TiptapEditor.test.ts`, `VariableNodeView.test.ts` 포함. `VariableNodeView.test.ts:4`는 `~/` 별칭이 아닌 `../../../app/` 상대경로이므로 누락 주의).
+- 경로 참조 갱신 대상은 실행 브랜치에서 `rg`로 다시 manifest화합니다. `VariableNodeView.test.ts`의 `../../../app/` 상대경로, 동적 import, E2E·extension·composable 테스트까지 포함하며 과거의 고정된 15+5 집계를 재사용하지 않습니다.
 - 각 단계마다 `npm run check` → `npm test` → `npm run test:e2e` 순으로 검증. 이동 커밋에는 **내용 변경을 섞지 않습니다**(순수 rename diff 유지).
 
 ### B-2. CQ-15 정지선 — `max-lines` ratchet 도입
 
-`eslint.config.mjs`에 파일 크기 규칙을 추가해 **신규 위반만 차단**합니다(기존 30개는 예외 목록으로 동결).
+`eslint.config.mjs`에 파일 크기 규칙을 추가해 신규 800줄 초과와 기존 30개 파일의 순증가를 모두 차단합니다. 기존 파일을 단순 ignore하면 계속 커져도 통과하므로 ratchet이 아니며, 각 파일의 현재 줄 수를 개별 상한으로 적용합니다.
 
 ```js
-// eslint.config.mjs — .append(...) 내부에 추가
+const oversizedFileBaselines = {
+    // 실행계획 착수 시점의 app/**/*.ts|vue 800줄 초과 파일 30개와 각 현재 줄 수
+};
+
+// eslint.config.mjs — .append(...) 내부
 {
     files: ['app/**/*.{ts,vue}'],
-    ignores: [/* 2026-07-29 기준 800줄 초과 30개 파일 — 분해 시마다 이 목록에서 제거 */],
+    ignores: Object.keys(oversizedFileBaselines),
     rules: {
         'max-lines': ['error', { max: 800, skipBlankLines: false, skipComments: false }],
     },
-}
+},
+...Object.entries(oversizedFileBaselines).map(([file, max]) => ({
+    files: [file],
+    rules: {
+        'max-lines': ['error', { max, skipBlankLines: false, skipComments: false }],
+    },
+})),
 ```
 
 - 테스트 파일(`tests/**`)은 대상 제외 — AAA 패턴상 길이가 곧 결함이 아닙니다.
-- **운영 규칙:** 예외 목록은 *추가 금지, 제거만 허용*. 이것이 24→30 악화를 멈추는 유일한 장치입니다.
-- 도입 자체는 기존 코드에 변경 0이므로 Wave B에서 선반영합니다.
+- **운영 규칙:** 기준 파일 추가 금지, 기준값 증가 금지, 분해 시 기준값 감소, 800줄 이하가 되면 개별 기준을 제거합니다.
+- ESLint 설정 자체와 ratchet 회귀 테스트를 별도 실행계획으로 먼저 반영한 뒤 구조 이동을 시작합니다.
 
 ---
 
 ## 4. Wave C — CQ-15 군집별 분해
+
+실행 순서와 C-4 trigger 정책은 [`Wave C 상위 실행계획`](2026-07-29-clean-code-wave3-wave-c-frontend-decomposition.md)을 따릅니다.
+즉시 실행분은 subsystem별 child plan으로 분리했습니다.
+
+- [`C-1 HWPX 분해`](2026-07-29-clean-code-wave3-wave-c1-hwpx-decomposition.md)
+- [`C-2 Editor 분해`](2026-07-29-clean-code-wave3-wave-c2-editor-decomposition.md)
+- [`C-3 Composable 분해`](2026-07-29-clean-code-wave3-wave-c3-composable-decomposition.md)
 
 정지선(B-2) 도입 후, 예외 목록을 한 건씩 걷어내는 방식으로 진행합니다. **일괄 처리하지 않습니다.**
 
@@ -165,7 +165,7 @@ TASK.md의 "단독 빅뱅 분해 금지, 도메인 기능 변경 시 동반 수�
 
 ### D-1. 동결선 (즉시 적용)
 
-대상 4개 파일에 대해 **"순증가 금지"** 를 규칙화합니다. 해당 파일을 수정하는 PR은 수정 후 줄 수가 아래 기준선 이하여야 합니다.
+대상 4개 파일에 대해 **"순증가 금지"** 를 문서 규칙이 아니라 `it_backend/build.gradle`의 검증 task로 강제합니다. task는 아래 경로별 기준선을 검사하고 `check`가 이 task에 의존하도록 연결합니다.
 
 | 파일 | 기준선(2026-07-29) |
 | ---- | ----: |
@@ -175,6 +175,7 @@ TASK.md의 "단독 빅뱅 분해 금지, 도메인 기능 변경 시 동반 수�
 | `CostService.java` | 1,142 |
 
 기능 추가로 불가피하게 초과할 경우, **같은 PR에서 동등 이상 분량을 추출**해 상쇄합니다.
+기준값은 증가시킬 수 없고 파일이 줄어들 때만 함께 낮춥니다. 구체적인 Gradle task·TestKit 또는 task 실행 검증은 Wave D 실행계획에서 확정합니다.
 
 ### D-2. 트리거 발동 시 분해 설계 (사전 확정)
 
@@ -201,7 +202,7 @@ TASK.md의 "단독 빅뱅 분해 금지, 도메인 기능 변경 시 동반 수�
 Wave A  A-1 CQ-17 ──┐  (독립, 병렬 가능)
         A-2 CQ-06 ──┘
            ↓
-Wave B  B-2 max-lines ratchet 도입 (변경 0, 선반영)
+Wave B  B-2 max-lines ratchet 도입 (자동 게이트 선반영)
         B-1a editor/ 이동 → B-1b layout/ 이동     ← CQ-16 종결
            ↓
 Wave C  C-1 hwpx.ts → C-2 에디터 군집 → C-3 composable
@@ -224,12 +225,12 @@ Wave D  D-1 동결선 즉시 적용 / D-2 트리거 발동 시 실행  ← CQ-01
 | ---- | ---- |
 | CQ-06 근거란의 "CQ-01 착수 시" 게이트 → "독립 실행" 으로 변경 (§2 A-2 근거) | ✅ **2026-07-29 반영** |
 | CQ-16 범위를 B-1a·B-1b로 한정하고, B-1c(범용 UI 4종 `common/` 편입)를 **CQ-18** 로 분리 등록 | ✅ **2026-07-29 반영** |
-| CQ-15에 "max-lines ratchet 예외 목록" 을 진척 지표로 연결(잔여 30 → 0) | ⏸️ 미반영 — B-2 착수 시점에 함께 적용 |
+| CQ-15에 `max-lines` ratchet을 진척 지표로 연결(30 → C-1~3 완료 시 22 → C-4로 0) | ✅ **Wave B·C 실행계획 확정, 구현 대기** |
 | CQ-01에 D-1 동결선 기준값 4개 명시 | ⏸️ 미반영 — D-1 적용 결정 시 |
 
 > 2026-07-29 현재 착수한 작업은 없습니다. 위 2건은 과제 정의(범위·게이트) 정정만 반영한 것이며 코드 변경은 포함하지 않습니다.
 
 **범위 외 신규 등록 후보**
 
-- `Btermm.update` 15개 매개변수 (CQ-06 동종 패턴, `CostServiceTest.java:830` 주석에서 확인).
-- 테스트 파일 800줄 초과 4건(최대 `useCostListPage.test.ts` 2,140) — 별도 판단 필요, 이번 계획에서는 게이트 대상 제외.
+- `Btermm.update` 15개 매개변수는 CQ-19로 등록했습니다. CQ-06 완료 후 별도 비용 도메인 변경에서 판단합니다.
+- 테스트 파일 800줄 초과 4건(최대 `useCostListPage.test.ts` 2,144) — 별도 판단 필요, 이번 로드맵에서는 게이트 대상 제외.

@@ -16,6 +16,7 @@
 - 적용된 Flyway 스크립트는 수정하지 않고 `it_database/migrations/V20260729_NNN__*.sql`을 새로 추가한다.
 - DB 접속 계정은 `ITPAPP`, 객체 소유 스키마는 `ITPOWN`이며 애플리케이션 코드에는 `ITPOWN.` 접두사를 넣지 않는다.
 - 업무 엔티티는 물리 삭제하지 않는다.
+- 소프트 삭제(`DEL_YN`) 이력이 남는 테이블에 UNIQUE 제약을 추가할 때는 전 행 UNIQUE 대신 `CASE WHEN DEL_YN='N' THEN ... END` 함수 기반 부분 UNIQUE를 사용한다. 전 행 UNIQUE가 안전하다고 판단한 경우에는 그 근거(전역 채번 등)를 마이그레이션 주석과 엔티티 JavaDoc에 남긴다.
 - 캐시 무효화는 트랜잭션 커밋 후 반영되는 `TransactionAwareCacheManagerProxy` 계약을 유지한다.
 - 교차 저장소 변경은 DB 제약 → 백엔드 계약 → 프론트 소비자 순으로 검증하고, 호환 커밋 조합은 마지막에 `versions.lock`에 기록한다.
 - 현재 다른 작업이 수정 중인 `TASK.md`와 프론트 작업 브랜치를 덮어쓰지 않는다.
@@ -48,6 +49,10 @@
 
 DB와 백엔드는 독립 저장소이므로 변경 묶음별로 별도 커밋한다. BE-03 Project/Cost 목록 계약은 프론트 소비자 변경까지 별도 계획/PR로 실행한다.
 
+**묶음 1↔2 간 역방향 의존이 하나 있다.** BE-22 인계 문서(Task 2)는 `INFM_SD_STS_C`의 최종 DEFAULT를 기재해야 하는데, 그 값은 Task 5 Step 1에서 확정된다. Task 2를 먼저 실행하되 **Task 5 Step 1의 결정을 먼저 내린 뒤** 인계 문서를 작성한다. Task 5 Step 1은 코드·DB를 건드리지 않는 결정 단계라 순서를 앞당겨도 안전하다.
+
+세 DB Task(3·4·5)는 `it_database/tools/preflight-20260729.sql` 한 파일을 공유한다. Task 3이 파일을 만들고 Task 4·5가 각자 쿼리를 덧붙인다.
+
 ## 파일 구조
 
 | 파일 | 책임 |
@@ -56,6 +61,7 @@ DB와 백엔드는 독립 저장소이므로 변경 묶음별로 별도 커밋�
 | `versions.lock` | 검증된 4-repo 커밋 조합 고정 |
 | `it_backend/docs/guides/operations/migration-20260724-handover.md` | BE-22 DBA 사전/적용/복구 체크리스트 |
 | `it_database/tools/preflight-20260724.sql` | BE-22 읽기 전용 사전 점검 SQL |
+| `it_database/tools/preflight-20260729.sql` | BE-24·25·20 적용 전 영향 건수 읽기 전용 리포트 |
 | `it_database/migrations/V20260729_001__EnforceCurrentDocumentSingleton.sql` | BE-24 활성 최신 문서 1건 제약 |
 | `it_database/migrations/V20260729_002__EnforceApplicationIdentityKeys.sql` | BE-25 JPA 후보키 UNIQUE 인덱스 |
 | `it_database/migrations/V20260729_003__AlignNotificationDispatchDefault.sql` | BE-20 알림 발송 상태 기본값 정합화 |
@@ -70,7 +76,7 @@ DB와 백엔드는 독립 저장소이므로 변경 묶음별로 별도 커밋�
 | `it_backend/src/main/java/com/kdb/it/domain/budget/work/service/BudgetWorkService.java` | 표시명 그룹 대표행 결정론화와 읽기 프로젝션 소비 |
 | `it_backend/src/main/java/com/kdb/it/domain/budget/work/repository/BudgetReadView.java` | BBUGTM 요약 계산 최소 필드 계약 |
 | `it_backend/src/main/java/com/kdb/it/domain/budget/work/repository/BbugtmRepository.java` | 연도별 읽기 프로젝션 조회 |
-| `it_backend/src/main/java/com/kdb/it/domain/budget/project/repository/ProjectRepository.java` | 최신 사업 키·이름 배치 프로젝션 |
+| `it_backend/src/main/java/com/kdb/it/domain/budget/project/repository/ProjectRepository.java` | 최신 사업 키·이름 배치 프로젝션 (**신규** `ProjectKeyView` 중첩 인터페이스 포함) |
 | `it_backend/src/main/java/com/kdb/it/common/notification/repository/NotificationInboxRow.java` | 알림함 응답용 최소 필드 계약 |
 | `it_backend/src/main/java/com/kdb/it/common/notification/repository/CinfmmRepositoryCustom.java` | 알림함 프로젝션 페이지 인터페이스 |
 | `it_backend/src/main/java/com/kdb/it/common/notification/repository/CinfmmRepositoryImpl.java` | QueryDSL 알림함 프로젝션 조회 |
@@ -113,13 +119,25 @@ Expected: 현재는 `BE-24`, `BE-25`가 각각 2건으로 출력된다.
 _BE-04~17의 완료 근거는 `TASK_DONE.md`의 2026-07-20~27 백엔드 조치 기록을 참조하며, BE-03은 1차 완료 후속만 활성 추적합니다._
 ```
 
-- [ ] **Step 4: ID 유일성을 다시 검증한다**
+- [ ] **Step 4: BE-19의 어긋난 라인 참조를 보정한다**
+
+BE-19 설명이 가리키는 `ProjectDto.java:217`(검증 어노테이션 부재 지점)과 `ProjectDto.java:272`(`CodeDefaults.orNotApplicable` 호출 지점)는 현재 각각 `:220`, `:275`로 밀렸다. 두 참조를 실제 라인으로 바꾼다.
+
+Run:
+
+```powershell
+rg -n 'abusTc' C:\it\it_backend\src\main\java\com\kdb\it\domain\budget\project\dto\ProjectDto.java
+```
+
+Expected: `CreateRequest.abusTc` 선언과 `CodeDefaults.orNotApplicable(abusTc)` 호출의 현재 라인 번호가 확인된다.
+
+- [ ] **Step 5: ID 유일성을 다시 검증한다**
 
 Run: Step 1의 PowerShell 명령
 
 Expected: 출력 없음.
 
-- [ ] **Step 5: 루트 문서 커밋**
+- [ ] **Step 6: 루트 문서 커밋**
 
 ```powershell
 git -C C:\it add TASK.md TASK_DONE.md
@@ -189,6 +207,12 @@ SELECT c.CONSTRAINT_NAME, cc.COLUMN_NAME, cc.POSITION
 
 `flyway repair`를 무조건 실행하는 절차로 쓰지 않는다.
 
+**`INFM_SD_STS_C` 기본값 왕복 방지(필수 기재):** `V20260724_002`는 `TPRMPP_CINFMM.INFM_SD_STS_C`의 DEFAULT를 운영과 같은 `'10'`으로 **의도적으로 정렬**한다(같은 파일 상단 주석이 근거를 설명하며, backfill 값만 앱 코드셋 `'01'`을 쓴다). 이 계획의 Task 5(`V20260729_003`)가 그 DEFAULT를 `'01'`로 다시 바꾸므로, 인계 문서에 다음을 명시해 DBA가 같은 유지보수 창에서 `'10'` → `'01'` 왕복을 하지 않도록 한다.
+
+- `V20260724_002`와 `V20260729_003`은 **같은 창에서 연속 적용**한다.
+- 두 스크립트 적용 후 `INFM_SD_STS_C`의 **최종 DEFAULT는 `'01'`(발송대기)** 이며, `'10'`은 어느 단계에서도 앱이 해석하는 값이 아니다.
+- `V20260724_002`만 적용하고 창을 닫아야 하는 경우, 그 사이에 앱이 컬럼을 생략한 insert를 하지 않는지(현재 앱은 항상 명시적으로 상태를 쓴다) 확인하고 다음 창에서 `V20260729_003`을 반드시 적용한다.
+
 - [ ] **Step 3: 기존 Flyway 가이드에서 인계 문서를 연결한다**
 
 `flyway.md`의 dev/prod 수동 적용 절에 `migration-20260724-handover.md` 링크를 추가한다.
@@ -218,6 +242,7 @@ git -C C:\it\it_backend commit -m "docs: 20260724 DBA 마이그레이션 인계 
 ### Task 3: BE-24 집행 문서 활성 최신 버전 단일성
 
 **Files:**
+- Create: `it_database/tools/preflight-20260729.sql`
 - Create: `it_database/migrations/V20260729_001__EnforceCurrentDocumentSingleton.sql`
 - Create: `it_backend/src/test/java/com/kdb/it/domain/document/repository/CurrentDocumentSingletonIt.java`
 - Modify: `it_backend/docs/guides/persistence/data-model.md`
@@ -234,7 +259,7 @@ git -C C:\it\it_backend commit -m "docs: 20260724 DBA 마이그레이션 인계 
 Run:
 
 ```powershell
-rg -n 'docVrsSno\(|setDocVrsSno|mark.*Latest|LST_YN.*N|lstYn\\("N"\\)' C:\it\it_backend\src\main\java\com\kdb\it\domain\deliberation C:\it\it_backend\src\main\java\com\kdb\it\domain\contract C:\it\it_backend\src\main\java\com\kdb\it\domain\payment
+rg -n 'docVrsSno\(|setDocVrsSno|mark.*Latest|LST_YN.*N|lstYn\("N"\)' C:\it\it_backend\src\main\java\com\kdb\it\domain\deliberation C:\it\it_backend\src\main\java\com\kdb\it\domain\contract C:\it\it_backend\src\main\java\com\kdb\it\domain\payment
 ```
 
 Expected: 세 도메인은 생성 시 버전 1을 만들고 이후 같은 행을 갱신할 뿐, 새 버전을 생성하는 운영 경로가 없다. 사용되지 않는 잠금/전환 코드를 미리 추가하지 않는다.
@@ -317,7 +342,33 @@ cd C:\it\it_backend
 
 Expected: 두 번째 활성행 insert가 예외를 내지 않아 3개 테스트가 FAIL.
 
-- [ ] **Step 4: 기존 중복을 결정적으로 정리하는 마이그레이션을 작성한다**
+- [ ] **Step 4: 영향 건수를 먼저 읽기 전용으로 리포트한다**
+
+Task 4는 후보키 중복을 자동 병합하지 않고 중단하는데, 이 Task는 활성 최신행을 자동 강등한다. 두 원칙의 차이는 **자동 처리의 결과가 결정적인지**에 있다 — 집행 문서는 `DOC_VRS_SNO` 최대값이 곧 최신 버전이라는 물리 규칙이 있어 강등 결과가 유일하지만, BCMMTM 중복은 위원유형이라는 업무 의미 차이라 자동 선택 근거가 없다. 다만 자동 강등도 **적용 전에 건수를 눈으로 확인한 뒤** 실행한다.
+
+`preflight-20260729.sql`에 아래 리포트를 넣고(이 Task와 Task 4·5가 같은 파일을 공유한다), 세 테이블의 강등 대상 건수를 기록한 뒤 마이그레이션을 적용한다.
+
+```sql
+-- BE-24: 활성 최신행이 2건 이상인 문서번호와 강등 예정 건수
+SELECT 'BDELIM' AS TB, DOC_MNG_NO, COUNT(*) AS ACTIVE_CNT, MAX(DOC_VRS_SNO) AS KEEP_VRS
+  FROM ITPOWN.TPRMPP_BDELIM
+ WHERE LST_YN = 'Y' AND DEL_YN = 'N'
+ GROUP BY DOC_MNG_NO HAVING COUNT(*) > 1
+UNION ALL
+SELECT 'BCONTM', DOC_MNG_NO, COUNT(*), MAX(DOC_VRS_SNO)
+  FROM ITPOWN.TPRMPP_BCONTM
+ WHERE LST_YN = 'Y' AND DEL_YN = 'N'
+ GROUP BY DOC_MNG_NO HAVING COUNT(*) > 1
+UNION ALL
+SELECT 'BPAYMM', DOC_MNG_NO, COUNT(*), MAX(DOC_VRS_SNO)
+  FROM ITPOWN.TPRMPP_BPAYMM
+ WHERE LST_YN = 'Y' AND DEL_YN = 'N'
+ GROUP BY DOC_MNG_NO HAVING COUNT(*) > 1;
+```
+
+리포트가 비어 있지 않으면 강등 대상 문서번호 목록을 결과 파일로 남기고, dev/prod 적용 시 같은 목록을 DBA 인계 자료에 첨부한다.
+
+- [ ] **Step 5: 기존 중복을 결정적으로 정리하는 마이그레이션을 작성한다**
 
 각 테이블에서 활성 최신행이 2건 이상이면 `DOC_VRS_SNO` 최대 행만 `LST_YN='Y'`로 유지하고 나머지를 `N`으로 낮춘다. 자동 삭제는 하지 않는다.
 
@@ -359,7 +410,7 @@ UPDATE ITPOWN.TPRMPP_BPAYMM d
    );
 ```
 
-- [ ] **Step 5: 함수 기반 UNIQUE 인덱스를 추가한다**
+- [ ] **Step 6: 함수 기반 UNIQUE 인덱스를 추가한다**
 
 인덱스 존재 여부는 `ALL_INDEXES`로 검사한 뒤 아래 정의를 동적 실행한다.
 
@@ -379,7 +430,7 @@ CREATE UNIQUE INDEX ITPOWN.IX_TPRMPP_BPAYMM_03
 
 비활성/삭제 행의 CASE 결과는 NULL이므로 여러 과거 버전을 허용하고 활성 최신행만 단일화한다.
 
-- [ ] **Step 6: 로컬 Oracle에 신규 마이그레이션을 적용한다**
+- [ ] **Step 7: 로컬 Oracle에 신규 마이그레이션을 적용한다**
 
 ```powershell
 cd C:\it\it_backend
@@ -389,7 +440,7 @@ $env:SPRING_PROFILES_ACTIVE = 'local-ext'
 
 Expected: 로그에 `V20260729.001` 적용 성공과 애플리케이션 기동 완료가 보인다. 확인 후 `Ctrl+C`로 종료한다.
 
-- [ ] **Step 7: GREEN과 기존 상세 계약을 검증한다**
+- [ ] **Step 8: GREEN과 기존 상세 계약을 검증한다**
 
 Run:
 
@@ -400,7 +451,7 @@ cd C:\it\it_backend
 
 Expected: 두 번째 활성 최신행은 `DataIntegrityViolationException` 또는 원인 체인의 `ConstraintViolationException`으로 거부되고 기존 상세 조회는 PASS.
 
-- [ ] **Step 8: 버전 전환 규칙을 데이터 모델 가이드에 기록한다**
+- [ ] **Step 9: 버전 전환 규칙을 데이터 모델 가이드에 기록한다**
 
 현재는 버전 전환 경로가 없음을 기록하고, 향후 추가 시 아래 순서를 하나의 `@Transactional` 안에서 실행하도록 고정한다.
 
@@ -409,10 +460,10 @@ Expected: 두 번째 활성 최신행은 `DataIntegrityViolationException` 또�
 3. `DOC_VRS_SNO = 현재 최대값 + 1`, `LST_YN='Y'`인 새 행을 insert한다.
 4. 함수 기반 UNIQUE 인덱스 위반은 동시 전환 충돌로 표면화하고 재시도하지 않는다.
 
-- [ ] **Step 9: DB와 백엔드 커밋**
+- [ ] **Step 10: DB와 백엔드 커밋**
 
 ```powershell
-git -C C:\it\it_database add migrations/V20260729_001__EnforceCurrentDocumentSingleton.sql
+git -C C:\it\it_database add migrations/V20260729_001__EnforceCurrentDocumentSingleton.sql tools/preflight-20260729.sql
 git -C C:\it\it_database commit -m "fix(db): 집행 문서 활성 최신 버전 단일성 보장"
 
 git -C C:\it\it_backend add src/test/java/com/kdb/it/domain/document/repository/CurrentDocumentSingletonIt.java docs/guides/persistence/data-model.md
@@ -425,6 +476,7 @@ git -C C:\it\it_backend commit -m "test: 집행 문서 활성 최신행 단일�
 
 **Files:**
 - Create: `it_database/migrations/V20260729_002__EnforceApplicationIdentityKeys.sql`
+- Modify: `it_database/tools/preflight-20260729.sql` (Task 3에서 생성)
 - Create: `it_backend/src/test/java/com/kdb/it/domain/persistence/ApplicationIdentityKeyIt.java`
 - Modify: `it_backend/src/main/java/com/kdb/it/common/approval/entity/Cappla.java`
 - Modify: `it_backend/src/main/java/com/kdb/it/domain/council/entity/Bcmmtm.java`
@@ -444,6 +496,21 @@ git -C C:\it\it_backend commit -m "test: 집행 문서 활성 최신행 단일�
 - `Bmqnam.qtnId`, `Bpqnam.qtnId`는 협의회 ID를 포함하는 전역 형식이다.
 - Repository ID 타입과 기존 호출 계약을 바꾸지 않아 회귀 범위를 줄인다.
 
+**후보키의 적용 범위는 테이블마다 다르다.** 전 행 UNIQUE로 충분한 테이블과, 소프트 삭제 행을 제외해야만 하는 테이블을 구분한다.
+
+| 테이블 | 후보키 | 범위 | 근거 |
+| --- | --- | --- | --- |
+| `TPRMPP_CAPPLA` | `APF_SNO` | 전 행 | 전역 시퀀스 `SQ_TPRMPP_CAPPLA_1` 채번이라 삭제 행과도 값이 겹치지 않는다 |
+| `TPRMPP_BMQNAM` | `QTN_ID` | 전 행 | `MainQnaRepository.getNextQtnSeq`가 `COUNT(*)+1`을 **삭제 행 포함**으로 계산해 ID를 재사용하지 않는다 |
+| `TPRMPP_BPQNAM` | `QTN_ID` | 전 행 | `QnaRepository.getNextQtnSeq`가 같은 이유로 재사용하지 않는다 |
+| `TPRMPP_BCMMTM` | `(IT_PTL_ASCT_ID, ENO)` | **`DEL_YN='N'` 행만** | 아래 참조 |
+
+`TPRMPP_BCMMTM`에 전 행 UNIQUE를 걸면 **정상 업무 흐름이 깨진다.** 물리 PK는 `(IT_PTL_ASCT_ID, IT_PTL_ASCT_MEB_TC, ENO)`이고 `CommitteeService.saveCommittee`는 요청에서 빠진 위원을 소프트 삭제해 행을 남긴다. 재등록 시 기존 위원 인덱싱은 `findByItPtlAsctIdAndDelYn(asctId, "N")` 결과만 사용하므로 삭제 행은 보이지 않고, **다른 위원유형으로 재등록하면** 새 PK 행이 insert되어 삭제 행과 함께 `(ASCT_ID, ENO)`가 중복된다. 즉 전 행 UNIQUE는 (a) 기존 데이터에서 Step 2 가드를 발동시켜 마이그레이션 전체를 중단시키고, (b) 인덱스가 만들어져도 위 흐름을 런타임 `ORA-00001`로 실패시킨다. 같은 메서드가 활성 행 인덱싱에서 `(a, b) -> a` 병합을 쓰는 것도 활성 행 eno 중복 가능성을 이미 전제한 것이다.
+
+따라서 BCMMTM만 Task 3과 동일한 함수 기반 부분 UNIQUE로 처리하고, 가드 쿼리에도 같은 `DEL_YN='N'` 조건을 적용한다.
+
+`BMQNAM`/`BPQNAM`의 전 행 UNIQUE는 **채번이 삭제 행을 포함해 세는 현재 구현에 의존한다.** 채번을 활성 행 기준으로 바꾸면 ID가 재사용되어 이 인덱스가 깨지므로, Step 4의 JavaDoc에 이 의존 관계를 함께 기록한다.
+
 - [ ] **Step 2: 중복 후보키 사전 가드를 마이그레이션에 작성한다**
 
 아래 네 쿼리 중 하나라도 행을 반환하면 `RAISE_APPLICATION_ERROR`로 중단한다.
@@ -451,12 +518,19 @@ git -C C:\it\it_backend commit -m "test: 집행 문서 활성 최신행 단일�
 ```sql
 SELECT APF_SNO FROM ITPOWN.TPRMPP_CAPPLA GROUP BY APF_SNO HAVING COUNT(*) > 1;
 SELECT IT_PTL_ASCT_ID, ENO FROM ITPOWN.TPRMPP_BCMMTM
+ WHERE DEL_YN = 'N'
  GROUP BY IT_PTL_ASCT_ID, ENO HAVING COUNT(*) > 1;
 SELECT QTN_ID FROM ITPOWN.TPRMPP_BMQNAM GROUP BY QTN_ID HAVING COUNT(*) > 1;
 SELECT QTN_ID FROM ITPOWN.TPRMPP_BPQNAM GROUP BY QTN_ID HAVING COUNT(*) > 1;
 ```
 
-이 작업에서는 후보키 중복을 자동 병합하지 않는다. BCMMTM 중복은 서로 다른 위원유형이라는 업무 의미가 있어 소유자 확인 없이 삭제/변경할 수 없다.
+BCMMTM 가드에 `DEL_YN='N'`이 반드시 들어가야 한다. 이 조건이 없으면 소프트 삭제 이력과 활성 행이 함께 잡혀, 실제로는 부분 UNIQUE를 위반하지 않는 정상 데이터에서 마이그레이션이 중단된다.
+
+이 작업에서는 후보키 중복을 자동 병합하지 않는다. 활성 BCMMTM 중복은 같은 사람이 서로 다른 위원유형으로 동시에 등록된 상태라는 업무 의미가 있어 소유자 확인 없이 삭제/변경할 수 없다.
+
+- [ ] **Step 2-1: 영향 건수를 사전 리포트에 추가한다**
+
+Task 3에서 만든 `it_database/tools/preflight-20260729.sql`에 위 네 쿼리를 그대로 추가한다(BCMMTM은 `DEL_YN='N'` 조건 포함). dev/prod 적용 전 DBA가 이 리포트로 중단 여부를 미리 판정할 수 있어야 하며, 결과가 비어 있지 않으면 Task 14의 완료 이관 대상에서 BE-25를 제외한다.
 
 - [ ] **Step 3: UNIQUE 인덱스를 추가한다**
 
@@ -465,13 +539,20 @@ SELECT QTN_ID FROM ITPOWN.TPRMPP_BPQNAM GROUP BY QTN_ID HAVING COUNT(*) > 1;
 ```sql
 CREATE UNIQUE INDEX ITPOWN.IX_TPRMPP_CAPPLA_02
     ON ITPOWN.TPRMPP_CAPPLA (APF_SNO);
+
+-- 소프트 삭제 이력을 제외한 활성 위원만 단일화한다(Step 1 근거 참조).
 CREATE UNIQUE INDEX ITPOWN.IX_TPRMPP_BCMMTM_02
-    ON ITPOWN.TPRMPP_BCMMTM (IT_PTL_ASCT_ID, ENO);
+    ON ITPOWN.TPRMPP_BCMMTM
+       (CASE WHEN DEL_YN = 'N' THEN IT_PTL_ASCT_ID END,
+        CASE WHEN DEL_YN = 'N' THEN ENO END);
+
 CREATE UNIQUE INDEX ITPOWN.IX_TPRMPP_BMQNAM_01
     ON ITPOWN.TPRMPP_BMQNAM (QTN_ID);
 CREATE UNIQUE INDEX ITPOWN.IX_TPRMPP_BPQNAM_01
     ON ITPOWN.TPRMPP_BPQNAM (QTN_ID);
 ```
+
+BCMMTM 인덱스는 두 CASE 식을 함께 써야 한다. 삭제 행은 두 키 컬럼이 모두 NULL이 되어 Oracle B-tree에 저장되지 않으므로 여러 이력 행이 공존하고, 활성 행만 `(ASCT_ID, ENO)`로 단일화된다.
 
 - [ ] **Step 4: 엔티티 JavaDoc을 후보키 계약으로 현행화한다**
 
@@ -484,19 +565,40 @@ CREATE UNIQUE INDEX ITPOWN.IX_TPRMPP_BPQNAM_01
  */
 ```
 
-- [ ] **Step 5: Oracle 통합 테스트를 작성하고 실행한다**
+`Bcmmtm`에는 후보키가 **활성 행 한정**이라는 사실과 그 이유를 함께 남긴다.
 
-각 후보키에 대해 물리 PK의 나머지 컬럼만 다르게 한 두 번째 행을 native insert하고 UNIQUE 위반을 검증한다. 정상 후보키 두 건은 `findById`·수정·삭제가 서로 격리됨도 검증한다.
-
-먼저 신규 DB 마이그레이션을 적용한다.
-
-```powershell
-cd C:\it\it_backend
-$env:SPRING_PROFILES_ACTIVE = 'local-ext'
-.\gradlew bootRun
+```java
+/**
+ * 앱 식별자: ({@code IT_PTL_ASCT_ID}, {@code ENO}). 물리 PK는
+ * ({@code IT_PTL_ASCT_ID}, {@code IT_PTL_ASCT_MEB_TC}, {@code ENO})이며,
+ * DB 함수 기반 UNIQUE 인덱스가 {@code DEL_YN='N'}인 행에 한해 후보키 단일성을 보장한다.
+ * 소프트 삭제 이력은 같은 (협의회, 사번)으로 여러 건 남을 수 있으므로 전 행 UNIQUE가 아니다.
+ */
 ```
 
-Expected: 로그에 `V20260729.002` 적용 성공이 보인다. 기동 완료 후 `Ctrl+C`로 종료한다.
+`Bmqnam`/`Bpqnam`에는 전 행 UNIQUE가 채번 구현에 의존한다는 점을 남긴다.
+
+```java
+/**
+ * 앱 식별자: {@code QTN_ID}. 물리 PK는 ({@code IT_PTL_ASCT_ID}, {@code QTN_ID})이며,
+ * DB UNIQUE 인덱스가 QTN_ID 단독 후보키를 보장한다.
+ * 이 전 행 UNIQUE는 순번 채번이 삭제 행을 포함해 세어 ID를 재사용하지 않는다는 전제에 의존한다.
+ * 채번을 활성 행 기준으로 바꾸면 이 제약이 깨진다.
+ */
+```
+
+- [ ] **Step 5: Oracle 통합 테스트를 작성하고 RED를 확인한다**
+
+Task 3·5와 같은 순서로, **마이그레이션 적용 전에** 제약 부재를 먼저 증명한다. 테스트 클래스는 `AbstractOracleRepositoryTest`를 상속하고 `@Autowired JdbcTemplate jdbc`를 선언한다.
+
+검증 케이스는 다음 여섯 개다.
+
+1. `CAPPLA`: 같은 `APF_SNO`를 `APF_DCM_NO`만 다르게 두 번 insert → 거부
+2. `BCMMTM`: 같은 `(ASCT_ID, ENO)`를 `IT_PTL_ASCT_MEB_TC`만 다르게 **둘 다 `DEL_YN='N'`으로** insert → 거부
+3. `BMQNAM`: 같은 `QTN_ID`를 `IT_PTL_ASCT_ID`만 다르게 두 번 insert → 거부
+4. `BPQNAM`: 위와 동일 → 거부
+5. **BCMMTM 소프트 삭제 회귀**: 같은 `(ASCT_ID, ENO)`로 `DEL_YN='Y'` 행과 `DEL_YN='N'` 행을 insert → **허용**되어야 한다. 이 케이스가 부분 UNIQUE를 전 행 UNIQUE로 잘못 만드는 회귀를 잡는다.
+6. 정상 후보키 두 건의 `findById`·수정·삭제가 서로 격리됨
 
 Run:
 
@@ -505,12 +607,31 @@ cd C:\it\it_backend
 .\gradlew integrationTest --tests "*ApplicationIdentityKeyIt"
 ```
 
-Expected: 4개 중복 후보키가 모두 거부되고 정상 식별자 CRUD 격리 케이스 PASS.
+Expected: 1~4번이 두 번째 insert 성공으로 FAIL. 5·6번은 제약이 없으므로 이미 PASS.
 
-- [ ] **Step 6: 저장소별 커밋**
+- [ ] **Step 6: 마이그레이션을 적용하고 GREEN을 확인한다**
 
 ```powershell
-git -C C:\it\it_database add migrations/V20260729_002__EnforceApplicationIdentityKeys.sql
+cd C:\it\it_backend
+$env:SPRING_PROFILES_ACTIVE = 'local-ext'
+.\gradlew bootRun
+```
+
+Expected: 로그에 `V20260729.002` 적용 성공이 보인다. 기동 완료 후 `Ctrl+C`로 종료한다. 가드가 발동해 기동이 실패하면 Step 2-1의 리포트로 중복 데이터를 확인하고, 소유자 판단 전까지 이 Task를 진행하지 않는다.
+
+Run:
+
+```powershell
+cd C:\it\it_backend
+.\gradlew integrationTest --tests "*ApplicationIdentityKeyIt" --tests "*CommitteeServiceTest" --tests "*QnaServiceTest" --tests "*MainQnaServiceTest"
+```
+
+Expected: 6개 케이스 전부 PASS. 특히 5번이 PASS해야 위원 소프트 삭제 후 다른 위원유형 재등록 흐름이 살아 있다.
+
+- [ ] **Step 7: 저장소별 커밋**
+
+```powershell
+git -C C:\it\it_database add migrations/V20260729_002__EnforceApplicationIdentityKeys.sql tools/preflight-20260729.sql
 git -C C:\it\it_database commit -m "fix(db): JPA 식별자 후보키 유일성 보장"
 
 git -C C:\it\it_backend add src/main/java/com/kdb/it/common/approval/entity/Cappla.java src/main/java/com/kdb/it/domain/council/entity/Bcmmtm.java src/main/java/com/kdb/it/domain/council/entity/Bmqnam.java src/main/java/com/kdb/it/domain/council/entity/Bpqnam.java src/test/java/com/kdb/it/domain/persistence/ApplicationIdentityKeyIt.java
@@ -523,6 +644,7 @@ git -C C:\it\it_backend commit -m "test: 앱 식별자와 DB 후보키 계약 �
 
 **Files:**
 - Create: `it_database/migrations/V20260729_003__AlignNotificationDispatchDefault.sql`
+- Modify: `it_database/tools/preflight-20260729.sql` (Task 3에서 생성)
 - Create: `it_backend/src/test/java/com/kdb/it/common/notification/repository/NotificationDispatchDefaultIt.java`
 
 **Interfaces:**
@@ -533,7 +655,35 @@ git -C C:\it\it_backend commit -m "test: 앱 식별자와 DB 후보키 계약 �
 
 `10`은 `Cinfmm`과 재시도 쿼리 어느 곳에서도 해석되지 않으므로 유지하지 않는다. DB 기본값을 `01`로 맞추고, 기존 `10` 행은 발송 완료로 간주하지 않고 `01`로 바꾼다. 적용 전 DBA가 `10` 행 수와 `SD_DTM` 값을 확인해 이미 발송된 흔적이 있는 행은 별도 목록으로 보존한다.
 
+**이 변경은 앞선 두 결정을 덮어쓴다는 사실을 결정 근거에 명시한다.**
+
+| 스크립트 | `INFM_SD_STS_C` DEFAULT | 의도 |
+| --- | --- | --- |
+| `V20260719_002` | `'02'` | 컬럼 신설 시 기존 행을 발송 완료로 간주 |
+| `V20260724_002` | `'10'` | 운영 스키마와의 DEFAULT 정렬(backfill 값만 앱 코드셋 `'01'` 사용) |
+| `V20260729_003` (이 Task) | `'01'` | 앱 코드셋 안의 도달 가능한 값으로 확정 |
+
+`V20260724_002`의 `'10'`은 실수가 아니라 운영 정렬을 위한 의도적 선택이었으므로, 이 Task는 "운영 정렬보다 앱 코드셋 정합을 우선한다"는 판단 변경임을 마이그레이션 주석과 `TASK_DONE.md` 근거에 남긴다. Task 2의 DBA 인계 문서에는 두 스크립트를 같은 창에서 연속 적용하고 최종 DEFAULT가 `'01'`임을 기재한다.
+
+부수 효과도 함께 기록한다. `Cinfmm.canRetry()`는 `DISPATCH_SENT`가 아닌 모든 상태를 재시도 대상으로 보므로, DEFAULT가 `'01'`이면 앱 밖에서 상태를 생략하고 삽입된 행이 재발송 대상이 된다. 현재 DEFAULT `'10'`도 동일하게 재시도 대상이라 새로 생기는 위험은 아니지만, `V20260719_002`의 `'02'`와 비교하면 동작이 다르다.
+
+- [ ] **Step 1-1: 영향 건수를 사전 리포트에 추가한다**
+
+`it_database/tools/preflight-20260729.sql`에 아래 쿼리를 추가한다. `SENT_LIKE_CNT`가 0이 아니면 Step 2의 가드가 마이그레이션을 중단시키므로, dev/prod 적용 전에 DBA가 미리 판정할 수 있어야 한다.
+
+```sql
+-- BE-20: 앱 코드셋 밖 상태값 분포와 발송 흔적 유무
+SELECT INFM_SD_STS_C,
+       COUNT(*)                                        AS CNT,
+       COUNT(CASE WHEN SD_DTM IS NOT NULL THEN 1 END)  AS SENT_LIKE_CNT
+  FROM ITPOWN.TPRMPP_CINFMM
+ GROUP BY INFM_SD_STS_C
+ ORDER BY INFM_SD_STS_C;
+```
+
 - [ ] **Step 2: 마이그레이션을 작성한다**
+
+마이그레이션 첫 줄 주석에 Step 1의 결정 표(`'02'` → `'10'` → `'01'`)와 "운영 정렬보다 앱 코드셋 정합을 우선한다"는 판단을 요약해 남긴다.
 
 ```sql
 DECLARE
@@ -611,7 +761,7 @@ Expected: 로그에 `V20260729.003` 적용 성공이 보인다. 기동 완료 �
 - [ ] **Step 5: 저장소별 커밋**
 
 ```powershell
-git -C C:\it\it_database add migrations/V20260729_003__AlignNotificationDispatchDefault.sql
+git -C C:\it\it_database add migrations/V20260729_003__AlignNotificationDispatchDefault.sql tools/preflight-20260729.sql
 git -C C:\it\it_database commit -m "fix(db): 알림 발송 상태 기본값을 대기 코드로 정렬"
 
 git -C C:\it\it_backend add src/test/java/com/kdb/it/common/notification/repository/NotificationDispatchDefaultIt.java
@@ -777,6 +927,15 @@ git -C C:\it\it_backend commit -m "fix: 정보화사업 생성 시 사업구분 
 
 같은 표시명에 속하는 `ioeC=101` 구 실행(`BG-2026-0001`, `asgRt=80`)과 `ioeC=102` 신 실행(`BG-2026-0002`, `asgRt=50`)을 만든다. 리스트 순서를 두 번 뒤집어 호출해도 응답의 `ioeC=102`, `dupRt=50`이 같아야 한다.
 
+**대표 코드는 파생 필드 두 개의 조회 키이기도 하다.** `representativeIoeC`는 `cdvaToCapital.get(...)`(자본예산 여부)과 `cdvaToGroupName.get(...)`(품목그룹명)의 키로 재사용되므로, 대표 선정 방식이 바뀌면 `capital`과 `itemGroupName`도 함께 바뀔 수 있다. 이 변경은 결정론화를 넘어선 동작 변경이므로 테스트가 네 필드를 모두 단언한다.
+
+- `ioeC` — 대표 편성행의 비목코드
+- `dupRt` — 같은 대표 편성행의 편성률
+- `capital` — 대표 코드 기준 자본예산 여부
+- `itemGroupName` — 대표 코드 기준 품목그룹명
+
+`101`과 `102`에 서로 다른 자본예산 구분과 그룹명을 주어, 두 필드가 대표 편성행(`102`) 기준으로 결정되고 입력 순서에 무관함을 확인한다.
+
 - [ ] **Step 2: RED를 실행한다**
 
 Run:
@@ -801,6 +960,8 @@ Integer dupRt = representativeBudget != null ? representativeBudget.getAsgRt() :
 ```
 
 예산행이 없는 공통코드 전용 그룹은 문자열 최소 코드로 결정적 폴백한다.
+
+`capital`·`itemGroupName` 산출 코드는 그대로 두고 `representativeIoeC` 하나만 바꾼다. 두 필드가 새 대표 코드를 따라가는 것이 의도된 동작이며, Step 1의 네 필드 단언이 그 결과를 고정한다.
 
 - [ ] **Step 4: GREEN과 예산작업 회귀 테스트를 실행한다**
 
@@ -857,7 +1018,20 @@ public interface BudgetReadView {
 }
 ```
 
-`ProjectRepository.ProjectKeyView`는 `getAbusMngNo()`, `getAbusNm()`만 제공하고 `findKeyViewsByAbusMngNoInAndLstYnAndDelYn(...)`로 최신 미삭제 행만 조회한다.
+`ProjectKeyView`는 **저장소에 아직 존재하지 않는 신규 타입**이다(TASK.md BE-03 잔여 ③이 "재계획" 대상으로 남겨 둔 항목). `ProjectRepository` 안의 중첩 인터페이스로 새로 정의하고, 조회 메서드도 함께 추가한다.
+
+```java
+/** 사업명 배치 조회용 최소 필드. */
+interface ProjectKeyView {
+    String getAbusMngNo();
+    String getAbusNm();
+}
+
+List<ProjectKeyView> findKeyViewsByAbusMngNoInAndLstYnAndDelYn(
+        Collection<String> abusMngNos, String lstYn, String delYn);
+```
+
+`BudgetReadView`는 `BbugtmRepository`와 같은 패키지의 별도 파일로 만든다. 기존 `findByBseYyAndDelYn(String, String)`이 이미 있으므로, 파생 메서드 이름 규칙상 `findReadViewsBy...` 변형이 그대로 성립한다.
 
 - [ ] **Step 2: 프로젝션 동등성 RED 테스트를 작성한다**
 
@@ -1206,12 +1380,20 @@ Expected: frontend/backend/database의 현재 `main` SHA와 갱신 시각이 반
 
 - [ ] **Step 5: 완료된 과제만 이관한다**
 
-- 즉시 완료 가능: BE-19, BE-20, BE-22, BE-24, BE-25, BE-28, BE-29
-- 구현 후 완료 가능: BE-03 BBUGTM/ProjectKeyView/알림 프로젝션
-- 관측 결과에 따라 완료/조건부 유지: BE-03 Project/Cost 목록
-- 외부 증거 충족 시에만 완료: BE-18, BE-21, BE-23
+완료 판정은 **이 계획의 산출물이 끝났는지**로 하며, 외부 주체의 후속 실행이 남은 과제는 완료로 옮기지 않는다. 마이그레이션에 `RAISE_APPLICATION_ERROR` 가드가 있는 과제는 가드가 발동하지 않았을 때만 완료다.
 
-`TASK_DONE.md`에는 커밋 SHA, 테스트 명령, 결과, DB 마이그레이션 버전을 기록한다. 조건 미충족 과제는 `TASK.md`에 게이트와 다음 확인일을 남긴다.
+| 과제 | 완료 정의 | 조건 |
+| --- | --- | --- |
+| BE-19, BE-28, BE-29 | 구현 + 테스트 PASS | 무조건 완료 가능 |
+| BE-03 BBUGTM/ProjectKeyView/알림 프로젝션 | 구현 + 단위·Oracle IT PASS | Task 9 완료 시 |
+| BE-20 | `V20260729_003` 로컬 적용 + IT PASS | Step 2 가드(`10` + `SD_DTM` 존재)가 발동하지 않은 경우만. 발동 시 발송 여부 확정까지 `TASK.md` 유지 |
+| BE-24 | `V20260729_001` 로컬 적용 + IT PASS | 강등 대상 문서번호 목록을 근거에 첨부. dev/prod 미적용은 완료를 막지 않되 근거에 명시 |
+| BE-25 | `V20260729_002` 로컬 적용 + IT PASS | Step 2 가드(활성 BCMMTM 후보키 중복 등)가 발동하지 않은 경우만. 발동 시 업무 소유자 판단까지 `TASK.md` 유지 |
+| BE-22 | **DBA 인계 자료 전달까지** | dev/prod 실제 적용은 DBA 소관이므로 완료 조건에 넣지 않는다. `TASK.md`에는 적용 결과 확인 항목을 별도로 남긴다 |
+| BE-03 Project/Cost 목록 | 관측 보고서 작성 | 착수 기준 충족 시 구현까지, `DEFER`면 조건부 과제로 유지 |
+| BE-18, BE-21, BE-23 | 외부 증거·결정 충족 시에만 | 미충족이면 게이트와 다음 확인일만 갱신 |
+
+`TASK_DONE.md`에는 커밋 SHA, 테스트 명령, 결과, DB 마이그레이션 버전, 그리고 사전 리포트(`preflight-20260729.sql`) 실행 결과 요약을 기록한다. 조건 미충족 과제는 `TASK.md`에 게이트와 다음 확인일을 남긴다.
 
 - [ ] **Step 6: 루트 문서 커밋**
 
@@ -1227,3 +1409,19 @@ git -C C:\it commit -m "docs: BE-03~25 백엔드 조치 결과와 버전 잠금 
 - **계약 안전:** 알림은 이미 DTO 계약이 있어 JSON 불변 프로젝션으로 전환하고, Project/Cost는 기존 경로를 유지한 추가형 API만 계획했다.
 - **외부 의존:** BE-18·21·23은 증거/결정 없이 코드나 외부 저장소 상태를 임의 변경하지 않는다.
 - **릴리스 안전:** 현재 프론트가 feature 브랜치이므로 모든 하위 저장소가 main/clean이 되기 전 `versions.lock`을 갱신하지 않는다.
+
+## 크로스체크 반영 이력 (2026-07-29)
+
+코드베이스 대조 결과 다음을 수정했다.
+
+| 항목 | 내용 |
+| --- | --- |
+| Task 4 — 후보키 범위 | BCMMTM 전 행 `UNIQUE (ASCT_ID, ENO)`는 소프트 삭제 이력과 충돌해 마이그레이션 중단·런타임 `ORA-00001`을 유발한다. `DEL_YN='N'` 부분 UNIQUE로 교체하고 가드 쿼리에도 같은 조건을 추가했다. CAPPLA·BMQNAM·BPQNAM은 전역 채번이라 전 행 UNIQUE 유지 근거를 명시했다 |
+| Task 4 — RED 누락 | 마이그레이션 적용 전 제약 부재를 증명하는 단계를 분리하고, 소프트 삭제 행 공존 허용 케이스를 회귀 테스트로 추가했다 |
+| Task 2 ↔ Task 5 상충 | `V20260724_002`가 `INFM_SD_STS_C` DEFAULT를 의도적으로 `'10'`으로 정렬한 사실을 반영해, 인계 문서에 두 스크립트 연속 적용과 최종값 `'01'`을 명시하도록 했다 |
+| Task 8 — 동작 변경 범위 | 대표 코드가 `capital`·`itemGroupName` 조회 키로도 쓰이는 사실을 반영해 단언 필드를 2개에서 4개로 늘렸다 |
+| Task 9 — `ProjectKeyView` | 저장소에 존재하지 않는 신규 타입임을 명시하고 정의·조회 메서드 시그니처를 계획에 포함했다 |
+| Task 14 — 완료 판정 | 가드 발동 가능성이 있는 BE-20·24·25와 외부 실행이 남은 BE-22를 무조건 완료로 분류하던 표를 조건부 판정 표로 교체했다 |
+| Task 3 — 자동 강등 근거 | Task 4의 "자동 병합 금지"와 원칙이 달라 보이는 이유(결과의 결정성)를 명시하고, 강등 전 건수 리포트 단계를 추가했다 |
+| Task 1 — 라인 참조 | BE-19가 가리키는 `ProjectDto.java:217/:272`가 현재 `:220/:275`로 밀린 것을 보정하는 단계를 추가했다 |
+| Task 3 Step 1 — 검색식 | `lstYn\\("N"\\)`의 이중 백슬래시가 매칭을 막아 `lstYn\("N"\)`으로 수정했다 |
