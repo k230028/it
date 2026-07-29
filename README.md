@@ -25,8 +25,10 @@ C:\it\
 - 주소: `127.0.0.1:11521/XEPDB1`
 
 ```powershell
-sqlplus ITPAPP/<비밀번호>@127.0.0.1:11521/XEPDB1
+sqlplus ITPAPP@127.0.0.1:11521/XEPDB1
 ```
+
+비밀번호는 sqlplus 콘솔 프롬프트에만 입력합니다. CI·무인 실행은 명령줄 또는 환경변수 비밀번호 대신 Oracle Secure External Password Store의 Wallet 별칭(`/@별칭`)을 사용합니다.
 
 ### 2. 백엔드
 
