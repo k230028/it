@@ -46,12 +46,64 @@ $env:SPRING_PROFILES_ACTIVE = "local-ext"
 
 ```powershell
 cd C:\it\it_frontend
-npm install
+npm ci
 npm run dev
 ```
 
 - 화면: http://localhost:3000
 - 기본 API 주소: http://localhost:28080
+
+최초 체크아웃과 CI는 `package-lock.json`을 그대로 재현하는 `npm ci`를 사용합니다. 패키지를 추가하거나 버전을 바꿀 때만 `npm install`로 lockfile을 함께 갱신합니다.
+
+### 4. 정적 배포 빌드
+
+프론트 정적 생성은 백엔드와 같은 `SPRING_PROFILES_ACTIVE` 값을 읽어 환경별 스크립트를 선택합니다. 콤마로 여러 프로파일을 지정하면 첫 번째 값만 판정하며, `local*`은 `.env.local`, `dev`는 `.env.development`, `prod`는 `.env.production`을 사용합니다.
+
+```powershell
+cd C:\it\it_frontend
+$env:SPRING_PROFILES_ACTIVE = "prod"
+npm run generate
+```
+
+모든 정적 생성 스크립트는 API 기준 주소를 빈 값으로 강제해 브라우저가 same-origin `/api/`와 `/sso/`를 호출하게 합니다. 따라서 nginx·WebTobe는 두 경로를 백엔드로 프록시해야 합니다. API 호출에는 CORS가 발생하지 않지만 SSO 완료 후 복귀 주소는 백엔드 Origin 허용 목록으로 검증하므로, 실제 프론트 Origin을 `APP_FRONTEND_URL` 또는 `CORS_ALLOWED_ORIGINS`에 `scheme://host[:port]` 형식으로 등록합니다.
+
+nginx.conf
+```bash
+server {
+        listen       80;
+        server_name  localhost;
+        root C:/it/it_frontend/.output/public; # 빌드된 public 폴더 경로
+
+        location / {
+            index  index.html index.htm;
+        try_files $uri $uri/ /index.html;  # SPA
+        }
+
+        location /sso/ {
+        proxy_pass http://localhost:28080;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+
+        # 캐시 설정
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+                expires 1y;
+                add_header Cache-Control "public, no-transform";
+        }
+
+        location /api/ {
+                proxy_pass http://localhost:28080;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+        }
+
+        # redirect server error pages to the static page /50x.html
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+      }
+```
 
 ## 품질 확인
 
@@ -69,9 +121,11 @@ npm run test:e2e
 
 ```powershell
 cd C:\it\it_backend
+./gradlew spotlessCheck
 ./gradlew test
 ./gradlew integrationTest
 ./gradlew jacocoTestCoverageVerification
+./gradlew check
 ```
 
 백엔드 기본 테스트는 로컬 Oracle 의존 통합 테스트를 제외하며, 실제 Oracle 매핑과 QueryDSL은 `integrationTest`로 분리합니다. 브라우저 핵심 흐름은 두 서버를 실행한 뒤 Playwright 또는 `/qa` 워크플로우로 확인합니다.
@@ -89,7 +143,8 @@ Nuxt 페이지·컴포넌트
   → Oracle ITPOWN 스키마
 ```
 
-- 프론트는 `runtimeConfig.public.apiBase` 기반 절대 URL과 인증 쿠키를 사용합니다.
+- 프론트는 `runtimeConfig.public.apiBase`를 접두사로 구성한 API URL과 인증 쿠키를 사용합니다.
+- 개발 실행은 절대 API URL을 사용하고, 정적 프록시 배포는 빈 API 접두사와 same-origin `/api/`·`/sso/` 경로를 사용합니다.
 - 백엔드는 Controller에서 입력을 받고, Service에서 JWT 사용자 기준 부서·소유권·상태 전이를 검증합니다.
 - 목록·검색은 필요한 경우 QueryDSL 프로젝션을 사용하고, 물리 DB 변경은 애플리케이션 코드와 분리된 Flyway 스크립트로 관리합니다.
 - 결재 상태처럼 원 트랜잭션과 함께 성공해야 하는 처리는 동기 이벤트로 연결하고, 알림·메일처럼 원 업무를 롤백하면 안 되는 부수효과는 커밋 이후 별도 트랜잭션으로 처리합니다.
@@ -115,6 +170,7 @@ Nuxt 페이지·컴포넌트
 - 업무 엔티티는 Soft Delete와 감사 로그 패턴을 사용합니다.
 - 공통코드·메뉴 권한·알림 미읽음 수·Tiptap 메타데이터는 Caffeine 캐시를 사용하며, 원본 변경 시 서비스가 캐시를 무효화합니다.
 - 데이터베이스 변경은 `it_database/migrations`의 새 Flyway 스크립트로 관리합니다.
+- 운영 정적 생성은 백엔드와 공유하는 `SPRING_PROFILES_ACTIVE`를 사용하며, 미설정·미지원 프로파일은 fail-fast로 중단합니다.
 - 신규 주석은 한글로 작성하고 코드만 읽어도 명확한 설명은 생략합니다.
 
 세부 규칙은 각 저장소의 `CLAUDE.md`와 가이드를 확인합니다.
