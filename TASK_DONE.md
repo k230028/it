@@ -1,6 +1,6 @@
 # ✅ IT Portal 완료·종료 내역 (Archive)
 
-> 🗓️ **기준일:** 2026-07-29
+> 🗓️ **기준일:** 2026-07-30
 > 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️)·폐기(⛔) 항목을 보관합니다.
 
 ### 🔑 범례 (Legend)
@@ -16,19 +16,19 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
-### ✅ 2026-07-29 SEC-11~15 보안 조치 완료
+### ✅ 2026-07-29~30 SEC-11~15 보안 조치 완료
 
 > 계획 `docs/superpowers/plans/done/2026-07-29-sec10-sec15-security-remediation.md`의 완료 항목만 이관했다. SEC-10은 1.x/2.x 호환 백포트가 공식 advisory에서 식별될 때까지 `TASK.md`에 유지한다.
 
 | 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
 | :--: | :--: | --- | --- | --- |
-| ✅ Done | SEC-11 | Oracle 도구의 비밀번호를 명령행·환경변수·임시 SQL에서 제거하고, 수동 실행은 콘솔 프롬프트, CI·무인 실행은 Wallet 별칭으로 분리했다. `it_database/README.MD`는 프롬프트/Wallet 사용을, 루트 `CLAUDE.md`는 수동 프롬프트와 무인 Wallet·권한 제한을 명시한다. Wallet 생성·배포·파일 검증은 운영/DBA 절차로 남긴다. | database `d5756ad`; root `604ff1e`, `641da8b` | `verify-sec11-powershell.ps1`이 fake Oracle client의 Process CommandLine, 프롬프트/Wallet 경로, 임시 SQL 무비밀을 확인했고 PS7·Windows PowerShell 5.1 모두 통과. BOM 없는 한글 포함 스크립트 파싱을 함께 검증. |
-| ✅ Done | SEC-12 | `SsoAgentClient.authorize()`·`isServerAlive()`, `SsoController.checkauth()`·`complete()`의 진단 로그에서 token/session/eno/body/IP 원문을 제거하고 결과 반환·리다이렉트 계약은 유지했다. | backend `c8861cc` | `authorize_민감정보로그미노출`, `isServerAlive_통신실패_예외메시지로그미노출`, `checkauth_검증실패_IP원문로그미노출`, `complete_next쿼리민감정보로그미노출_리다이렉트유지` 로그-capture 회귀 테스트. |
-| ✅ Done | SEC-13 | prod에서 `springdoc.api-docs.enabled=false`, `springdoc.swagger-ui.enabled=false`를 강제하고 상위 우선순위 override·키 누락·빈값이면 기동을 차단했다. prod 비활성 endpoint는 익명 401, 인증 404이며 local/dev 기본 문서 접근은 유지한다. | backend `e8d8aa4`, `9ec49c0`, `e8a35d3` | `prod는 OpenAPI 명세와 Swagger UI를 모두 비활성화한다`, `비활성 OpenAPI 경로의 익명 요청은 인증 경계에서 모두 401`, `비활성 OpenAPI 경로의 인증 요청은 리소스 경계에서 모두 404`, EnvironmentValidator prod override/누락/빈값 테스트. |
-| ✅ Done | SEC-14 | Java `SsoNextPathValidator`와 TypeScript `getSafeNextPath`로 safe-next 계약을 통일했다. 허용: `/`, 내부 경로, query/hash. 거부: 빈값·외부 URL·`//`·`/\\`·`/login` 및 배열/비문자 입력. 프론트 4개 진입점(`auth.global.ts`, `sso-auth-redirect.ts`, `login.vue` SSO 시작·수동 완료)이 공용 유틸만 호출한다. | backend `20827a8`, `8af6f6a`; frontend `3e5637a`, `fd542cd` | `getSafeNextPath` parameterized 19 cases, `SsoControllerTest`의 protocol-relative·역슬래시·로그인 재진입·빈 frontend URL 리다이렉트 회귀, `auth.global` 안전하지 않은 redirect 차단 테스트. |
-| ✅ Done | SEC-15 | 현재 `csrf.disable()`의 전제와 경로별 위험을 문서화하고, SameSite=None, credentialed `/api/**` Origin 확대/wildcard·pattern, cross-site iframe/별도 SPA, 상태 변경 GET, `/sso/** allowCredentials=true`의 5개 보강 트리거를 고정했다. 트리거 발생 시 같은 배포에서 CSRF token 또는 동등한 Origin/nonce 방어를 도입한다. | backend `c9bca15` | `authenticationAndSsoCookies_sameSiteLax`, `API와 SSO CORS는 자격증명·허용 Origin·메서드 경계를 분리한다`, 악성/허용 Origin 인증 POST 경계 테스트. |
+| ✅ Done | SEC-11 | Oracle 도구의 비밀번호를 명령행·환경변수·임시 SQL에서 제거하고 수동 콘솔 프롬프트와 무인 Wallet 별칭을 분리했다. fake client가 모든 argv와 두 번째·중첩 `@sqlfile`까지 재귀 추적해 비밀 sentinel을 거부하고, SPOOL/포함 경로도 검사한다. Wallet 생성·배포·실재 검증은 운영/DBA 절차로 남긴다. | database `d5756ad`; root `604ff1e`, `641da8b`, `892f447` | `verify-sec11-powershell.ps1`을 PS7·Windows PowerShell 5.1에서 각각 종료 0로 재실행. Process CommandLine, prompt/Wallet, repository DDL·임시/중첩 SQL, BOM 없는 한글 스크립트 파싱 검증 통과. |
+| ✅ Done | SEC-12 | `SsoAgentClient.authorize()`·`isServerAlive()`, `SsoController.loginProc()`·`checkauth()`·`complete()`의 token/session/eno/body/IP 원문을 제거했다. 유효 resultCode 진단은 유지하되 제어문자·포맷 문자열·과대 resultCode는 한 줄 안전 표현으로 바꾸고, 비정상 길이는 UTF-16 unit이 아닌 Unicode code point 수로 기록한다. | backend `c8861cc`, `029756f`, `eb79b76` | `authorize_비정상resultCode_로그주입차단_반환값유지`, `loginProc_비정상resultCode_로그주입차단_인증결과유지`, `checkauth_비정상resultCode_로그주입차단`, `checkauth_유효resultCode_로그진단유지`, `ssoLogSanitizer_resultCode_보충문자길이코드포인트기준` 및 기존 sentinel log-capture 테스트. |
+| ✅ Done | SEC-13 | prod에서 OpenAPI 두 속성을 false로 강제하고 override·누락·빈값을 차단했다. 운영 위험 Boolean은 Spring `Binder`의 typed binding과 같은 true/false 별칭을 사용하되 공백·오타는 fail-closed이며, lazy initialization에서도 validator를 eager 실행한다. active profile을 우선하고 없을 때 default profile을 사용하며 `prod`/`PROD`를 모두 운영으로 판정한다. | backend `e8d8aa4`, `9ec49c0`, `e8a35d3`, `d421054`, `312367a` | prod 문서 endpoint 익명 401/인증 404·local/dev 유지, `lazyProd_dangerousToggle_failsDuringStartup`, `validate_prodDirectEnoSpringTrueAliases_throws`, `validate_prodDirectEnoInvalidBoolean_throwsWithoutValue`, default/uppercase PROD 실제 startup 및 active non-prod 우선 테스트. |
+| ✅ Done | SEC-14 | Java/TypeScript가 내부 단일 `/` 경로를 브라우저 기준으로 canonicalize하고 dot segment·unreserved percent encoding을 정규화하되 안전한 query/hash suffix 원문은 보존한다. 외부/scheme-relative, 역슬래시·인코딩 구분자/제어문자, 잘못된 percent encoding, canonical 첫 `login` segment를 거부한다. 프론트 배열 쿼리는 **첫 요소가 문자열일 때 그 값만 사용**하며 첫 값이 비문자/위험하면 뒤의 안전값으로 폴백하지 않는다. malformed 상태 쿠키는 비밀 노출 없이 루트 복구하고 반복 `error`도 첫 문자열만 판정한다. | backend `20827a8`, `8af6f6a`, `91851bc`, `cc40e88`; frontend `3e5637a`, `fd542cd`, `2ac24e7`, `f079900` | Java/TS canonical allow/deny 표, safe suffix 보존, `complete_쿼리없음_malformed쿠키_로그미노출_루트복구`, auth/server middleware 반복 error·배열 테스트. `npm run test:e2e:static` 2/2(Nitro 없는 exact next/origin, 첫 error 판정), 기본 Playwright `--list`에는 static spec 0건. |
+| ✅ Done | SEC-15 | 기존 CSRF 보강 트리거 5개를 유지하면서 실제 자동 자격증명·상태 변경 경계를 보강했다. 운영 `JSESSIONID`에 Secure·HttpOnly·SameSite=Lax를 강제하고 fail-fast 검증했다. 게시물 상세 GET은 순수 조회, 조회수는 허용 Origin의 인증 POST로 분리했으며 게시판-게시물 소속 검증, 잘못된 소속/부재 404, 비관적 잠금, managed update 감사 스냅샷, 동시 +2 무손실을 보장한다. | backend `c9bca15`, `f75789e`, `37a2a84`, `18b69d5`; frontend `8e94190` | `sessionCookie_overHttp_hasProductionSecurityAttributes`, `GET ... 상세 조회만 수행`, `POST ... 조회수를 한 번 증가`, 잘못된 게시판 404, `조회수 POST는 managed update 감사필드와 수정 스냅샷을 각각 한 번 남긴다`, `동시 조회수 POST 두 건은 비관적 잠금으로 손실 없이 +2 된다`, 악성 Origin 403 및 프론트 POST 성공/실패 테스트. |
 
-> 품질 게이트 보정(2026-07-29): backend `9ef7c1f`가 Spotless 기준선 33개 경로를 기계적 import 정렬·줄바꿈·Javadoc wrap·줄끝 형식으로 정리한 뒤 `./gradlew check` 전체 통과했다. frontend `a3bb69c`는 로컬 `.superpowers/` 산출물만 Prettier 검사에서 제외했고 `npm run format:check`·`npm run check`가 통과했다. 구현 코드와 직전 전체 Vitest 151 files/1,928 tests는 변경하지 않았다.
+> 최종 품질 게이트(2026-07-30): backend `9ef7c1f`는 Spotless가 보고한 33경로 중 Git 텍스트 diff 30파일(import 정렬·줄바꿈·Javadoc wrap)과 working-tree metadata/혼합 줄끝 3경로를 정상화했다. 최종 backend `eb79b76`에서 `./gradlew clean test` 2,462건(실패·오류 0, 스킵 1) 및 full `./gradlew check`(Spotless·JaCoCo 포함) 통과. frontend `a3bb69c`는 `.superpowers/`만 Prettier에서 제외했고 최종 `f079900`에서 `npm run format:check`, `npm run check`, Vitest 152 files/1,974 tests, static E2E 2/2가 모두 통과했다.
 
 > 운영 보안 escalation: 역사적 문서·계획·완료 기록에서 평문 자격증명으로 보일 수 있는 값이 관찰되었으나 이번 범위 밖이다. 값을 이 문서에 재노출하지 않으며, 저장소 접근 이력·비밀 관리 담당자와 별도 비밀 스캔/접근 영향·필요 시 rotation 및 승인된 정리 절차를 평가한다. 이번 작업에서는 history rewrite·rotation을 수행하지 않았다.
 
