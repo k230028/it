@@ -42,14 +42,15 @@ it/
 | 프론트엔드 | http://localhost:3000                        | `cd it_frontend && npm run dev`              |
 | 백엔드 API | http://localhost:28080                       | `cd it_backend && ./gradlew bootRun`         |
 | Swagger UI | http://localhost:28080/swagger-ui/index.html | (백엔드 기동 후)                             |
-| Oracle DB  | 127.0.0.1:11521/XEPDB1                       | `sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1` |
+| Oracle DB  | 127.0.0.1:11521/XEPDB1                       | `sqlplus ITPAPP@127.0.0.1:11521/XEPDB1`      |
 
 ### 3.1.1 로컬 Oracle DB 접속
 
-- DB 확인이 필요하면 `sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1`로 직접 접속합니다.
+- DB 확인이 필요하면 `sqlplus ITPAPP@127.0.0.1:11521/XEPDB1`로 직접 접속하고 비밀번호는 sqlplus 콘솔 프롬프트에만 입력합니다.
 - 기본 접속 정보는 Spring Boot 개발 설정과 동일합니다: `ITPAPP@127.0.0.1:11521/XEPDB1`.
-- SQL 스크립트는 접속 후 `@경로\스크립트.sql`로 실행하거나, `sqlplus ITPAPP/<pw>@127.0.0.1:11521/XEPDB1 @경로\스크립트.sql`로 한 번에 실행합니다.
+- SQL 스크립트는 접속 후 `@경로\스크립트.sql`로 실행하거나, `sqlplus ITPAPP@127.0.0.1:11521/XEPDB1 @경로\스크립트.sql`로 한 번에 실행합니다.
 - `sqlplus`가 없으면 SQLcl의 `sql` 명령을 동일한 인자로 사용합니다.
+- CI·무인 실행은 비밀번호 환경변수나 프로세스 인자를 사용하지 않고 Oracle Secure External Password Store의 Wallet 별칭(`/@별칭`)만 사용합니다. Wallet 파일은 실행 계정만 읽을 수 있도록 권한을 제한합니다.
 
 ## 3.2 운영 환경
 
@@ -82,7 +83,7 @@ it/
 - 관리자 권한은 프론트 라우트 가드 + 백엔드 `SecurityConfig`/`@PreAuthorize` 이중 적용.
 - 자격등급은 `ITPAD001=ROLE_ADMIN`, `ITPAD002=ROLE_INFOSEC_ADMIN`, `ITPZZ002=ROLE_DEPT_MANAGER`, 그 외 `ROLE_USER`로 매핑합니다. `ROLE_INFOSEC_ADMIN`은 일반 관리자 권한과 구분하며 협의회 심의유형 범위는 서버 서비스에서 검증합니다.
 - 프론트의 `it-portal-user` 쿠키와 라우트 가드는 UX 보호용입니다. 서버 권한 판단은 반드시 JWT 클레임 기반 `@PreAuthorize` 또는 서비스 계층 권한 검증에서 수행합니다.
-- DB 비밀번호, JWT 시크릿, 외부 API 키는 운영 배포 시 환경변수 또는 비공개 프로파일에서 주입합니다.
+- 애플리케이션 DB 자격증명, JWT 시크릿, 외부 API 키는 운영 배포 시 환경변수 또는 비공개 프로파일에서 주입합니다. 단, Oracle 명령행 도구의 수동 실행은 콘솔 프롬프트를 사용하고 CI·무인 실행은 Wallet만 사용합니다.
 - 운영 프로파일은 비밀값·허용 Origin·프론트 URL을 fail-fast로 검증하고 SSO 직접 사번, 개발 사용자 전환, 모의 SSO, Bearer 폴백, 비보안 쿠키 설정을 허용하지 않습니다.
 - 상세 정책은 `it_backend/CLAUDE.md` 인증 섹션을 SoT로 따릅니다.
 
