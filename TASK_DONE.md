@@ -28,6 +28,8 @@
 | ✅ Done | SEC-14 | Java `SsoNextPathValidator`와 TypeScript `getSafeNextPath`로 safe-next 계약을 통일했다. 허용: `/`, 내부 경로, query/hash. 거부: 빈값·외부 URL·`//`·`/\\`·`/login` 및 배열/비문자 입력. 프론트 4개 진입점(`auth.global.ts`, `sso-auth-redirect.ts`, `login.vue` SSO 시작·수동 완료)이 공용 유틸만 호출한다. | backend `20827a8`, `8af6f6a`; frontend `3e5637a`, `fd542cd` | `getSafeNextPath` parameterized 19 cases, `SsoControllerTest`의 protocol-relative·역슬래시·로그인 재진입·빈 frontend URL 리다이렉트 회귀, `auth.global` 안전하지 않은 redirect 차단 테스트. |
 | ✅ Done | SEC-15 | 현재 `csrf.disable()`의 전제와 경로별 위험을 문서화하고, SameSite=None, credentialed `/api/**` Origin 확대/wildcard·pattern, cross-site iframe/별도 SPA, 상태 변경 GET, `/sso/** allowCredentials=true`의 5개 보강 트리거를 고정했다. 트리거 발생 시 같은 배포에서 CSRF token 또는 동등한 Origin/nonce 방어를 도입한다. | backend `c9bca15` | `authenticationAndSsoCookies_sameSiteLax`, `API와 SSO CORS는 자격증명·허용 Origin·메서드 경계를 분리한다`, 악성/허용 Origin 인증 POST 경계 테스트. |
 
+> 품질 게이트 보정(2026-07-29): backend `9ef7c1f`가 Spotless 기준선 33개 경로를 기계적 import 정렬·줄바꿈·Javadoc wrap·줄끝 형식으로 정리한 뒤 `./gradlew check` 전체 통과했다. frontend `a3bb69c`는 로컬 `.superpowers/` 산출물만 Prettier 검사에서 제외했고 `npm run format:check`·`npm run check`가 통과했다. 구현 코드와 직전 전체 Vitest 151 files/1,928 tests는 변경하지 않았다.
+
 > 운영 보안 escalation: 역사적 문서·계획·완료 기록에서 평문 자격증명으로 보일 수 있는 값이 관찰되었으나 이번 범위 밖이다. 값을 이 문서에 재노출하지 않으며, 저장소 접근 이력·비밀 관리 담당자와 별도 비밀 스캔/접근 영향·필요 시 rotation 및 승인된 정리 절차를 평가한다. 이번 작업에서는 history rewrite·rotation을 수행하지 않았다.
 
 ### ✅ 2026-07-29 ERR-11·ERR-12·FE-12(스파이크)·FE-13·FE-14 조치
