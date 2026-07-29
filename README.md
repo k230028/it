@@ -67,6 +67,44 @@ npm run generate
 
 모든 정적 생성 스크립트는 API 기준 주소를 빈 값으로 강제해 브라우저가 same-origin `/api/`와 `/sso/`를 호출하게 합니다. 따라서 nginx·WebTobe는 두 경로를 백엔드로 프록시해야 합니다. API 호출에는 CORS가 발생하지 않지만 SSO 완료 후 복귀 주소는 백엔드 Origin 허용 목록으로 검증하므로, 실제 프론트 Origin을 `APP_FRONTEND_URL` 또는 `CORS_ALLOWED_ORIGINS`에 `scheme://host[:port]` 형식으로 등록합니다.
 
+nginx.conf
+```bash
+server {
+        listen       80;
+        server_name  localhost;
+        root C:/it/it_frontend/.output/public; # 빌드된 public 폴더 경로
+
+        location / {
+            index  index.html index.htm;
+        try_files $uri $uri/ /index.html;  # SPA
+        }
+
+        location /sso/ {
+        proxy_pass http://localhost:28080;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+
+        # 캐시 설정
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+                expires 1y;
+                add_header Cache-Control "public, no-transform";
+        }
+
+        location /api/ {
+                proxy_pass http://localhost:28080;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+        }
+
+        # redirect server error pages to the static page /50x.html
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+      }
+```
+
 ## 품질 확인
 
 프론트엔드:
