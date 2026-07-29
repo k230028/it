@@ -84,6 +84,46 @@ function Assert-OracleClientArgumentAssertionSelfTest {
     Assert-Condition -Condition $missingLoginOptionRejected -Message 'SEC-11 verifier self-test did not reject synthetic argv without -L'
 }
 
+function Assert-FakeOracleClientSqlInspection {
+    param(
+        [string]$FakeClientCommand,
+        [string]$TestDirectory
+    )
+
+    $safeSqlPath = Join-Path $TestDirectory 'fake-client-safe.sql'
+    $secondSafeSqlPath = Join-Path $TestDirectory 'fake-client-second-safe.sql'
+    $secretSqlPath = Join-Path $TestDirectory 'fake-client-secret.sql'
+    $safeIncludeSqlPath = Join-Path $TestDirectory 'fake-client-safe-include.sql'
+    $secretIncludeSqlPath = Join-Path $TestDirectory 'fake-client-secret-include.sql'
+    $selfTestCapturePath = Join-Path $TestDirectory 'fake-client-self-test.argv'
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($safeSqlPath, "PROMPT safe SQL`r`n", $utf8NoBom)
+    [System.IO.File]::WriteAllText($secondSafeSqlPath, "PROMPT second safe SQL`r`n", $utf8NoBom)
+    [System.IO.File]::WriteAllText($secretSqlPath, "PROMPT $sentinel`r`n", $utf8NoBom)
+    [System.IO.File]::WriteAllText($safeIncludeSqlPath, "@`"$secondSafeSqlPath`"`r`n", $utf8NoBom)
+    [System.IO.File]::WriteAllText($secretIncludeSqlPath, "@`"$secretSqlPath`"`r`n", $utf8NoBom)
+    $env:SEC11_CAPTURE_FILE = $selfTestCapturePath
+
+    & $FakeClientCommand -L 'ITPAPP@127.0.0.1:11521/XEPDB1' "@$safeSqlPath" "@$safeIncludeSqlPath" 2>$null | Out-Null
+    $safeExitCode = $LASTEXITCODE
+    Assert-Condition -Condition ($safeExitCode -eq 0) -Message "Fake Oracle client rejected sentinel-free synthetic SQL with exit code $safeExitCode"
+
+    $previousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        & $FakeClientCommand -L 'ITPAPP@127.0.0.1:11521/XEPDB1' "@$safeSqlPath" "@$secretSqlPath" 2>$null | Out-Null
+        $secretExitCode = $LASTEXITCODE
+
+        & $FakeClientCommand -L 'ITPAPP@127.0.0.1:11521/XEPDB1' "@$secretIncludeSqlPath" 2>$null | Out-Null
+        $includedSecretExitCode = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
+
+    Assert-Condition -Condition ($secretExitCode -ne 0) -Message 'Fake Oracle client did not reject sentinel in the second synthetic @sqlfile'
+    Assert-Condition -Condition ($includedSecretExitCode -ne 0) -Message 'Fake Oracle client did not reject sentinel in an included synthetic @sqlfile'
+}
+
 function Invoke-OracleScriptAndAssert {
     param(
         [string]$Kind,
@@ -140,14 +180,78 @@ try {
 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$ClientArguments)
 $ErrorActionPreference = 'Stop'
 [System.IO.File]::WriteAllLines($env:SEC11_CAPTURE_FILE, $ClientArguments)
-$sqlArgument = $ClientArguments | Where-Object { $_ -like '@*' } | Select-Object -First 1
-if ($null -ne $sqlArgument) {
-    $sqlPath = $sqlArgument.Substring(1)
-    $sql = [System.IO.File]::ReadAllText($sqlPath)
+$sentinel = 'SEC11_PASSWORD_SENTINEL_7f3d'
+$pendingSqlPaths = New-Object 'System.Collections.Generic.Queue[string]'
+$visitedSqlPaths = @{}
+
+function Resolve-SqlPath {
+    param(
+        [string]$Candidate,
+        [string]$BaseDirectory
+    )
+
+    $trimmedCandidate = $Candidate.Trim()
+    if ($trimmedCandidate.Length -ge 2 -and $trimmedCandidate.StartsWith('"') -and $trimmedCandidate.EndsWith('"')) {
+        $trimmedCandidate = $trimmedCandidate.Substring(1, $trimmedCandidate.Length - 2)
+    }
+    if (-not [System.IO.Path]::IsPathRooted($trimmedCandidate)) {
+        $trimmedCandidate = Join-Path $BaseDirectory $trimmedCandidate
+    }
+    return [System.IO.Path]::GetFullPath($trimmedCandidate)
+}
+
+foreach ($clientArgument in $ClientArguments) {
+    if ($clientArgument.StartsWith('@') -and $clientArgument.Length -gt 1) {
+        try {
+            $pendingSqlPaths.Enqueue((Resolve-SqlPath -Candidate $clientArgument.Substring(1) -BaseDirectory (Get-Location).Path))
+        } catch {
+            [Console]::Error.WriteLine('Fake Oracle client could not resolve a SQL file.')
+            exit 2
+        }
+    }
+}
+
+while ($pendingSqlPaths.Count -gt 0) {
+    $sqlPath = $pendingSqlPaths.Dequeue()
+    if ($visitedSqlPaths.ContainsKey($sqlPath)) {
+        continue
+    }
+    $visitedSqlPaths[$sqlPath] = $true
+
+    if (-not [System.IO.File]::Exists($sqlPath)) {
+        [Console]::Error.WriteLine('Fake Oracle client could not read a SQL file.')
+        exit 2
+    }
+    try {
+        $sql = [System.IO.File]::ReadAllText($sqlPath)
+    } catch {
+        [Console]::Error.WriteLine('Fake Oracle client could not read a SQL file.')
+        exit 2
+    }
+    if ($sql.IndexOf($sentinel, [System.StringComparison]::Ordinal) -ge 0) {
+        [Console]::Error.WriteLine('Fake Oracle client rejected SQL input.')
+        exit 3
+    }
+
     $spoolMatch = [System.Text.RegularExpressions.Regex]::Match($sql, '(?im)^\s*SPOOL\s+"(?<path>[^"]+)"')
     if ($spoolMatch.Success) {
         $outputPath = $spoolMatch.Groups['path'].Value.Replace('\\', '\')
         [System.IO.File]::WriteAllText($outputPath, '')
+    }
+
+    $includeMatches = [System.Text.RegularExpressions.Regex]::Matches($sql, '(?im)^\s*@(?:"(?<quoted>[^"]+)"|(?<plain>[^\s\r\n]+))\s*$')
+    foreach ($includeMatch in $includeMatches) {
+        $includeCandidate = if ($includeMatch.Groups['quoted'].Success) {
+            $includeMatch.Groups['quoted'].Value
+        } else {
+            $includeMatch.Groups['plain'].Value
+        }
+        try {
+            $pendingSqlPaths.Enqueue((Resolve-SqlPath -Candidate $includeCandidate -BaseDirectory ([System.IO.Path]::GetDirectoryName($sqlPath))))
+        } catch {
+            [Console]::Error.WriteLine('Fake Oracle client could not resolve a SQL file.')
+            exit 2
+        }
     }
 }
 exit 0
@@ -156,13 +260,18 @@ exit 0
 
     $env:PATH = "$fakeClientDirectory;$originalPath"
     $env:DB_PASSWORD = $sentinel
-    $fixtureDdlPath = Join-Path $testRoot 'fixture.sql'
-    [System.IO.File]::WriteAllText($fixtureDdlPath, "PROMPT SEC-11 fixture`r`n", (New-Object System.Text.UTF8Encoding($false)))
+    Assert-FakeOracleClientSqlInspection -FakeClientCommand $fakeClientCommand -TestDirectory $testRoot
+    $repositoryDdlPath = Join-Path $databaseRoot 'ITPOWN_DDL_live.sql'
+    Assert-Condition -Condition (Test-Path -LiteralPath $repositoryDdlPath) -Message "Missing repository DDL fixture: $repositoryDdlPath"
+    $repositoryDdlHashBefore = (Get-FileHash -LiteralPath $repositoryDdlPath -Algorithm SHA256).Hash
 
-    Invoke-OracleScriptAndAssert -Kind 'apply' -Mode 'prompt' -CapturePath (Join-Path $testRoot 'apply-prompt.argv') -ApplyDdlPath $fixtureDdlPath -ExportOutputPath $null
+    Invoke-OracleScriptAndAssert -Kind 'apply' -Mode 'prompt' -CapturePath (Join-Path $testRoot 'apply-prompt.argv') -ApplyDdlPath $repositoryDdlPath -ExportOutputPath $null
     Invoke-OracleScriptAndAssert -Kind 'export' -Mode 'prompt' -CapturePath (Join-Path $testRoot 'export-prompt.argv') -ApplyDdlPath $null -ExportOutputPath (Join-Path $testRoot 'export-prompt.sql')
-    Invoke-OracleScriptAndAssert -Kind 'apply' -Mode 'wallet' -CapturePath (Join-Path $testRoot 'apply-wallet.argv') -ApplyDdlPath $fixtureDdlPath -ExportOutputPath $null
+    Invoke-OracleScriptAndAssert -Kind 'apply' -Mode 'wallet' -CapturePath (Join-Path $testRoot 'apply-wallet.argv') -ApplyDdlPath $repositoryDdlPath -ExportOutputPath $null
     Invoke-OracleScriptAndAssert -Kind 'export' -Mode 'wallet' -CapturePath (Join-Path $testRoot 'export-wallet.argv') -ApplyDdlPath $null -ExportOutputPath (Join-Path $testRoot 'export-wallet.sql')
+
+    $repositoryDdlHashAfter = (Get-FileHash -LiteralPath $repositoryDdlPath -Algorithm SHA256).Hash
+    Assert-Condition -Condition ($repositoryDdlHashAfter -eq $repositoryDdlHashBefore) -Message 'Repository DDL changed during fake-client verification'
 
     Write-Host 'SEC-11 PowerShell verification passed.' -ForegroundColor Green
 } finally {
