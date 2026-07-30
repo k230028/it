@@ -41,11 +41,11 @@ Nuxt `useAsyncData.execute()`의 catch는 재던지지 않는다. 실측 위치�
 | `rg -lU --multiline "try \{[\s\S]{0,600}?refresh\w*\(\)" app` | 30개 파일 |
 | 위 정규식이 못 잡는 무괄호 템플릿 핸들러(`@click="refreshXxx"`) 수동 확인 | 2줄 추가 |
 
-→ **총 조사 호출부 144개.**
+→ **총 조사 호출부 145개.**
 
 > 위 표의 "139줄 + 2줄 추가 = 141"은 **정규식이 매칭한 소스 줄 수**다. 분류 표의 `건수`는 **호출 단위**로 세므로
 > `app/pages/budget/work.vue:615`처럼 한 줄에 `refresh` 호출이 2개 들어있는 경우 줄 수(1)와 건수(2)가 다르다.
-> 이 리포트 전체의 "총 조사 호출부"는 분류 표(§분류 결과)의 `건수` 합계인 **144**를 기준으로 통일했다(Minor 6 정정 반영).
+> 이 리포트 전체의 "총 조사 호출부"는 분류 표(§분류 결과)의 `건수` 합계인 **145**를 기준으로 통일했다(Minor 6 정정 및 재리뷰 Important 1 정정 반영).
 
 > 계획서(`docs/superpowers/plans/2026-07-29-err13-fe15-19-remediation.md` 실행 전 확정된 사실)는
 > "`useApiFetch` 소비 파일 44개 / `try { … await refresh…() }` 포함 파일 28개"로 기록했다.
@@ -73,7 +73,7 @@ Nuxt `useAsyncData.execute()`의 catch는 재던지지 않는다. 실측 위치�
 ## 분류 결과
 
 같은 파일 안에서 패턴·사용자 영향이 완전히 동일한 호출부는 한 행에 라인을 모두 나열하고 `건수`로 표기했다.
-행 수는 68개, 합계 건수는 144개다.
+행 수는 68개, 합계 건수는 145개다.
 
 ### Class A — 죽은 판정 (교정 대상)
 
@@ -135,7 +135,7 @@ Nuxt `useAsyncData.execute()`의 catch는 재던지지 않는다. 실측 위치�
 
 **B 소계: 84건.**(`app/pages/budget/work.vue:615`는 한 줄에 `refreshSummary()`·`refreshProjectSummary()` 2개 호출이 있어 2건으로 계수했다 — Minor 6 정정)
 
-### Class C — 의도된 무시 / 오인 유도 없음 (조치 없음, 34건)
+### Class C — 의도된 무시 / 오인 유도 없음 (조치 없음, 35건)
 
 근거 유형을 3가지로 나눠 표기했다. `C-1`만 계획서가 말한 "문서화된 계약"이고, `C-2`·`C-3`은 그와 다른 근거이므로 구분한다.
 
@@ -164,12 +164,12 @@ Nuxt `useAsyncData.execute()`의 catch는 재던지지 않는다. 실측 위치�
 | `app/pages/info/documents/list.vue:44` | 1 | `fetchDocuments` | C-3 | 동일(첫 활성화 스킵 가드 있음) | 없음 |
 | `app/pages/info/documents/[id]/index.vue:148,149` | 2 | `fetchDocument`·`fetchFiles` | C-3 | 동일. 같은 `onActivated`의 `try/catch`는 `$apiFetch`인 `fetchVersionHistory` 전용이라 유효하다 | 없음 |
 | `app/pages/budget/approval.vue:115,116` | 2 | `fetchProjects`·`fetchCosts` | C-3 | 동일 | 없음 |
-| `app/pages/budget/list.vue:95,105` | 2 | `fetchProjects`×2·`fetchCosts` | C-3 | 동일(`refreshBudgetList` 경유) | 없음 |
+| `app/pages/budget/list.vue:95`(호출 3개, 한 줄에 병기) | 3 | `fetchProjects`×2·`fetchCosts` | C-3 | 동일. `onActivated`(`:104-106`)가 호출하는 `refreshBudgetList` 래퍼(`:94-96`) 내부의 `Promise.all([refreshProjects(), refreshOrdinary(), refreshCosts()])`가 재조회 3건을 수행한다 | 없음 |
 | `app/composables/costList/useCostEditingState.ts:198` | 1 | `fetchCosts` | C-3 | 동일. 별건으로 **FE-16(Task 4)**이 편집 모드 억제를 다루므로 ERR-13에서는 손대지 않는다 | 없음 |
 | `app/pages/board/[blbMngNo]/index.vue:41` | 1 | `searchPosts` | C-3 | KeepAlive 재조회 | 없음 |
 | `app/pages/board/[blbMngNo]/index.vue:71,78` | 2 | `searchPosts` | C-3 | 검색·페이징 조건 변경 재조회. 쓰기 선행 없음 | 없음 |
 
-**C 소계: 34건** (C-1 0건, C-2 7건, C-3 27건).
+**C 소계: 35건** (C-1 0건, C-2 7건, C-3 28건).(`app/pages/budget/list.vue:95`는 한 줄에 `refreshProjects()`·`refreshOrdinary()`·`refreshCosts()` 3개 호출이 있어 `work.vue:615`와 같은 방식(호출 단위)으로 3건으로 계수했다. 같은 함수의 `:105`는 그 호출을 감싼 래퍼 `refreshBudgetList()`를 부르는 지점일 뿐 `refresh`를 직접 호출하지 않아 계수에서 제외했다 — 재리뷰 지적 반영)
 
 > **C-1이 0건이라는 점을 명시한다.** 계획서의 C 정의는 "폴링·배지"를 전제하는데,
 > 실제 폴링·배지 경로(`AppSidebar`·`NotificationBell`·`usePendingApprovalCount`·`useApprovalDashboard`)는
@@ -197,7 +197,7 @@ Nuxt `useAsyncData.execute()`의 catch는 재던지지 않는다. 실측 위치�
 
 ### 총계
 
-- 총 조사 호출부: **144개** (A: **0**, B: **84**, C: **34**, D: **26**)
+- 총 조사 호출부: **145개** (A: **0**, B: **84**, C: **35**, D: **26**)
 - Task 3의 교정 범위 = Class B 84건 (A는 없음).
 
 ## 교정 우선순위
@@ -208,7 +208,7 @@ Class A가 없으므로 계획서의 우선순위 1번(사용자 안내가 잘�
 
 1. **`app/composables/costList/useCostTerminalDialogs.ts:205,208` + `useCostExcelTransfer.ts:214`** —
    `useCostEditingState.ts:141`의 `if (!list) return` 때문에 재조회가 실패해도 로컬 `costs`가 갱신 없이 유지된다.
-   144건 중 **유일하게 "낡은 목록을 최신으로 오인"이 문자 그대로 성립**하는 지점이다.
+   145건 중 **유일하게 "낡은 목록을 최신으로 오인"이 문자 그대로 성립**하는 지점이다.
    같은 파일의 `useCostPersistence.attemptRefresh`가 이미 올바른 처방을 갖고 있으므로 **그 헬퍼를 재사용**하면 된다.
 2. **`app/components/council/schedule/ScheduleInput.vue:200`** — `isSubmitted`가 false로 뒤집혀 이미 제출한 일정을
    "미제출"로 표시한다. 사용자가 중복 제출을 시도할 수 있는 상태 오표시다.
@@ -226,7 +226,7 @@ Class A가 없으므로 계획서의 우선순위 1번(사용자 안내가 잘�
 - **Class C-2 (7건)** — `useCostPersistence.attemptRefresh`, `useBoardAttachments`(`edit.vue:229` 렌더),
   오류 블록 안의 [다시 조회]/[다시 시도] 버튼(`summary.vue:194`, `comparison.vue:217,284`, `CommitteeSelector.vue:381`).
   모두 예외가 아니라 `error` **상태**로 실패를 판정하고 화면에 남긴다. ERR-13이 문제 삼는 "예외 기반 죽은 판정"이 아니다.
-- **Class C-3 (27건)** — `onActivated` 재조회, 툴바 [새로고침], 검색·페이징 조건 변경, 부모 전환 시 초기 로드.
+- **Class C-3 (28건)** — `onActivated` 재조회, 툴바 [새로고침], 검색·페이징 조건 변경, 부모 전환 시 초기 로드.
   **쓰기 성공 안내가 선행하지 않으므로 "성공 안내 + 낡은 화면"이라는 오인 구조 자체가 성립하지 않는다.**
   실패 시 `data`가 `undefined`로 초기화되어 화면이 비고, `useApiFetch.ts:140/167`의 Toast가 네트워크·403·404·5xx는 알린다.
   다만 이 범위 밖의 4xx(예: GET 요청에 대한 400/409/422)는 Toast 없이 빈 화면만 남는다.
