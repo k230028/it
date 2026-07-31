@@ -16,6 +16,25 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-07-31 ERR-13·FE-15~19 조치
+
+> 계획 `docs/superpowers/plans/done/2026-07-29-err13-fe15-19-remediation.md`(Task 1~9)를 실행했다. it_frontend 브랜치 `feature/err13-fe15-19-remediation`(main 대비 71커밋, `3a01cbd`…`48a8563`)을 `main`에 로컬 병합했다(병합 커밋 `02faaba`, 충돌 없음 — 병합 전 `main`이 분기 이후 움직이지 않았음을 확인). **push는 하지 않았다.**
+>
+> **중요한 사실**: 감사 결과 Class A(죽은 `try/catch` 판정)는 **0건**이었다 — 계획서가 전제한 "죽은 try/catch 판정" 결함은 실제로 존재하지 않았고, 진짜 결함은 "쓰기 성공 안내 직후 재조회 실패를 판정하지 않는 것"(Class B)이었다. 이번 브랜치 실행 중 **계약 서술이 여섯 번 틀렸고 매번 Nuxt 소스 실측으로만 정정됐다**(예: `refresh()`가 reject한다는 최초 가정, dedupe-abort 반환값, `createError` 조건, 보존 파사드 노출 범위 등). 후속 작업자는 Nuxt `useAsyncData`/`useApiFetch` 계약을 절대 추측하지 말고 실행으로 확인해야 한다.
+
+| 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✅ Done | ERR-13 | `useApiFetch` 유래 `refresh()` 호출부 전수 조사·분류(감사 리포트 `docs/superpowers/reports/2026-07-err13-refresh-audit.md`: 총 **145건** = A **0**·B **84**·C **35**(C-2 7, C-3 28)·D **26**) 후 교정 대상 **112곳**(B 84 + C-3 28) 전량 교정. 공통 가드 `useRefreshGuard`(마지막 정상값 보존 포함)와 예외 승격 헬퍼 `refreshOrThrow` 신설, 재조회 실패 시 배너·재시도 제공, 가드가 도는 구간에만 공통 오류 토스트 억제 | it_frontend `3a01cbd`…`48a8563`(main 대비 71커밋 중 ERR-13 계열; 대표: `3a01cbd` refreshOrThrow 헬퍼, `0807a8e` useRefreshGuard 신설, `68fe44c` 3-keep 마지막 정상값 보존, `82f1a0e` 401 투명 재조회 화면 유지 실측, `aa4dc2a` 협의회 개최 결과 최종 지점) | 병합 후 `main`에서 전체 166 files/2129 tests 통과, `npm run check` 클린. 교정 지점마다 실제 계약 기반(resolve + `data` 초기화 + `error` 세팅) mock 테스트, `refreshOrThrow` 계약 테스트 3건, 401 투명 재조회 경로에서 화면이 비지 않음을 증상으로 관찰하는 테스트(`82f1a0e`) 포함 |
+| ✅ Done | FE-16 | 전산업무비 편집 모드에서 KeepAlive `onActivated`로 인한 우발적 재조회를 억제해 미저장 편집 유실 방지 | it_frontend `34671ff` | 편집 모드 재조회 억제·조회 모드 복귀 시 1회 갱신·편집값 보존 단위 테스트 통과 |
+| ✅ Done | FE-17 | 전산업무비 목록 재조회 실패 알림 중복 제거. `fetchCosts()`에 `suppressNetworkError` opt-in 옵션 추가, 다른 7개 호출부는 동작 불변 | it_frontend `9a2ffa4`, `faa39d6` | `fetchCosts` 옵션 전달 단위 테스트, 전산업무비 화면 공통 토스트 억제 확인, 다른 호출부 회귀 테스트 통과 |
+| ✅ Done | FE-18 | `searchDept`·`searchAllType`·`searchMajorHdq`·`searchEmployee`·`searchContinueProjects` 등 AutoComplete 계열 응답 순서 역전 가드 `useLatestRequest` 도입·적용, 재리뷰에서 `useEmployeeSearch` 누락분 추가 반영 | it_frontend `9ceb404`, `215e62f` | `useLatestRequest` 계약 테스트 4건, 네트워크 자동완성 3계열 각각 늦은 응답 폐기 테스트 통과 |
+| ☑️ Accepted(부분) | FE-19 | SFC `<style scoped>`를 `lint:css` 검사 범위(postcss-html customSyntax)에 포함. 실측 총 580건/37개 파일 중 `:deep`/`:global` 157건은 config 교정(`ignorePseudoClasses`)으로 위반 아님 재분류, 잔여 423건/28개 파일은 `ignoreFiles`로 grandfather 처리해 신규·미변경 139개 SFC부터 즉시 게이트 적용 | it_frontend `2a355df` | `npx stylelint "app/**/*.vue" --custom-syntax postcss-html` 실측(580건/37파일), `npm run lint:css` 통과. **잔여 423건/28개 파일 정리는 `TASK.md` FE-19에 남아 있다**(58→57 수치 정정 포함) |
+| ☑️ Accepted(부분) | FE-15 | openapi-typescript codegen 파이프라인(`scripts/codegen.mjs`, `npm run codegen`/`codegen:check`) 도입, 생성물 `app/types/api.d.ts` 커밋, `useCost.ts` 1개 도메인에 적용해 스펙 불일치 시 `typecheck` 실패를 실증 | it_frontend `47594a7`, `4bc0b13`(npm ci peer 충돌 해소), `de89541`(codegen:check Windows CRLF 오탐 방지) | `npm run codegen`·`codegen:check` 동작, 생성물 diff 0, 필드 삭제 통제 변이로 typecheck 실패 실증. **전면 마이그레이션은 `TASK.md` FE-15에 남아 있다**(생성 스키마 전부 optional·nullable 미반영 등 백엔드 OpenAPI 애노테이션 보강 선행 필요) |
+
+> 최종 품질 게이트(병합 후 `main`, `02faaba`): `npx vitest run` 166 files/2129 tests 통과(실패 0), `npm run check` 클린. `npm run format:check` 잔여 위반은 브랜치 이전부터 있던 3개 파일(`app/composables/useAuth.ts`, `app/types/menu.ts`, `tests/unit/composables/useAdminMenu.test.ts`)뿐이며 `TASK.md`에 `CQ-20`으로 별도 등록했다.
+>
+> **후속 등록**: 이 브랜치 실행 중 리뷰가 코드로 확인했으나 범위 밖이라 고치지 않은 항목은 `TASK.md`에 `ERR-14`(401 무한 재조회 폭주 가능성)·`ERR-15`(ERR-13 census가 놓친 무괄호 템플릿 바인딩 3지점)·`FE-20`(편집 중 다른 행 미저장 편집 덮어쓰기)·`FE-21`(FE-18 census가 놓친 자동완성 2지점)·`FE-22`~`FE-26`(토스트 억제 옵션 부재·`clearNuxtData`/언마운트 purge 미검증·`admin/boards` 보존 트레이드오프·`ResultForm` 배너 2중 노출 가능성·`prepare/[id].vue` 탭 가시성 한계)·`CQ-20`(format:check 잔여 3파일)로 등록했다.
+
 ### ✅ 2026-07-29~30 SEC-11~15 보안 조치 완료
 
 > 계획 `docs/superpowers/plans/done/2026-07-29-sec10-sec15-security-remediation.md`의 완료 항목만 이관했다. SEC-10은 1.x/2.x 호환 백포트가 공식 advisory에서 식별될 때까지 `TASK.md`에 유지한다.
