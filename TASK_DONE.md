@@ -34,6 +34,10 @@
 > 최종 품질 게이트(병합 후 `main`, `02faaba`): `npx vitest run` 166 files/2129 tests 통과(실패 0), `npm run check` 클린. `npm run format:check` 잔여 위반은 브랜치 이전부터 있던 3개 파일(`app/composables/useAuth.ts`, `app/types/menu.ts`, `tests/unit/composables/useAdminMenu.test.ts`)뿐이며 `TASK.md`에 `CQ-20`으로 별도 등록했다.
 >
 > **후속 등록**: 이 브랜치 실행 중 리뷰가 코드로 확인했으나 범위 밖이라 고치지 않은 항목은 `TASK.md`에 `ERR-14`(401 무한 재조회 폭주 가능성)·`ERR-15`(ERR-13 census가 놓친 무괄호 템플릿 바인딩 3지점)·`FE-20`(편집 중 다른 행 미저장 편집 덮어쓰기)·`FE-21`(FE-18 census가 놓친 자동완성 2지점)·`FE-22`~`FE-26`(토스트 억제 옵션 부재·`clearNuxtData`/언마운트 purge 미검증·`admin/boards` 보존 트레이드오프·`ResultForm` 배너 2중 노출 가능성·`prepare/[id].vue` 탭 가시성 한계)·`CQ-20`(format:check 잔여 3파일)로 등록했다.
+>
+> **통합 리뷰 사후 실행(2026-07-31)**: main 병합·푸시 후 브랜치를 가로지르는 통합 리뷰 3건(A: 적용 지점 / B: 테스트 / C: composable·설정, `it_frontend/.superpowers/sdd/integration-findings.md`)을 사후 실행했다. **각 리뷰의 최대 목표는 통과했다** — 파사드 누락 0건 / `mockRejectedValue` 규율 142건 전수 준수 / 설정 5종 실측 확인 / 가드 43 ↔ 배너 43 누락 0. 그러나 **개별 단계 리뷰가 구조적으로 볼 수 없던 결함 3종**이 드러나 사용자 결정("사용자 영향 + 테스트 신뢰도"까지 고친다)에 따라 후속 커밋 10개로 수정했다: ① 보존(`keptValueForFailure`)이 `data`만 유지하고 `error.value`는 세팅된 채 남겨, 템플릿이 `error`를 먼저 분기하면 보존된 데이터가 가려지거나 배너에 도달하지 못했던 것(`app/pages/info/documents/[id]/index.vue` 등 7개 화면) ② `app/composables/costList/useCostEditingState.ts`만 `refreshOrThrow` 3-인자 형태로 공유 가드를 우회해 배너 없이 자체 토스트만 뜨고 5xx에서는 공통 토스트와 겹쳐 2개가 뜨던 것 ③ 테스트 대역 5곳(`useCost.test.ts`·`useCostListPage.test.ts`·costList 3파일)이 "실패 시 `data`가 undefined로 비워진다"는 3-keep 이전 모델을 손으로 재현해, 전산업무비 화면의 ERR-13 배선(보존·억제·배너)이 회귀 검출 범위 밖이던 것. 수정 상세는 `it_frontend/.superpowers/sdd/integration-fix-A-report.md`(그룹 ①②④⑤)·`integration-fix-B-report.md`(그룹 ③)를 참조. 최종 `npx vitest run`은 **167 files / 2152 tests 전부 통과**(통합 리뷰 전 166 files/2129 tests → +23). 수정 과정에서 새로 드러난 결함과 잔여 지적은 `TASK.md`에 `ERR-15`(admin/logs census 누락 추가)·`FE-27`~`FE-33`(테스트 위생·커버리지 공백·A/C Minor·admin/menus 주석 표류·`createNuxtFetchFake` 참조 재사용 한계·게시판 첨부 가드 밖 경로)로 등록했다.
+>
+> **교훈**: 각 단계 리뷰는 "배너가 템플릿에 있는가"만 확인했고 **주변 `v-if` 체인이 배너에 도달하게 해주는가**는 아무도 보지 않았다. 단계별 리뷰만으로는 브랜치를 가로지르는 결함을 못 잡는다.
 
 ### ✅ 2026-07-29~30 SEC-11~15 보안 조치 완료
 
