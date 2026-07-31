@@ -884,7 +884,7 @@ TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	IT_PTL_EDRT_TC	IT�
 TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	LW_RGL_YN	법률규제여부		Y		VARCHAR2	1	
 TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	LW_FDTN	법률근거		Y		VARCHAR2	300	
 TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	FL_MPN_ID	파일매핑ID		Y		VARCHAR2	36	
-TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	KPN_TP_TC	저장유형구분코드		Y		VARCHAR2	2	
+TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	KPN_TP_TC	저장유형구분코드		N		VARCHAR2	2	
 TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
 TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
 TPRMPP_BPOVWM	프로젝트관리_협의회사업개요기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
@@ -938,7 +938,7 @@ TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	IT_PTL_
 TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	LW_RGL_YN	법률규제여부		Y		VARCHAR2	1	
 TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	LW_FDTN	법률근거		Y		VARCHAR2	300	
 TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	FL_MPN_ID	파일매핑ID		Y		VARCHAR2	36	
-TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	KPN_TP_TC	저장유형구분코드		Y		VARCHAR2	2	
+TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	KPN_TP_TC	저장유형구분코드		N		VARCHAR2	2	
 TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
 TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	CHG_DTM	변경일시		N		DATE		
 TPRMPP_BPOVWL	프로젝트관리_협의회사업개요기본변경로그	CHG_USID	변경사용자ID		Y		VARCHAR2	14	

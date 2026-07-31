@@ -3,16 +3,10 @@
   "configurations": [
     {
       "type": "java",
-      "name": "ItApplication",
-      "request": "launch",
-      "mainClass": "com.kdb.it.ItApplication",
-      "projectName": "it-it_backend"
-    },
-    {
-      "type": "java",
       "name": "Run IT Backend",
       "request": "launch",
       "mainClass": "com.kdb.it.ItApplication",
+      // projectName은 it_backend/settings.gradle의 rootProject.name과 일치해야 합니다.
       "projectName": "it",
       "cwd": "${workspaceFolder}/it_backend"
     }
