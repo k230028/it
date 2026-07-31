@@ -175,6 +175,7 @@ it/
 | `npm run lint:css`                         | `it_frontend` | CSS 변경 시 Stylelint                 |
 | `npm test`                                 | `it_frontend` | 프론트 단위 테스트                    |
 | `npm run test:e2e`                         | `it_frontend` | 핵심 사용자 흐름 E2E 테스트           |
+| `npm run codegen:check`                    | `it_frontend` | 백엔드 스펙과 프론트 생성 타입 드리프트 검사 |
 | `./gradlew test`                           | `it_backend`  | 백엔드 단위·슬라이스 테스트           |
 | `./gradlew check`                          | `it_backend`  | 포맷·테스트·커버리지 품질 게이트       |
 | `./gradlew integrationTest`                | `it_backend`  | 실제 Oracle 매핑·QueryDSL 통합 테스트 |
