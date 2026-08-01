@@ -6,9 +6,38 @@
       "name": "Run IT Backend",
       "request": "launch",
       "mainClass": "com.kdb.it.ItApplication",
-      // projectName은 it_backend/settings.gradle의 rootProject.name과 일치해야 합니다.
       "projectName": "it",
-      "cwd": "${workspaceFolder}/it_backend"
+      "cwd": "${workspaceFolder}/it_backend",
+      // 기본값($Auto)은 테스트 출력 폴더(bin/test)까지 런타임 클래스패스에 올립니다.
+      // 테스트의 중첩 @SpringBootConfiguration·@EnableAutoConfiguration 클래스가 컴포넌트 스캔에 걸려
+      // @AutoConfigurationPackage가 테스트 패키지로 중복 등록되고, JPA 리포지토리 빈이 두 번 등록되어
+      // BeanDefinitionOverrideException으로 기동이 실패합니다.
+      // $Runtime으로 스코프를 고정하고, 출력 폴더는 명시적으로 한 번 더 제외합니다.
+      // 제외 경로는 접두사 매칭이며 workspaceFolder가 C:\it 또는 C:\it\it_backend 어느 쪽으로 열려도
+      // 걸리도록 두 형태를 모두 둡니다(해당 없는 항목은 무시됨).
+      "classPaths": [
+        "$Runtime",
+        "!${workspaceFolder}/it_backend/bin/test",
+        "!${workspaceFolder}/bin/test"
+      ]
+    },
+    {
+      "type": "java",
+      "name": "Spring Boot-ItApplication<it-it_backend>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.kdb.it.ItApplication",
+      "projectName": "it-it_backend",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env",
+      // 위와 동일: 테스트 출력(bin/test)이 런타임 클래스패스에 섞이지 않도록 고정합니다.
+      // 제외 경로는 접두사 매칭이며 workspaceFolder가 C:\it 또는 C:\it\it_backend 어느 쪽으로 열려도
+      // 걸리도록 두 형태를 모두 둡니다(해당 없는 항목은 무시됨).
+      "classPaths": [
+        "$Runtime",
+        "!${workspaceFolder}/it_backend/bin/test",
+        "!${workspaceFolder}/bin/test"
+      ]
     }
   ]
 }
