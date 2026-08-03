@@ -16,6 +16,23 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-04 Clean Code Wave 3 Wave A (CQ-17·CQ-06)
+
+> 계획 `docs/superpowers/plans/done/2026-07-29-clean-code-wave3-wave-a-backend-refactors.md`(Task 1~4)를 실행했다. 대상은 `it_backend` 단일 저장소이며 REST API·DTO·DB 스키마·트랜잭션 경계·인증 실패 의미는 변경하지 않았다.
+>
+> 계획서의 cross-check commit은 backend `74814d3`였으나 실행 시점 HEAD는 `b4ae577`였다. 착수 전 `loadAthIds` grep으로 계획서가 지목한 5개 호출 지점(`AuthService:188/313/397/442`, `RefreshTokenRotator:125`)과 2개 private 구현(`AuthService:496`, `RefreshTokenRotator:180`)이 모두 그대로임을 확인한 뒤 진행했다.
+
+| 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✅ Done | CQ-17 | `common.iam.service.UserRoleResolver` 신설로 역할 조회 정책 단일화. 활성·미삭제 조회(`eno`,`useYn='Y'`,`delYn='N'`), 조회 순서 보존 immutable 목록, 빈 결과 `ATH_USER` 폴백, Repository 예외 원본 전파를 단독 소유한다. 로그인·세션 복원·개발 사용자 전환·SSO·Refresh **5경로 전부** 전환하고 `AuthService`·`RefreshTokenRotator`의 중복 `loadAthIds` 2개와 `RoleRepository` 의존을 제거했다 | it_backend `391bd37` | `UserRoleResolverTest` 3건(다건 순서·불변성, 폴백, 원본 예외 동일성) 신규. `AuthServiceTest`·`RefreshTokenRotatorTest`를 resolver mock으로 재배선하면서 JWT 발급 검증을 `anyList()`에서 **정확값 인자**로 좁혀 resolver 결과가 토큰·응답에 그대로 전달되는지 고정. 게이트: `loadAthIds` production grep 0건, 두 소비자 파일 `RoleRepository` grep 0건 |
+| ✅ Done | CQ-06 | `Bcostm.update`의 20개 위치 인자를 `@Builder Bcostm.UpdateCommand` record로 전환. `dfrCleC`·`abusTc`의 `CodeDefaults.orNotApplicable` 보정은 `update(UpdateCommand)` 본문에 유지하고, null 명령은 어떤 필드도 바꾸기 전에 `Objects.requireNonNull`로 실패한다. production 호출부는 계획서 확정대로 `CostService.java:312` 1곳뿐이었고 `:383` `Btermm.update`는 CQ-19로 남겼다 | it_backend `47fa027` | `BcostmUpdateCommandTest` 2건(20개 필드 전량 매핑 + 두 기본값 보정, null 명령 부분변경 없음) 신규. `CostServiceTest`에 요청→command 20필드 매핑을 record 동등성으로 한 번에 고정하는 테스트 추가, 기존 계약명·환율 회귀 verify 2곳을 command captor로 전환. 계획서의 임시 20인자 오버로드는 **커밋에 남기지 않았다** — `Bcostm`의 public `update` 선언은 `update(UpdateCommand)` 1개 |
+
+> 최종 품질 게이트: `cd it_backend && ./gradlew check` → **BUILD SUCCESSFUL**(Spotless·전체 단위 테스트·JaCoCo 검증 통과, 3분 24초).
+>
+> **부수 사실 2건**: ① 착수 시점 `./gradlew check`는 **이미 main에서 실패**하고 있었다 — 원인은 이번 변경과 무관한 `ProjectItemRepository.java` JavaDoc 줄바꿈 1건으로, `TASK.md` CQ-21이 기록한 위반 파일(`CmenumRepositoryCustom.java`)과 달랐다. `spotlessApply` 후 해당 파일만 분리 커밋(`3f65cf5`)해 CQ-21을 완료 처리했다. ② 신규 파일이 LF로 작성돼 Spotless 줄바꿈 위반이 났고 `spotlessApply` 결과를 별도 커밋(`b66ccee`)으로 남겼다.
+>
+> `versions.lock`은 갱신하지 않았다 — API 호환 조합이 바뀌지 않는 백엔드 내부 리팩터링이다.
+
 ### ✅ 2026-07-31 ERR-13·FE-15~19 조치
 
 > 계획 `docs/superpowers/plans/done/2026-07-29-err13-fe15-19-remediation.md`(Task 1~9)를 실행했다. it_frontend 브랜치 `feature/err13-fe15-19-remediation`(main 대비 71커밋, `3a01cbd`…`48a8563`)을 `main`에 로컬 병합했다(병합 커밋 `02faaba`, 충돌 없음 — 병합 전 `main`이 분기 이후 움직이지 않았음을 확인). **push는 하지 않았다.**
