@@ -16,6 +16,14 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✔️ 2026-08-01 Prettier 잔여 위반 해소 (CQ-20)
+
+| 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✔️ Resolved | CQ-20 | ERR-13·FE-15~19 브랜치 이전부터 남아 있던 Prettier 포맷 드리프트 3개 파일(`app/composables/useAuth.ts`, `app/types/menu.ts`, `tests/unit/composables/useAdminMenu.test.ts`)이 별도 조치 없이 해소된 것을 확인했다 | — (별도 커밋 없이 해소 확인) | 2026-08-01 세 파일 모두 `npx prettier --check` 통과. 같은 시점 `npm run format:check`가 함께 보고한 2건(`useLatestRequest.test.ts`, `useProjectFormCodes.test.ts`)은 미커밋·미추적 작업 트리 파일이라 이 항목의 커밋된 부채가 아니었다 |
+
+> **후속**: 2026-08-04 Wave B 실행 중 `app/pages/info/council-request/prepare/[id].vue`에서 같은 클래스의 드리프트가 **추가로** 발견돼 정리했다. 이 파일은 긴 줄이 풀리며 731→803줄로 실제 크기가 드러나 `TASK.md` CQ-15의 ratchet 기준선에 등록됐다(상세는 아래 Wave B·C 절).
+
 ### ✅ 2026-08-04 Clean Code Wave 3 Wave B·C (CQ-16 완료 / CQ-15 진행)
 
 > 계획 `plans/done/2026-07-29-clean-code-wave3-wave-b-frontend-structure.md`, `…-wave-c1-hwpx-decomposition.md`, `…-wave-c3-composable-decomposition.md`를 실행했다. 대상은 `it_frontend` 단일 저장소이며 동작·UI·route·API·props/emits·CSS 선언은 변경하지 않았다.
@@ -47,6 +55,7 @@
 | 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
 | :--: | :--: | --- | --- | --- |
 | ✅ Done | CQ-17 | `common.iam.service.UserRoleResolver` 신설로 역할 조회 정책 단일화. 활성·미삭제 조회(`eno`,`useYn='Y'`,`delYn='N'`), 조회 순서 보존 immutable 목록, 빈 결과 `ATH_USER` 폴백, Repository 예외 원본 전파를 단독 소유한다. 로그인·세션 복원·개발 사용자 전환·SSO·Refresh **5경로 전부** 전환하고 `AuthService`·`RefreshTokenRotator`의 중복 `loadAthIds` 2개와 `RoleRepository` 의존을 제거했다 | it_backend `391bd37` | `UserRoleResolverTest` 3건(다건 순서·불변성, 폴백, 원본 예외 동일성) 신규. `AuthServiceTest`·`RefreshTokenRotatorTest`를 resolver mock으로 재배선하면서 JWT 발급 검증을 `anyList()`에서 **정확값 인자**로 좁혀 resolver 결과가 토큰·응답에 그대로 전달되는지 고정. 게이트: `loadAthIds` production grep 0건, 두 소비자 파일 `RoleRepository` grep 0건 |
+| ✅ Done | CQ-21 | 백엔드 `spotlessCheck` 위반 해소로 main의 `./gradlew check` 게이트 복구. 2026-08-01 REVIEW가 지목한 파일(`domain/menu/repository/CmenumRepositoryCustom.java`)은 이미 해소돼 있었고, 실제 잔여 위반은 `domain/budget/project/repository/ProjectItemRepository.java`의 `hasSecuritySystemItem()` JavaDoc 줄바꿈 1건이었다(작업 트리 미수정, HEAD 상태) | it_backend `3f65cf5` | `./gradlew spotlessApply` 후 해당 파일만 분리 커밋. 같은 시점 `./gradlew check` **BUILD SUCCESSFUL** |
 | ✅ Done | CQ-06 | `Bcostm.update`의 20개 위치 인자를 `@Builder Bcostm.UpdateCommand` record로 전환. `dfrCleC`·`abusTc`의 `CodeDefaults.orNotApplicable` 보정은 `update(UpdateCommand)` 본문에 유지하고, null 명령은 어떤 필드도 바꾸기 전에 `Objects.requireNonNull`로 실패한다. production 호출부는 계획서 확정대로 `CostService.java:312` 1곳뿐이었고 `:383` `Btermm.update`는 CQ-19로 남겼다 | it_backend `47fa027` | `BcostmUpdateCommandTest` 2건(20개 필드 전량 매핑 + 두 기본값 보정, null 명령 부분변경 없음) 신규. `CostServiceTest`에 요청→command 20필드 매핑을 record 동등성으로 한 번에 고정하는 테스트 추가, 기존 계약명·환율 회귀 verify 2곳을 command captor로 전환. 계획서의 임시 20인자 오버로드는 **커밋에 남기지 않았다** — `Bcostm`의 public `update` 선언은 `update(UpdateCommand)` 1개 |
 
 > 최종 품질 게이트: `cd it_backend && ./gradlew check` → **BUILD SUCCESSFUL**(Spotless·전체 단위 테스트·JaCoCo 검증 통과, 3분 24초).
