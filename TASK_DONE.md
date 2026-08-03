@@ -16,6 +16,28 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-04 Clean Code Wave 3 Wave B·C (CQ-16 완료 / CQ-15 진행)
+
+> 계획 `plans/done/2026-07-29-clean-code-wave3-wave-b-frontend-structure.md`, `…-wave-c1-hwpx-decomposition.md`, `…-wave-c3-composable-decomposition.md`를 실행했다. 대상은 `it_frontend` 단일 저장소이며 동작·UI·route·API·props/emits·CSS 선언은 변경하지 않았다.
+>
+> **계획서 수치는 실행 시점에 재실측했다.** cross-check commit은 frontend `937f5f9`였으나 실행 시점 HEAD는 `f11ef47`였고, 800줄 초과 운영 파일은 30개가 아니라 **31개**였다(`app/composables/useApiFetch.ts` 813 신규 초과, 다수 파일 증가). 생성물 `app/types/api.d.ts`(13,368줄)는 ESLint 전역 ignores 대상이라 제외했다.
+
+| 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✅ Done | CQ-16 | editor 14개 → `app/components/editor/`(+`extensions/`), layout 10개 → `app/components/layout/` 이동. 자동 등록에 의존하던 production 소비자 17곳에 명시적 import를 추가하고 기존 명시 import 4곳의 경로를 갱신했다. root에는 CQ-18 후보 4개만 남는다 | it_frontend `fe1bc56`(editor), `bb08ea3`(layout) | `component-boundaries.test.ts` 신규 2건이 두 디렉터리 구성과 root 잔여 4개를 고정. 이전 경로·자동등록 잔존 grep 0건. 전체 2216 테스트 통과, `check`·`format:check`·`lint:css` 클린 |
+| 🔄 진행 | CQ-15 | 증가 불가 ratchet 도입(31개 기준선) 후 즉시 분해 4건 완료 — `utils/hwpx.ts` 1502→314, `composables/useCouncil.ts` 824→57, `composables/useTiptapTableTools.ts` 913→70, `components/editor/TiptapEditor.vue` 1329→781. 기준 항목 4개 삭제 | it_frontend `7ac70c3`(ratchet), `52868b6`·`c5d6fdc`(C-1), `d11091a`·`26049e1`·`9cb31ac`(C-3), `e97f870`(C-2 일부) | 공개 계약을 먼저 characterization test로 고정한 뒤 분해: HWPX runtime export 2개 + ZIP entry 10종, `useCouncil` 47 key, `useTiptapTableTools` 29 key. 분해 후 production consumer 변경 **0건**. 전체 2234 테스트 통과 |
+
+> 최종 품질 게이트(`e97f870`): `npm run format:check`·`npm run check`·`npm run lint:css` 클린, `npx vitest run` **178 files / 2234 tests 통과**. `npm run test:e2e`는 프론트·백엔드·DB 동시 기동이 필요해 이번 실행 환경에서 수행하지 못했다 — CQ-22의 착수 조건으로 남겼다.
+>
+> **판단이 필요했던 지점 4가지**
+>
+> 1. **ratchet을 ESLint가 아닌 Vitest로 구현** — 계획서는 `eslint.config.mjs`에 `max-lines` 규칙을 추가하도록 했으나 config-protection 훅이 해당 파일 수정을 차단했다. 사용자 결정에 따라 `scripts/max-lines-baselines.mjs`(기준값 SoT) + architecture test 조합으로 확정했다. 테스트가 기준 파일의 **증가와 감소를 모두 실패**시키고 기준선 밖 파일의 800줄 초과도 막으므로 정지선 목적은 동일하게 달성한다. 대신 에디터 인라인 경고는 없다.
+> 2. **`.stylelintrc.json` 경로 재지정** — 컴포넌트 이동으로 FE-19 grandfather 경로 8개가 어긋나 `lint:css`가 153건 실패했다. 예외를 새로 추가하지 않고 경로만 옮겨 이동 전과 **정확히 같은 검사 범위**를 복원했다. C-2에서 TiptapEditor의 scoped CSS를 외부 파일로 뺄 때도 `.vue` 항목을 `styles/tiptap-editor.css`로 **이동**해 예외 개수를 늘리지 않았다.
+> 3. **기준 항목 1개 증가(31→32 후 최종 28)** — `app/pages/info/council-request/prepare/[id].vue`는 HEAD에 있던 Prettier 드리프트를 정리하자 긴 줄이 풀리며 731→803줄로 실제 크기가 드러났다. 로직 추가가 아니므로 기준선에 등록하고 C-4 상환 대상으로 남겼다.
+> 4. **테스트 파일 재배치 생략** — C-3 계획은 테스트도 `council/*.test.ts`·`tiptap-table/*.test.ts`로 쪼개도록 했으나, Wave B에서 확정한 "테스트 재배치는 불필요한 churn" 판단을 따라 기존 위치를 유지했다. production 책임 경계는 계약 테스트가 이미 고정한다.
+>
+> **후속 등록**: C-2 잔여 4개(툴바 2개·extension barrel 2개)는 `TASK.md` **CQ-22**로 등록했다. 툴바 2개는 E2E 없이는 회귀를 관찰할 수 없어 보류했다.
+
 ### ✅ 2026-08-04 Clean Code Wave 3 Wave A (CQ-17·CQ-06)
 
 > 계획 `docs/superpowers/plans/done/2026-07-29-clean-code-wave3-wave-a-backend-refactors.md`(Task 1~4)를 실행했다. 대상은 `it_backend` 단일 저장소이며 REST API·DTO·DB 스키마·트랜잭션 경계·인증 실패 의미는 변경하지 않았다.
