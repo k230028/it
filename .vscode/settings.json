@@ -5,6 +5,12 @@
     "java.compile.nullAnalysis.mode": "automatic",
     "java.configuration.updateBuildConfiguration": "automatic",
     "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx2G -Xms100m -Xlog:disable -javaagent:C:/it/it_backend/lib/lombok.jar",
+    // Gradle 배포판은 wrapper 설치 경로가 아니라 직접 풀어둔 설치본을 사용합니다.
+    // 이 PC에서는 .gradle\wrapper\dists 의 zip rename 이 보안 프로그램에 막혀
+    // 확장(vscjava.vscode-gradle)이 배포판을 매번 삭제하고 재설치하다 실패했습니다.
+    // 터미널의 ./gradlew 는 wrapper 를 그대로 사용하므로 영향이 없습니다.
+    "java.import.gradle.wrapper.enabled": false,
+    "java.import.gradle.home": "C:/gradle/gradle-9.2.1",
     "files.encoding": "utf8",
     "files.autoGuessEncoding": false,
     "java.debug.settings.onBuildFailureProceed": true,
