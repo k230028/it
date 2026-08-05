@@ -1,5 +1,15 @@
 # 비(非)Clean Code 잔여과제 Quick Win 조치 계획
 
+> **✅ 2026-08-06 실행 완료.** 10개 Task 전부 이행했고 Task마다 스펙 준수 리뷰와 코드 품질 리뷰를 거쳤다. 최종 통합 리뷰 판정은 **병합 가능(코드·런타임 결함 0건)**이다. 완료 근거와 커밋은 `TASK_DONE.md`의 2026-08-06 절을 SoT로 참조한다.
+>
+> **계획 대비 달라진 것 2가지** — 아래 본문에 각각 개정 사유를 기록했다.
+> - **Task 3**: 애노테이션만 추가하려던 계획이 CQ-01 동결선과 충돌해 **추출로 상쇄**하는 방향으로 바꿨다(사용자 결정). 결과적으로 `AdminService`가 800줄 이하가 되어 기준선 등재가 해제됐고 Task 4의 증가분 문제도 함께 사라졌다.
+> - **Task 9**: `eslint.config.mjs` 편집이 config-protection 훅에 차단돼 **Vitest 게이트**로 우회했다(사용자 결정, CQ-15 선례). `npm test`에는 잡히지만 `npm run check`에는 잡히지 않는 트레이드오프가 남는다.
+>
+> **잔여로 남긴 것**: FE-19(정책 판단이 필요한 `color-no-hex`·`selector-class-pattern`)·FE-22(지점별 적용)·FE-30(①②). 셋 다 `TASK.md`에 잔여 범위를 명시해 유지한다. **새로 등재한 것**: FE-34(프론트 `npm test` 선행 실패 2건)·BE-34(OpenAPI 파라미터명 `arg0` 유실).
+>
+> 아래 Step 체크박스는 실행 당시 서브에이전트가 Task 단위로 이행했으므로 개별 표시하지 않았다. 실제 이행 여부는 각 Task의 커밋과 `TASK_DONE.md`의 검증 증거로 확인한다.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** `TASK.md`의 Clean Code 부채(CQ-\*) 섹션을 제외한 활성 항목 중, 설계 결정·DBA 협의·외부 의존 없이 **코드로 바로 끝낼 수 있는 10개**를 위험도 낮은 순으로 상환한다.
