@@ -16,6 +16,17 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-06 CQ-01 대형 서비스 분해·BE-30 결정론 보완
+
+| 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✅ Done | CQ-01 | `CouncilController` 분해에 이어 서비스 3개를 도메인 경계로 분리: `ProjectService` 1549→670 (`ProjectQueryService` 104, `ProjectQueryAssembler` 283), `CostService` 1159→351 (`CostQueryService` 96, `CostQueryAssembler` 527, `CostTerminalAssembler` 148), `BudgetWorkService` 1156→77 (`BudgetRateApplicationService` 263, `BudgetSummaryService` 355, `BudgetProjectSummaryService` 351, `BudgetIoeCatalog` 50). 신규 운영 소스는 모두 800줄 이하이며 ratchet 기준선은 `ProjectDto` 1070, `CouncilDto` 990, `AdminService` 866, `ApplicationService` 852, `CostDto` 801 다섯 개만 남았다. | backend `f80b5b8`, `c35945d`, `24e139e`, `659041a`, `19b0a90`, `4e491b1`, `15f09b33`; frontend `b014ec4`, `acf0d60` | backend `./gradlew check --rerun-tasks`: 2580 tests, 0 failure/error, 1 skipped. `./gradlew integrationTest --rerun-tasks`: 107 tests 중 103 pass, 4 skipped, 0 failure/error. 격리 포트 28083에서 OpenAPI paths 160/schemas 234 및 `npm run codegen:check` 통과. 두 프론트 생성 커밋은 선언 순서만 동기화했고 API 의미 변경은 없다. `npm run format:check`·`npm run check` 통과. |
+| ✅ Done | BE-30 | 동일 표시명 그룹의 ioeC·편성률을 encounter order가 아니라 최신 대표행에서 함께 취하도록 고정했다. | backend `e206cf0` | 대표행의 `bgNo` 우선순위와 동일 행 값 연결을 계약·통합 테스트로 검증했다. |
+
+> **프론트 테스트 감내:** 전체 `npm test` 2282건 중 2277건 통과, 실패 5건은 CQ-01 이전부터 있던 범위 밖 항목으로 의도적으로 수정·마스킹하지 않았다(`admin/codes.vue` max-lines 1건, council-manager redirect 기대값 4건).
+>
+> **통합 게이트 정합화:** IAM 정확 계약 테스트의 `getPtCNm` 누락은 production CQ-01 범위 밖의 기존 assertion drift로, 별도 test-only 커밋 backend `d5221bab`에서 보정했다.
+
 ### ✔️ 2026-08-01 Prettier 잔여 위반 해소 (CQ-20)
 
 | 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
