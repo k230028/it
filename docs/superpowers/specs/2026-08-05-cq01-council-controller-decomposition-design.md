@@ -258,7 +258,7 @@ ratchet 테스트가 실제로 실패를 잡는지 확인해야 합니다. 기�
 
 | 단계 | 내용 | 게이트 |
 | ---: | --- | --- |
-| 1 | ratchet 테스트 + 기준선 7개 도입 | `./gradlew check` |
+| 1 | ratchet 테스트 + 기준선 9개(§3.3) 도입 | `./gradlew check` |
 | 2 | `CouncilRouteContractTest`(golden 42) 도입 | `./gradlew check` — **분해 전** 통과 확인 |
 | 2.5 | `plan-evaluation`·`plan-targets` 5개 라우트 테스트 보강 (§8 커버리지 위험) | `./gradlew check` |
 | 3 | 컨트롤러 7분할 이동 + 기준선에서 `CouncilController` 항목 제거 + `spotlessApply` | `./gradlew check` — 라우트 계약·ratchet 동시 통과 |
@@ -281,7 +281,7 @@ ratchet 테스트가 실제로 실패를 잡는지 확인해야 합니다. 기�
 | --- | --- |
 | **JaCoCo 클래스 단위 70% 규칙 위반 (실측 확인됨)** | `build.gradle`의 `jacocoTestCoverageVerification`은 **클래스별** LINE·BRANCH·COMPLEXITY 70%를 강제하고 컨트롤러는 제외 목록에 없다. 현재 42개 라우트 중 37개가 한 클래스에 있어 약 88%로 통과하지만, `plan-targets`·`plan-evaluation` 계열 **5개 라우트에는 테스트가 0건**이다(`it_backend/src/test` 전체에서 `plan-evaluation`·`plan-targets` 검색 0건). 분할하면 `CouncilEvaluationController`가 8개 라우트 중 3개만 커버돼 약 37%로 떨어져 `check`가 실패한다. **분해 전에 5개 라우트 테스트를 먼저 보강한다**(실행 순서 2.5단계) |
 | 분해 중 라우트 누락·오타 | 라우트 계약 테스트(§4)가 42개 정확 일치를 강제 |
-| OpenAPI 스펙 변동 → 프론트 `codegen:check` 드리프트 | `@Tag`를 전부 동일하게 유지해 변동 요인을 제거. 다만 `npm run codegen:check`는 백엔드 기동이 필요해 이 작업 안에서 실행할 수 없으므로, `TASK.md`에 "다음 프론트 작업 시 `codegen:check` 확인" 메모를 남깁니다 |
+| OpenAPI 스펙 변동 → 프론트 `codegen:check` 드리프트 | `@Tag`를 전부 동일하게 유지해 **오퍼레이션 집합과 태그 그룹은 분해 전후 동일**하게 만듭니다. 다만 이것이 `paths` 항목의 **순서**까지 보장하지는 않습니다 — springdoc은 핸들러 메서드 탐색 순서(컨트롤러 빈 단위)로 `paths`를 구성하므로 빈이 1개에서 7개가 되면 순서가 달라질 수 있고, `it_frontend/scripts/codegen.mjs`는 `api.d.ts`를 전문 텍스트로 비교하므로 순서 변경만으로도 `드리프트 감지`가 납니다. 백엔드 기동이 필요해 이 작업 안에서 실행할 수 없으므로 `TASK.md`에 "다음 프론트 작업 시 `api.d.ts`를 재생성해 diff가 순서 변경뿐인지 확인" 메모를 남깁니다 |
 | 중복 매핑으로 인한 기동 실패 | 라우트 계약 테스트가 Spring 컨텍스트를 띄우므로 중복 매핑은 컨텍스트 로드 단계에서 즉시 실패 |
 | ratchet 기준값과 실제 측정 도구 불일치 | §3.4에 측정 정의를 고정하고 테스트 Javadoc에 명시 |
 | 기준선이 분해를 방해(감소도 실패) | 의도된 동작. 분해 시 기준값 인하가 같은 PR에 포함되도록 실패 메시지에 안내 |
@@ -296,7 +296,7 @@ ratchet 테스트가 실제로 실패를 잡는지 확인해야 합니다. 기�
 3. `MaxLinesRatchetTest`가 기준선 위반(증가·감소·경로 부재·신규 800줄 초과) 4종을 검출함이 단위 테스트로 확인됨.
 4. `CouncilController`가 기준선에서 제거되고, 신규 컨트롤러 7개가 전부 800줄 미만.
 5. 컨트롤러 테스트 메서드 총 개수가 분리 전후 동일.
-6. `TASK.md` CQ-01 항목이 갱신됨 — 동결선 도입 사실, 기준선 6개, `CouncilController` 완료, 나머지 3개 트리거 유지.
+6. `TASK.md` CQ-01 항목이 갱신됨 — 동결선 도입 사실, 초기 기준선 9개에서 `CouncilController` 제거 후 잔여 8개, `CouncilController` 완료, 나머지 3개 트리거 유지.
 
 ---
 
