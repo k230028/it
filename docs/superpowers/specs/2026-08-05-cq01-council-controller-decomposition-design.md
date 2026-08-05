@@ -248,7 +248,7 @@ ratchet 테스트가 실제로 실패를 잡는지 확인해야 합니다. 기�
 
 각 테스트는 `@WebMvcTest(대상.class)` + 해당 컨트롤러가 실제 쓰는 서비스 + 인증 빈(`JwtUtil`, `CustomUserDetailsService`)만 mock합니다.
 
-`CouncilControllerSecurityTest`는 대상 컨트롤러 목록만 갱신하고 단언은 유지합니다.
+`CouncilControllerSecurityTest`는 대상 컨트롤러 목록만 갱신하고 단언은 유지합니다. **구현 결과(2026-08-05)**: 검증 대상이 `CouncilResultController`로 바뀌어 이름이 실제와 어긋나므로 최종 리뷰 지적에 따라 `CouncilResultControllerSecurityTest`로 개명했습니다(단언은 그대로).
 
 **테스트 케이스는 이동만 하고 단언을 수정하지 않습니다.** 이동 전후 테스트 메서드 총 개수가 같아야 합니다.
 
