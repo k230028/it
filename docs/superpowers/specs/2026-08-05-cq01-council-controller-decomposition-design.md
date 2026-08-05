@@ -193,7 +193,7 @@ ratchet 테스트가 실제로 실패를 잡는지 확인해야 합니다. 기�
 | `CouncilFeasibilityController` | 3 | `FeasibilityService` | ~150 |
 | `CouncilLifecycleController` | 10 | `CouncilService`, `CouncilApprovalService`, `CouncilSkipService` | ~310 |
 | `CouncilCommitteeController` | 4 | `CommitteeService` | ~165 |
-| `CouncilScheduleController` | 5 | `ScheduleService` | ~190 |
+| `CouncilScheduleController` | 5 | `ScheduleService`, `CouncilService` | ~190 |
 | `CouncilEvaluationController` | 8 | `EvaluationService`, `PlanEvaluationService` | ~275 |
 | `CouncilResultController` | 9 | `ResultService`, `CouncilApprovalService`, `CouncilService` | ~235 |
 
@@ -230,7 +230,7 @@ ratchet 테스트가 실제로 실패를 잡는지 확인해야 합니다. 기�
 | `CouncilFeasibilityControllerTest` | `CouncilFeasibilityController` | `FeasibilityService` |
 | `CouncilLifecycleControllerTest` | `CouncilLifecycleController` | `CouncilService`, `CouncilApprovalService`, `CouncilSkipService` |
 | `CouncilCommitteeControllerTest` | `CouncilCommitteeController` | `CommitteeService` |
-| `CouncilScheduleControllerTest` | `CouncilScheduleController` | `ScheduleService` |
+| `CouncilScheduleControllerTest` | `CouncilScheduleController` | `ScheduleService`, `CouncilService` |
 | `CouncilEvaluationControllerTest` | `CouncilEvaluationController` | `EvaluationService`, `PlanEvaluationService` |
 | `CouncilResultControllerTest` | `CouncilResultController` | `ResultService`, `CouncilApprovalService`, `CouncilService` |
 | `CouncilQnaControllerTest` | `CouncilMainQnaController`, `CouncilQnaController` | `QnaService`, `MainQnaService` |
@@ -249,6 +249,7 @@ ratchet 테스트가 실제로 실패를 잡는지 확인해야 합니다. 기�
 | ---: | --- | --- |
 | 1 | ratchet 테스트 + 기준선 7개 도입 | `./gradlew check` |
 | 2 | `CouncilRouteContractTest`(golden 42) 도입 | `./gradlew check` — **분해 전** 통과 확인 |
+| 2.5 | `plan-evaluation`·`plan-targets` 5개 라우트 테스트 보강 (§8 커버리지 위험) | `./gradlew check` |
 | 3 | 컨트롤러 7분할 이동 + 기준선에서 `CouncilController` 항목 제거 + `spotlessApply` | `./gradlew check` — 라우트 계약·ratchet 동시 통과 |
 | 4 | 컨트롤러 테스트 분리 | `./gradlew check` |
 | 5 | `TASK.md` CQ-01 갱신, `versions.lock` 갱신 | — |
@@ -267,6 +268,7 @@ ratchet 테스트가 실제로 실패를 잡는지 확인해야 합니다. 기�
 
 | 위험 | 대응 |
 | --- | --- |
+| **JaCoCo 클래스 단위 70% 규칙 위반 (실측 확인됨)** | `build.gradle`의 `jacocoTestCoverageVerification`은 **클래스별** LINE·BRANCH·COMPLEXITY 70%를 강제하고 컨트롤러는 제외 목록에 없다. 현재 42개 라우트 중 37개가 한 클래스에 있어 약 88%로 통과하지만, `plan-targets`·`plan-evaluation` 계열 **5개 라우트에는 테스트가 0건**이다(`it_backend/src/test` 전체에서 `plan-evaluation`·`plan-targets` 검색 0건). 분할하면 `CouncilEvaluationController`가 8개 라우트 중 3개만 커버돼 약 37%로 떨어져 `check`가 실패한다. **분해 전에 5개 라우트 테스트를 먼저 보강한다**(실행 순서 2.5단계) |
 | 분해 중 라우트 누락·오타 | 라우트 계약 테스트(§4)가 42개 정확 일치를 강제 |
 | OpenAPI 스펙 변동 → 프론트 `codegen:check` 드리프트 | `@Tag`를 전부 동일하게 유지해 변동 요인을 제거. 다만 `npm run codegen:check`는 백엔드 기동이 필요해 이 작업 안에서 실행할 수 없으므로, `TASK.md`에 "다음 프론트 작업 시 `codegen:check` 확인" 메모를 남깁니다 |
 | 중복 매핑으로 인한 기동 실패 | 라우트 계약 테스트가 Spring 컨텍스트를 띄우므로 중복 매핑은 컨텍스트 로드 단계에서 즉시 실패 |
