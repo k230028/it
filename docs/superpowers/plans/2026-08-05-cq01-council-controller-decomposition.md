@@ -19,7 +19,7 @@
 - 신규 컨트롤러 7개는 전부 `com.kdb.it.domain.council.controller` 패키지에 두고, `@RestController`·`@RequestMapping("/api/council")`·`@RequiredArgsConstructor`·`@Tag(name = "Council", description = "정보화실무협의회 관리 API")`를 **동일하게** 부여한다. `@Tag`가 같아야 Swagger 그룹과 OpenAPI 스펙이 변하지 않는다.
 - 모든 신규 주석은 한글로 쓴다. public API·service 메서드 JavaDoc에는 입력값과 실패 조건을 함께 적는다(루트 `CLAUDE.md` §4.1).
 - 각 태스크의 마지막 커밋 직전에 `./gradlew spotlessApply`를 실행한다. spotless는 google-java-format AOSP(4칸 들여쓰기)를 강제하며 `check`에 연결돼 있다.
-- 줄 수 측정의 정의는 `Files.readAllLines(path, UTF_8).size()`다. spotless의 `endWithNewline()` 덕분에 `wc -l`·PowerShell `Measure-Object -Line`과 일치한다.
+- 줄 수 측정의 정의는 `Files.readAllLines(path, UTF_8).size()`다. **PowerShell `Get-Content | Measure-Object -Line`을 쓰지 않는다** — `Measure-Object -Line`은 빈 문자열의 줄 수를 0으로 계산해 빈 줄을 통째로 누락한다(Task 1에서 확인: `AdminService.java` 866줄 − 빈 줄 61줄 = 805). 스팟체크는 `[System.IO.File]::ReadAllLines($p).Length` 또는 `(Get-Content $p).Count`를 쓴다.
 - 기준선 파일의 경로 키는 `src/main/java` 기준 상대 경로이며 구분자는 항상 `/`다.
 
 ---
@@ -77,13 +77,15 @@
 # 측정 정의: Files.readAllLines(path, UTF_8).size()
 #
 # 기준 시점: 2026-08-05 / backend 9b5104e9
-com/kdb/it/domain/budget/project/service/ProjectService.java=1420
-com/kdb/it/domain/council/controller/CouncilController.java=1215
-com/kdb/it/domain/budget/cost/service/CostService.java=1063
-com/kdb/it/domain/budget/work/service/BudgetWorkService.java=1052
-com/kdb/it/domain/council/dto/CouncilDto.java=931
-com/kdb/it/domain/budget/project/dto/ProjectDto.java=890
-com/kdb/it/common/admin/service/AdminService.java=805
+com/kdb/it/domain/budget/project/service/ProjectService.java=1549
+com/kdb/it/domain/council/controller/CouncilController.java=1279
+com/kdb/it/domain/budget/cost/service/CostService.java=1159
+com/kdb/it/domain/budget/work/service/BudgetWorkService.java=1156
+com/kdb/it/domain/budget/project/dto/ProjectDto.java=1070
+com/kdb/it/domain/council/dto/CouncilDto.java=990
+com/kdb/it/common/admin/service/AdminService.java=866
+com/kdb/it/common/approval/service/ApplicationService.java=852
+com/kdb/it/domain/budget/cost/dto/CostDto.java=801
 ```
 
 - [ ] **Step 2: 기준값이 실제와 맞는지 먼저 확인한다**
@@ -91,10 +93,10 @@ com/kdb/it/common/admin/service/AdminService.java=805
 PowerShell에서 실행:
 
 ```bash
-cd C:\it\it_backend; Get-ChildItem -Path 'src\main\java' -Recurse -Filter *.java | ForEach-Object { [pscustomobject]@{ L=(Get-Content $_.FullName | Measure-Object -Line).Lines; P=$_.FullName } } | Where-Object { $_.L -gt 800 } | Sort-Object L -Descending | ForEach-Object { "{0,6}  {1}" -f $_.L, $_.P }
+cd C:\it\it_backend; Get-ChildItem -Path 'src\main\java' -Recurse -Filter *.java | ForEach-Object { [pscustomobject]@{ L=[System.IO.File]::ReadAllLines($_.FullName).Length; P=$_.FullName } } | Where-Object { $_.L -gt 800 } | Sort-Object L -Descending | ForEach-Object { "{0,6}  {1}" -f $_.L, $_.P }
 ```
 
-기대 출력: 7개 파일이 `1420 / 1215 / 1063 / 1052 / 931 / 890 / 805` 순으로 나온다. 숫자가 다르면 **기준선 파일의 값을 실측값으로 고친 뒤** 다음 단계로 간다(HEAD가 `9b5104e9`에서 진행됐을 수 있다).
+기대 출력: 9개 파일이 `1549 / 1279 / 1159 / 1156 / 1070 / 990 / 866 / 852 / 801` 순으로 나온다. 숫자가 다르면 **기준선 파일의 값을 실측값으로 고친 뒤** 다음 단계로 간다(HEAD가 `9b5104e9`에서 진행됐을 수 있다).
 
 - [ ] **Step 3: 실패하는 테스트를 쓴다 — 판정 로직 단위 테스트**
 
@@ -1210,7 +1212,7 @@ git -C C:\it\it_backend commit -m "test(council): 컨트롤러 테스트를 분�
 - [ ] **Step 1: 최종 실측을 뜬다**
 
 ```bash
-cd C:\it\it_backend; Get-ChildItem -Path 'src\main\java' -Recurse -Filter *.java | ForEach-Object { [pscustomobject]@{ L=(Get-Content $_.FullName | Measure-Object -Line).Lines; P=$_.FullName.Replace((Get-Location).Path + '\','') } } | Where-Object { $_.L -gt 500 -and $_.P -like '*council*controller*' } | Sort-Object L -Descending | ForEach-Object { "{0,6}  {1}" -f $_.L, $_.P }
+cd C:\it\it_backend; Get-ChildItem -Path 'src\main\java' -Recurse -Filter *.java | ForEach-Object { [pscustomobject]@{ L=[System.IO.File]::ReadAllLines($_.FullName).Length; P=$_.FullName.Replace((Get-Location).Path + '\','') } } | Where-Object { $_.L -gt 500 -and $_.P -like '*council*controller*' } | Sort-Object L -Descending | ForEach-Object { "{0,6}  {1}" -f $_.L, $_.P }
 ```
 
 기대: 출력 없음(협의회 컨트롤러가 전부 500줄 미만). 출력이 있으면 그 줄 수를 기록해 TASK.md에 남긴다.
@@ -1220,7 +1222,7 @@ cd C:\it\it_backend; Get-ChildItem -Path 'src\main\java' -Recurse -Filter *.java
 `C:\it\TASK.md`의 CQ-01 행(85행)에서 근거/조건 열을 아래로 바꾼다. 우선순위·유형·과제명은 유지한다.
 
 ```
-**2026-08-05 부분 완료 — 동결선 도입 + `CouncilController` 분해 완료.** D-1 동결선을 `it_backend/src/test/java/com/kdb/it/architecture/MaxLinesRatchetTest.java` + `src/test/resources/architecture/max-lines-baselines.properties`(SoT)로 도입했다. 게이트는 ① 기준선 파일의 실측 줄 수 일치(증가·감소 모두 실패) ② 기준선 밖 운영 파일의 800줄 초과 금지 ③ 기준선 경로 실재를 강제하며 `./gradlew check`에 자동 포함된다. `CouncilController` 1,215줄은 라우트 42개를 URL 불변으로 7개 컨트롤러(core/feasibility/lifecycle/committee/schedule/evaluation/result)로 분해했고, `CouncilRouteContractTest`가 라우트 42개 계약을 고정한다. 분해 과정에서 `plan-targets`·`plan-evaluation` 5개 라우트에 테스트가 0건인 것을 발견해 함께 보강했다(JaCoCo 클래스별 70% 규칙 대응). **잔여 기준선 6개**: `ProjectService` 1420 · `CostService` 1063 · `BudgetWorkService` 1052 · `CouncilDto` 931 · `ProjectDto` 890 · `AdminService` 805. 나머지 3개 서비스 분해는 **트리거 유지** — 해당 도메인 기능 변경 착수 시 Query/Command 분리와 함께 수행하고 단독 빅뱅 분해는 하지 않는다. 분해 방향은 사전 확정돼 있다(`ProjectService`는 `ProjectQueryAssembler` 분리 1순위, `CostService`는 CQ-06 이후, `BudgetWorkService`는 BE-30과 묶음). **후속 확인 필요**: 프론트 `npm run codegen:check`는 백엔드 기동이 필요해 이번 작업에서 실행하지 못했다 — `@Tag`를 전부 `Council`로 통일해 OpenAPI 스펙 변동 요인은 없앴으나 다음 프론트 작업 시 확인한다. 설계 SoT: `docs/superpowers/specs/2026-08-05-cq01-council-controller-decomposition-design.md`, 실행 SoT: `docs/superpowers/plans/2026-08-05-cq01-council-controller-decomposition.md`
+**2026-08-05 부분 완료 — 동결선 도입 + `CouncilController` 분해 완료.** D-1 동결선을 `it_backend/src/test/java/com/kdb/it/architecture/MaxLinesRatchetTest.java` + `src/test/resources/architecture/max-lines-baselines.properties`(SoT)로 도입했다. 게이트는 ① 기준선 파일의 실측 줄 수 일치(증가·감소 모두 실패) ② 기준선 밖 운영 파일의 800줄 초과 금지 ③ 기준선 경로 실재를 강제하며 `./gradlew check`에 자동 포함된다. `CouncilController` 1,279줄은 라우트 42개를 URL 불변으로 7개 컨트롤러(core/feasibility/lifecycle/committee/schedule/evaluation/result)로 분해했고, `CouncilRouteContractTest`가 라우트 42개 계약을 고정한다. 분해 과정에서 `plan-targets`·`plan-evaluation` 5개 라우트에 테스트가 0건인 것을 발견해 함께 보강했다(JaCoCo 클래스별 70% 규칙 대응). **측정 정정**: 종전 계획 초안의 수치는 PowerShell `Get-Content | Measure-Object -Line`으로 측정해 빈 줄이 누락된 값이었다(`Measure-Object -Line`은 빈 문자열의 줄 수를 0으로 계산한다). 실측 결과 2026-07-29 로드맵 수치가 정확했고 그 뒤로도 증가가 이어졌다(`ProjectService` 1,478→1,549). **잔여 기준선 8개**: `ProjectService` 1549 · `CostService` 1159 · `BudgetWorkService` 1156 · `ProjectDto` 1070 · `CouncilDto` 990 · `AdminService` 866 · `ApplicationService` 852 · `CostDto` 801. 나머지 3개 서비스 분해는 **트리거 유지** — 해당 도메인 기능 변경 착수 시 Query/Command 분리와 함께 수행하고 단독 빅뱅 분해는 하지 않는다. 분해 방향은 사전 확정돼 있다(`ProjectService`는 `ProjectQueryAssembler` 분리 1순위, `CostService`는 CQ-06 이후, `BudgetWorkService`는 BE-30과 묶음). **후속 확인 필요**: 프론트 `npm run codegen:check`는 백엔드 기동이 필요해 이번 작업에서 실행하지 못했다 — `@Tag`를 전부 `Council`로 통일해 OpenAPI 스펙 변동 요인은 없앴으나 다음 프론트 작업 시 확인한다. 설계 SoT: `docs/superpowers/specs/2026-08-05-cq01-council-controller-decomposition-design.md`, 실행 SoT: `docs/superpowers/plans/2026-08-05-cq01-council-controller-decomposition.md`
 ```
 
 - [ ] **Step 3: `versions.lock`을 갱신한다**

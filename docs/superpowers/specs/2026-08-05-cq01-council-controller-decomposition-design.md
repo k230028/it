@@ -14,21 +14,27 @@ CQ-01은 대형 파일 4개를 도메인 경계로 분해하는 과제이며, "�
 
 ### 1.1 재실측 (2026-08-05)
 
+> **측정 방식 주의.** 이 절의 초판은 PowerShell `Get-Content | Measure-Object -Line`으로 측정해 **전 항목이 과소 집계**돼 있었습니다. `Measure-Object -Line`은 빈 문자열의 줄 수를 0으로 계산하므로 파일의 빈 줄이 통째로 누락됩니다(`AdminService.java` 866줄 − 빈 줄 61줄 = 805, `CouncilController.java` 1,279줄 − 빈 줄 64줄 = 1,215 — 둘 다 총줄수−빈줄수와 정확히 일치). 인코딩·BOM과는 무관합니다. 아래 값은 게이트와 같은 정의(`Files.readAllLines(path, UTF_8).size()`)로 다시 측정하고 .NET `File.ReadAllLines`·LF 바이트 수로 교차 검증한 값입니다. PowerShell로 셀 때는 `[System.IO.File]::ReadAllLines($p).Length` 또는 `(Get-Content $p).Count`를 씁니다.
+
 | 파일 | 2026-07-29 | 2026-08-05 | 증감 |
 | --- | ---: | ---: | ---: |
-| `domain/budget/project/service/ProjectService.java` | 1,478 | **1,420** | −58 |
-| `domain/council/controller/CouncilController.java` | 1,279 | **1,215** | −64 |
-| `domain/budget/cost/service/CostService.java` | 1,142 | **1,063** | −79 |
-| `domain/budget/work/service/BudgetWorkService.java` | 1,156 | **1,052** | −104 |
-| 합계 | 5,055 | **4,750** | −305 |
+| `domain/budget/project/service/ProjectService.java` | 1,478 | **1,549** | +71 |
+| `domain/council/controller/CouncilController.java` | 1,279 | **1,279** | 0 |
+| `domain/budget/cost/service/CostService.java` | 1,142 | **1,159** | +17 |
+| `domain/budget/work/service/BudgetWorkService.java` | 1,156 | **1,156** | 0 |
+| 합계 | 5,055 | **5,143** | +88 |
 
-CQ-01 대상 4개 외에 800줄을 넘는 운영 파일이 3개 더 있습니다.
+2026-07-29 로드맵 수치는 정확했고, 그 뒤로도 **증가가 이어졌습니다**(`ProjectService` +71). 트리거만으로는 증가를 막지 못한다는 Wave D의 판단이 재확인됩니다.
+
+CQ-01 대상 4개 외에 800줄을 넘는 운영 파일이 5개 더 있습니다(총 9개).
 
 | 파일 | 줄 수 | 성격 |
 | --- | ---: | --- |
-| `domain/council/dto/CouncilDto.java` | 931 | 중첩 DTO 집합 — 길이가 곧 결함은 아님 |
-| `domain/budget/project/dto/ProjectDto.java` | 890 | 동일 |
-| `common/admin/service/AdminService.java` | 805 | 서비스. 향후 분해 후보 |
+| `domain/budget/project/dto/ProjectDto.java` | 1,070 | 중첩 DTO 집합 — 길이가 곧 결함은 아님 |
+| `domain/council/dto/CouncilDto.java` | 990 | 동일 |
+| `common/admin/service/AdminService.java` | 866 | 서비스. 향후 분해 후보 |
+| `common/approval/service/ApplicationService.java` | 852 | 서비스. 향후 분해 후보 |
+| `domain/budget/cost/dto/CostDto.java` | 801 | 중첩 DTO 집합 |
 
 ### 1.2 로드맵 실측 정정
 
@@ -47,7 +53,7 @@ Wave D 로드맵의 `CouncilController` 서술 중 두 가지가 실제와 다�
 
 ### 2.1 이번 범위
 
-1. **D-1 동결선** — 백엔드 운영 소스의 800줄 초과 파일 7개를 기준선으로 동결하고, 기준선 밖 파일의 신규 800줄 초과를 차단하는 자동 게이트를 도입합니다.
+1. **D-1 동결선** — 백엔드 운영 소스의 800줄 초과 파일 9개를 기준선으로 동결하고, 기준선 밖 파일의 신규 800줄 초과를 차단하는 자동 게이트를 도입합니다.
 2. **라우트 계약 characterization 테스트** — 분해 전에 `/api/council` 하위 42개 (HTTP 메서드, 경로) 쌍을 golden 목록으로 고정합니다.
 3. **CouncilController 7분할** — URL 불변, 로직 무변경의 순수 이동.
 4. **컨트롤러 테스트 분리** — 분해 축과 동일하게 나눕니다.
@@ -57,7 +63,7 @@ Wave D 로드맵의 `CouncilController` 서술 중 두 가지가 실제와 다�
 | 항목 | 처리 |
 | --- | --- |
 | `ProjectService`·`CostService`·`BudgetWorkService` 분해 | 트리거 방식 유지. Wave D-2 사전 확정 설계를 그대로 둡니다 |
-| `CouncilDto`·`ProjectDto`·`AdminService` 분해 | 동결만 하고 분해하지 않습니다 |
+| `ProjectDto`·`CouncilDto`·`AdminService`·`ApplicationService`·`CostDto` 분해 | 동결만 하고 분해하지 않습니다 |
 | `@Operation`·`@ApiResponses` 문구 수정 | BE-31 소관. 이번에는 이동만 하고 문자열을 건드리지 않습니다 |
 | 라우트 추가·변경·삭제, 서비스 계층 변경, 권한 정책 변경 | 전부 금지 |
 | 프론트 변경 | 없음 (URL 불변) |
@@ -90,20 +96,24 @@ JUnit 아키텍처 테스트로 구현합니다. `test`가 이미 `check`에 물
 ### 3.3 초기 기준선
 
 ```properties
-com/kdb/it/domain/budget/project/service/ProjectService.java=1420
-com/kdb/it/domain/council/controller/CouncilController.java=1215
-com/kdb/it/domain/budget/cost/service/CostService.java=1063
-com/kdb/it/domain/budget/work/service/BudgetWorkService.java=1052
-com/kdb/it/domain/council/dto/CouncilDto.java=931
-com/kdb/it/domain/budget/project/dto/ProjectDto.java=890
-com/kdb/it/common/admin/service/AdminService.java=805
+com/kdb/it/domain/budget/project/service/ProjectService.java=1549
+com/kdb/it/domain/council/controller/CouncilController.java=1279
+com/kdb/it/domain/budget/cost/service/CostService.java=1159
+com/kdb/it/domain/budget/work/service/BudgetWorkService.java=1156
+com/kdb/it/domain/budget/project/dto/ProjectDto.java=1070
+com/kdb/it/domain/council/dto/CouncilDto.java=990
+com/kdb/it/common/admin/service/AdminService.java=866
+com/kdb/it/common/approval/service/ApplicationService.java=852
+com/kdb/it/domain/budget/cost/dto/CostDto.java=801
 ```
 
 경로는 `src/main/java` 기준 상대 경로로 적어 OS 구분자 차이를 흡수합니다(비교 시 `/`로 정규화).
 
 ### 3.4 줄 수 측정 정의
 
-`Files.readAllLines(path).size()`를 사용합니다. spotless가 `endWithNewline()`을 강제하므로 이 값은 `wc -l`·PowerShell `Measure-Object -Line` 결과와 일치합니다. 측정 방식이 도구마다 달라지면 기준값이 흔들리므로, 이 정의를 테스트 Javadoc에 명시합니다.
+`Files.readAllLines(path, UTF_8).size()`를 사용합니다. 측정 방식이 도구마다 달라지면 기준값이 흔들리므로, 이 정의를 테스트 Javadoc에 명시합니다.
+
+**PowerShell `Get-Content | Measure-Object -Line`을 쓰지 않습니다.** `Measure-Object -Line`은 빈 문자열의 줄 수를 0으로 계산해 빈 줄을 통째로 누락합니다(§1.1 주의 참조). 스팟체크가 필요하면 `[System.IO.File]::ReadAllLines($p).Length` 또는 `(Get-Content $p).Count`를 씁니다. 두 방식과 LF 바이트 수, 그리고 게이트의 Java 측정이 모두 일치함을 확인했습니다.
 
 ### 3.5 실패 메시지 요건
 
@@ -291,8 +301,9 @@ ratchet 테스트가 실제로 실패를 잡는지 확인해야 합니다. 기�
 
 ## 10. 후속 (이번 범위 밖)
 
-- `ProjectService`(1,420) — Wave D-2대로 `ProjectQueryAssembler` 분리가 1순위. 해당 도메인 기능 변경 시 착수.
-- `CostService`(1,063) — CQ-06 완료 후 착수.
-- `BudgetWorkService`(1,052) — BE-30(잔여 encounter-order 2곳)과 묶어 처리.
-- `AdminService`(805) — BE-29(CacheEvict 공백) 조치와 함께 분해 여부 판단.
-- `CouncilDto`(931)·`ProjectDto`(890) — 중첩 DTO 집합이라 분해 필요성 자체를 별도 판단.
+- `ProjectService`(1,549) — Wave D-2대로 `ProjectQueryAssembler` 분리가 1순위. 해당 도메인 기능 변경 시 착수.
+- `CostService`(1,159) — CQ-06 완료 후 착수.
+- `BudgetWorkService`(1,156) — BE-30(잔여 encounter-order 2곳)과 묶어 처리.
+- `AdminService`(866) — BE-29(CacheEvict 공백) 조치와 함께 분해 여부 판단.
+- `ApplicationService`(852) — 결재 도메인. 이번 실측에서 새로 드러난 800줄 초과 파일.
+- `ProjectDto`(1,070)·`CouncilDto`(990)·`CostDto`(801) — 중첩 DTO 집합이라 분해 필요성 자체를 별도 판단.
