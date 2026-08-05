@@ -16,6 +16,12 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-05 FE-31 admin/menus 관리 트리 가드 주석 정정
+
+| 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✅ Done | FE-31 | `app/pages/admin/menus/index.vue`(65~72행 → 76행)의 관리 트리 재조회 실패 가드 주석을 실제 동작에 맞춰 정정했다. 기존 주석은 "실패하면 `adminTree`가 undefined가 되어 좌측 편집 트리가 빈다"고 서술했으나, 실측 결과 `fetchAdminTree()`가 `useApiFetch` 반환 객체를 그대로 돌려주고 화면이 그것을 `useRefreshGuard`에 그대로 넘기므로(`useRefreshGuard.ts:204`) 가드 생성 시점에 `enableKeepPreviousData()`가 실제로 켜진다. 재조회 실패 시(401·403 제외) `adminTree`는 비지 않고 직전 정상값을 유지하므로 좌측 트리는 빈 트리가 아니라 낡은 값으로 남는다 — 정정한 주석은 이 사실과, 화면이 멀쩡해 보여 사용자가 낡은 값을 최신으로 오인하기 쉬우므로 배너가 오히려 더 중요하다는 점을 함께 서술한다. 주석 문구만 교체했고 동작 코드는 변경하지 않았다 | it_frontend `ec182bc` | `npm run format:check`·`npm run check`(typecheck+lint) 모두 클린 종료(오류 0건). 정정 전 `useAdminMenu.ts:38`의 `fetchAdminTree`가 `useApiFetch(...)`를 감싸지 않고 그대로 반환함과, `useRefreshGuard.ts:198,204`의 `keepPreviousData` 기본값 `true`·생성 시점 `enableKeepPreviousData()` 호출을 코드로 확인한 뒤 주석을 교체했다 |
+
 ### ✔️ 2026-08-01 Prettier 잔여 위반 해소 (CQ-20)
 
 | 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
