@@ -298,16 +298,16 @@ Modify:
 
 ## 11. 완료 기준
 
-- [ ] 선행 Council codegen 드리프트를 확인하고 결과를 기록했다.
-- [ ] `ProjectService`, `CostService`, `BudgetWorkService`가 각각 800줄 이하이다.
-- [ ] 모든 신규 운영 클래스가 800줄 이하이며 신규 baseline 예외가 없다.
-- [ ] 세 기존 서비스의 public 메서드 시그니처와 컨트롤러 API 계약이 유지된다.
-- [ ] 프로젝트 캐시, 쓰기/읽기 트랜잭션, 소유권·결재 검증이 보존된다.
-- [ ] BE-30의 대표행 선택이 encounter order와 무관하게 결정론적이다.
-- [ ] 기존 서비스 테스트 총수는 이동으로 감소하지 않고 신규 클래스별 70% 게이트를 통과한다.
-- [ ] `./gradlew check`와 `./gradlew integrationTest`가 통과한다.
-- [ ] `npm run codegen:check`가 통과한다.
-- [ ] 세 서비스 기준선 항목을 제거하고 CQ-01을 `TASK_DONE.md`로 이관했다.
+- [x] 선행 Council codegen 드리프트를 확인하고 결과를 기록했다.
+- [x] `ProjectService`, `CostService`, `BudgetWorkService`가 각각 800줄 이하이다.
+- [x] 모든 신규 운영 클래스가 800줄 이하이며 신규 baseline 예외가 없다.
+- [x] 세 기존 서비스의 public 메서드 시그니처와 컨트롤러 API 계약이 유지된다.
+- [x] 프로젝트 캐시, 쓰기/읽기 트랜잭션, 소유권·결재 검증이 보존된다.
+- [x] BE-30의 대표행 선택이 encounter order와 무관하게 결정론적이다.
+- [x] 기존 서비스 테스트 총수는 이동으로 감소하지 않고 신규 클래스별 70% 게이트를 통과한다.
+- [x] `./gradlew check`와 `./gradlew integrationTest`가 통과한다.
+- [x] `npm run codegen:check`가 통과한다.
+- [x] 세 서비스 기준선 항목을 제거하고 CQ-01을 `TASK_DONE.md`로 이관했다.
 
 ## 12. 권장 커밋 단위
 
