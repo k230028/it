@@ -5,6 +5,7 @@
 - 선행 로드맵: [`plans/done/2026-07-29-clean-code-wave3-remaining-debt.md`](../plans/done/2026-07-29-clean-code-wave3-remaining-debt.md) §5 Wave D
 - 기준 커밋: backend `9b5104e9`, root `ba01caf`
 - 문서 성격: 설계 스펙. 구현 순서·태스크 분해는 후속 실행계획이 SoT
+- 상태: 2026-08-05 구현 완료 (실행 SoT: [`plans/2026-08-05-cq01-council-controller-decomposition.md`](../plans/2026-08-05-cq01-council-controller-decomposition.md))
 
 ---
 
