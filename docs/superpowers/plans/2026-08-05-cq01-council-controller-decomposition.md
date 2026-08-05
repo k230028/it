@@ -711,7 +711,7 @@ git -C C:\it\it_backend commit -m "test: 계획협의회 plan-targets/plan-evalu
 ## Task 4: CouncilController 7분할
 
 **Files:**
-- Modify: `it_backend/src/main/java/com/kdb/it/domain/council/controller/CouncilController.java` (1,215줄 → ~160줄)
+- Modify: `it_backend/src/main/java/com/kdb/it/domain/council/controller/CouncilController.java` (1,279줄 → ~170줄)
 - Create: `.../CouncilFeasibilityController.java`
 - Create: `.../CouncilLifecycleController.java`
 - Create: `.../CouncilCommitteeController.java`
@@ -1010,10 +1010,10 @@ cd C:\it\it_backend; ./gradlew test --tests "com.kdb.it.domain.council.controlle
 `max-lines-baselines.properties`에서 아래 한 줄을 삭제한다:
 
 ```properties
-com/kdb/it/domain/council/controller/CouncilController.java=1215
+com/kdb/it/domain/council/controller/CouncilController.java=1279
 ```
 
-이 삭제는 **이 커밋에 반드시 포함해야 한다**. `CouncilController`가 1,215줄에서 ~160줄로 줄어드는 순간 ratchet의 "감소도 실패" 규칙이 걸리기 때문이다. 이는 결함이 아니라 분해와 기준선 갱신을 분리하지 못하게 하려는 의도된 동작이다.
+이 삭제는 **이 커밋에 반드시 포함해야 한다**. `CouncilController`가 1,279줄에서 ~170줄로 줄어드는 순간 ratchet의 "감소도 실패" 규칙이 걸리기 때문이다. 이는 결함이 아니라 분해와 기준선 갱신을 분리하지 못하게 하려는 의도된 동작이다.
 
 - [ ] **Step 8: 포맷을 맞추고 전체 게이트를 돌린다**
 
