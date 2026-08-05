@@ -1,6 +1,6 @@
 # 서브레포 커밋 잠금 — 릴리스/재현용. scripts/update-versions-lock.ps1로 갱신.
 # 형식: <레포>  <origin URL>  <브랜치>  <HEAD SHA>  (갱신시각은 마지막 줄 주석)
-it_frontend  https://github.com/gonnabe88/it_frontend      feature/non-cq-quick-wins 4751211ad6fefcbf801840624b43a01a3de3d661
+it_frontend  https://github.com/gonnabe88/it_frontend      feature/non-cq-quick-wins 92ce0200442add14d6ecc2beee32aa660430be99
 it_backend   https://github.com/gonnabe88/it_backend       feature/non-cq-quick-wins 5a7b7b75a44871b8d114e372b23d8861cae97fda
 it_database  https://github.com/gonnabe88/it_database      main  4ccf581bda9e39fe52279431e1df178aaab6e212
-# 갱신시각: 2026-08-06 04:53:44
+# 갱신시각: 2026-08-06 07:39:34
