@@ -1,6 +1,6 @@
 # 서브레포 커밋 잠금 — 릴리스/재현용. scripts/update-versions-lock.ps1로 갱신.
 # 형식: <레포>  <origin URL>  <브랜치>  <HEAD SHA>  (갱신시각은 마지막 줄 주석)
-it_frontend  https://github.com/gonnabe88/it_frontend.git  fix/err15-refresh-binding-census 2f386d2c304ef66b1a651c6d141111846f3192d1
-it_backend   https://github.com/gonnabe88/it_backend.git   fix/be27-oracle-fixture-isolation d50539df8dda33a36c350a6ee5414be69efb25ad
+it_frontend  https://github.com/gonnabe88/it_frontend.git  main  0ad2829513e6d1396bb6f1dcd11c8b817cc64441
+it_backend   https://github.com/gonnabe88/it_backend.git   main  1c6da6be658e52774266c831bdebf60ff8387fef
 it_database  https://github.com/gonnabe88/it_database.git  main  4ccf581bda9e39fe52279431e1df178aaab6e212
-# 갱신시각: 2026-08-06 21:35:29
+# 갱신시각: 2026-08-06 21:59:06
