@@ -32,7 +32,7 @@
 >
 > **병합 완료**: it_backend `feature/be34-openapi-parameter-names` → `main`(`b4f48109`), it_frontend `feature/task-quickfix-batch1` → `main`(`cb965a2`) 순서로 병합했다(4-repo 규약: 백엔드 계약 먼저). `versions.lock`은 `scripts/update-versions-lock.ps1`로 갱신했다.
 >
-> **이력 정리**: 프론트 브랜치에 섞여 있던 취약점 조치 커밋 2개(`78228cc` "취약점 조치", `f544e78` "불필요파일")를 매니페스트 변경만 남긴 단일 커밋(`915e32c`)으로 재작성했다. 원 커밋이 5.4MB 바이너리 `it_frontend.Egg`를 추가한 뒤 다음 커밋에서 지웠는데, 삭제 커밋이 있어도 추가 커밋의 블롭은 이력에 영구히 남기 때문이다. 재작성 후 트리가 원본과 완전히 동일함을 `git diff`로 확인했고(차이 0), `main` 이력에 해당 블롭이 없음을 확인했다. 두 브랜치 모두 원격에 푸시된 적이 없어 로컬 재작성으로 충분했다. 되돌릴 필요가 생기면 `backup/pre-egg-cleanup` 브랜치가 재작성 전 상태(`345bbc0`)를 가리킨다.
+> **이력 정리**: 프론트 브랜치에 섞여 있던 취약점 조치 커밋 2개(`78228cc` "취약점 조치", `f544e78` "불필요파일")를 매니페스트 변경만 남긴 단일 커밋(`915e32c`)으로 재작성했다. 원 커밋이 5.4MB 바이너리 `it_frontend.Egg`를 추가한 뒤 다음 커밋에서 지웠는데, 삭제 커밋이 있어도 추가 커밋의 블롭은 이력에 영구히 남기 때문이다. 재작성 후 트리가 원본과 완전히 동일함을 `git diff`로 확인했고(차이 0), `main` 이력에 해당 블롭이 없음을 확인했다. 두 브랜치 모두 원격에 푸시된 적이 없어 로컬 재작성으로 충분했다. 병합 후 `main`(`cb965a2`)의 트리가 재작성 전(`345bbc0`)과 완전히 동일함을 재확인한 뒤 백업 ref를 지우고 `git reflog expire --expire-unreachable=now --all` + `git gc --prune=now`로 블롭을 오브젝트 저장소에서 완전히 제거했다(원 커밋 `78228cc`는 더 이상 조회되지 않는다). **되돌릴 수 없다** — 내용은 `main`에 그대로 있고 사라진 것은 그 두 커밋 객체뿐이다. 재발 방지로 `.gitignore`에 `*.egg`·`*.alz`를 추가했다(`b5ab6e0`).
 >
 > **이 병합이 함께 들여온 의존성 변경**: `nanoid ^3.3.17` override와 그 여파의 **nuxt 4.4.8 → 4.5.2**. 4.5.2가 `<template>`의 자동 import 심볼을 컴포넌트 인스턴스 타입에서 제외해 깨진 typecheck 23곳(15개 page 파일)을 명시 import로 해소했고, Vitest에는 `#app` alias가 없어 호출 시점 전역 조회 shim(`tests/support/nuxtAppAlias.ts`)과 alias를 함께 뒀다.
 
