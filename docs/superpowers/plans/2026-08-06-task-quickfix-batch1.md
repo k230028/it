@@ -250,6 +250,9 @@ cd C:/it/it_frontend && git add app/composables/api/useApiFetchRefreshCoordinato
 
 ## Task 2B: ERR-14 — 연속 갱신 주기 상한 도입 (Task 1이 분기 B일 때만)
 
+> **실행 결과: 미실행.** Task 1이 **분기 A**(재현 불가)로 판정돼 이 태스크는 수행하지 않았다.
+> 아래는 실행되지 않은 대안 경로이며 현재 코드베이스에 반영된 것이 없다. 착수할 일감이 아니다.
+
 **Files:**
 - Modify: `it_frontend/app/composables/api/useApiFetchRefreshCoordinator.ts`
 - Test: `it_frontend/tests/unit/composables/useApiFetchRefreshCoordinator.test.ts`
