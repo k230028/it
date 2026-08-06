@@ -30,7 +30,11 @@
 
 > **FE-30①(참고, ID는 `TASK.md`에 존속)**: `useApprovalDashboard`·`useDocumentDashboard` 두 파사드가 `useApiFetch` 반환 필드 7개(`data`·`pending`·`error`·`status`·`refresh`·`runWithErrorToastSuppressed`·`enableKeepPreviousData`)를 노출하도록 완료했다(it_frontend `989d48e`). **계획이 상정한 명시 `key` 분리는 불필요한 것으로 드러나 도입하지 않았다** — 두 URL의 소비처가 각각 1곳뿐이고(`approval/index.vue`, `info/documents/index.vue`) 사이드바 배지는 별도 엔드포인트를 써서 키 공유가 없다. FE-30 자체는 ②(FE-19 grandfather 규칙 단위 전환)가 남아 `TASK.md`에서 계속 추적한다.
 >
-> **병합·`versions.lock` 보류**: it_frontend `feature/task-quickfix-batch1`, it_backend `feature/be34-openapi-parameter-names` 두 브랜치 모두 `main` 병합과 `scripts/update-versions-lock.ps1` 갱신을 사용자 판단으로 보류했다 — 사용자가 같은 브랜치에서 동시에 작업 중이라 지금 병합하면 작업물이 섞인다.
+> **병합 완료**: it_backend `feature/be34-openapi-parameter-names` → `main`(`b4f48109`), it_frontend `feature/task-quickfix-batch1` → `main`(`cb965a2`) 순서로 병합했다(4-repo 규약: 백엔드 계약 먼저). `versions.lock`은 `scripts/update-versions-lock.ps1`로 갱신했다.
+>
+> **이력 정리**: 프론트 브랜치에 섞여 있던 취약점 조치 커밋 2개(`78228cc` "취약점 조치", `f544e78` "불필요파일")를 매니페스트 변경만 남긴 단일 커밋(`915e32c`)으로 재작성했다. 원 커밋이 5.4MB 바이너리 `it_frontend.Egg`를 추가한 뒤 다음 커밋에서 지웠는데, 삭제 커밋이 있어도 추가 커밋의 블롭은 이력에 영구히 남기 때문이다. 재작성 후 트리가 원본과 완전히 동일함을 `git diff`로 확인했고(차이 0), `main` 이력에 해당 블롭이 없음을 확인했다. 두 브랜치 모두 원격에 푸시된 적이 없어 로컬 재작성으로 충분했다. 되돌릴 필요가 생기면 `backup/pre-egg-cleanup` 브랜치가 재작성 전 상태(`345bbc0`)를 가리킨다.
+>
+> **이 병합이 함께 들여온 의존성 변경**: `nanoid ^3.3.17` override와 그 여파의 **nuxt 4.4.8 → 4.5.2**. 4.5.2가 `<template>`의 자동 import 심볼을 컴포넌트 인스턴스 타입에서 제외해 깨진 typecheck 23곳(15개 page 파일)을 명시 import로 해소했고, Vitest에는 `#app` alias가 없어 호출 시점 전역 조회 shim(`tests/support/nuxtAppAlias.ts`)과 alias를 함께 뒀다.
 
 ### ✅ 2026-08-06 CQ-01 대형 서비스 분해·BE-30 결정론 보완
 
