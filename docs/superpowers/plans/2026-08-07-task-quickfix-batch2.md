@@ -1,0 +1,200 @@
+# TASK.md 저비용 잔여과제 배치 2 — 조치계획
+
+작성일: 2026-08-07
+기준 HEAD: it_frontend `2070472`, it_backend `4e28ee7e`, versions.lock 갱신시각 2026-08-06 21:59
+
+전제: 2026-08-06 배치 1(ERR-15·FE-26·FE-28②③·FE-29①·FE-30①③·BE-27·BE-34·CQ-23) 완료 이후 남은 항목만 대상으로 한다.
+아래 수치는 전부 이 문서 작성 시점에 실측한 값이며 TASK.md에 기록된 과거 측정값과 다를 수 있다.
+
+---
+
+## 0. 착수 전 반드시 알아야 할 상태 변화
+
+**CQ-24가 "미커밋"이 아니다.** TASK.md는 `it_backend` 작업트리에 미커밋 변경 4건이 있다고 기록하지만, 두 저장소 모두 작업트리가 깨끗하고 해당 변경은 `관리자 메뉴 개선` 커밋(backend `4e28ee7e`, frontend `2070472`)에 그대로 실려 이미 main에 들어갔다. 즉 **판단 없이 커밋된 상태**이며 항목 성격이 "커밋할지 되돌릴지 판단"에서 "커밋된 게이트 완화를 되돌릴지 판단"으로 바뀌었다.
+
+실측 확인:
+
+- `it_backend/src/test/java/com/kdb/it/architecture/MaxLinesRatchetTest.java:35` → `LIMIT = 850` (종전 800)
+- 같은 파일 70·123·146행의 안내 문구도 850으로 바뀜
+- 반면 기준선 파일 `src/test/resources/architecture/max-lines-baselines.properties`의 규칙 주석은 여전히 **"여기 없는 파일이 800줄을 넘으면 실패한다"** — 코드와 문서가 불일치
+- 이 완화의 실제 수혜자는 `com/kdb/it/domain/council/service/CouncilService.java` = **821줄**. 기준선에 등재돼 있지 않으며 LIMIT이 800이면 즉시 실패한다. 850으로 올린 덕에 통과 중이다.
+
+**`versions.lock`도 두 저장소 모두 뒤처져 있다** (lock: frontend `0ad2829` / backend `1c6da6be` ↔ 현재: `2070472` / `4e28ee7e`). BE-03 잔여 ④와 동일 작업이다.
+
+---
+
+## 1. Tier 1 — 판단 불필요, 즉시 처리 (권장 1차 배치)
+
+### T1-1. `versions.lock` 갱신 (BE-03 잔여 ④)
+
+`scripts/update-versions-lock.ps1` 1회 실행. 다른 작업들을 커밋한 뒤 마지막에 한 번 더 실행한다.
+
+### T1-2. CQ-24 ① — 백엔드 max-lines 상한 800 복귀
+
+두 단계로 나뉜다. 순서가 중요하다.
+
+1. `CouncilService.java`를 821 → 800 이하로 줄인다. 21줄 이상 추출하면 된다.
+   같은 도메인에 `PlanEvaluationService`(630)가 이미 있으므로 협의회 통보/생략 흐름이나 상태 전이 헬퍼를 별도 클래스로 빼는 방향이 자연스럽다.
+   **기준선 신규 등재는 금지 방향**이다 (기준선 파일 주석: "기준값 상향은 허용된 해소 수단이 아니다").
+2. `MaxLinesRatchetTest.LIMIT`을 850 → 800으로 되돌리고 안내 문구 3곳(70·123·146행)도 함께 복원한다.
+3. 검증: `cd it_backend && ./gradlew test --tests '*MaxLinesRatchetTest'`
+
+되돌리지 않기로 결정한다면 기준선 properties의 주석 800을 850으로 고쳐 코드와 맞추고, 완화 사유를 CQ-24에 기록해 조용한 완화 상태를 끝낸다. **둘 중 어느 쪽이든 현재의 "코드 850 / 문서 800" 불일치는 남겨두면 안 된다.**
+
+### T1-3. CQ-24 ② — `CouncilServiceTest.startPreparation` 계약 변경 확인
+
+"결재완료 아니면 거부" → "이미 개최준비면 멱등 유지"로 바뀐 테스트가 대응하는 production 변경과 함께 커밋됐는지 `git show 4e28ee7e -- '*CouncilService*'`로 확인한다. production 변경 없이 테스트만 바뀌었다면 테스트가 실제 계약을 검증하지 않는 상태다.
+
+### T1-4. FE-29 잔여 — `refreshFailedAfterSave` 개명
+
+실측 범위: **6파일 23곳**.
+
+```
+app/composables/costList/useCostEditingState.ts
+app/composables/costList/useCostPersistence.ts
+app/composables/useCostListPage.ts
+app/pages/info/cost/index.vue
+tests/unit/composables/costList/useCostPersistence.test.ts
+tests/unit/composables/useCostListPage.test.ts
+```
+
+저장 이후가 아닌 경로에도 쓰이므로 `refreshFailed` 정도로 좁힌다. 순수 기계적 개명이며 동작 변화가 없다.
+**주의**: `app/pages/info/cost/index.vue`는 CQ-15 기준선 1140줄이다. 이름 길이만 바뀌므로 줄 수는 불변이지만, Prettier 재포맷으로 줄바꿈이 달라지지 않는지 `npm run format:check`로 확인한다.
+
+### T1-5. `AttachmentNodeView.vue`의 죽은 CSS 선언 제거
+
+`app/components/editor/AttachmentNodeView.vue:352`의 `select-events: none;`은 존재하지 않는 CSS 속성이다(바로 아래 줄에 정상적인 `user-select: none;`이 있다). 브라우저가 무시하므로 동작 변화 없이 삭제 가능하다. FE-19의 `property-no-unknown` 1건이 여기다.
+
+### T1-6. FE-19 부분 해소 — `color-no-hex` 전용 파일 6개
+
+hex → `docs/guides/styling/design-tokens.md` 토큰 치환은 **줄 수가 변하지 않아 CQ-15 ratchet과 충돌하지 않는다**. 이것이 이 배치에서 FE-19를 건드릴 수 있는 이유다.
+
+| 파일 | 위반 | CQ-15 기준선 |
+| --- | --- | --- |
+| `app/components/layout/GlobalSearchBar.vue` | 5 (전부 hex) | 해당 없음 |
+| `app/components/review/ReviewEditor.vue` | 4 (전부 hex) | 해당 없음 |
+| `app/pages/budget/list.vue` | 4 (전부 hex) | 1203 (줄 수 유지 필요) |
+| `app/pages/budget/approval.vue` | 4 (전부 hex) | 1072 (줄 수 유지 필요) |
+| `app/pages/info/projects/index.vue` | 4 (전부 hex) | 855 (줄 수 유지 필요) |
+| `app/components/common/YearPickerTitle.vue` | 3 (전부 hex) | 해당 없음 |
+
+각 파일을 0건으로 만든 뒤 `.stylelintrc.json`의 `ignoreFiles`에서 제거해 게이트 대상으로 되돌린다.
+**`.stylelintrc.json`은 config-protection 훅 대상**이다. 면제를 없애는 강화 방향이므로 2026-08-06 `9cf9d84`(AppShell.vue) 선례와 같이 사용자 승인이 필요하다.
+
+기대 효과: 197건 → **173건**, `ignoreFiles` 28항목 → 22항목.
+
+### T1-7. FE-19 부분 해소 — 소규모 혼합 파일 3개
+
+| 파일 | 위반 | 내용 |
+| --- | --- | --- |
+| `app/components/common/StyledDataTable.vue` | 2 | `rgba(255,255,255,*)` 금지 목록 위반(L229·L239) → 토큰 치환 |
+| `app/components/projects/ResourceTableSection.vue` | 1 | `no-descending-specificity`(L386) → 규칙 순서 교환 |
+| `app/pages/budget/summary.vue` | 5 | hex 4 + `no-descending-specificity` 1 |
+
+셋 다 CQ-15 기준선 밖이라 줄 수 제약이 없다. 다만 `no-descending-specificity`는 규칙 **순서**를 바꾸는 것이므로 실제 렌더 결과가 바뀔 수 있다 — 해당 화면을 브라우저로 눈으로 확인한다.
+
+**Tier 1 합산 기대 효과**: FE-19 197 → 165건, `ignoreFiles` 28 → 19항목. CQ-24 해소. FE-29 잔여 3건 중 1건 해소.
+
+---
+
+## 2. Tier 2 — 결정 1회면 대량 해소 (권장 2차 배치)
+
+### T2-1. FE-19 `selector-class-pattern` 정책 확정 (81건)
+
+현재 81건이 세 부류로 갈린다. **부류별 처리 방식이 다르므로 결정을 먼저 내려야 한다.**
+
+1. **vendor 클래스 — config 교정 대상, 위반 아님**
+   `.ML__contains-highlight`·`.ML__focused`(MathLive), `.ProseMirror*`(Tiptap). 우리가 이름을 정할 수 없다.
+   → `.stylelintrc.json`의 `selector-class-pattern`에 `ignoreSelectors`(정규식)를 추가한다. FE-19가 `:deep`/`:global`을 `ignorePseudoClasses`로 처리한 것과 같은 방식이다.
+   해당 파일: `BlockMathNodeView.vue`(3), `InlineMathNodeView.vue`(3), `VariableNodeView.vue`·`board/[blbMngNo]/[nacMngNo]/index.vue` 일부.
+
+2. **DB 컬럼명 유래 camelCase — kebab 전환 대상**
+   `.cgprEno-cell`(3파일 9건), `.curC-select`(1), `.curC-col`(2). 컬럼명을 그대로 클래스명에 넣은 것이라 정당성이 없다.
+   → `.cgpr-eno-cell`·`.cur-c-col`로 바꾼다. **`<template>`의 클래스 문자열도 함께 바꿔야 하고 3개 파일이 같은 이름을 공유**하므로 한 번에 처리한다: `CostFormTableSection.vue`, `TerminalTableSection.vue`, `pages/info/cost/index.vue`.
+   `pages/info/cost/index.vue`는 CQ-15 기준선 1140줄이므로 줄 수 불변을 확인한다.
+
+3. **프로젝트 BEM 표기 — 정책 결정 필요**
+   `.realtime-feed-row--new` 같은 `__`/`--` 표기. 나머지 대부분이 여기 속한다.
+   → **결정 사항**: BEM을 공식 표기로 인정하고 `selector-class-pattern`을 BEM 허용 정규식으로 바꿀 것인가, 아니면 kebab-case를 강제하고 기존 클래스를 전부 개명할 것인가. 전자는 config 1줄, 후자는 다수 파일 개명이다.
+
+이 결정 하나로 81건 중 대부분이 정리된다.
+
+### T2-2. FE-22 — `notifyMode: 'banner'` 적용 지점 선정
+
+옵션은 도입 완료(`useRefreshGuard.ts:132`)이나 **소비처가 0곳**이다. 현재 `useRefreshGuard` 소비 파일은 57개.
+
+적용 판단 규칙을 먼저 세운다:
+
+- 적용 대상: 재시도 UI(배너의 [다시 조회])가 **없고** `onActivated`로 반복 실행되는 C-3 지점
+- 제외: 쓰기가 선행한 Class B 지점, 배너가 스크롤 아래에 묻히는 지점(FE-25에서 기각된 사유와 동일)
+- `notifyMode`는 가드 **인스턴스 단위**라 `retryRefresh()`까지 침묵한다 — 재시도 버튼이 있는 지점에 켜면 사용자 조작에 아무 반응이 없어 보인다
+
+착수 시 57개 소비처의 (지점 분류 × 재시도 UI 유무) manifest 작성이 선행돼야 한다. Tier 1보다 명백히 비싸다.
+
+---
+
+## 3. Tier 3 — 테스트 전용 (사용자 영향 0, 독립 실행 가능)
+
+| ID | 내용 | 선행 조건 |
+| --- | --- | --- |
+| FE-23 | `clearNuxtData()`·언마운트 purge 경로 실측 테스트 보강 | 테스트 대역이 두 경로를 구현하지 않으므로 대역 확장이 먼저 |
+| FE-27 | 테스트 위생 5종(스파이 미복원·mock 공유·죽은 mock·사문화 분기·`stubGlobal` 미복원) | 세부 좌표가 산출물에 없어 `tests/unit`·`tests/integration` 재조사 선행 |
+| FE-28 ① | `onActivated` → 재조회 가드 경로 무테스트 화면 14개 | 파일 목록이 산출물에 없어 재조사 선행. 🟡 Medium이라 Tier 3 중 우선순위 최상 |
+| FE-32 | `createNuxtFetchFake`가 성공 반복 시 동일 객체 참조 재대입 | 성공 경로에서 새 객체 반환으로 바꾸면 **실패 경로의 참조 동일성 단언 전 파일**에 영향 — 검토 선행 |
+
+FE-27·FE-28①은 "재조사"가 실제 작업량의 대부분이다. Tier 1·2와 달리 착수 전 규모를 알 수 없다.
+
+---
+
+## 4. "쉬워 보이지만 아닌" 항목 — 이번 배치에서 제외
+
+착수 판단을 흐리지 않도록 근거와 함께 명시한다.
+
+### BE-19 (`abusTc`에 `@NotBlank` 추가) — 프론트 선행 작업 필요
+
+한 줄 어노테이션처럼 보이지만 그렇지 않다. `app/pages/info/projects/form.vue`에 **`abusTc` 바인딩이 아예 없다**(`grep -rn "abusTc" app/pages/info/projects/` → `index.vue`의 표시용 2곳뿐). 지금 `@NotBlank`를 붙이면 현재 프론트의 사업 등록이 400으로 전부 실패한다.
+→ 순서: ① 사업 등록 폼에 사업구분 입력 추가 ② 백엔드 `@NotBlank` ③ `CodeDefaults.orNotApplicable()` 폴백(`ProjectDto.java:272`) 유지 여부 결정.
+
+### FE-29 "다시" 문구 혼재 — 대량 치환이 아니라 규칙 정의 문제
+
+실측: `"불러오지 못했습니다"` 72건 vs `"다시 불러오지 못했습니다"` 69건. 어느 쪽도 소수가 아니다.
+두 문구는 실제로 **다른 상황**(최초 로드 실패 vs 재조회 실패)을 가리킬 가능성이 높다. 일괄 치환하면 의미를 뭉갠다.
+→ 먼저 "최초 로드 = 불러오지 못했습니다 / 재조회 = 다시 불러오지 못했습니다" 규칙을 확정한 뒤, 141곳을 규칙 기준으로 감사한다. 저비용 작업이 아니다.
+
+### FE-19 `rule-empty-line-before` 38건 — CQ-15 ratchet과 정면 충돌
+
+`--fix`가 빈 줄을 삽입해 줄 수를 늘린다. 잔여 38건은 전부 CQ-15 기준선 파일(`budget/work.vue` 1036, `info/plan/[id].vue` 1284 등)에 있어 기준값 상향 없이는 처리할 수 없고, 상향은 금지 방향이다.
+→ 해당 파일이 CQ-15로 분해돼 기준선에서 빠진 뒤에 처리한다. 2026-08-06에 이미 같은 이유로 되돌린 이력이 있다.
+
+### FE-19 `media-feature-range-notation` 2건 — 브라우저 지원 정책 결정
+
+이 저장소에 browserslist도 `postcss-preset-env`도 없고 autoprefixer는 range 문법을 down-level하지 않는다. 전환하면 Safari 16.4 미만에서 미디어 블록이 통째로 무시된다.
+→ 최소 지원 브라우저 확정이 선행. 확정 전까지 규칙을 `"prefix"`로 고정하는 편이 안전하다.
+
+### FE-20 (편집 중 다른 행 미저장 편집 덮어쓰기) — 동작 결함
+
+🟢 Low이지만 데이터 유실 경로다. `useCostEditingState.ts`의 merge watcher가 `_saveError` 보유 행만 보존하는 사각지대를 넓히는 변경이며, 보존 대상을 잘못 넓히면 정상 재조회 결과가 낡은 편집으로 덮인다. 저비용 배치가 아니라 별도 TDD 대상.
+
+### BE-20 / BE-32 / BE-33 / CQ-18 / CQ-19 / CQ-22 / LOG-03·04 / BRD-* / EAI-* / SEC-10
+
+업무 담당자·DBA 확정, 소비처 manifest, 두 서버 기동 환경, 외부 벤더 판정 중 하나 이상이 선행 조건이다. 코드 작업으로 시작할 수 없다.
+
+---
+
+## 5. 실행 순서 제안
+
+```
+1차 (반나절): T1-2 → T1-3 → T1-4 → T1-5 → T1-6 → T1-7 → T1-1
+2차 (결정 후): T2-1 (선행: 3부류 정책 확정)
+3차 (재조사 후): FE-28① → FE-23 → FE-27 → FE-32
+```
+
+각 단계 검증:
+
+```
+cd it_frontend && npm run format:check && npm run check && npm run lint:css && npm test
+cd it_backend && ./gradlew check
+```
+
+1차 완료 후 TASK.md의 CQ-24·FE-19·FE-29를 실측값으로 갱신하고 완료분은 TASK_DONE.md로 이관한다.
+`.stylelintrc.json` 수정 2회(T1-6·T1-7)는 config-protection 훅에 걸리므로 사용자 승인을 미리 받아둔다.
