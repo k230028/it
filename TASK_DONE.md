@@ -16,6 +16,22 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-06 잔여과제 저비용 배치 1 (ERR-14·BE-34·FE-21·FE-30①)
+
+> 설계 `docs/superpowers/specs/2026-08-06-task-quickfix-batch1-design.md`, 실행 계획 `docs/superpowers/plans/2026-08-06-task-quickfix-batch1.md`을 실행했다. 세 항목이 계획이 상정한 것과 다른 결말을 맞았다 — **ERR-14는 고친 것이 아니라 이미 해소돼 있었고 `TASK.md`의 근거가 낡아 있었다.** **BE-34는 증상 자체가 재현되지 않아 재현 불가로 종결했다**(애노테이션은 유지하되 원인 해결로 단정하지 않는다). **FE-30①은 계획이 상정한 명시 `key` 분리가 불필요한 것으로 드러났다.**
+>
+> 최종 검증: `npm run format:check`·`npm run lint`·`npm run typecheck`(0 errors)·`npm run codegen:check` 통과, 프론트 단위 테스트 **2374/2374(195파일)** 통과, `./gradlew check` 통과(2589 tests, JaCoCo 97%/88%). `npm run test:e2e`는 계획대로 실행하지 않았다.
+
+| 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✔️ Resolved | ERR-14 | **재현 불가(분기 A)로 종결** — 고친 것이 아니라 이미 해소돼 있었다. `useApiFetchRefreshCoordinator.ts:45-57`의 `phase === 'retrying' → terminateCycle` 경로가 이미 401 재조회 루프를 끊는다: 401 → 갱신 성공 → 재조회 → 401이 오면 새 주기를 열지 않고 세션을 종료한다. **`TASK.md`의 근거가 낡아 있었다** — 지목했던 `useApiFetch.ts`의 `isRefreshing`·`tokenRefreshSignal`은 저장소에 더 이상 존재하지 않는다(401 처리가 그 사이 코디네이터로 분리됨). 회귀 방지로 특성화 테스트 3건을 추가하고 그 분기가 의도된 상한임을 코드 주석으로 고정했다 | it_frontend `ad2fa0b`, `c977de3` | `tests/unit/composables/useApiFetchRefreshCoordinator.test.ts` 신규 3건 통과. 리뷰어가 독립 추적으로 vacuous가 아님을 확인 — 재시도 파동이 부른 401이 같은 주기의 'retrying' phase를 만나 `refresh` 1회 / `terminateSession` 1회로 종료하는 경로를 테스트가 실제로 지난다 |
+| ✔️ Resolved | BE-34 | **재현 불가로 종결(사용자 결정).** 실행 중이던 백엔드(IDE 산출물 `bin\main`, `@ParameterObject` 미적용)와 `./gradlew bootRun`으로 띄운 백엔드(적용, 포트 28081) 두 스펙을 파라미터명·개수까지 비교한 결과 완전히 동일했고 양쪽 모두 `arg0`이 **0건**이었다. 6개 오퍼레이션 전부 실제 필드명으로 전개된다(예: `getProjects` → `apfSts, bseYy, stsTc, bzTpC, dvmDpmC, svnDpmC, odnYn`). 커밋돼 있던 `api.d.ts`의 파라미터명도 `arg0`이 아니라 `condition`이었다 — 래퍼 객체 참조였을 뿐이다. 통제군·처치군이 동일하므로 **`@ParameterObject` 애노테이션이 정상화의 원인이 아니다** — 근본 원인(CGLIB 프록시 여부)은 actuator `beans` 엔드포인트 미노출로 **미확인**으로 남는다. 다시 `arg0`이 관측되면 이 실측이 재관측의 출발점이다. `@ParameterObject` 6곳은 springdoc이 POJO 쿼리 파라미터에 권장하는 명시적 선언이고 바인딩 불변·테스트 통과로 무해해 **유지**한다(사용자 결정, 원인 해결이라 단정하지 않음) | it_backend `d7f924e2` (부수 성과: `api.d.ts` 재생성 it_frontend `35d7c85`) | 컨트롤러 6개 지점 전부 `@ParameterObject` 적용 확인, `@ModelAttribute`·`@PageableDefault` 속성 보존, `./gradlew test` 대상 컨트롤러 테스트 58건 통과. 두 백엔드 인스턴스(28080 IDE 기동·28081 `bootRun`)의 `/v3/api-docs` 비교로 `arg0` 0건·완전 동일 실측. `api.d.ts` 재생성으로 paths 160 불변, schemas 234 → **229**(래퍼 DTO 5개 제거: `ProjectSearchCondition`·`FileDto.SearchCondition`·`CostSearchCondition`·`BoardPostSearchCondition`·`Pageable`), 소비처 영향 0(`npm run check` clean) |
+| ✅ Done | FE-21 | `useMentionAutocomplete.ts`·`useGlobalSearch.ts` 두 곳에 요청 시퀀스 토큰을 도입했다. 토큰을 요청 시작 전에 캡처하고 모든 `await` 이후 비교한다. `items`/`suggestions`뿐 아니라 `searchLoading`·`searchError`, `close()`까지 판정 대상으로 포함했다. `GlobalSearchBar.vue`에 디바운스는 **추가하지 않았다** — 가드로 경합이 사라지고, 디바운스는 입력 반응성에 영향을 주는 별개 결정이라 분리했다. 같은 가드의 순서 역전 검증 테스트 공백이던 FE-28②가 함께 소진됐다 | it_frontend `8905cc5`, `082a251`, `f8c6f2d` | `useMentionAutocomplete.test.ts`·`useGlobalSearch.test.ts` 전량 통과. 리뷰어가 `items`(154-156)·`searchLoading`(finally 164)·`searchError`(catch 159-161)·`close()`(238) 네 지점 전부 확인. 변이 검증: 낡은 응답이 최신 요청 진행 중 도착하는 신규 테스트에서 가드 제거 시 해당 테스트만 실패, 나머지는 통과 |
+
+> **FE-30①(참고, ID는 `TASK.md`에 존속)**: `useApprovalDashboard`·`useDocumentDashboard` 두 파사드가 `useApiFetch` 반환 필드 7개(`data`·`pending`·`error`·`status`·`refresh`·`runWithErrorToastSuppressed`·`enableKeepPreviousData`)를 노출하도록 완료했다(it_frontend `989d48e`). **계획이 상정한 명시 `key` 분리는 불필요한 것으로 드러나 도입하지 않았다** — 두 URL의 소비처가 각각 1곳뿐이고(`approval/index.vue`, `info/documents/index.vue`) 사이드바 배지는 별도 엔드포인트를 써서 키 공유가 없다. FE-30 자체는 ②(FE-19 grandfather 규칙 단위 전환)가 남아 `TASK.md`에서 계속 추적한다.
+>
+> **병합·`versions.lock` 보류**: it_frontend `feature/task-quickfix-batch1`, it_backend `feature/be34-openapi-parameter-names` 두 브랜치 모두 `main` 병합과 `scripts/update-versions-lock.ps1` 갱신을 사용자 판단으로 보류했다 — 사용자가 같은 브랜치에서 동시에 작업 중이라 지금 병합하면 작업물이 섞인다.
+
 ### ✅ 2026-08-06 CQ-01 대형 서비스 분해·BE-30 결정론 보완
 
 | 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |

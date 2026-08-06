@@ -4,7 +4,7 @@
 - 대상 과제: `TASK.md` **ERR-14**(401 무한 재조회) · **BE-34**(OpenAPI 파라미터명 유실) · **FE-21**(자동완성 응답 순서 역전) + **FE-28②** · **FE-30①**(대시보드 파사드 스위치 비노출)
 - 기준 커밋: root `8aface0`, backend `981b112a`, frontend `9cf9d84`
 - 문서 성격: 설계 스펙. 구현 순서·태스크 분해는 후속 실행계획이 SoT
-- 상태: 설계 승인 완료, 실행계획 작성 대기
+- 상태: 2026-08-06 구현 완료 (실행 SoT: [`plans/2026-08-06-task-quickfix-batch1.md`](../plans/2026-08-06-task-quickfix-batch1.md)). 병합과 `versions.lock` 갱신은 사용자 판단으로 보류.
 
 ---
 
