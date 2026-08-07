@@ -191,6 +191,44 @@ Tier 3의 첫 항목. **재조사가 작업량의 대부분**이라던 예측대
 
 ---
 
+## 실행 결과 — FE-27 완료 (2026-08-07)
+
+실행 커밋: frontend `5d49ed4`
+
+계획서는 "세부 좌표가 산출물에 없어 재조사 선행"이라고만 적었다. 실제로 `integration-findings.md` 193행은 **한 줄 요약뿐**이고 개별 기록이 없어, 204개 테스트 파일을 전면 재조사했다.
+
+### 결론 — 5종 중 2종만 실재했다
+
+| 종 | 결과 | 근거 |
+| --- | --- | --- |
+| ① 스파이 미복원 | **9파일** | `vi.spyOn` 수 > `mockRestore` 수 |
+| ② 대역 파일 간 공유 | **0건** | `sharedEntries`는 `createNuxtFetchFake` **내부**(인스턴스별) + vitest 파일 단위 격리가 기본 |
+| ③ 죽은 mock 배치 | **0건** | 선언 후 미참조 `vi.fn` 0건, 존재하지 않는 모듈 겨냥 `vi.mock` 0건 |
+| ④ `cdvaNm` 분기 사문화 | **1건 확정** | `useCostExcelTransfer.test.ts` |
+| ⑤ `stubGlobal` 미복원 | **1건 확정** | `useCostListPage.test.ts` |
+
+### 근본 원인 — `clearMocks`는 구현을 되돌리지 않는다
+
+`vitest.config.ts`에는 `clearMocks: true`만 있고 **`restoreMocks`가 없다**. `clearMocks`는 호출 기록(`mock.calls`)만 지우고 `spyOn`이 갈아끼운 **구현은 남긴다**. 그래서 스파이를 걸지 않은 뒤 테스트가 앞 테스트의 대역을 그대로 물려받는다. ①이 실재 위험인 이유가 이것이다.
+
+**전역 해법은 쓸 수 없다.** `restoreMocks: true`를 켜면 모듈 수준 `spyOn`을 파일 전체 픽스처로 쓰는 파일(`useHwpxExport.direct`·`excel`)이 첫 테스트 뒤 픽스처를 잃고 깨진다. `unstubGlobals: true`는 더 위험하다 — `tests/setup.ts`가 등록한 Nuxt auto-import 전역 스텁까지 매 테스트 후 지워 스위트 전체가 무너진다(FE-28①에서 같은 함정을 실제로 밟았다).
+
+### ④ — 사문화의 정체
+
+production `codeId`(`useCostExcelTransfer.ts:117`)는 `(o.cdvaNm ?? o.cNm) === cNm`으로 매칭한다. 그런데 테스트의 `option()` 헬퍼는 3번째 인자로 `cdvaNm`을 받아 두고도 **호출부 4곳이 전부 2개 인자만 넘겼다** — `cdvaNm`이 항상 `undefined`라 매칭이 늘 `cNm` 분기로만 귀결했고, 우선순위가 한 번도 검증된 적이 없었다.
+
+`cNm ≠ cdvaNm`인 옵션으로 두 케이스를 추가했다(`cdvaNm`으로 매칭 / `cNm`으로는 매칭 안 됨). **RED 확인**: 우선순위를 `cNm ?? cdvaNm`으로 뒤집으면 둘 다 실패한다.
+
+### ⑤ — 복원 위치가 문제였다
+
+`useCostListPage.test.ts`는 `bbrC` 없는 `useAuth` 스텁을 **테스트 본문 끝**에서 수동 복원하고 있었다. 그 앞 단언이 하나라도 실패하면 복원 문장에 도달하지 못해 빈 `bbrC`가 이 파일의 뒤 테스트 전부로 새고, **실패 1건이 연쇄 실패로 번진다**. `describe`로 묶고 복원을 `afterEach`로 옮겼다.
+
+> 같은 이유로 ④의 대역 복원도 처음부터 `afterEach`에 뒀다 — 모듈 수준 `ref`를 테스트 본문에서 되돌리면 같은 함정에 빠진다.
+
+**남은 Tier 3**: FE-23 · FE-32.
+
+---
+
 ## 0. 착수 전 반드시 알아야 할 상태 변화
 
 **CQ-24가 "미커밋"이 아니다.** TASK.md는 `it_backend` 작업트리에 미커밋 변경 4건이 있다고 기록하지만, 두 저장소 모두 작업트리가 깨끗하고 해당 변경은 `관리자 메뉴 개선` 커밋(backend `4e28ee7e`, frontend `2070472`)에 그대로 실려 이미 main에 들어갔다. 즉 **판단 없이 커밋된 상태**이며 항목 성격이 "커밋할지 되돌릴지 판단"에서 "커밋된 게이트 완화를 되돌릴지 판단"으로 바뀌었다.
