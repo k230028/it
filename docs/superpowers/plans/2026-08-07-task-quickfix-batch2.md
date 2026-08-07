@@ -41,6 +41,49 @@
 
 ---
 
+## 실행 결과 — T2-1 완료 (2026-08-07)
+
+**BEM 허용으로 정책 확정**(사용자 결정). 3부류 전부 처리해 `selector-class-pattern` **147건(SFC 81 + `tiptap-editor.css` 66)이 0건**이 됐다.
+
+| 지표 | T1 완료 시점 | 실제 |
+| --- | --- | --- |
+| FE-19 SFC 위반 | 164건 / 16파일 | **83건 / 14파일** |
+| `selector-class-pattern` | 81건(SFC) / 147건(전체) | **0건** |
+| `ignoreFiles` | 19항목 | **17항목** |
+
+실행 커밋: frontend `a459b08`(조치)·`d998bbd`(규칙 등재)
+
+**계획의 전제 하나가 틀렸다 — `ignoreSelectors`는 존재하지 않는다**
+
+본문 §T2-1 ①은 "`selector-class-pattern`에 `ignoreSelectors`(정규식)를 추가한다. FE-19가 `:deep`/`:global`을 `ignorePseudoClasses`로 처리한 것과 같은 방식이다"라고 적었다. **stylelint 17.12.0의 `selector-class-pattern`에는 그 옵션이 없다.** `node_modules/stylelint/lib/rules/selector-class-pattern/index.mjs`의 `validateOptions`가 `actual: primary, possible: [isRegExp, isString]`만 검사하며 보조 옵션을 전혀 받지 않는다. `ignorePseudoClasses`를 가진 `selector-pseudo-class-no-unknown`과 다른 규칙이라 유추가 성립하지 않았다.
+
+→ 벤더 예외를 **정규식 선두 분기**로 넣어 해결했다. 최종 패턴:
+
+```
+^(ProseMirror(-[a-z]+)*|tableWrapper|selectedCell|ML__[a-z0-9-]+)$|^[a-z][a-z0-9]*(-[a-z0-9]+)*(__[a-z0-9]+(-[a-z0-9]+)*)?(--[a-z0-9]+(-[a-z0-9]+)*)?$
+```
+
+**3부류 처리 결과**
+
+| 부류 | 처리 | 비고 |
+| --- | --- | --- |
+| ① vendor | 정규식 선두 분기 허용 | `ProseMirror(-*)`·`tableWrapper`·`selectedCell`은 ProseMirror가 DOM에 주입, `ML__*`는 MathLive. 우리가 이름을 정할 수 없다 |
+| ② DB 컬럼명 유래 | 개명 16곳 / 3파일 | `.cgprEno-cell`→`.cgpr-eno-cell`, `.curC-select`→`.cur-c-select`, `.curC-col`→`.cur-c-col`. `<template>` 클래스 문자열 포함. TS의 `cgprEno`는 DB 컬럼명이라 유지 |
+| ③ 프로젝트 BEM | **공식 표기로 인정** | 각 구성요소의 kebab-case는 계속 강제하므로 `foo__Bar`·`foo--`는 여전히 거부된다 |
+
+**검증 방식** — 정규식은 조용히 틀리기 쉬워 두 방향으로 확인했다.
+
+1. 실제 클래스명 **49종 전수** + 개명 전 이름(`cgprEno-cell` 등) 회귀 케이스로 accept/reject를 검증했다.
+2. **RED 확인**: 게이트 대상 파일에 임시로 `.redProbeCell`을 넣으면 실패하고 `.probe__ok--fine`(BEM)은 통과한다. 규칙이 실제로 돌고 있음을 확인한 뒤 되돌렸다.
+
+**부수 확인 (미조치)**: `app/pages/info/cost/index.vue`의 `.cgpr-eno-cell` 3개 규칙은 `<style scoped>`인데 그 클래스가 이 파일 `<template>`에 없다 — 마크업은 자식 `CostFormTableSection`/`TerminalTableSection` 내부에 있어 scoped 속성 선택자가 닿지 않는다. **죽은 CSS로 보이나 이번 범위 밖이라 개명만 하고 삭제하지 않았다.** 삭제하려면 두 자식이 같은 규칙을 자체 보유하는지 확인이 선행돼야 한다(양쪽 다 동일한 `.cgpr-eno-cell` 블록을 갖고 있어 삭제해도 표시가 유지될 가능성이 높다).
+
+**정책 등재**: `it_frontend/CLAUDE.md` §5에 클래스 명명 규칙과 "CQ-15 기준선 파일의 토큰 치환은 이름 길이를 먼저 계산한다"를 재사용 규칙으로 남겼다.
+
+**남은 Tier 2**: T2-2(FE-22 `notifyMode: 'banner'` 적용 지점 선정 — 57개 소비처 manifest 선행).
+
+---
+
 ## 0. 착수 전 반드시 알아야 할 상태 변화
 
 **CQ-24가 "미커밋"이 아니다.** TASK.md는 `it_backend` 작업트리에 미커밋 변경 4건이 있다고 기록하지만, 두 저장소 모두 작업트리가 깨끗하고 해당 변경은 `관리자 메뉴 개선` 커밋(backend `4e28ee7e`, frontend `2070472`)에 그대로 실려 이미 main에 들어갔다. 즉 **판단 없이 커밋된 상태**이며 항목 성격이 "커밋할지 되돌릴지 판단"에서 "커밋된 게이트 완화를 되돌릴지 판단"으로 바뀌었다.
