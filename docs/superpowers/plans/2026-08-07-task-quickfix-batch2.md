@@ -142,6 +142,55 @@ TDD로 진행했다. `notifyMode` 테스트 1건을 호출 단위 계약 4건으
 
 ---
 
+## 실행 결과 — FE-28① 완료 (2026-08-07)
+
+Tier 3의 첫 항목. **재조사가 작업량의 대부분**이라던 예측대로, 대상 확정이 절반이었다.
+
+실행 커밋: frontend `5626ce1`
+
+### 재조사 — "14파일"의 정체
+
+`onActivated`를 쓰는 파일은 20개지만, **재조회를 일으키는 것만** 세면 정확히 14개이고 이것이 TASK.md에 기록된 수와 일치한다.
+
+| 구분 | 대상 |
+| --- | --- |
+| 재조회 O (14) | 페이지 12 + `useCostEditingState`(`refreshCostsRaw`) + `useInfoHomeFeed`(`loadNotices`/`loadSchedules`) |
+| 재조회 X (6) | `useScrollSpy`·`usePlanToc`(observer 재연결), `useProjectFormLoad`·`budget/report`·`guide/index`(상태 초기화), `cost/form`(코드 로드) |
+
+### 커버리지 — 14개 중 7개만 덮여 있었다
+
+| 상태 | 대상 |
+| --- | --- |
+| ✅ 커버 (7) | `useCostEditingState` · `useInfoHomeFeed`(둘 다 실제 KeepAlive 사이클) + `plan/index` · `plan/[id]` · `projects/index` · `documents/list` · `documents/[id]/index`(`refresh-banner-visibility.test.ts`) |
+| ❌ 공백 (7) | `approval/list` · `board/[blbMngNo]/index` · `budget/approval` · `budget/list` · `cost/[id]` · `cost/terminal/[id]` · `projects/[id]` |
+
+**함정 하나**: `budget/approval`·`projects/[id]`는 테스트 파일이 있어 파일명 대조만 하면 "커버됨"으로 잘못 세게 된다. 실제로는 `readFileSync` + `toContain` 문자열 단언이라 **`onActivated`를 전혀 구동하지 않는다**. 소스 문자열 검사는 이 경로의 회귀를 잡지 못하므로 커버로 세지 않았다.
+
+### 조치
+
+신규 `tests/unit/pages/onactivated-refresh-guard.test.ts`가 공백 7개를 덮는다. 화면마다 **세 축**을 함께 고정한다.
+
+1. **가드 경로가 실제로 돈다** — KeepAlive deactivate→activate로 두 번째 이후 `onActivated`를 재현하고 배너 도달을 본다.
+2. **보존이 걸린다** — 재조회가 실패해도 직전 정상값이 화면에 남는다.
+3. **Toast가 뜨지 않는다** — 직전에 붙인 FE-22 `{ silent: true }`의 회귀 방지. 이 축이 있어 T2-2 조치가 조용히 되돌아가지 않는다.
+
+관측 방식은 `refresh-banner-visibility.test.ts`와 같다: 실제 파사드 → 실제 `useApiFetch`를 그대로 쓰고 `useFetch` 자리에만 `createNuxtFetchFake`를 끼운다.
+
+**RED 확인 2종** — 세 축이 실제로 관측되는지 검증했다.
+
+- `cost/[id]`에서 `{ silent: true }`를 빼면 → Toast 단언 실패
+- `budget/list`에서 `onActivated` 재조회를 빼면 → 배너 단언 실패
+
+### 하네스에서 걸린 것 (다음에 같은 테스트를 쓸 때의 함정)
+
+- `afterEach`의 `vi.unstubAllGlobals()`는 **파일 수준 전역 스텁까지 지운다** — 두 번째 테스트부터 `definePageMeta`·`useApiFetch`가 사라져 마운트가 깨진다. `vi.clearAllMocks()`만 쓴다.
+- `PageHeader` 스텁이 `#title` 슬롯을 렌더하지 않으면 상세 화면의 "보존된 값이 남아 있는가"를 관측할 수 없다 — 상세 화면은 조회 결과를 그 슬롯에 넣는다.
+- `useRoute` 스텁에 `query`를 빠뜨리면 `approval/list`의 탭 필터(`route.query.tab`)가 undefined 역참조로 터진다.
+
+**남은 Tier 3**: FE-23 · FE-27 · FE-32.
+
+---
+
 ## 0. 착수 전 반드시 알아야 할 상태 변화
 
 **CQ-24가 "미커밋"이 아니다.** TASK.md는 `it_backend` 작업트리에 미커밋 변경 4건이 있다고 기록하지만, 두 저장소 모두 작업트리가 깨끗하고 해당 변경은 `관리자 메뉴 개선` 커밋(backend `4e28ee7e`, frontend `2070472`)에 그대로 실려 이미 main에 들어갔다. 즉 **판단 없이 커밋된 상태**이며 항목 성격이 "커밋할지 되돌릴지 판단"에서 "커밋된 게이트 완화를 되돌릴지 판단"으로 바뀌었다.
