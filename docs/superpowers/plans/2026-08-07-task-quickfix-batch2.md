@@ -76,7 +76,17 @@
 1. 실제 클래스명 **49종 전수** + 개명 전 이름(`cgprEno-cell` 등) 회귀 케이스로 accept/reject를 검증했다.
 2. **RED 확인**: 게이트 대상 파일에 임시로 `.redProbeCell`을 넣으면 실패하고 `.probe__ok--fine`(BEM)은 통과한다. 규칙이 실제로 돌고 있음을 확인한 뒤 되돌렸다.
 
-**부수 확인 (미조치)**: `app/pages/info/cost/index.vue`의 `.cgpr-eno-cell` 3개 규칙은 `<style scoped>`인데 그 클래스가 이 파일 `<template>`에 없다 — 마크업은 자식 `CostFormTableSection`/`TerminalTableSection` 내부에 있어 scoped 속성 선택자가 닿지 않는다. **죽은 CSS로 보이나 이번 범위 밖이라 개명만 하고 삭제하지 않았다.** 삭제하려면 두 자식이 같은 규칙을 자체 보유하는지 확인이 선행돼야 한다(양쪽 다 동일한 `.cgpr-eno-cell` 블록을 갖고 있어 삭제해도 표시가 유지될 가능성이 높다).
+**부수 확인 → 조치 완료 (frontend `534b4b6`)**: `app/pages/info/cost/index.vue`의 `.cgpr-eno-cell` 3개 규칙이 도달 불가능함을 확인하고 삭제했다.
+
+도달 불가능 근거 3가지:
+
+1. `.cgpr-eno-cell`이 `<style scoped>`(1052~1069행)에만 있고 `<template>`(138~1044행)에는 없다.
+2. Vue scoped CSS는 **자식 컴포넌트의 루트 요소까지는 닿지만**, `index.vue`는 그 마크업을 가진 `CostFormTableSection`/`TerminalTableSection`을 **아예 렌더하지 않는다**(import 없음 · Nuxt 자동 임포트 사용 없음 · 동적 컴포넌트 없음). 두 컴포넌트의 루트도 각각 `<StyledDataTable>`과 `.terminal-table`이라 `.cgpr-eno-cell`이 아니다.
+3. 이 클래스가 마크업에 등장하는 파일은 그 둘뿐이고 **둘 다 자기 `<style scoped>`에 동일한 규칙을 갖고 있다**(3개 블록이 바이트 단위로 동일). 삭제해도 표시가 달라질 대상이 없다.
+
+`git log -S'class="cgprEno-cell"'` 결과 `index.vue`에 이 마크업이 존재한 이력이 없다 — 섹션 컴포넌트 추출 시 **옮긴** 게 아니라 CSS만 **복사돼** 남은 것이다.
+
+CQ-15 기준선 1140 → **1120**. ratchet이 `toBe(baseline)` 정확 일치라 **감소도 실패시키므로** `scripts/max-lines-baselines.mjs`를 함께 낮춰야 한다(주석: "증가는 물론 감소도 실패시켜 기준값을 반드시 함께 낮추게 만듭니다").
 
 **정책 등재**: `it_frontend/CLAUDE.md` §5에 클래스 명명 규칙과 "CQ-15 기준선 파일의 토큰 치환은 이름 길이를 먼저 계산한다"를 재사용 규칙으로 남겼다.
 
