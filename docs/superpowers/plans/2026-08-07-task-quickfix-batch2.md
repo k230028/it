@@ -8,6 +8,39 @@
 
 ---
 
+## 실행 결과 — Tier 1 완료 (2026-08-07)
+
+**Tier 1 7건 전부 완료.** Tier 2·3은 미착수이며 아래 본문의 착수 조건이 그대로 유효하다.
+
+| 항목 | 상태 | 실행 커밋 |
+| --- | --- | --- |
+| T1-1 `versions.lock` 갱신 | 완료 (마지막에 재실행) | root — 이 문서와 같은 커밋 |
+| T1-2 CQ-24 ① max-lines 800 복귀 | 완료. `CouncilService` 821 → 770 분해 후 `LIMIT` 850 → 800 복원 | backend `e2f6f4d5` |
+| T1-3 CQ-24 ② `startPreparation` 계약 확인 | 완료. production이 이미 05~13 상태에서 멱등 반환해 테스트 변경이 정당함을 확인 | backend `e2f6f4d5` |
+| T1-4 FE-29 잔여 개명 | 완료. `refreshFailedAfterSave` → `refreshFailed`, 짝인 `retryRefreshAfterSave` → `retryRefreshOnly` | frontend `25a8b2d` |
+| T1-5 `AttachmentNodeView` 죽은 CSS 제거 | 완료 | frontend `25a8b2d` |
+| T1-6 FE-19 `color-no-hex` 전용 파일 | 완료. `YearPickerTitle`은 `25a8b2d`, 나머지 5개는 `ef0746d` | frontend `25a8b2d`·`ef0746d` |
+| T1-7 FE-19 소규모 혼합 파일 | 완료. `StyledDataTable`·`ResourceTableSection`은 `25a8b2d`, `budget/summary`는 `ef0746d` | frontend `25a8b2d`·`ef0746d` |
+
+**실측 결과 vs 기대치**
+
+| 지표 | 착수 시점 | 기대 | 실제 |
+| --- | --- | --- | --- |
+| FE-19 SFC 위반 | 197건 / 25파일 | 165건 | **164건 / 16파일** |
+| `.stylelintrc.json` `ignoreFiles` | 28항목 | 19항목 | **19항목** |
+
+**계획과 달라진 점 3가지**
+
+1. **`ignoreFiles` 제거가 2회가 아니라 1회로 끝났다.** T1-6·T1-7이 각각 제거를 예정했으나, 이전 배치에서 위반 0건을 만들어놓고도 훅에 막혀 남아 있던 3건(`YearPickerTitle`·`StyledDataTable`·`ResourceTableSection`)이 있어 9줄을 한 번에 회수했다.
+2. **줄 수 불변이 자동으로 보장되지 않았다.** 계획은 "hex → 토큰 치환은 줄 수가 변하지 않는다"를 전제했으나, `var(--토큰명)`이 hex보다 길어 Prettier `printWidth: 100`을 넘기면 줄바꿈이 삽입돼 CQ-15 기준선 파일 3개가 각각 +4줄이 된다. 토큰 이름을 17자 이하로 잡아 회피했다. **이 배치에서 얻은 규칙: CQ-15 기준선 파일의 토큰 치환은 이름 길이를 먼저 계산한다.**
+3. **`budget/summary.vue`의 `no-descending-specificity`를 규칙 순서 교환으로 풀지 않았다.** 계획은 순서를 바꾸라고 했고 "렌더 결과가 바뀔 수 있으니 브라우저로 확인" 단서를 달았다. 실제로는 `--section-row-*` 토큰이 `:root.dark`에서 스스로 뒤바뀌므로 `.dark` 전용 규칙 자체가 불필요해졌고, 그 규칙을 지우자 위반이 함께 사라졌다. **순서를 바꾸지 않았으므로 캐스케이드가 달라지지 않았고 브라우저 확인이 필요 없다.**
+
+**검증**: `format:check` / `check` / `lint:css` / `test`(203파일 2424건) 전부 통과. `test:e2e`는 배치 1과 같은 이유로 실행하지 않았다.
+
+**다음 착수 대상**: T2-1(`selector-class-pattern` 81건 — 3부류 정책 확정 선행). 이 결정 하나가 잔여 164건의 절반이다.
+
+---
+
 ## 0. 착수 전 반드시 알아야 할 상태 변화
 
 **CQ-24가 "미커밋"이 아니다.** TASK.md는 `it_backend` 작업트리에 미커밋 변경 4건이 있다고 기록하지만, 두 저장소 모두 작업트리가 깨끗하고 해당 변경은 `관리자 메뉴 개선` 커밋(backend `4e28ee7e`, frontend `2070472`)에 그대로 실려 이미 main에 들어갔다. 즉 **판단 없이 커밋된 상태**이며 항목 성격이 "커밋할지 되돌릴지 판단"에서 "커밋된 게이트 완화를 되돌릴지 판단"으로 바뀌었다.
