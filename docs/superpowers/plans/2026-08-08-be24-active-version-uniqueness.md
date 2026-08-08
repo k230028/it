@@ -53,11 +53,13 @@ BE-24는 "집행 문서 3종(`BDELIM`·`BCONTM`·`BPAYMM`)의 활성 최신 버�
 
 "이미 중복이 존재하는가"는 코드로 알 수 없고 DB 조회가 필요하다. 로컬 Oracle 접속은 비밀번호를 콘솔 프롬프트에만 입력하는 정책(`CLAUDE.md` §3.1.1)이라 **사용자가 직접 실행해야 한다.**
 
+> **컬럼명 정정(2026-08-08)**: 아래 `BCOSTM` 절은 최초 작성 시 `COST_BG_NO`로 적었으나 물리 컬럼은 **`BG_NO`**다(`Bcostm`의 Java 필드가 `costBgNo`이고 `@Column(name = "BG_NO")`로 매핑된다). 실행본은 정정된 아래 SQL이다.
+
 ```sql
 SELECT 'BCOSTM' AS tbl, COUNT(*) AS dup_keys FROM (
-  SELECT COST_BG_NO FROM ITPOWN.TPRMPP_BCOSTM
+  SELECT BG_NO FROM ITPOWN.TPRMPP_BCOSTM
    WHERE LST_YN = 'Y' AND DEL_YN = 'N'
-   GROUP BY COST_BG_NO HAVING COUNT(*) > 1)
+   GROUP BY BG_NO HAVING COUNT(*) > 1)
 UNION ALL
 SELECT 'BPROJM', COUNT(*) FROM (
   SELECT ABUS_MNG_NO FROM ITPOWN.TPRMPP_BPROJM
@@ -81,6 +83,28 @@ SELECT 'BPAYMM', COUNT(*) FROM (
 ```
 
 `BCOSTM`이 0이 아니면 §2가 이론이 아니라 **현재 진행 중인 데이터 손상**이며 우선순위를 그쪽으로 옮겨야 한다.
+
+---
+
+## Phase 0 실행 결과 (2026-08-08, 로컬 DB)
+
+| 테이블 | 전체 행 | 활성 행 | 고유 키 | MAX(SNO) | 중복 활성 키 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `BCOSTM` | 22 | 21 | 22 | **1** | **0** |
+| `BPROJM` | 26 | 21 | 26 | **1** | **0** |
+| `BDELIM` | 0 | 0 | 0 | — | 0 |
+| `BCONTM` | 0 | 0 | 0 | — | 0 |
+| `BPAYMM` | 0 | 0 | 0 | — | 0 |
+
+**판정**
+
+- **중복 활성행은 어느 테이블에도 없다.** BE-24가 전제한 상태는 로컬에서 실현되지 않았다.
+- **`BCOSTM`의 다중 버전 경로는 한 번도 실행된 적이 없다** — 고유 키 수(22)가 행 수(22)와 같고 `MAX(BG_SNO)=1`이며 다중 버전 키도 0건이다. `createCost`가 항상 빈 `costBgNo`로 호출돼 새 번호를 채번하기 때문으로 보인다. 따라서 §2의 "활성행 누적"은 코드 경로로는 가능하지만 **실사용에서 발생한 적이 없는 잠재 결함**이다. `BPROJM`도 같다.
+- 집행 문서 3종은 로컬 데이터가 0건이라 이 진단으로 판정되지 않는다. 다만 §1의 코드 분석(`docVrsSno` 상수 `1` + PK)이 구조적 불가를 이미 보였으므로 결론은 바뀌지 않는다.
+
+**한계**: 로컬은 22~26행 규모의 개발 데이터셋이다. dev/prod에서 같은 진단을 돌려야 최종 판정이 된다. 다만 `MAX(SNO)=1`은 데이터 규모와 무관한 구조적 신호라, 다중 버전 기능이 아직 쓰이지 않는다는 점은 환경과 무관할 가능성이 높다.
+
+**결론**: Phase 1-A(중복 정리 + 원자적 전환)는 **착수 근거가 없다**. Phase 1-B(스키마 방어)만 남으며 우선순위는 🟠 High에서 내려야 한다.
 
 ---
 

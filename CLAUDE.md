@@ -47,6 +47,11 @@ it/
 ### 3.1.1 로컬 Oracle DB 접속
 
 - DB 확인이 필요하면 `sqlplus ITPAPP@127.0.0.1:11521/XEPDB1`로 직접 접속하고 비밀번호는 sqlplus 콘솔 프롬프트에만 입력합니다.
+- **로컬 개발 DB 한정 예외 — 자동 실행**: 사람이 프롬프트에 입력할 수 없는 자동 진단(에이전트·스크립트)은 `DB_PASSWORD` 환경변수를 **stdin으로만** 전달합니다. 명령행 인자(`sqlplus ITPAPP/비밀번호@접속자`)는 프로세스 목록과 셸 히스토리에 남으므로 **금지**합니다. 값을 화면·로그에 출력하지 않으며(존재 확인이 필요하면 설정 여부만 봅니다), 이 예외는 로컬 개발 DB에만 적용하고 dev/prod와 CI는 아래 Wallet 규정을 따릅니다.
+
+  ```bash
+  { printf '%s\n' "$DB_PASSWORD"; cat 진단.sql; } | sqlplus -S ITPAPP@127.0.0.1:11521/XEPDB1
+  ```
 - 기본 접속 정보는 Spring Boot 개발 설정과 동일합니다: `ITPAPP@127.0.0.1:11521/XEPDB1`.
 - SQL 스크립트는 접속 후 `@경로\스크립트.sql`로 실행하거나, `sqlplus ITPAPP@127.0.0.1:11521/XEPDB1 @경로\스크립트.sql`로 한 번에 실행합니다.
 - `sqlplus`가 없으면 SQLcl의 `sql` 명령을 동일한 인자로 사용합니다.
