@@ -16,6 +16,18 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-09 비DDL Wave 2·3 구조·ORM 상환
+
+| 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✅ Done | CQ-22 | Tiptap extension barrel 2개와 툴바 2개를 책임별 모듈·하위 컴포넌트로 분해했다. 네 기준 파일이 모두 800줄 이하가 되었고 runtime export·PluginKey·schema 계약을 특성화 테스트로 고정했다. | it_frontend `a10580e`…`c489b3a`(후속 런타임 import 보정 `6b83263`) | extension barrel 계약, 툴바 컴포넌트 테스트, max-lines ratchet, 전체 `npm test`·`check` 통과 |
+| ✅ Done | CQ-15 | 잔여 16개 기준 파일을 composable·표시 컴포넌트·순수 변환 모듈로 분해해 모든 운영 파일을 800줄 이하로 낮췄다. `scripts/max-lines-baselines.mjs`의 기준선은 0개가 되었고 신규 초과 금지 ratchet만 남았다. | it_frontend `36803de`…`3715038` | `max-lines-ratchet.test.ts`가 기준선 0개와 운영 파일 전수 상한을 확인, 전체 `npm test`·`format:check`·`check` 통과 |
+| ✅ Done | CQ-18 | 루트의 `PageHeader`·`AppDialogFooter`·`TableCard`를 `components/common`으로 옮기고 모든 소비처를 명시 import로 전환했다. 루트 범용 UI 후보는 0개다. | it_frontend `0703b01` | `component-boundaries.test.ts`, max-lines ratchet, `npm run check` 통과 |
+| ✅ Done | FE-19 | SFC Stylelint 잔여를 모두 해소하고 파일별 grandfather 면제를 회수했다. 미디어 쿼리는 Safari 16.4 미만 호환을 보존하도록 prefix 표기로 명시했고, 구형 인쇄 엔진용 `page-break-inside`만 사유가 적힌 단일 행 예외로 유지했다. | it_frontend `3100058` | `npm run lint:css`·`format:check`·`check`, max-lines ratchet 통과 |
+| ✅ Done | BE-25 | `Cappla`·`Bcmmtm`·`Bmqnam`·`Bpqnam`의 `@IdClass`와 Repository ID 타입을 기존 물리 복합 PK에 정렬했다. Q&A 서비스는 협의회ID를 포함한 복합키로 조회하고, 위원유형 변경은 영속 PK 직접 변경 대신 기존 행 비활성화·대상키 복원/생성으로 처리한다. DDL은 변경하지 않았다. | it_backend `85af6122` | 매핑 계약 단위 테스트, 관련 서비스 테스트, `./gradlew check`, 실제 Oracle에서 네 엔티티의 동일 부분키 다중행 조회·수정·삭제 격리 통합 테스트 통과 |
+
+> FE-15는 완료 이관하지 않았다. 이번 파동에서 실시간 로그와 메뉴 도메인의 required·nullable·enum OpenAPI 계약을 보강하고 수동 타입을 생성 타입 기반으로 전환했으며(backend `ce7b234d`·`1c19407f`, frontend `0f8a09a`·`a15c6f5`), JVM 재기동 사이의 무의미한 생성 순서 드리프트를 `alphabetize: true`와 계약 테스트로 제거했다(frontend `8c7fd3b`). 나머지 수동 API 도메인은 활성 FE-15에서 계속 추적한다.
+
 ### 2026-08-09 비DDL Wave 1 감사·정책 정렬
 
 | 상태 | ID | 결과 | 근거 |
