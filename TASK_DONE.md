@@ -16,6 +16,13 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### 2026-08-09 비DDL Wave 1 감사·정책 정렬
+
+| 상태 | ID | 결과 | 근거 |
+| --- | --- | --- | --- |
+| ☑️ Accepted | FE-29 | “다시” 유무는 최초 로드/첫 후속 조회와 명시적 재시도 실패의 실행 맥락 차이이므로 전역 치환하지 않는다. | [`Wave 1 evidence`](docs/superpowers/reports/2026-08-09-non-ddl-wave1-evidence.md), `it_frontend/CLAUDE.md` §2 |
+| ✅ Done | BE-32 | 협의회 통보·생략 후 BPROJA 상태를 현재 코드셋의 타당성검토 완료 `49`로 정렬했다. | `CouncilServiceTest`, `versions.lock`의 `it_backend` SHA |
+
 ### ☑️ 2026-08-09 DDL 없는 조건부 과제 3건 종결
 
 | 상태 | ID | 종결 범위 | 후속 트리거·근거 |
