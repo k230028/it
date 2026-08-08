@@ -17,3 +17,6 @@ everything-claude-code/
 # Python
 __pycache__/
 *.pyc
+
+# graphify 지식그래프 캐시 (도구 산출물)
+graphify-out/
