@@ -58,6 +58,38 @@ ECC_DISABLED_HOOKS=pre:config-protection
 
 ---
 
+## 실행 결과 — Tier 2 (2026-08-08)
+
+**Tier 2 4건 전부 완료.**
+
+| 항목 | 상태 | 실행 커밋 |
+| --- | --- | --- |
+| T2-1 `ProjectListCard` hex 6건 | 완료. 신규 토큰 없이 치환 | frontend `1bf5121` |
+| T2-2 `plan/[id]` | **1건만 처리** — 아래 참조 | frontend `1bf5121` |
+| T2-3 FE-30② 규칙 단위 전환 | 완료. `ignoreFiles` 제거 | frontend `1bf5121` |
+| T2-4 FE-20 미저장 편집 보존 | 완료 | frontend `6d23724` |
+
+**계획과 달라진 점 3가지**
+
+1. **T2-2가 2건이 아니라 1건이었다.** 계획은 `property-no-deprecated`와 `value-keyword-case` 둘 다 "줄 수 불변이라 처리 가능"이라고 적었다. 실물을 보니 `page-break-inside: avoid`는 **바로 위 줄의 `break-inside: avoid`와 짝을 이루는 의도적 레거시 인쇄 폴백**이었다. 규칙이 요구하는 수정은 사실상 그 줄의 삭제이고, 그러면 구형 인쇄 엔진 대응이 사라진다 — 배치 2가 `media-feature-range-notation`에 대해 세운 기준("린터 기본값에서 흘러나온 브라우저 지원 정책 결정은 별도로 다룬다")과 같은 부류라 손대지 않았다. `value-keyword-case`(`A4` → `a4`)만 처리했다.
+2. **T2-3의 면제 범위가 계획보다 훨씬 좁아졌다.** 계획은 "남은 파일마다 규칙이 1~2종이니 그것만 끄면 된다"였는데, 실측해 보니 잔여 위반의 상당수가 **면제 대상이 아니었다**. 세 부류로 갈렸다:
+   - **설정 결함(면제가 아니라 설정을 고칠 것)** — `tiptap-editor.css`의 `selector-pseudo-class-no-unknown` 70건은 전부 `:deep`이다. `ignorePseudoClasses` override가 `**/*.vue`에만 걸려 있어 `.css` 파일이 빠져 있었다. 규칙을 최상위 `rules`로 올려 해소했다.
+   - **무위험 소스 수정** — `#ffffff`→`#fff`, 폰트명 따옴표, `inset-block` 단축, `currentColor`→`currentcolor`, `word-break: break-word`→`overflow-wrap`, `:after`→`::after`. 전부 렌더링 동일.
+   - **정책 결정 선행이라 남긴 것** — `media-feature-range-notation`, `page-break-inside`, `-webkit-user-select`(Safari), primeicons의 generic family 부재, 그리고 CQ-15 기준선·800줄 상한 때문에 빈 줄을 넣을 수 없는 `rule-empty-line-before`.
+3. **T2-4의 보존 대상을 `modified`에서 `_status` 전체로 넓혔다.** 계획은 `_status === 'modified'`만 적었으나, 삭제 표시(`deleted`)도 똑같이 저장 전 로컬 작업이라 재조회에 사라지면 같은 결함이다. 병합이 **서버가 여전히 돌려주는 `costBgNo`에만** 치환을 적용하므로 서버에서 지워진 행이 로컬 보존 때문에 되살아나지 않는다는 것을 확인하고 함께 포함했다. 규칙이 "서버 원본으로 대체해도 되는 행은 로컬 미저장 상태가 없는 행뿐"으로 단순해졌다.
+
+**T2-4가 계획대로 간 부분**: 계획이 경고한 "넓히기가 지나치면 저장 결과가 화면에 반영되지 않는 새 결함" 은 실제로 발생하지 않았다. `useCostPersistence.saveAll`이 저장 성공 행의 `_status`를 **재조회 전에** 지우기 때문이다. 그 순서에 의존하고 있으므로 테스트로 고정했다(신규 4건 중 2번째).
+
+**RED 확인 2종**
+- T2-3: `ProjectListCard.vue` 이름으로 stdin을 흘려 면제하지 않은 `color-no-hex`는 잡히고 면제한 `media-feature-range-notation`은 통과함을 확인했다. `lint:css` 통과 자체가 7개 override 글롭이 모두 매칭됨을 증명한다 — 하나라도 빗나갔다면 그 파일의 잔여 위반이 드러난다.
+- T2-4: 보존 조건을 되돌리면 신규 4건 중 2건이 실패한다. 나머지 2건(저장 대상 행 갱신 / 스냅샷은 서버 원본 기준)은 양쪽 모두 통과하는 회귀 방지 가드다.
+
+**검증**: `format:check`·`check`·`lint:css` 통과, `npm test` **204파일 2447건** 전건 통과. CQ-15 기준선 `plan/[id]` 1283줄 불변. `test:e2e`는 배치 1·2와 같은 이유로 실행하지 않았다.
+
+**남은 것**: Tier 3은 전부 착수 조건 미충족 상태 그대로다. FE-19 계열에서 가장 큰 덩어리는 `EmployeeSearchDialog.vue`의 `rule-empty-line-before` 34건이며, 800줄 상한 때문에 **CQ-15 파일 분해가 선행**돼야 한다.
+
+---
+
 ## 0. 착수 전 실측 결과
 
 ### 0.1 FE-19 stylelint 잔여
