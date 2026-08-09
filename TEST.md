@@ -12,7 +12,7 @@
  - 아래 표의 역할 이름(`java-reviewer`, `tdd-guide`, `e2e-runner`, `qa-lead` 등)은 **전용 에이전트 정의가 아니라 범용 서브에이전트에 부여하는 역할 지시**다. 프로젝트에는 `.claude/agents/` 정의를 두지 않는다.
  - 병렬 역할은 `/superpowers:dispatching-parallel-agents` 절차로 띄우고, 담당 범위·출력 형식을 프롬프트에 명시한다.
  - 테스트 작성 절차는 `/superpowers:test-driven-development`를, 완료 선언 전 검증은 `/superpowers:verification-before-completion`을 따른다.
- - 프레임워크 기준은 `.claude/skills/`의 참조 스킬(CLAUDE.md §5.4)에서 로드한다 — BE는 `/springboot-tdd`·`/springboot-verification`, FE는 `/nuxt4-patterns`·`/vue-patterns`.
+ - 프레임워크 기준은 `.claude/skills/`의 참조 스킬(CLAUDE.md §5.4)에서 로드한다 — BE는 `/springboot-tdd`·`/springboot-verification`, FE는 `/vue-patterns`.
  - 단, 스킬 예시와 본 프로젝트가 다른 지점은 프로젝트 기준을 따른다. `/springboot-tdd`의 Testcontainers 대신 실제 Oracle 검증은 `./gradlew integrationTest`로 분리하고, `/springboot-verification`의 명령 예시 대신 CLAUDE.md §6 Health Stack 명령을 쓴다.
  - 브라우저 실검증은 Playwright MCP로 수행한다(두 서버 기동 전제).
 
@@ -290,7 +290,7 @@ cd it_frontend && npm run generate-report
 
 ### 점검 항목 및 명령어
 
-점검 기준 로드는 BE `/springboot-verification`, FE `/nuxt4-patterns`를 참고하되, 실행 명령은 아래 표(= CLAUDE.md §6 Health Stack)를 그대로 사용한다.
+점검 기준 로드는 BE `/springboot-verification`을 참고하되, 실행 명령은 아래 표(= CLAUDE.md §6 Health Stack)를 그대로 사용한다.
 
 | 항목 | 영역 | 명령어 | 설정 SoT | 통과 기준 |
 |------|------|--------|----------|----------|

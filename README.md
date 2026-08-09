@@ -226,6 +226,6 @@ Nuxt 페이지·컴포넌트
 | 영역          | 스킬                                                                                                    |
 | ------------- | ------------------------------------------------------------------------------------------------------- |
 | `it_backend`  | `/springboot-patterns`, `/java-coding-standards`, `/jpa-patterns`, `/springboot-security`, `/springboot-tdd`, `/springboot-verification` |
-| `it_frontend` | `/nuxt4-patterns`, `/vue-patterns`                                                                       |
+| `it_frontend` | `/vue-patterns`                                                                                          |
 
-이 스킬들은 일반 프레임워크 관례를 담은 참고 자료입니다. 본 프로젝트는 CSR 전용 프론트, `useApiFetch`/`$apiFetch` 래퍼, httpOnly 쿠키 인증, Flyway 전용 스키마 변경을 사용하므로 스킬의 SSR·토큰 저장·`ddl-auto` 전제와 어긋나는 부분이 있습니다. 충돌 시 항상 코드와 저장소 문서의 SoT를 우선합니다. 예외 목록은 [CLAUDE.md](CLAUDE.md) §5.4에 정리했습니다.
+이 스킬들은 일반 프레임워크 관례를 담은 참고 자료입니다. 본 프로젝트는 CSR 전용 프론트, `useApiFetch`/`$apiFetch` 래퍼, Flyway 전용 스키마 변경을 사용하므로 스킬의 SSR·`ddl-auto` 전제와 어긋나는 부분이 있습니다. 충돌 시 항상 코드와 저장소 문서의 SoT를 우선하며, 예외 목록은 [CLAUDE.md](CLAUDE.md) §5.4에 정리했습니다.

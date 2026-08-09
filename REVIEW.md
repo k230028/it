@@ -38,7 +38,7 @@
 
 ### 참조 기준
  - `/springboot-patterns` + `/java-coding-standards` + `it_backend/CLAUDE.md`·`docs/guides/` — 백엔드 컨벤션 기준 로드
- - `/nuxt4-patterns` + `/vue-patterns` + `it_frontend/CLAUDE.md`·`docs/guides/` — 프론트엔드 컨벤션 기준 로드
+ - `/vue-patterns` + `it_frontend/CLAUDE.md`·`docs/guides/` — 프론트엔드 컨벤션 기준 로드 (SSR 지침은 CSR 전용이라 제외)
  - 스킬과 저장소 문서가 어긋나면 저장소 문서가 SoT (CLAUDE.md §5.4 예외 목록 확인)
 
 ### 규칙

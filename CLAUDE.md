@@ -183,17 +183,18 @@ it/
 | `/springboot-security`   | `it_backend`  | 인증·인가, 입력 검증, CSRF, 보안 헤더, 비밀값         |
 | `/springboot-tdd`        | `it_backend`  | JUnit 5·Mockito·MockMvc 테스트 작성                   |
 | `/springboot-verification` | `it_backend` | 빌드·정적분석·커버리지까지 이어지는 완료 전 검증 루프 |
-| `/nuxt4-patterns`        | `it_frontend` | 라우트 규칙, 지연 로딩, 데이터 페칭, 하이드레이션     |
 | `/vue-patterns`          | `it_frontend` | Composition API, 컴포넌트 구조, Pinia, Vue Router     |
 
-**프로젝트 적용 시 주의** — 스킬은 일반 관례 기준이라 본 프로젝트 결정과 어긋나는 대목이 있습니다. 아래는 스킬 내용보다 프로젝트 규칙이 우선합니다.
+**프로젝트 적용 시 주의** — 스킬은 일반 관례 기준이라 아래 대목은 프로젝트 규칙이 우선합니다.
 
-- 프론트는 **CSR 전용**(`npm run generate`)입니다. `/nuxt4-patterns`·`/vue-patterns`의 SSR 전제 지침은 적용하지 않습니다.
-- 서버 요청은 `useFetch`/`useAsyncData` 원형이 아니라 프로젝트 래퍼 `useApiFetch`(GET)·`$apiFetch`(명령형)를 사용합니다. `it_frontend/docs/guides/architecture/api-client.md`가 SoT입니다.
-- 인증은 백엔드가 발급하는 httpOnly 쿠키가 기준입니다. `/springboot-security`의 토큰 저장·CSRF 권고는 §4.2와 `it_backend/CLAUDE.md` 인증 절을 따라 해석합니다.
+- 프론트는 **CSR 전용**입니다(`nuxt.config.ts`의 `ssr: false`, `npm run generate`). `/vue-patterns`의 SSR·하이드레이션 지침과 `useFetch`/`useAsyncData` 예시는 적용하지 않습니다. 서버 요청은 프로젝트 래퍼 `useApiFetch`(GET)·`$apiFetch`(명령형)를 쓰며 `it_frontend/docs/guides/architecture/api-client.md`가 SoT입니다.
 - 스키마 변경은 JPA `ddl-auto`가 아니라 `it_database/migrations/`의 Flyway 스크립트로만 합니다(§4.4). `/jpa-patterns`의 인덱스·DDL 예시는 그대로 실행하지 않습니다.
 - `/springboot-tdd`의 Testcontainers 예시 대신, 실제 Oracle 의존 검증은 `./gradlew integrationTest`로 분리합니다.
 - `/springboot-verification`의 명령 예시보다 §6 Health Stack의 실제 명령을 사용합니다.
+
+`/springboot-security`는 예외가 아닙니다 — httpOnly·Secure·SameSite 쿠키 권고가 본 프로젝트 방침과 일치하므로 그대로 적용합니다.
+
+Nuxt 전용 스킬(`nuxt4-patterns`)은 내용 대부분이 SSR·Nitro 라우트 규칙 전제라 CSR 전용인 이 프로젝트에 맞지 않아 제외했습니다. Nuxt 관련 판단은 `it_frontend/CLAUDE.md`와 `it_frontend/docs/guides/`를 따릅니다.
 
 `.claude/`는 `.gitignore` 대상이므로 이 스킬들은 로컬 전용입니다. 다른 개발자 환경에는 없을 수 있으니, 스킬에서 얻은 결론은 반드시 저장소 문서나 코드로 근거를 남깁니다.
 
