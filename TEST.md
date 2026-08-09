@@ -8,6 +8,14 @@
  - Persona: 프로젝트의 테스트 코드를 작성 및 개선하는 Senior Software Engineer
  - Reference: 최우선 순위는 루트 CLAUDE.md → it_backend/CLAUDE.md → it_frontend/CLAUDE.md
 
+## 서브에이전트 표기 규약
+ - 아래 표의 역할 이름(`java-reviewer`, `tdd-guide`, `e2e-runner`, `qa-lead` 등)은 **전용 에이전트 정의가 아니라 범용 서브에이전트에 부여하는 역할 지시**다. 프로젝트에는 `.claude/agents/` 정의를 두지 않는다.
+ - 병렬 역할은 `/superpowers:dispatching-parallel-agents` 절차로 띄우고, 담당 범위·출력 형식을 프롬프트에 명시한다.
+ - 테스트 작성 절차는 `/superpowers:test-driven-development`를, 완료 선언 전 검증은 `/superpowers:verification-before-completion`을 따른다.
+ - 프레임워크 기준은 `.claude/skills/`의 참조 스킬(CLAUDE.md §5.4)에서 로드한다 — BE는 `/springboot-tdd`·`/springboot-verification`, FE는 `/nuxt4-patterns`·`/vue-patterns`.
+ - 단, 스킬 예시와 본 프로젝트가 다른 지점은 프로젝트 기준을 따른다. `/springboot-tdd`의 Testcontainers 대신 실제 Oracle 검증은 `./gradlew integrationTest`로 분리하고, `/springboot-verification`의 명령 예시 대신 CLAUDE.md §6 Health Stack 명령을 쓴다.
+ - 브라우저 실검증은 Playwright MCP로 수행한다(두 서버 기동 전제).
+
 ## 대상 디렉토리
  - 백엔드 : it_backend\src\test
  - 프론트 : it_frontend\tests
@@ -31,10 +39,10 @@
 
 ## [Task 1: Coverage Gap Analysis]
 
-### 에이전트 (병렬 실행)
-다음 3개 에이전트를 병렬 서브에이전트로 실행하여 갭 파일 목록을 생성한다.
+### 서브에이전트 역할 (병렬 실행)
+다음 3개 역할을 병렬 서브에이전트로 실행하여 갭 파일 목록을 생성한다.
 
-| 에이전트 | 담당 범위 | 출력 |
+| 역할 | 담당 범위 | 출력 |
 |---------|---------|------|
 | `java-reviewer` | `it_backend` 전체 `.java` | 클래스별 Jacoco 기준 70% 미달 파일 목록 |
 | `typescript-reviewer` | `it_frontend` 전체 `.ts`·`.vue` | 파일별 Vitest 기준 70% 미달 파일 목록 |
@@ -52,13 +60,13 @@
 
 ## [Task 2: Unit Test 보강]
 
-### 에이전트 (병렬 실행)
+### 서브에이전트 역할 (병렬 실행)
 Task 1 갭 파일 목록을 기준으로 기존 파일의 커버리지 갭을 채운다.
 
-| 에이전트 | 담당 | 참조 스킬 |
+| 역할 | 담당 | 참조 기준 |
 |---------|------|---------|
-| `tdd-guide` (BE) | BE 갭 파일 → JUnit 5 / Mockito 테스트 작성 | `/springboot-tdd` |
-| `tdd-guide` (FE) | FE 갭 파일 → Vitest 테스트 작성 | — |
+| `tdd-guide` (BE) | BE 갭 파일 → JUnit 5 / Mockito 테스트 작성 | `/springboot-tdd` + `it_backend/CLAUDE.md` |
+| `tdd-guide` (FE) | FE 갭 파일 → Vitest 테스트 작성 | `/vue-patterns` + `it_frontend/CLAUDE.md` |
 
 ### 규칙
  - `it_frontend/CLAUDE.md §4.10` Mock 규칙 준수
@@ -75,10 +83,10 @@ Task 1 갭 파일 목록을 기준으로 기존 파일의 커버리지 갭을 �
 
 ## [Task 3: 신규 도메인 테스트]
 
-### 에이전트 (병렬 실행)
+### 서브에이전트 역할 (병렬 실행)
 테스트 파일 자체가 없는 도메인을 발굴하여 신규 테스트를 작성한다.
 
-| 에이전트 | 담당 |
+| 역할 | 담당 |
 |---------|------|
 | `java-reviewer` | 테스트 없는 서비스·컨트롤러 발굴 → 신규 JUnit 테스트 작성 |
 | `typescript-reviewer` | 테스트 없는 composable·페이지 발굴 → 신규 Vitest 테스트 작성 |
@@ -91,13 +99,13 @@ Task 1 갭 파일 목록을 기준으로 기존 파일의 커버리지 갭을 �
 
 ## [Task 4: E2E Test]
 
-### 에이전트 (병렬 실행)
+### 서브에이전트 역할 (병렬 실행)
 기존 시나리오(it\it_frontend\tests\e2e)의 완성도를 높이고, 누락 시나리오를 발굴하여 it\it_frontend\tests\e2e Playwright 코드로 추가한다.
 
-| 에이전트         | 담당                                                                      |
+| 역할         | 담당                                                                      |
 | ------------ | ----------------------------------------------------------------------- |
 | `e2e-runner` | 기존 시나리오 완성도 확인·개선 + 미정의 시나리오 갭 탐지 → Playwright spec 작성/보강               |
-| `qa-lead`    | `/qa` 스킬로 실제 브라우저 기반 동작 검증 (http://localhost:3000) → 성공/실패 + 개선 포인트 리포트 |
+| `qa-lead`    | Playwright MCP로 실제 브라우저 기반 동작 검증 (http://localhost:3000) → 성공/실패 + 개선 포인트 리포트 |
 
 ### 통합 (순차 실행)
  - `e2e-runner` 신규 시나리오 + `qa-lead` 리포트 교차 검토
@@ -214,9 +222,9 @@ test.describe('파일 업로드·다운로드', () => {
  - 파일 업로드·다운로드 플로우
  - 권한별 메뉴 노출 차이 (ROLE.ADMIN vs ROLE.USER vs ROLE.DEPT_MANAGER)
 
-### 참조 스킬
- - `/qa` — `qa-lead`가 브라우저 자동화 검증 시 실행
- - E2E 서버: http://localhost:3000 (프론트) + http://localhost:8080 (API)
+### 참조 도구
+ - Playwright MCP — `qa-lead`가 브라우저 자동화 검증 시 사용
+ - E2E 서버: http://localhost:3000 (프론트) + http://localhost:28080 (API)
 
 ### 규칙
  - Mock API 없이 실제 서버 대상으로 실행한다. (두 서버 모두 기동 상태 전제)
@@ -226,11 +234,11 @@ test.describe('파일 업로드·다운로드', () => {
 
 ## [Task 5: HTML 결과 보고서]
 
-### 에이전트 (순차 실행)
+### 서브에이전트 역할 (순차 실행)
 
 Task 4 완료 후 `e2e-runner` 단독 실행.
 
-| 에이전트 | 담당 |
+| 역할 | 담당 |
 |---------|------|
 | `e2e-runner` | `it_frontend/tests/e2e/generate-report.ts` 작성 및 실행 → HTML 보고서 생성 |
 
@@ -281,6 +289,8 @@ cd it_frontend && npm run generate-report
 이 작업은 비즈니스 로직을 수정하지 않으며, 위반 발견 시 테스트 코드·주석·포맷 한정으로만 정정한다.
 
 ### 점검 항목 및 명령어
+
+점검 기준 로드는 BE `/springboot-verification`, FE `/nuxt4-patterns`를 참고하되, 실행 명령은 아래 표(= CLAUDE.md §6 Health Stack)를 그대로 사용한다.
 
 | 항목 | 영역 | 명령어 | 설정 SoT | 통과 기준 |
 |------|------|--------|----------|----------|
@@ -366,6 +376,6 @@ cd it_frontend && npm run generate-report
 | 전체 FE 파일 Vitest 4개 지표 | 각 70% 이상 |
 | E2E 시나리오 | 100% 성공 |
 
-미달 파일 존재 시 → Task 2 또는 Task 3 해당 에이전트만 재실행 → 검증 반복.  
+미달 파일 존재 시 → Task 2 또는 Task 3 해당 역할만 재실행 → 검증 반복.  
 E2E 실패 시 → Task 4 `e2e-runner` 재실행 → 검증 반복.  
 **모든 조건 충족 시 종료.**

@@ -138,35 +138,64 @@ it/
 
 ### 5.1 기본 워크플로우
 
-- 신규 기능, 구조 변경, TDD가 필요한 작업은 **Superpowers**를 기본으로 사용합니다.
-- 요구사항 구체화: `/brainstorming`
-- 구현 계획: `/write-plan`
-- 계획 실행: `/execute-plan`
-- 디버깅: `/systematic-debugging`
-- TDD: `/test-driven-development`
-- 완료 전 검증: `/verification-before-completion`
+- 신규 기능, 구조 변경, TDD가 필요한 작업은 **Superpowers** 스킬을 기본으로 사용합니다.
+- 요구사항 구체화: `/superpowers:brainstorming`
+- 구현 계획: `/superpowers:writing-plans`
+- 계획 실행: `/superpowers:executing-plans`
+- 디버깅: `/superpowers:systematic-debugging`
+- TDD: `/superpowers:test-driven-development`
+- 완료 전 검증: `/superpowers:verification-before-completion`
 - 산출물은 `docs/superpowers/`에 우선 보관합니다.
 
 ### 5.2 보조 워크플로우
 
-- **ECC**: Spring Boot, Nuxt, 테스트, 보안 등 프레임워크별 패턴 확인에 사용합니다.
+- 프레임워크별 패턴은 `.claude/skills/`에 선별해 둔 참조 스킬(§5.4)로 확인합니다. 스킬은 일반 프레임워크 관례를 담은 **참고 자료**이며, 본 프로젝트 규칙과 충돌하면 항상 저장소 `CLAUDE.md`와 `docs/guides/`가 이깁니다.
 - 브라우저 기반 QA는 두 서버를 모두 기동한 뒤 Playwright MCP로 수행합니다.
 - 테스트 대상: http://localhost:3000
 - API 서버: http://localhost:28080
 - 핵심 시나리오: 로그인, 프로젝트 조회/생성, 결재 처리
 
-### 5.3 주요 스킬
+### 5.3 워크플로우 스킬
 
-| 스킬                              | 용도                               |
-| --------------------------------- | ---------------------------------- |
-| `/brainstorming`                  | 요구사항 구체화                    |
-| `/write-plan`                     | 구현 계획 수립                     |
-| `/execute-plan`                   | 계획 기반 구현                     |
-| `/test-driven-development`        | 테스트 우선 개발                   |
-| `/verification-before-completion` | 완료 전 검증                       |
-| `/systematic-debugging`           | 버그·오류 원인 분석                |
-| `/code-review`                    | 코드 리뷰 (diff 기준)              |
-| `/checkpoint`                     | 작업 중간 저장 및 복원             |
+워크플로우 플러그인은 **Superpowers** 하나만 사용합니다(그 외 프로젝트 활성 플러그인은 Playwright MCP와 claude-md-management). 프로젝트 전용 서브에이전트 정의(`.claude/agents/`)는 두지 않으므로, 문서에 등장하는 역할 이름은 범용 서브에이전트에 부여하는 역할 지시로 해석합니다.
+
+| 스킬                                           | 제공          | 용도                   |
+| ---------------------------------------------- | ------------- | ---------------------- |
+| `/superpowers:brainstorming`                   | Superpowers   | 요구사항 구체화        |
+| `/superpowers:writing-plans`                   | Superpowers   | 구현 계획 수립         |
+| `/superpowers:executing-plans`                 | Superpowers   | 계획 기반 구현         |
+| `/superpowers:test-driven-development`         | Superpowers   | 테스트 우선 개발       |
+| `/superpowers:verification-before-completion`  | Superpowers   | 완료 전 검증           |
+| `/superpowers:systematic-debugging`            | Superpowers   | 버그·오류 원인 분석    |
+| `/superpowers:requesting-code-review`          | Superpowers   | 코드 리뷰 요청 절차    |
+| `/code-review`                                 | Claude Code   | 코드 리뷰 (diff 기준)  |
+| `/security-review`                             | Claude Code   | 변경분 보안 검토       |
+
+### 5.4 프레임워크 참조 스킬
+
+본 프로젝트 스택에 해당하는 스킬만 `.claude/skills/`에 선별해 두었습니다. 해당 영역의 코드를 작성·검토하기 전에 읽고, 아래 「프로젝트 적용 시 주의」를 함께 확인합니다.
+
+| 스킬                     | 적용 영역     | 언제 사용                                             |
+| ------------------------ | ------------- | ----------------------------------------------------- |
+| `/springboot-patterns`   | `it_backend`  | 컨트롤러·서비스·레이어 구조, REST 설계, 캐싱, 비동기  |
+| `/java-coding-standards` | `it_backend`  | 네이밍, 불변성, `Optional`, 스트림, 예외 처리         |
+| `/jpa-patterns`          | `it_backend`  | 엔티티·연관관계 설계, 쿼리 최적화, 트랜잭션, 페이징   |
+| `/springboot-security`   | `it_backend`  | 인증·인가, 입력 검증, CSRF, 보안 헤더, 비밀값         |
+| `/springboot-tdd`        | `it_backend`  | JUnit 5·Mockito·MockMvc 테스트 작성                   |
+| `/springboot-verification` | `it_backend` | 빌드·정적분석·커버리지까지 이어지는 완료 전 검증 루프 |
+| `/nuxt4-patterns`        | `it_frontend` | 라우트 규칙, 지연 로딩, 데이터 페칭, 하이드레이션     |
+| `/vue-patterns`          | `it_frontend` | Composition API, 컴포넌트 구조, Pinia, Vue Router     |
+
+**프로젝트 적용 시 주의** — 스킬은 일반 관례 기준이라 본 프로젝트 결정과 어긋나는 대목이 있습니다. 아래는 스킬 내용보다 프로젝트 규칙이 우선합니다.
+
+- 프론트는 **CSR 전용**(`npm run generate`)입니다. `/nuxt4-patterns`·`/vue-patterns`의 SSR 전제 지침은 적용하지 않습니다.
+- 서버 요청은 `useFetch`/`useAsyncData` 원형이 아니라 프로젝트 래퍼 `useApiFetch`(GET)·`$apiFetch`(명령형)를 사용합니다. `it_frontend/docs/guides/architecture/api-client.md`가 SoT입니다.
+- 인증은 백엔드가 발급하는 httpOnly 쿠키가 기준입니다. `/springboot-security`의 토큰 저장·CSRF 권고는 §4.2와 `it_backend/CLAUDE.md` 인증 절을 따라 해석합니다.
+- 스키마 변경은 JPA `ddl-auto`가 아니라 `it_database/migrations/`의 Flyway 스크립트로만 합니다(§4.4). `/jpa-patterns`의 인덱스·DDL 예시는 그대로 실행하지 않습니다.
+- `/springboot-tdd`의 Testcontainers 예시 대신, 실제 Oracle 의존 검증은 `./gradlew integrationTest`로 분리합니다.
+- `/springboot-verification`의 명령 예시보다 §6 Health Stack의 실제 명령을 사용합니다.
+
+`.claude/`는 `.gitignore` 대상이므로 이 스킬들은 로컬 전용입니다. 다른 개발자 환경에는 없을 수 있으니, 스킬에서 얻은 결론은 반드시 저장소 문서나 코드로 근거를 남깁니다.
 
 ## 6. Health Stack
 

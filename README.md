@@ -130,7 +130,7 @@ cd C:\it\it_backend
 ./gradlew check
 ```
 
-백엔드 기본 테스트는 로컬 Oracle 의존 통합 테스트를 제외하며, 실제 Oracle 매핑과 QueryDSL은 `integrationTest`로 분리합니다. 브라우저 핵심 흐름은 두 서버를 실행한 뒤 Playwright 또는 `/qa` 워크플로우로 확인합니다.
+백엔드 기본 테스트는 로컬 Oracle 의존 통합 테스트를 제외하며, 실제 Oracle 매핑과 QueryDSL은 `integrationTest`로 분리합니다. 브라우저 핵심 흐름은 두 서버를 실행한 뒤 `npm run test:e2e` 또는 Playwright MCP로 확인합니다.
 
 ## 전체 요청 흐름
 
@@ -212,9 +212,20 @@ Nuxt 페이지·컴포넌트
 
 ## AI 작업 흐름
 
-- 새 기능은 계획·구현·검증 순서로 진행합니다.
-- 버그는 재현과 원인 확인 후 수정합니다.
-- 화면 QA는 두 서버를 실행한 뒤 `/qa`를 사용합니다.
-- 코드 리뷰는 diff 기준 `/review`, 품질 점검은 `/health`, 배포 준비는 `/ship`을 사용합니다.
+워크플로우 플러그인은 **Superpowers** 하나만 사용합니다. 상세는 [CLAUDE.md](CLAUDE.md) §5를 따릅니다.
 
-사용 가능한 도구의 세부 동작보다 코드와 문서의 SoT를 우선합니다.
+- 새 기능은 `/superpowers:brainstorming` → `/superpowers:writing-plans` → `/superpowers:executing-plans` 순서로 진행합니다.
+- 버그는 `/superpowers:systematic-debugging`으로 재현과 원인을 확인한 뒤 수정합니다.
+- 완료 선언 전에는 `/superpowers:verification-before-completion`으로 실제 명령 출력을 확인합니다.
+- 화면 QA는 두 서버를 실행한 뒤 `npm run test:e2e`와 Playwright MCP로 수행합니다.
+- 코드 리뷰는 diff 기준 `/code-review`, 보안 검토는 `/security-review`를 사용합니다.
+- 품질 점검은 위 「품질 확인」 절의 명령을 직접 실행합니다.
+
+프레임워크 패턴은 `.claude/skills/`에 선별해 둔 참조 스킬로 확인합니다.
+
+| 영역          | 스킬                                                                                                    |
+| ------------- | ------------------------------------------------------------------------------------------------------- |
+| `it_backend`  | `/springboot-patterns`, `/java-coding-standards`, `/jpa-patterns`, `/springboot-security`, `/springboot-tdd`, `/springboot-verification` |
+| `it_frontend` | `/nuxt4-patterns`, `/vue-patterns`                                                                       |
+
+이 스킬들은 일반 프레임워크 관례를 담은 참고 자료입니다. 본 프로젝트는 CSR 전용 프론트, `useApiFetch`/`$apiFetch` 래퍼, httpOnly 쿠키 인증, Flyway 전용 스키마 변경을 사용하므로 스킬의 SSR·토큰 저장·`ddl-auto` 전제와 어긋나는 부분이 있습니다. 충돌 시 항상 코드와 저장소 문서의 SoT를 우선합니다. 예외 목록은 [CLAUDE.md](CLAUDE.md) §5.4에 정리했습니다.
