@@ -3,12 +3,10 @@ it_backend
 it_database
 
 .obsidian
-.gstack/
 everything-claude-code/
 .worktrees/
 .playwright-mcp/
 .superpowers/
-.agents/skills/gstack
 .bkit
 .claude
 # Gradle (GRADLE_USER_HOME = C:\it\.gradle)

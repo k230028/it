@@ -150,7 +150,7 @@ it/
 ### 5.2 보조 워크플로우
 
 - **ECC**: Spring Boot, Nuxt, 테스트, 보안 등 프레임워크별 패턴 확인에 사용합니다.
-- **gstack**: 두 서버를 모두 기동한 뒤 브라우저 기반 QA, 리뷰, 배포 전 점검에 사용합니다.
+- 브라우저 기반 QA는 두 서버를 모두 기동한 뒤 Playwright MCP로 수행합니다.
 - 테스트 대상: http://localhost:3000
 - API 서버: http://localhost:28080
 - 핵심 시나리오: 로그인, 프로젝트 조회/생성, 결재 처리
@@ -164,11 +164,8 @@ it/
 | `/execute-plan`                   | 계획 기반 구현                     |
 | `/test-driven-development`        | 테스트 우선 개발                   |
 | `/verification-before-completion` | 완료 전 검증                       |
-| `/qa`                             | 화면 기능 테스트 (브라우저 자동화) |
-| `/investigate`                    | 버그·오류 원인 분석                |
-| `/review`                         | 코드 리뷰 (diff 기준)              |
-| `/ship`                           | PR 생성 및 배포                    |
-| `/health`                         | 코드 품질 점검                     |
+| `/systematic-debugging`           | 버그·오류 원인 분석                |
+| `/code-review`                    | 코드 리뷰 (diff 기준)              |
 | `/checkpoint`                     | 작업 중간 저장 및 복원             |
 
 ## 6. Health Stack

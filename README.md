@@ -145,6 +145,7 @@ Nuxt 페이지·컴포넌트
   → Oracle ITPOWN 스키마
 ```
 
+- 프론트가 사용하는 응답 타입은 백엔드 OpenAPI 스펙(`/v3/api-docs`)에서 생성합니다(`npm run codegen` → `it_frontend/app/types/api.d.ts`). 백엔드 응답 DTO의 `@Schema` 계약이 프론트 타입의 단일 출처이며, 스펙 변경 후 재생성 누락은 `npm run codegen:check`가 잡습니다.
 - 프론트는 `runtimeConfig.public.apiBase`를 접두사로 구성한 API URL과 인증 쿠키를 사용합니다.
 - 개발 실행은 절대 API URL을 사용하고, 정적 프록시 배포는 빈 API 접두사와 same-origin `/api/`·`/sso/` 경로를 사용합니다.
 - 백엔드는 Controller에서 입력을 받고, Service에서 JWT 사용자 기준 부서·소유권·상태 전이를 검증합니다.
