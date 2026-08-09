@@ -89,7 +89,7 @@ ApplicationService   Service                Service
 
 기준선은 감소도 실패하므로 **운영 소스 이동 + 테스트 이동 + 기준선 제거**는 같은 백엔드 커밋에 포함한다. 기준값 상향이나 신규 예외 추가는 허용하지 않는다.
 
-## Task 0 — 선행 `CouncilController` codegen 후속 확인
+## 5. Task 0 — 선행 `CouncilController` codegen 후속 확인
 
 서비스 분해와 직접 관련은 없지만 현재 `TASK.md`의 CQ-01에 남은 유일한 선행 확인 사항이므로 최초 실행 전에 닫는다.
 
@@ -103,7 +103,7 @@ ApplicationService   Service                Service
 
 이 단계 외에는 서비스 내부 분해가 OpenAPI에 영향을 주지 않으므로 매 작업 묶음에서 프론트 타입을 재생성하지 않는다. 최종 종료 시 `codegen:check`만 한 번 더 실행한다.
 
-## Task 1 — ProjectService 분해
+## 6. Task 1 — ProjectService 분해
 
 ### 6.1 활성화 조건
 
@@ -159,7 +159,7 @@ Create/Modify:
 ./gradlew integrationTest --tests "com.kdb.it.domain.budget.project.repository.ProjectRepositoryImplTest"
 ```
 
-## Task 2 — CostService 분해
+## 7. Task 2 — CostService 분해
 
 ### 7.1 활성화 조건
 
@@ -207,7 +207,7 @@ Modify:
 ./gradlew integrationTest --tests "com.kdb.it.domain.budget.cost.repository.CostRepositoryImplTest"
 ```
 
-## Task 3 — BudgetWorkService + BE-30 분해
+## 8. Task 3 — BudgetWorkService + BE-30 분해
 
 ### 8.1 활성화 조건
 
@@ -268,7 +268,7 @@ Modify:
 ./gradlew integrationTest
 ```
 
-## Task 4 — CQ-01 종료와 문서 정합성
+## 9. Task 4 — CQ-01 종료와 문서 정합성
 
 세 작업 묶음이 모두 완료된 뒤에만 실행한다.
 
@@ -298,16 +298,16 @@ Modify:
 
 ## 11. 완료 기준
 
-- [x] 선행 Council codegen 드리프트를 확인하고 결과를 기록했다.
-- [x] `ProjectService`, `CostService`, `BudgetWorkService`가 각각 800줄 이하이다.
-- [x] 모든 신규 운영 클래스가 800줄 이하이며 신규 baseline 예외가 없다.
-- [x] 세 기존 서비스의 public 메서드 시그니처와 컨트롤러 API 계약이 유지된다.
-- [x] 프로젝트 캐시, 쓰기/읽기 트랜잭션, 소유권·결재 검증이 보존된다.
-- [x] BE-30의 대표행 선택이 encounter order와 무관하게 결정론적이다.
-- [x] 기존 서비스 테스트 총수는 이동으로 감소하지 않고 신규 클래스별 70% 게이트를 통과한다.
-- [x] `./gradlew check`와 `./gradlew integrationTest`가 통과한다.
-- [x] `npm run codegen:check`가 통과한다.
-- [x] 세 서비스 기준선 항목을 제거하고 CQ-01을 `TASK_DONE.md`로 이관했다.
+- [ ] 선행 Council codegen 드리프트를 확인하고 결과를 기록했다.
+- [ ] `ProjectService`, `CostService`, `BudgetWorkService`가 각각 800줄 이하이다.
+- [ ] 모든 신규 운영 클래스가 800줄 이하이며 신규 baseline 예외가 없다.
+- [ ] 세 기존 서비스의 public 메서드 시그니처와 컨트롤러 API 계약이 유지된다.
+- [ ] 프로젝트 캐시, 쓰기/읽기 트랜잭션, 소유권·결재 검증이 보존된다.
+- [ ] BE-30의 대표행 선택이 encounter order와 무관하게 결정론적이다.
+- [ ] 기존 서비스 테스트 총수는 이동으로 감소하지 않고 신규 클래스별 70% 게이트를 통과한다.
+- [ ] `./gradlew check`와 `./gradlew integrationTest`가 통과한다.
+- [ ] `npm run codegen:check`가 통과한다.
+- [ ] 세 서비스 기준선 항목을 제거하고 CQ-01을 `TASK_DONE.md`로 이관했다.
 
 ## 12. 권장 커밋 단위
 
