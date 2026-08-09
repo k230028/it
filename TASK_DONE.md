@@ -16,6 +16,18 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-09 잔여과제 일괄 조치 (FE-36 · BE-24 · CQ-25 · CQ-26)
+
+| 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✅ Done | FE-36 | `/budget/list` 500 오류의 **실제 원인은 undefined 컴포넌트가 아니었다**. `fetchBudgetListPageData()`가 첫 `await` **뒤에** `fetchProjects({odnYn:'Y'})`·`useCost()`를 부르는데, `<script setup>`의 top-level await는 `withAsyncContext`가 **페이지 레벨에서만** 인스턴스를 복원하므로 그 시점에는 setup 컨텍스트가 없다 → `useApiFetch` → `useToast()`의 `inject()` 실패 → PrimeVue가 `No PrimeVue Toast provided!`를 던져 async setup이 거부된다. `Invalid vnode type: undefined`와 `Cannot read properties of undefined (reading 'length')`는 그 **하위 증상**이었다. 세 조회 핸들을 첫 await 이전에 만들고 `Promise.all`로 함께 기다리게 고쳤다(순차 waterfall도 제거됨). **같은 결함이 `useCouncilRequestPage`에도 있었다** — `/info/council-request/:id`가 동일하게 500이 되는 것을 확인하고 함께 고쳤다. `useDocumentDetailPage`는 await 이후 호출이 `useNuxtApp()`에서 미리 받아 둔 `$apiFetch` 클로저라 영향 없음을 확인했다. | it_frontend `9d57a38` | 브라우저 콘솔 계측으로 실패 지점을 단계 로그(A→B→C)로 특정. `budget.spec.ts:161` e2e 재현→통과 전환. 호출 시점을 고정하는 회귀 단위 테스트 추가(수정 전 실패·수정 후 통과 확인). 변경 페이지 e2e 14건, 단위 2943건, `check`·`format:check` 통과 |
+| ✅ Done | BE-24 | Phase 1-B(b) 함수 기반 UNIQUE 인덱스를 마이그레이션으로 추가했다(`V20260809_001`). 세 집행 문서 테이블에 `CASE WHEN LST_YN='Y' AND DEL_YN='N' THEN DOC_MNG_NO END` UNIQUE 인덱스(`IX_TPRMPP_{BDELIM,BCONTM,BPAYMM}_03`)를 만들어 "문서당 활성행 1건"을 DB가 강제하게 했다. 스크립트는 재실행 안전이며 중복 활성행이 있으면 `ORA-01452` 대신 원인이 드러나는 오류로 중단한다. 기존 통합 테스트의 "버전이 다르면 활성행이 둘 생긴다"(구멍을 기록하던 케이스)를 **거부 단언으로 뒤집고**, 이전 버전을 내리면 새 활성 버전이 허용되는 반대편 케이스를 추가했다. DBA 인계 노트 작성 완료. | it_database `c04242d`, it_backend `4426b528` | 로컬 적용 후 세 인덱스가 `UNIQUE`/`FUNCTION-BASED NORMAL`로 생성됨을 `ALL_IND_EXPRESSIONS`로 확인. 재실행 시 skip 로그로 idempotency 확인. `ExecutionDocumentActiveVersionIt` 5건 통과, `./gradlew check` 통과 |
+| ✅ Done | CQ-25 | `it_backend`가 추적하던 도구 산출물 `graphify-out/cache/stat-index.json`(약 206KB)의 추적을 해제하고, `it_backend`·`it_frontend` 두 하위 저장소 `.gitignore`에 `graphify-out/`을 추가했다(루트 규칙이 독립 저장소에 적용되지 않는 문제). 로컬 파일은 유지했다. | it_backend `9e3ea8af`, it_frontend `49c4fc0` | `git ls-files graphify-out/` 0건, `git check-ignore -v`로 두 저장소 모두 규칙 적중 확인, 로컬 파일 잔존 확인 |
+| ✅ Done | CQ-26 | FE-15 전환이 남긴 고아 타입 10건(`BizplanSchedule`·`BizplanContract`·`BoardPostListItem`·`IoeCategoryResponse`·`ProjectSummaryCategory`·`CategoryAmount`·`ProjectSummaryItem`·`HearingType`·`MemberScheduleStatus`·`PlanBusinessVerdict`)을 선언·주석과 함께 제거하고, `BudgetSummaryResultTable.vue`의 로컬 재선언 2건(`SummaryRowType`·`SummaryDisplayRow`)을 `types/budget-work`의 정식 export import로 바꿨다. `EvaluationItem`은 `useCouncilEvaluationApi.ts:48`이 인라인 `import('~/types/council')` 형태로 쓰고 있어 **삭제하지 않았다**. | it_frontend `78965f2` | 삭제 전 각 이름을 인라인 `import()` 포함해 전수 재확인(생성물 `types/api.d.ts`의 스키마 키 문자열 제외). 로컬 선언과 정식 타입의 15개 필드 구조 동일성 확인. `npm run check`·`format:check`·단위 2943건 통과 |
+
+> BE-24는 완료 이관하지 않았다. dev/prod 인덱스 적용은 DBA 소관이라 `TASK.md`에 🏛️ External로 남긴다.
+> BRD-02는 발동 조건(게시판당 1만 건)을 로컬 실측으로 확인했으나 전체 2건에 그쳐 미충족이다. 조건부 항목으로 `TASK.md`에 유지하고 측정값만 기록했다.
+
 ### ✅ 2026-08-09 FE-15 전면 마이그레이션·BE-03 읽기 프로젝션 후속
 
 | 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
