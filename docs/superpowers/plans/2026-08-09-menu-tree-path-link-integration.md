@@ -28,7 +28,7 @@
 
 ### Database repository (`it_database`)
 
-- Create `migrations/V20260809_002__UnifyBoardMenusAsPageScreens.sql`: BRD 데이터·공통코드·제약 전환.
+- Create `migrations/V20260809_003__UnifyBoardMenusAsPageScreens.sql`: BRD 데이터·공통코드·제약 전환.
 - Create `migrations/_verify/menu-path-integration-verify.sql`: 전환 결과와 경로 참조 정합성 확인.
 
 ### Backend repository (`it_backend`)
@@ -70,7 +70,7 @@
 ### Task 1: Convert BRD data to PGE in a forward-only migration
 
 **Files:**
-- Create: `it_database/migrations/V20260809_002__UnifyBoardMenusAsPageScreens.sql`
+- Create: `it_database/migrations/V20260809_003__UnifyBoardMenusAsPageScreens.sql`
 - Create: `it_database/migrations/_verify/menu-path-integration-verify.sql`
 
 **Interfaces:**
@@ -133,14 +133,14 @@ Do not edit `V20260806_001__AddBoardMenuTypeAndSeedBoardMenus.sql`; applied migr
 
 - [ ] **Step 4: Run static migration checks**
 
-Run: `rg -n "MNU_TP_C = 'PGE'|CDVA_ID = 'BRD'|GRP','LNK','PGE" migrations/V20260809_002__UnifyBoardMenusAsPageScreens.sql`
+Run: `rg -n "MNU_TP_C = 'PGE'|CDVA_ID = 'BRD'|GRP','LNK','PGE" migrations/V20260809_003__UnifyBoardMenusAsPageScreens.sql`
 
 Expected: all three transition clauses are found and no check constraint in the new file contains `BRD`.
 
 - [ ] **Step 5: Commit the database migration**
 
 ```powershell
-git add migrations/V20260809_002__UnifyBoardMenusAsPageScreens.sql migrations/_verify/menu-path-integration-verify.sql
+git add migrations/V20260809_003__UnifyBoardMenusAsPageScreens.sql migrations/_verify/menu-path-integration-verify.sql
 git commit -m "feat: 게시판 메뉴를 페이지화면으로 통합"
 ```
 
@@ -788,31 +788,12 @@ git commit -m "feat: 메뉴 트리와 경로 선택 통합"
 - Consumes: `isInternalMenuPath`, `isExternalHttpUrl` from Task 4.
 - Produces: visible `내부화면`/`외부링크` tags and immutable existing `srePth` keys.
 
-- [ ] **Step 1: Write the failing page source contract test**
+- [ ] **Step 1: Write the failing page behavior tests**
 
-The interaction is covered by Task 7 browser QA. Lock the required template branches with this focused contract:
-
-```ts
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { describe, expect, it } from 'vitest';
-
-const source = readFileSync(resolve('app/pages/admin/routes/index.vue'), 'utf8');
-
-describe('경로 관리 화면 계약', () => {
-    it('내부화면과 외부링크 유형을 표시한다', () => {
-        expect(source).toContain('경로 관리');
-        expect(source).toContain('data-path-kind');
-        expect(source).toContain('내부화면');
-        expect(source).toContain('외부링크');
-    });
-
-    it('기존 경로 PK는 편집하지 않고 신규 행만 입력한다', () => {
-        expect(source).toContain("rowStatus(data) === 'new'");
-        expect(source).toContain('data-field="path"');
-    });
-});
-```
+Mount the route-management page with internal and external fixtures. Verify the rendered
+heading and path-kind tags, then enter edit mode and assert that an existing `srePth` is
+plain text while a newly added row exposes the path `InputText`. Tests must exercise the
+mounted component rather than inspecting Vue source text.
 
 - [ ] **Step 2: Run the page test and verify failure**
 
