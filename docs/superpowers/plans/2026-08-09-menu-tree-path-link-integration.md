@@ -28,7 +28,7 @@
 
 ### Database repository (`it_database`)
 
-- Create `migrations/V20260809_003__UnifyBoardMenusAsPageScreens.sql`: BRD 데이터·공통코드·제약 전환.
+- Create `migrations/V20260809_004__UnifyBoardMenusAsPageScreens.sql`: BRD 데이터·공통코드·제약 전환.
 - Create `migrations/_verify/menu-path-integration-verify.sql`: 전환 결과와 경로 참조 정합성 확인.
 
 ### Backend repository (`it_backend`)
@@ -70,7 +70,7 @@
 ### Task 1: Convert BRD data to PGE in a forward-only migration
 
 **Files:**
-- Create: `it_database/migrations/V20260809_003__UnifyBoardMenusAsPageScreens.sql`
+- Create: `it_database/migrations/V20260809_004__UnifyBoardMenusAsPageScreens.sql`
 - Create: `it_database/migrations/_verify/menu-path-integration-verify.sql`
 
 **Interfaces:**
@@ -133,14 +133,14 @@ Do not edit `V20260806_001__AddBoardMenuTypeAndSeedBoardMenus.sql`; applied migr
 
 - [ ] **Step 4: Run static migration checks**
 
-Run: `rg -n "MNU_TP_C = 'PGE'|CDVA_ID = 'BRD'|GRP','LNK','PGE" migrations/V20260809_003__UnifyBoardMenusAsPageScreens.sql`
+Run: `rg -n "MNU_TP_C = 'PGE'|CDVA_ID = 'BRD'|GRP','LNK','PGE" migrations/V20260809_004__UnifyBoardMenusAsPageScreens.sql`
 
 Expected: all three transition clauses are found and no check constraint in the new file contains `BRD`.
 
 - [ ] **Step 5: Commit the database migration**
 
 ```powershell
-git add migrations/V20260809_003__UnifyBoardMenusAsPageScreens.sql migrations/_verify/menu-path-integration-verify.sql
+git add migrations/V20260809_004__UnifyBoardMenusAsPageScreens.sql migrations/_verify/menu-path-integration-verify.sql
 git commit -m "feat: 게시판 메뉴를 페이지화면으로 통합"
 ```
 
