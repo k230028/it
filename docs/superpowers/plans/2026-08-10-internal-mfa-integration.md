@@ -95,12 +95,12 @@
 - Test: `it_backend/src/test/java/com/kdb/it/common/mfa/config/MfaConfigurationTest.java`
 
 **Interfaces:**
-- Produces: `MfaProperties(endpoint, siteId, svcId, connectTimeout, readTimeout, mockEnabled, challengeTtl, reuseTtl, maxFailures)`.
+- Produces: `MfaProperties(endpoint, siteId, svcId, connectTimeout, readTimeout, mockEnabled, challengeTtl, maxFailures)`.
 - Produces: exactly one `MfaProviderRegistry` bean per supported profile.
 
 - [ ] **Step 1: Write failing context tests** asserting `local-ext` selects mock, `local-int/dev` select development OnePass, `prod` selects production OnePass, and `prod + mock=true` fails startup.
 - [ ] **Step 2: Run RED** with `./gradlew test --tests '*MfaConfigurationTest'`; expect missing configuration.
-- [ ] **Step 3: Implement typed properties and validation** with defaults from Global Constraints, 90-second challenge TTL, five-minute reuse TTL, five-second connect/read timeouts, and five failed attempts per transaction.
+- [ ] **Step 3: Implement typed properties and validation** with defaults from Global Constraints, 90-second challenge TTL, five-second connect/read timeouts, and five failed attempts per transaction. 인증 재사용 TTL 속성은 만들지 않는다.
 - [ ] **Step 4: Add profile properties**. `local-ext` alone sets `app.mfa.mock-enabled=true`; the other three explicitly set false and the appropriate endpoint.
 - [ ] **Step 5: Run GREEN** with the focused test and `./gradlew test`.
 - [ ] **Step 6: Commit** `feat: MFA 프로파일 설정 추가` in `it_backend`.
@@ -218,7 +218,7 @@
 - [ ] **Step 2: Write failing component tests** proving method selection, QR/OTP/BioAgent views, error codes, disabled duplicate submit, and absence of authentication-reuse controls.
 - [ ] **Step 3: Run RED** with `npm test -- useMfa.test.ts MfaDialog.test.ts`.
 - [ ] **Step 4: Implement the composable** using `$apiFetch`, `ws://127.0.0.1:8089/bio`, and `BioAgent://`; normalize only known FE codes and never render server text with `v-html`.
-- [ ] **Step 5: Implement the PrimeVue dialog** with accessible labels, focus return, countdown, and no persisted reuse checkbox state.
+- [ ] **Step 5: Implement the PrimeVue dialog** with accessible labels, focus return, countdown, and no authentication-reuse controls.
 - [ ] **Step 6: Run GREEN** with focused tests, `npm run check`, and `npm run lint:css`.
 - [ ] **Step 7: Commit** `feat: 공통 MFA 인증 대화상자 추가` in `it_frontend`.
 
