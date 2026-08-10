@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 수동 로그인과 사용자 전자결재 명령에 지정맥·FIDO·mOTP MFA를 강제하고, 전자결재 MFA를 사용자 선택에 따라 5분간 재사용한다.
+**Goal:** 수동 로그인과 사용자 전자결재 명령에 지정맥·FIDO·mOTP MFA를 강제하고, 전자결재 동작마다 새 MFA를 요구한다.
 
-**Architecture:** Oracle에 로그인 대기 거래와 MFA 거래를 저장하고, 인증수단별 공급자를 공통 서비스 뒤에 배치한다. 로그인은 자격증명 검증과 토큰 발급을 분리하며, 결재 변경 메서드는 공통 MFA 가드가 서버에서 증표를 검증·소비한다. Nuxt는 공통 MFA 대화상자와 실행 래퍼로 로그인 및 결재 UI를 연결한다.
+**Architecture:** 로그인 대기 거래와 MFA 거래를 만료 가능한 서버 메모리 저장소에 두고, 인증수단별 공급자를 공통 서비스 뒤에 배치한다. 로그인은 자격증명 검증과 토큰 발급을 분리하며, 결재 변경 메서드는 공통 MFA 가드가 1회용 증표를 검증·소비한다. Nuxt는 공통 MFA 대화상자와 실행 래퍼로 로그인 및 결재 UI를 연결한다.
 
-**Tech Stack:** Java 25, Spring Boot 4.1, Spring Security, Spring Data JPA, Oracle/Flyway, Nuxt 4 CSR, Vue 3, Pinia, PrimeVue, Vitest, Playwright
+**Tech Stack:** Java 25, Spring Boot 4.1, Spring Security, Java 동시성 컬렉션, Nuxt 4 CSR, Vue 3, Pinia, PrimeVue, Vitest, Playwright
 
 ## Global Constraints
 
@@ -16,23 +16,19 @@
 - `local-int`와 `dev`의 OnePass 기본 URL은 `https://dopsap.kdb.co.kr:20443/interfBiz/processRequest.do`, `prod`는 `https://opsap.kdb.co.kr:20443/interfBiz/processRequest.do`이다.
 - 기본 `siteId`는 `SIT01KDBBANK00000000`, `svcId`는 `SVC12SIT01KDBBANK000`이다.
 - 마지막 인증수단 기본값은 `FINGER_VEIN`이며 쿠키에는 인증수단 코드만 저장한다.
-- 전자결재의 “5분간 인증 재사용”은 기본 선택이고, 해제 시 다음 결재 명령 한 건에서 원자적으로 소비한다.
+- 전자결재 인증 상태는 재사용하지 않으며 신청·승인·반려·회수 등 각 동작마다 새 MFA를 수행한다.
 - SSO, 개발 사용자 전환, 조회·임시저장, 외부 전자결재 콜백은 MFA 대상에서 제외한다.
-- DB 변경은 `it_database/migrations`의 새 Flyway 파일만 사용하고 적용된 마이그레이션은 수정하지 않는다.
+- MFA를 위해 DB 테이블, JPA 엔티티, Flyway 마이그레이션을 추가하지 않는다.
 - 각 동작은 실패 테스트를 먼저 실행한 뒤 최소 구현으로 통과시킨다.
 
 ## File Structure
-
-### Database repository (`C:\it\it_database`)
-
-- Create `migrations/V20260810_001__CreateMfaTransactionTables.sql`: 로그인 대기 및 MFA 거래 테이블·인덱스·정리용 만료 인덱스.
 
 ### Backend repository (`C:\it\it_backend`)
 
 - Create `src/main/java/com/kdb/it/common/mfa/config/MfaProperties.java`: 프로파일별 MFA 설정과 필수값.
 - Create `src/main/java/com/kdb/it/common/mfa/config/MfaConfig.java`: 실제·모의 공급자 선택과 HTTP 클라이언트 구성.
-- Create `src/main/java/com/kdb/it/common/mfa/domain/*`: 인증수단, 용도, 상태 enum과 거래 엔티티.
-- Create `src/main/java/com/kdb/it/common/mfa/repository/*`: 로그인 대기·MFA 거래 저장 및 조건부 소비.
+- Create `src/main/java/com/kdb/it/common/mfa/domain/*`: 인증수단, 용도, 상태 enum과 메모리 거래 모델.
+- Create `src/main/java/com/kdb/it/common/mfa/store/*`: 로그인 대기·MFA 거래의 만료 가능한 메모리 저장 및 원자적 소비.
 - Create `src/main/java/com/kdb/it/common/mfa/provider/*`: 모의, OnePass FIDO/mOTP, 지정맥 결과 공급자.
 - Create `src/main/java/com/kdb/it/common/mfa/service/MfaService.java`: 거래 생성·검증·취소·상태·소비 오케스트레이션.
 - Create `src/main/java/com/kdb/it/common/mfa/controller/MfaController.java`: `/api/mfa` 계약.
@@ -51,7 +47,7 @@
 
 - Create `app/types/mfa.ts`: MFA API와 UI 상태 타입.
 - Create `app/composables/useMfa.ts`: 인증수단 쿠키, 거래 API, BioAgent/FIDO/mOTP 상태 기계.
-- Create `app/composables/useMfaProtectedAction.ts`: 5분 증표 확인 후 결재 명령 한 번 실행.
+- Create `app/composables/useMfaProtectedAction.ts`: 매 결재 명령 전에 MFA를 수행하고 명령을 한 번 실행.
 - Create `app/components/mfa/MfaDialog.vue`: 공통 선택·검증 대화상자.
 - Modify `app/pages/login.vue`: 자격증명 단계와 MFA 단계 연결.
 - Modify `app/stores/auth.ts`: `login/start`와 `login/complete` 호출 분리.
@@ -60,31 +56,31 @@
 
 ---
 
-### Task 1: MFA 거래 스키마와 JPA 모델
+### Task 1: MFA 메모리 거래 모델과 저장소
 
 **Files:**
-- Create: `it_database/migrations/V20260810_001__CreateMfaTransactionTables.sql`
 - Create: `it_backend/src/main/java/com/kdb/it/common/mfa/domain/MfaMethod.java`
 - Create: `it_backend/src/main/java/com/kdb/it/common/mfa/domain/MfaPurpose.java`
 - Create: `it_backend/src/main/java/com/kdb/it/common/mfa/domain/MfaTransactionStatus.java`
 - Create: `it_backend/src/main/java/com/kdb/it/common/mfa/domain/LoginPendingTransaction.java`
 - Create: `it_backend/src/main/java/com/kdb/it/common/mfa/domain/MfaTransaction.java`
-- Create: `it_backend/src/main/java/com/kdb/it/common/mfa/repository/LoginPendingTransactionRepository.java`
-- Create: `it_backend/src/main/java/com/kdb/it/common/mfa/repository/MfaTransactionRepository.java`
-- Test: `it_backend/src/test/java/com/kdb/it/common/mfa/domain/MfaTransactionTest.java`
-- Test: `it_backend/src/integrationTest/java/com/kdb/it/common/mfa/repository/MfaTransactionRepositoryIT.java`
+- Create: `it_backend/src/main/java/com/kdb/it/common/mfa/store/LoginPendingTransactionStore.java`
+- Create: `it_backend/src/main/java/com/kdb/it/common/mfa/store/MfaTransactionStore.java`
+- Create: `it_backend/src/main/java/com/kdb/it/common/mfa/store/InMemoryLoginPendingTransactionStore.java`
+- Create: `it_backend/src/main/java/com/kdb/it/common/mfa/store/InMemoryMfaTransactionStore.java`
+- Test: `it_backend/src/test/java/com/kdb/it/common/mfa/store/InMemoryMfaTransactionStoreTest.java`
 
 **Interfaces:**
 - Produces: `MfaMethod { FINGER_VEIN, FIDO, MOTP }`, `MfaPurpose { LOGIN, APPROVAL }`.
-- Produces: `MfaTransaction.verify(Instant)`, `consumeOnce(String eno, Instant now)`, `isReusableAt(String eno, Instant now)`.
-- Produces: repository conditional update `int consumeVerifiedOnce(String tokenHash, String eno, Instant now)`.
+- Produces: `MfaTransaction.verify(Instant)`, `fail(Instant, int maxFailures)`, and immutable expiry/status accessors.
+- Produces: `Optional<MfaTransaction> consumeVerifiedOnce(String tokenHash, String eno, MfaPurpose purpose, Instant now)` using an atomic map operation.
 
-- [ ] **Step 1: Write failing domain tests** for pending→verified, expiration, wrong-user rejection, one-time consumption, and reusable five-minute boundary. Use a fixed `Clock` instant and assert exact status transitions.
-- [ ] **Step 2: Run RED** with `./gradlew test --tests '*MfaTransactionTest'`; expect missing MFA domain types.
-- [ ] **Step 3: Add the migration** with two tables for login pending and MFA transactions, primary keys, unique token hash, status checks, timestamps, failure count, reusable flag, and indexes on token hash/expiry/user-purpose. Confirm every identifier against `meta/meta.txt`; add only the minimum new approved abbreviations if no exact term exists.
-- [ ] **Step 4: Implement minimal entities and repositories**. Keep transition logic inside entities and use a conditional update query for one-time consumption so concurrent callers cannot both succeed.
-- [ ] **Step 5: Run GREEN** with `./gradlew test --tests '*MfaTransactionTest'`, then `./gradlew integrationTest --tests '*MfaTransactionRepositoryIT'` when local Oracle is available.
-- [ ] **Step 6: Commit** database and backend changes in their own repositories: `feat: MFA 거래 스키마 추가` and `feat: MFA 거래 모델 추가`.
+- [ ] **Step 1: Write failing tests** for pending→verified, expiration, wrong-user/purpose rejection, failure lock, one-time consumption, and two concurrent consumers where exactly one succeeds. Use a fixed `Clock`.
+- [ ] **Step 2: Run RED** with `./gradlew test --tests '*InMemoryMfaTransactionStoreTest'`; expect missing MFA domain/store types.
+- [ ] **Step 3: Implement minimal immutable domain models and store interfaces** without JPA annotations or database dependencies.
+- [ ] **Step 4: Implement thread-safe in-memory stores** with `ConcurrentHashMap.compute`/`remove` semantics, lazy expiry cleanup, and no scheduled task requirement.
+- [ ] **Step 5: Run GREEN** with `./gradlew test --tests '*InMemoryMfaTransactionStoreTest'` and `./gradlew test`.
+- [ ] **Step 6: Commit** `feat: MFA 메모리 거래 저장소 추가` in `it_backend`.
 
 ### Task 2: MFA 설정과 프로파일 안전장치
 
@@ -152,8 +148,8 @@
 - Produces: `cancelChallenge(UUID, ...)` and `getApprovalStatus(CustomUserDetails, proofCookie)`.
 - Produces errors: `MFA_REQUIRED`, `MFA_EXPIRED`, `MFA_FAILED`, `MFA_UNAVAILABLE`, `MFA_LOCKED`.
 
-- [ ] **Step 1: Write failing service tests** for login ownership through pending cookie, approval ownership through JWT, purpose mismatch, expiry, cancellation, max failures, reusable expiry, and raw-secret log exclusion.
-- [ ] **Step 2: Write failing controller tests** for `POST /api/mfa/challenges`, `POST /{id}/verify`, `DELETE /{id}`, and `GET /status?purpose=APPROVAL`, including unauthenticated approval rejection.
+- [ ] **Step 1: Write failing service tests** for login ownership through pending cookie, approval ownership through JWT, purpose mismatch, expiry, cancellation, max failures, one-time consumption, and raw-secret log exclusion.
+- [ ] **Step 2: Write failing controller tests** for `POST /api/mfa/challenges`, `POST /{id}/verify`, and `DELETE /{id}`, including unauthenticated approval rejection.
 - [ ] **Step 3: Run RED** with `./gradlew test --tests '*MfaServiceTest' --tests '*MfaControllerTest'`.
 - [ ] **Step 4: Implement service and controller**. Store only SHA-256 proof hashes, place proof values in httpOnly cookies, and return remaining seconds rather than trusting browser time.
 - [ ] **Step 5: Implement standardized exception responses** and permit only the login-purpose MFA start/verify paths without JWT; service-level ownership checks remain mandatory.
@@ -182,7 +178,7 @@
 - [ ] **Step 5: Run GREEN** with focused tests, `./gradlew test`, and SSO controller tests.
 - [ ] **Step 6: Commit** `feat: 수동 로그인 MFA 강제` in `it_backend`.
 
-### Task 6: 전자결재 서버 강제와 원자적 소비
+### Task 6: 전자결재 서버 강제와 1회용 소비
 
 **Files:**
 - Create: `it_backend/src/main/java/com/kdb/it/common/mfa/security/MfaRequired.java`
@@ -197,7 +193,7 @@
 - Consumes: approval proof cookie and authenticated `CustomUserDetails`.
 
 - [ ] **Step 1: Inventory endpoints** with the stated `rg` command and record the exact protected/excluded list in the test parameter source. Protect common submit, approve/reject, bulk approve/reject, recall, and domain-specific electronic-approval submissions; exclude callbacks, GET, and draft save.
-- [ ] **Step 2: Write failing aspect tests** for missing, expired, wrong-user, reusable, and one-time proofs; verify the target service is never invoked on rejection and invoked once on success.
+- [ ] **Step 2: Write failing aspect tests** for missing, expired, wrong-user, already-consumed, and valid one-time proofs; verify the target service is never invoked on rejection and invoked once on success.
 - [ ] **Step 3: Run RED** with `./gradlew test --tests '*MfaGuardAspectTest' --tests '*ApplicationControllerTest'`.
 - [ ] **Step 4: Implement the annotation and guard** with transaction ordering that atomically reserves/consumes a one-time proof before the domain command. Reusable proof remains valid until server expiry.
 - [ ] **Step 5: Annotate the inventory** and add MockMvc coverage for every protected endpoint category and at least one excluded callback.
@@ -214,12 +210,12 @@
 - Test: `it_frontend/tests/unit/components/mfa/MfaDialog.test.ts`
 
 **Interfaces:**
-- Produces: `openMfa(options): Promise<MfaCompletion>` with `{ purpose, loginPendingId?, reuseDefault }`.
+- Produces: `openMfa(options): Promise<MfaCompletion>` with `{ purpose, loginPendingId? }`.
 - Produces: last-method cookie `mfa-last-method`, default `FINGER_VEIN`.
 - Produces: cleanup of WebSocket, poll timer, countdown timer, and server challenge on close/unmount.
 
 - [ ] **Step 1: Write failing composable tests** for default 지정맥, valid cookie restoration, invalid cookie fallback, explicit local-ext verification, FIDO polling stop, mOTP submit, BioAgent `FE00`, and cleanup.
-- [ ] **Step 2: Write failing component tests** proving method selection, QR/OTP/BioAgent views, error codes, disabled duplicate submit, and approval-only reuse checkbox defaulting true.
+- [ ] **Step 2: Write failing component tests** proving method selection, QR/OTP/BioAgent views, error codes, disabled duplicate submit, and absence of authentication-reuse controls.
 - [ ] **Step 3: Run RED** with `npm test -- useMfa.test.ts MfaDialog.test.ts`.
 - [ ] **Step 4: Implement the composable** using `$apiFetch`, `ws://127.0.0.1:8089/bio`, and `BioAgent://`; normalize only known FE codes and never render server text with `v-html`.
 - [ ] **Step 5: Implement the PrimeVue dialog** with accessible labels, focus return, countdown, and no persisted reuse checkbox state.
@@ -261,13 +257,13 @@
 
 **Interfaces:**
 - Produces: `runWithApprovalMfa<T>(action: () => Promise<T>): Promise<T>`.
-- Behavior: reuse valid proof without dialog; on `MFA_REQUIRED`/`MFA_EXPIRED`, authenticate and retry the original action at most once.
+- Behavior: always open MFA before the action; on `MFA_REQUIRED`/`MFA_EXPIRED`, do not reuse the previous proof and retry only after a new MFA, at most once.
 
-- [ ] **Step 1: Write failing wrapper tests** for no-proof dialog, reusable proof bypass, unchecked one-time flow, error-triggered single retry, cancel, and prevention of duplicate action execution.
+- [ ] **Step 1: Write failing wrapper tests** for a dialog on every action, one-time proof use, error-triggered single retry after new MFA, cancel, and prevention of duplicate action execution.
 - [ ] **Step 2: Run RED** with `npm test -- useMfaProtectedAction.test.ts`.
 - [ ] **Step 3: Implement the wrapper** and route every protected frontend command from Task 6 through it. Do not wrap queries, drafts, or callbacks.
 - [ ] **Step 4: Regenerate OpenAPI types** using the existing codegen script and run `npm run codegen:check`.
-- [ ] **Step 5: Add E2E coverage** for approval/rejection, one-time proof prompting twice, and default five-minute proof avoiding the second prompt.
+- [ ] **Step 5: Add E2E coverage** for approval/rejection and two consecutive commands each prompting for a new MFA.
 - [ ] **Step 6: Run GREEN** with unit tests, focused E2E, `npm run format:check`, `npm run check`, and `npm run lint:css`.
 - [ ] **Step 7: Commit** `feat: 전자결재 MFA 화면 연결` in `it_frontend`.
 
@@ -282,7 +278,7 @@
 **Interfaces:**
 - Produces: reproducible profile configuration and compatible backend/frontend/database commit set.
 
-- [ ] **Step 1: Run backend verification**: `./gradlew test`, `./gradlew check`, `./gradlew jacocoTestCoverageVerification`, and `./gradlew integrationTest` where Oracle is available.
+- [ ] **Step 1: Run backend verification**: `./gradlew test`, `./gradlew check`, and `./gradlew jacocoTestCoverageVerification`.
 - [ ] **Step 2: Run frontend verification**: `npm run format:check`, `npm run check`, `npm run lint:css`, `npm test`, `npm run codegen:check`, and the MFA E2E suite with both servers running under `local-ext`.
 - [ ] **Step 3: Perform security checks**: confirm no OTP/QR/proof logging, no direct `/login` JWT issuance, no unprotected inventoried approval command, `prod` mock fail-fast, and logout proof deletion.
 - [ ] **Step 4: Update operational docs** with `MFA_ENDPOINT`, `MFA_SITE_ID`, `MFA_SVC_ID`, timeouts, profile behavior, BioAgent prerequisite, and the 지정맥 client-attestation limitation.
@@ -291,6 +287,6 @@
 
 ## Plan Self-Review
 
-- Spec coverage: all 13 design sections map to Tasks 1–10; SSO/callback exclusions, local-ext explicit confirmation, last-method cookie, one-time atomic consumption, five-minute reuse, and profile URLs are explicit.
+- Spec coverage: all 13 design sections map to Tasks 1–10; SSO/callback exclusions, local-ext explicit confirmation, last-method cookie, per-action one-time consumption, no DB schema change, and profile URLs are explicit.
 - Placeholder scan: no deferred implementation marker remains; endpoint inventory is an executable discovery step whose acceptance categories are fixed by the approved design.
 - Type consistency: `MfaMethod`, `MfaPurpose`, `MfaTransactionStatus`, `openMfa`, and `runWithApprovalMfa` retain the same names across producer and consumer tasks.
