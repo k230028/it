@@ -2493,4 +2493,676 @@ git commit -m "feat: 이관 연도 스냅샷과 셀 단위 진단 카탈로그 �
 
 ---
 
-Phase C(어댑터 4개) · Phase D(오케스트레이션·API·통합테스트) · Phase E(프론트)는 이어서 작성한다.
+## Phase C — 시트 어댑터
+
+어댑터는 정규화 행을 **기존 도메인 서비스가 받는 요청 DTO**로 바꾸는 순수 변환만 담당한다. 저장·채번·환율 조회·감사로그는 전부 기존 서비스가 한다. 어댑터는 `BBUGTM`을 쓰지 않고 편성률만 모아 돌려준다(§3.5).
+
+### Task 6: 어댑터 인터페이스와 `CostSheetAdapter`
+
+**Files:**
+- Create: `it_backend/src/main/java/com/kdb/it/domain/migration/service/adapter/SheetAdapter.java`
+- Create: `it_backend/src/main/java/com/kdb/it/domain/migration/service/adapter/AdapterSupport.java`
+- Create: `it_backend/src/main/java/com/kdb/it/domain/migration/service/adapter/CostSheetAdapter.java`
+- Test: `it_backend/src/test/java/com/kdb/it/domain/migration/service/adapter/CostSheetAdapterTest.java`
+
+**Interfaces:**
+- Produces: `SheetAdapter.supports()` → `SheetKind`
+- Produces: `record AdapterContext(String bseYy, MigrationLookupIndex index, MigrationYearSnapshot.Data snapshot, Map<String,String> overrides, String actorEno)`
+- Produces: `record AdapterOutput(List<CostDto.CreateRequest> costs, List<ProjectDto.CreateRequest> projects, List<PlanIntent> plans, List<RateIntent> rates)`
+- Produces: `record RateIntent(String orcTb, String naturalKeyOrPk, int percent)` — `orcTb`는 `BPROJM`·`BCOSTM`. 사업·전산업무비는 채번 후에야 PK를 알므로 `naturalKeyOrPk`에 정규화 사업명 또는 전산업무비 자연키를 넣고 `MigrationImportService`가 채번 결과로 치환한다
+- Produces: `record PlanIntent(String normalizedProjectName, BigDecimal devAmount, BigDecimal hwAmount, BigDecimal swAmount, String paymentYm, Map<String,String> snapshotFields)`
+- Produces: `SheetAdapter.adapt(SheetPayload sheet, AdapterContext ctx)` → `AdapterOutput`
+- Produces: `AdapterSupport.cellOf(...)`, `AdapterSupport.amount(...)`, `AdapterSupport.flag(...)`, `AdapterSupport.abusTc(...)`, `AdapterSupport.ymToFirstDay(...)`, `AdapterSupport.ymToLastDay(...)`
+
+- [ ] **Step 1: 실패하는 테스트를 작성한다**
+
+`CostSheetAdapterTest.java` — 실제 엑셀 2행(런던 PF Microsoft Teams, GBP)과 4행(국내출장, KRW)을 재현한다.
+
+```java
+package com.kdb.it.domain.migration.service.adapter;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.kdb.it.domain.budget.cost.dto.CostDto;
+import com.kdb.it.domain.migration.dto.MigrationDto;
+import com.kdb.it.domain.migration.dto.SheetKind;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+/** 전산일반관리비 시트 → BCOSTM 생성요청 변환 규칙을 고정합니다 (§5.2). */
+class CostSheetAdapterTest {
+
+    private final CostSheetAdapter adapter = new CostSheetAdapter();
+
+    @Test
+    @DisplayName("원화 행은 원화열을 ×1000해 원 단위로 올리고 FC_AMT를 비운다")
+    void 원화행은_천원을_원으로_올린다() {
+        Map<String, String> cells = cells();
+        cells.put("currency", "KRW");
+        cells.put("fcAmount", "");
+        cells.put("krwAmount", "15401");
+
+        CostDto.CreateRequest result = adaptSingle(cells);
+
+        assertThat(result.getCostTotXpAmt()).isEqualByComparingTo(new BigDecimal("15401000"));
+        assertThat(result.getFcAmt()).isNull();
+        assertThat(result.getCurC()).isEqualTo("KRW");
+    }
+
+    @Test
+    @DisplayName("외화 행은 FC_AMT에 외화 원금을 넣고 XCR은 서버가 채우도록 비운다")
+    void 외화행은_외화원금만_넣는다() {
+        Map<String, String> cells = cells();
+        cells.put("currency", "GBP");
+        cells.put("fcAmount", "2890");
+        cells.put("krwAmount", "5560.36");
+
+        CostDto.CreateRequest result = adaptSingle(cells);
+
+        assertThat(result.getFcAmt()).isEqualByComparingTo(new BigDecimal("2890"));
+        assertThat(result.getXcr()).isNull();
+        assertThat(result.getCostTotXpAmt()).isEqualByComparingTo(new BigDecimal("5560360"));
+    }
+
+    @Test
+    @DisplayName("JPY 외화열은 천엔이라 FC_AMT를 엔으로 ×1000한다")
+    void 엔화는_천엔을_엔으로_올린다() {
+        Map<String, String> cells = cells();
+        cells.put("currency", "JPY");
+        cells.put("fcAmount", "100");
+        cells.put("krwAmount", "970");
+
+        assertThat(adaptSingle(cells).getFcAmt()).isEqualByComparingTo(new BigDecimal("100000"));
+    }
+
+    @Test
+    @DisplayName("구분 라벨을 ABUS_TC 코드값으로 바꾼다")
+    void 사업구분라벨을_코드로_바꾼다() {
+        Map<String, String> cells = cells();
+        cells.put("abusTcLabel", "신규");
+        assertThat(adaptSingle(cells).getAbusTc()).isEqualTo("10");
+
+        cells.put("abusTcLabel", "계속");
+        assertThat(adaptSingle(cells).getAbusTc()).isEqualTo("20");
+
+        cells.put("abusTcLabel", "");
+        assertThat(adaptSingle(cells).getAbusTc()).isEqualTo("0");
+    }
+
+    @Test
+    @DisplayName("보안·단말 O 표기를 Y로, 빈 값을 N으로 바꾼다")
+    void 플래그표기를_YN으로_바꾼다() {
+        Map<String, String> cells = cells();
+        cells.put("securityFlag", "O");
+        cells.put("terminalFlag", "");
+
+        CostDto.CreateRequest result = adaptSingle(cells);
+
+        assertThat(result.getSectSysUtzYn()).isEqualTo("Y");
+        assertThat(result.getTmnYn()).isEqualTo("N");
+    }
+
+    @Test
+    @DisplayName("비목명을 코드로 바꾸고 보정값이 있으면 보정값을 쓴다")
+    void 비목은_보정값을_우선한다() {
+        Map<String, String> cells = cells();
+        cells.put("ioeName", "외주용역비");
+
+        MigrationDto.SheetPayload sheet = sheet(cells);
+        Map<String, String> overrides =
+                Map.of(
+                        com.kdb.it.domain.migration.service.MigrationValidator.overrideKey(
+                                SheetKind.COST, 2, "ioeName"),
+                        "009");
+
+        AdapterOutput out = adapter.adapt(sheet, context(overrides));
+
+        assertThat(out.costs()).singleElement().satisfies(c -> assertThat(c.getIoeC()).isEqualTo("009"));
+    }
+
+    @Test
+    @DisplayName("부서·팀 코드와 이름 스냅샷을 함께 채운다")
+    void 부서팀_코드와_이름을_채운다() {
+        CostDto.CreateRequest result = adaptSingle(cells());
+
+        assertThat(result.getCostSvnDpmC()).isEqualTo("0210");
+        assertThat(result.getSvnTemC()).isEqualTo("0211");
+    }
+
+    @Test
+    @DisplayName("담당자 열이 없는 시트라 업로드 사용자 사번을 담당자로 넣는다")
+    void 담당자는_업로드사용자다() {
+        assertThat(adaptSingle(cells()).getCgprId()).isEqualTo("999999");
+    }
+
+    @Test
+    @DisplayName("전산업무비는 편성률 100의 RateIntent를 자연키로 남긴다")
+    void 편성률의도를_자연키로_남긴다() {
+        AdapterOutput out = adapter.adapt(sheet(cells()), context(Map.of()));
+
+        assertThat(out.rates())
+                .singleElement()
+                .satisfies(
+                        r -> {
+                            assertThat(r.orcTb()).isEqualTo("BCOSTM");
+                            assertThat(r.percent()).isEqualTo(100);
+                            assertThat(r.naturalKeyOrPk()).contains("커브");
+                        });
+    }
+
+    private CostDto.CreateRequest adaptSingle(Map<String, String> cells) {
+        return adapter.adapt(sheet(cells), context(Map.of())).costs().get(0);
+    }
+
+    private static MigrationDto.SheetPayload sheet(Map<String, String> cells) {
+        return new MigrationDto.SheetPayload(
+                SheetKind.COST, "2026", List.of(new MigrationDto.NormalizedRow(2, cells)));
+    }
+
+    private static AdapterContext context(Map<String, String> overrides) {
+        return new AdapterContext(
+                "2026",
+                new com.kdb.it.domain.migration.service.MigrationLookupIndex(
+                        com.kdb.it.domain.migration.service.OrgIdentityResolver.Index.of(
+                                List.of(
+                                        org("0210", "IT기획부"),
+                                        org("0211", "IT기획팀")),
+                                List.of()),
+                        Map.of("국내전산임차료", "001", "유지보수료", "011", "외주용역비", "008"),
+                        Map.of("GBP", new BigDecimal("1924"), "JPY", new BigDecimal("9.7"))),
+                com.kdb.it.domain.migration.service.TestSnapshots.empty("2026"),
+                overrides,
+                "999999");
+    }
+
+    private static com.kdb.it.common.iam.entity.CorgnI org(String code, String name) {
+        return com.kdb.it.common.iam.entity.CorgnI.builder()
+                .prlmOgzCCone(code)
+                .bbrNm(name)
+                .build();
+    }
+
+    private static Map<String, String> cells() {
+        Map<String, String> cells = new HashMap<>();
+        cells.put("abusCode", "571");
+        cells.put("ioeName", "유지보수료");
+        cells.put("abusTcLabel", "계속");
+        cells.put("vendorName", "커브");
+        cells.put("requestDetail", "올인원워크스페이스");
+        cells.put("securityFlag", "");
+        cells.put("terminalFlag", "");
+        cells.put("deptName", "IT기획부");
+        cells.put("teamName", "IT기획팀");
+        cells.put("currency", "KRW");
+        cells.put("fcAmount", "");
+        cells.put("krwAmount", "15401");
+        cells.put("remark", "전년도 동일수준");
+        return cells;
+    }
+}
+```
+
+`TestSnapshots.empty(String)`는 Task 5의 `TestFixtures.emptySnapshot`을 어댑터 테스트에서도 쓰기 위한 공용 헬퍼다. `TestFixtures`를 `TestSnapshots`로 이름만 바꿔 `com.kdb.it.domain.migration.service` 패키지에 두고 `public`으로 올린 뒤 두 테스트가 함께 쓴다.
+
+- [ ] **Step 2: 테스트를 돌려 실패를 확인한다**
+
+Run: `cd it_backend && ./gradlew test --tests '*CostSheetAdapterTest' --no-daemon`
+Expected: 컴파일 실패 — `SheetAdapter`·`AdapterContext`·`AdapterOutput`·`CostSheetAdapter` 없음
+
+- [ ] **Step 3: 인터페이스와 공용 record를 작성한다**
+
+`SheetAdapter.java`
+
+```java
+package com.kdb.it.domain.migration.service.adapter;
+
+import com.kdb.it.domain.migration.dto.MigrationDto;
+import com.kdb.it.domain.migration.dto.SheetKind;
+
+/**
+ * 정규화 엑셀 행을 기존 도메인 서비스의 생성요청으로 바꿉니다.
+ *
+ * <p>어댑터는 순수 변환만 합니다. 채번·환율 조회·금액 재계산·조직명 스냅샷·감사로그는 {@code CostService}·{@code ProjectService}가
+ * 담당하며, 편성행({@code BBUGTM})은 어댑터가 쓰지 않고 편성률 의도만 남깁니다.
+ */
+public interface SheetAdapter {
+
+    /**
+     * 이 어댑터가 담당하는 시트 종류를 반환합니다.
+     *
+     * @return 시트 종류
+     */
+    SheetKind supports();
+
+    /**
+     * 시트 하나를 생성요청 묶음으로 변환합니다.
+     *
+     * <p>검증은 {@code MigrationValidator}가 이미 통과시킨 상태를 전제합니다. 어댑터는 미해석 값을 만나면 예외를 던지지 않고 null·기본값으로 둡니다.
+     *
+     * @param sheet 시트 페이로드
+     * @param ctx 예산연도·조회 인덱스·스냅샷·보정값·업로드 사용자
+     * @return 변환 결과
+     */
+    AdapterOutput adapt(MigrationDto.SheetPayload sheet, AdapterContext ctx);
+}
+```
+
+`AdapterContext.java`
+
+```java
+package com.kdb.it.domain.migration.service.adapter;
+
+import com.kdb.it.domain.migration.service.MigrationLookupIndex;
+import com.kdb.it.domain.migration.service.MigrationYearSnapshot;
+import java.util.Map;
+
+/**
+ * 어댑터 변환에 필요한 요청 범위 컨텍스트입니다.
+ *
+ * @param bseYy 예산연도 (4자리)
+ * @param index 조직·비목·환율 조회 인덱스
+ * @param snapshot 예산연도 기존 상태
+ * @param overrides 미리보기 보정값 ({@code MigrationValidator.overrideKey} 키)
+ * @param actorEno 업로드 사용자 사번. 엑셀에 담당자가 없는 시트의 기본 담당자로 씁니다
+ */
+public record AdapterContext(
+        String bseYy,
+        MigrationLookupIndex index,
+        MigrationYearSnapshot.Data snapshot,
+        Map<String, String> overrides,
+        String actorEno) {}
+```
+
+`AdapterOutput.java`
+
+```java
+package com.kdb.it.domain.migration.service.adapter;
+
+import com.kdb.it.domain.budget.cost.dto.CostDto;
+import com.kdb.it.domain.budget.project.dto.ProjectDto;
+import java.util.List;
+
+/**
+ * 어댑터 변환 결과입니다. 비어 있는 목록은 그 어댑터가 그 종류를 만들지 않는다는 뜻입니다.
+ *
+ * @param costs 전산업무비 생성요청
+ * @param projects 사업 생성요청 (품목 포함)
+ * @param plans 부문계획 조정 의도
+ * @param rates 편성률 의도 — 반영 마지막의 applyItemRates 단일 호출에 모아 넘깁니다
+ */
+public record AdapterOutput(
+        List<CostDto.CreateRequest> costs,
+        List<ProjectDto.CreateRequest> projects,
+        List<PlanIntent> plans,
+        List<RateIntent> rates) {
+
+    /** 아무것도 만들지 않은 결과입니다. */
+    public static AdapterOutput empty() {
+        return new AdapterOutput(List.of(), List.of(), List.of(), List.of());
+    }
+}
+```
+
+`RateIntent.java`
+
+```java
+package com.kdb.it.domain.migration.service.adapter;
+
+/**
+ * 편성률 적용 의도입니다.
+ *
+ * <p>사업·전산업무비는 채번 후에야 관리번호를 알 수 있으므로 {@code naturalKeyOrPk}에 자연키(전산업무비) 또는 정규화 사업명(사업)을 담고,
+ * {@code MigrationImportService}가 채번 결과로 실제 PK로 치환한 뒤 {@code BudgetWorkDto.ItemRate}를 만듭니다.
+ *
+ * @param orcTb 원본 테이블 — 접두어 없는 {@code BPROJM} 또는 {@code BCOSTM}
+ * @param naturalKeyOrPk 전산업무비 자연키 또는 정규화 사업명
+ * @param percent 편성률 (0~100)
+ */
+public record RateIntent(String orcTb, String naturalKeyOrPk, int percent) {}
+```
+
+`PlanIntent.java`
+
+```java
+package com.kdb.it.domain.migration.service.adapter;
+
+import java.math.BigDecimal;
+import java.util.Map;
+
+/**
+ * 부문계획 조정 의도입니다.
+ *
+ * <p>조정액은 비율 곱이 아니라 확정 금액이므로 대상 사업의 {@code BITEMM}을 이 금액으로 버전 교체하고 편성률 100을 적용합니다(§5.4).
+ *
+ * @param normalizedProjectName 정규화 사업명 (동일성 판정 키)
+ * @param devAmount 개발비 조정액 (원 단위). 없으면 null
+ * @param hwAmount 기계장치 조정액 (원 단위). 없으면 null
+ * @param swAmount 기타무형자산 조정액 (원 단위). 없으면 null
+ * @param paymentYm 예상지급일정 6자리 (BITEMM.BSE_YM). 없으면 null
+ * @param snapshotFields 원장에 넣지 않고 계획 스냅샷에만 남길 값 (집행 실적·사업진행·비고)
+ */
+public record PlanIntent(
+        String normalizedProjectName,
+        BigDecimal devAmount,
+        BigDecimal hwAmount,
+        BigDecimal swAmount,
+        String paymentYm,
+        Map<String, String> snapshotFields) {}
+```
+
+- [ ] **Step 4: `AdapterSupport` 공용 변환 헬퍼를 작성한다**
+
+```java
+package com.kdb.it.domain.migration.service.adapter;
+
+import com.kdb.it.domain.migration.dto.MigrationDto;
+import com.kdb.it.domain.migration.dto.SheetKind;
+import com.kdb.it.domain.migration.service.MigrationValidator;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/** 어댑터가 공유하는 셀 읽기·단위 변환·코드 변환 헬퍼입니다. */
+public final class AdapterSupport {
+
+    /** `'26.05`·`26.5`·`'26.12월` 형태를 받습니다. */
+    private static final Pattern YM = Pattern.compile("^'?(\\d{2})\\.(\\d{1,2})월?$");
+
+    private AdapterSupport() {
+        throw new UnsupportedOperationException("유틸 클래스 — 인스턴스화 금지");
+    }
+
+    /**
+     * 보정값이 있으면 보정값을, 없으면 원본 셀을 읽습니다.
+     *
+     * @param sheet 시트 페이로드 (종류를 보정 키에 씁니다)
+     * @param row 정규화 행
+     * @param column 정규 컬럼 id
+     * @param ctx 어댑터 컨텍스트
+     * @return 셀 문자열. 없거나 null이면 빈 문자열
+     */
+    public static String cellOf(
+            MigrationDto.SheetPayload sheet,
+            MigrationDto.NormalizedRow row,
+            String column,
+            AdapterContext ctx) {
+        String override =
+                ctx.overrides()
+                        .get(MigrationValidator.overrideKey(sheet.kind(), row.excelRow(), column));
+        if (override != null) {
+            return override;
+        }
+        String value = row.cells().get(column);
+        return value == null ? "" : value.trim();
+    }
+
+    /**
+     * 엑셀 금액을 원 단위로 올립니다.
+     *
+     * @param raw 엑셀 셀 문자열 (쉼표 허용)
+     * @param kind 시트 종류 — 배수를 정합니다 (일반관리비 ×1,000 / 자본예산·부문계획 ×1,000,000 / 위임예산 ×1)
+     * @return 원 단위 금액. 셀이 비었거나 숫자가 아니면 null
+     */
+    public static BigDecimal amount(String raw, SheetKind kind) {
+        BigDecimal parsed = number(raw);
+        if (parsed == null) {
+            return null;
+        }
+        BigDecimal multiplier =
+                switch (kind) {
+                    case COST -> new BigDecimal("1000");
+                    case CAPITAL_PROJECT, PLAN_ADJUSTMENT -> new BigDecimal("1000000");
+                    case DELEGATED_BUDGET -> BigDecimal.ONE;
+                };
+        return parsed.multiply(multiplier).setScale(3, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * 외화 원금을 통화 기본 단위로 맞춥니다. JPY만 엑셀이 천엔 단위라 ×1,000합니다 (§5.1).
+     *
+     * @param raw 엑셀 외화 셀 문자열
+     * @param currency 통화코드
+     * @return 통화 기본 단위 금액. 셀이 비었거나 원화면 null
+     */
+    public static BigDecimal foreignAmount(String raw, String currency) {
+        if (currency == null || currency.isBlank() || "KRW".equals(currency)) {
+            return null;
+        }
+        BigDecimal parsed = number(raw);
+        if (parsed == null) {
+            return null;
+        }
+        return "JPY".equals(currency) ? parsed.multiply(new BigDecimal("1000")) : parsed;
+    }
+
+    /**
+     * `O`·`Y`·`y`를 `Y`로, 나머지를 `N`으로 바꿉니다.
+     *
+     * @param raw 엑셀 셀 문자열
+     * @return `Y` 또는 `N`
+     */
+    public static String flag(String raw) {
+        if (raw == null) {
+            return "N";
+        }
+        String v = raw.trim();
+        return ("O".equalsIgnoreCase(v) || "Y".equalsIgnoreCase(v) || "○".equals(v)) ? "Y" : "N";
+    }
+
+    /**
+     * `신규`·`계속` 라벨을 `ABUS_TC` 코드값으로 바꿉니다.
+     *
+     * @param label 엑셀 구분·진행상황 라벨
+     * @return `10`(신규)·`20`(계속)·`0`(그 외·해당없음)
+     */
+    public static String abusTc(String label) {
+        if (label == null) {
+            return "0";
+        }
+        return switch (label.trim()) {
+            case "신규" -> "10";
+            case "계속" -> "20";
+            default -> "0";
+        };
+    }
+
+    /**
+     * `'26.05`를 해당 월 1일로 바꿉니다.
+     *
+     * @param raw 엑셀 연월 표기
+     * @return 해당 월 1일. 파싱 실패면 null
+     */
+    public static LocalDate ymToFirstDay(String raw) {
+        YearMonth ym = yearMonth(raw);
+        return ym == null ? null : ym.atDay(1);
+    }
+
+    /**
+     * `'26.12`를 해당 월 말일로 바꿉니다.
+     *
+     * @param raw 엑셀 연월 표기
+     * @return 해당 월 말일. 파싱 실패면 null
+     */
+    public static LocalDate ymToLastDay(String raw) {
+        YearMonth ym = yearMonth(raw);
+        return ym == null ? null : ym.atEndOfMonth();
+    }
+
+    /**
+     * `'26.12`를 `BSE_YM` 6자리로 바꿉니다.
+     *
+     * @param raw 엑셀 연월 표기
+     * @return `202612` 형태. 파싱 실패면 null
+     */
+    public static String ymToYyyymm(String raw) {
+        YearMonth ym = yearMonth(raw);
+        return ym == null ? null : String.format("%04d%02d", ym.getYear(), ym.getMonthValue());
+    }
+
+    /**
+     * 조정비율(`0.7`·`1`)을 정수 편성률로 바꿉니다.
+     *
+     * @param raw 엑셀 조정비율
+     * @return 0~100으로 잘린 편성률. 셀이 비었으면 100
+     */
+    public static int ratePercent(String raw) {
+        BigDecimal parsed = number(raw);
+        if (parsed == null) {
+            return 100;
+        }
+        int percent = parsed.multiply(new BigDecimal("100")).setScale(0, RoundingMode.HALF_UP).intValue();
+        return Math.max(0, Math.min(100, percent));
+    }
+
+    /** 쉼표를 제거하고 숫자로 파싱합니다. 숫자가 아니면 null. */
+    public static BigDecimal number(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return new BigDecimal(raw.replace(",", "").trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /** 2자리 연도를 2000년대로 해석합니다. 은행 편성 문서가 `'26` 표기를 쓰므로 세기 보정이 필요합니다. */
+    private static YearMonth yearMonth(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        Matcher m = YM.matcher(raw.trim());
+        if (!m.matches()) {
+            return null;
+        }
+        return YearMonth.of(2000 + Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
+    }
+}
+```
+
+- [ ] **Step 5: `CostSheetAdapter`를 구현한다**
+
+```java
+package com.kdb.it.domain.migration.service.adapter;
+
+import com.kdb.it.domain.budget.cost.dto.CostDto;
+import com.kdb.it.domain.migration.dto.MigrationDto;
+import com.kdb.it.domain.migration.dto.SheetKind;
+import com.kdb.it.domain.migration.service.MigrationYearSnapshot;
+import com.kdb.it.domain.migration.service.OrgIdentityResolver;
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.stereotype.Component;
+
+/**
+ * 전산일반관리비 편성 요구서 `전체취합(국내외)` 시트를 {@code BCOSTM} 생성요청으로 바꿉니다 (§5.2).
+ *
+ * <p>이 시트에는 담당자 열이 없어 업로드 사용자 사번을 담당자로 넣습니다. {@code XCR}은 설정하지 않습니다 — {@code CostService}가
+ * {@code XcrLookupService}로 다시 조회해 덮어쓰기 때문입니다(§3.7).
+ */
+@Component
+public class CostSheetAdapter implements SheetAdapter {
+
+    @Override
+    public SheetKind supports() {
+        return SheetKind.COST;
+    }
+
+    @Override
+    public AdapterOutput adapt(MigrationDto.SheetPayload sheet, AdapterContext ctx) {
+        List<CostDto.CreateRequest> costs = new ArrayList<>();
+        List<RateIntent> rates = new ArrayList<>();
+
+        for (MigrationDto.NormalizedRow row : sheet.rows()) {
+            String currency = AdapterSupport.cellOf(sheet, row, "currency", ctx);
+            String ioeC = resolveIoe(sheet, row, ctx);
+            String deptCode = resolveOrg(sheet, row, "deptName", ctx);
+            String teamCode = resolveOrg(sheet, row, "teamName", ctx);
+            String vendor = AdapterSupport.cellOf(sheet, row, "vendorName", ctx);
+            String contractName = AdapterSupport.cellOf(sheet, row, "requestDetail", ctx);
+            String abusCode = AdapterSupport.cellOf(sheet, row, "abusCode", ctx);
+
+            CostDto.CreateRequest request = new CostDto.CreateRequest();
+            request.setBseYy(ctx.bseYy());
+            request.setBgUntAbusC(abusCode);
+            request.setIoeC(ioeC);
+            request.setAbusTc(AdapterSupport.abusTc(AdapterSupport.cellOf(sheet, row, "abusTcLabel", ctx)));
+            request.setCttOppNm(vendor);
+            request.setCttNm(contractName);
+            request.setSectSysUtzYn(
+                    AdapterSupport.flag(AdapterSupport.cellOf(sheet, row, "securityFlag", ctx)));
+            request.setTmnYn(AdapterSupport.flag(AdapterSupport.cellOf(sheet, row, "terminalFlag", ctx)));
+            request.setCostSvnDpmC(deptCode);
+            request.setSvnTemC(teamCode);
+            request.setCurC(currency.isBlank() ? "KRW" : currency);
+            request.setFcAmt(
+                    AdapterSupport.foreignAmount(
+                            AdapterSupport.cellOf(sheet, row, "fcAmount", ctx), currency));
+            request.setCostTotXpAmt(
+                    AdapterSupport.amount(
+                            AdapterSupport.cellOf(sheet, row, "krwAmount", ctx), SheetKind.COST));
+            request.setXcrBseDt(ctx.bseYy() + "0101");
+            request.setIndRsn(AdapterSupport.cellOf(sheet, row, "remark", ctx));
+            request.setCgprId(ctx.actorEno());
+            costs.add(request);
+
+            rates.add(
+                    new RateIntent(
+                            "BCOSTM",
+                            MigrationYearSnapshot.costNaturalKey(
+                                    ctx.bseYy(), abusCode, ioeC, vendor, contractName),
+                            100));
+        }
+        return new AdapterOutput(costs, List.of(), List.of(), rates);
+    }
+
+    /** 보정값이 있으면 그 코드값을, 없으면 비목명으로 코드를 찾습니다. 못 찾으면 null(검증이 이미 막았어야 합니다). */
+    private String resolveIoe(
+            MigrationDto.SheetPayload sheet, MigrationDto.NormalizedRow row, AdapterContext ctx) {
+        String raw = AdapterSupport.cellOf(sheet, row, "ioeName", ctx);
+        String mapped = ctx.index().ioeCodeByName().get(raw);
+        return mapped != null ? mapped : (raw.isBlank() ? null : raw);
+    }
+
+    /** 보정값이 있으면 그 조직코드를, 없으면 이름으로 해석합니다. 미해석이면 null. */
+    private String resolveOrg(
+            MigrationDto.SheetPayload sheet,
+            MigrationDto.NormalizedRow row,
+            String column,
+            AdapterContext ctx) {
+        String raw = AdapterSupport.cellOf(sheet, row, column, ctx);
+        OrgIdentityResolver.Resolution resolution = ctx.index().org().resolveOrg(raw);
+        if (resolution.code() != null) {
+            return resolution.code();
+        }
+        // 보정값은 이미 코드값이므로 셀 원문이 코드 형태로 왔을 수 있다
+        return ctx.index().org().orgNameOf(raw) != null ? raw : null;
+    }
+}
+```
+
+> `resolveIoe`·`resolveOrg`가 보정값을 자연스럽게 흡수하는 이유: `cellOf`가 보정값을 먼저 반환하고, 보정값은 이미 코드값이라 `ioeCodeByName` 조회가 실패한 뒤 원문(=코드값)을 그대로 돌려준다. 조직은 `orgNameOf(코드)`가 비어 있지 않으면 코드로 판정한다.
+
+- [ ] **Step 6: 테스트를 돌려 통과를 확인한다**
+
+Run: `cd it_backend && ./gradlew test --tests '*CostSheetAdapterTest' --no-daemon`
+Expected: PASS (9 tests)
+
+- [ ] **Step 7: 커밋**
+
+```bash
+cd /c/it/it_backend && ./gradlew spotlessApply --no-daemon
+git add src/main/java/com/kdb/it/domain/migration src/test/java/com/kdb/it/domain/migration
+git commit -m "feat: 시트 어댑터 인터페이스와 전산일반관리비 어댑터 추가"
+```
+
+---
+
+Task 7~18(자본예산·위임예산·부문계획 어댑터, 결재 받이, 오케스트레이션, API, 통합테스트, 프론트 4개, E2E)은 이어서 작성한다.
