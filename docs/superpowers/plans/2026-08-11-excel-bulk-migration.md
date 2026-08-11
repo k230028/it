@@ -4223,4 +4223,1519 @@ git commit -m "feat: 부문계획 조정 시트 어댑터 추가"
 
 ---
 
-Phase D(결재 받이 · 오케스트레이션 · API · 통합테스트)와 Phase E(프론트 4개 · E2E)는 이어서 작성한다.
+## Phase D — 오케스트레이션과 API
+
+### Task 10: `MigrationApprovalStamper`
+
+원장만 적재하면 예산 편성·집계 화면이 0으로 나온다(§3.6). 이관용 결재완료 받이를 만들어 `CAPPLA`로 원천에 연결한다.
+
+**Files:**
+- Create: `it_backend/src/main/java/com/kdb/it/domain/migration/service/MigrationApprovalStamper.java`
+- Test: `it_backend/src/test/java/com/kdb/it/domain/migration/service/MigrationApprovalStamperTest.java`
+
+**Interfaces:**
+- Consumes: `ApplicationRepository`(=`Capplm` 리포지토리), `ApplicationMapRepository`(=`Cappla` 리포지토리). 실제 이름은 `ls src/main/java/com/kdb/it/common/approval/repository/`로 확인한다
+- Produces: `MigrationApprovalStamper.stamp(String fntTbNm, String pkColNm, Integer fntTbCrySno, String title, String actorEno, String bseYy)` → `String` (생성한 `APF_DCM_NO`)
+
+- [ ] **Step 1: 실패하는 테스트를 작성한다**
+
+```java
+package com.kdb.it.domain.migration.service;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+import com.kdb.it.common.approval.domain.ApprovalStatus;
+import com.kdb.it.common.approval.entity.Cappla;
+import com.kdb.it.common.approval.entity.Capplm;
+import com.kdb.it.common.approval.repository.ApplicationMapRepository;
+import com.kdb.it.common.approval.repository.ApplicationRepository;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+/** 이관용 결재완료 받이 생성 규칙을 고정합니다 (§3.6). */
+@ExtendWith(MockitoExtension.class)
+class MigrationApprovalStamperTest {
+
+    @Mock private ApplicationRepository applicationRepository;
+    @Mock private ApplicationMapRepository applicationMapRepository;
+    @InjectMocks private MigrationApprovalStamper stamper;
+
+    @Captor private ArgumentCaptor<Capplm> capplmCaptor;
+    @Captor private ArgumentCaptor<Cappla> capplaCaptor;
+
+    @Test
+    @DisplayName("신청서 번호는 기존 APF-{연도}-{8자리} 형식을 그대로 쓴다")
+    void 신청서번호는_기존형식을_쓴다() {
+        when(applicationRepository.getNextSequenceValue()).thenReturn(42L);
+        when(applicationRepository.save(any(Capplm.class))).thenAnswer(i -> i.getArgument(0));
+
+        String apfNo = stamper.stamp("BCOSTM", "COST-2026-0001", 1, "이관", "999999", "2026");
+
+        assertThat(apfNo).isEqualTo("APF-2026-00000042");
+    }
+
+    @Test
+    @DisplayName("상태는 결재완료('2')이고 요청자는 업로드 사용자다")
+    void 결재완료상태로_생성한다() {
+        when(applicationRepository.getNextSequenceValue()).thenReturn(1L);
+        when(applicationRepository.save(any(Capplm.class))).thenAnswer(i -> i.getArgument(0));
+
+        stamper.stamp("BCOSTM", "COST-2026-0001", 1, "2026년 전산업무비 이관", "999999", "2026");
+
+        org.mockito.Mockito.verify(applicationRepository).save(capplmCaptor.capture());
+        Capplm saved = capplmCaptor.getValue();
+        assertThat(saved.getItPtlApfPrgStsC()).isEqualTo(ApprovalStatus.COMPLETED.code());
+        assertThat(saved.getDcdReqUsid()).isEqualTo("999999");
+        assertThat(saved.getDcdReqTtl()).contains("이관");
+    }
+
+    @Test
+    @DisplayName("원천 연결 CAPPLA를 같은 신청서번호로 만든다")
+    void 원천연결을_만든다() {
+        when(applicationRepository.getNextSequenceValue()).thenReturn(7L);
+        when(applicationRepository.save(any(Capplm.class))).thenAnswer(i -> i.getArgument(0));
+
+        stamper.stamp("BPROJM", "PRJ-2026-0001", 1, "이관", "999999", "2026");
+
+        org.mockito.Mockito.verify(applicationMapRepository).save(capplaCaptor.capture());
+        Cappla saved = capplaCaptor.getValue();
+        assertThat(saved.getApfDcmNo()).isEqualTo("APF-2026-00000007");
+        assertThat(saved.getFntTbNm()).isEqualTo("BPROJM");
+        assertThat(saved.getPkColNm()).isEqualTo("PRJ-2026-0001");
+        assertThat(saved.getFntTbCrySno()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("이관 표시를 등록자결재요청내용에 남긴다")
+    void 이관표시를_남긴다() {
+        when(applicationRepository.getNextSequenceValue()).thenReturn(1L);
+        when(applicationRepository.save(any(Capplm.class))).thenAnswer(i -> i.getArgument(0));
+
+        stamper.stamp("BCOSTM", "COST-2026-0001", 1, "이관", "999999", "2026");
+
+        org.mockito.Mockito.verify(applicationRepository).save(capplmCaptor.capture());
+        assertThat(capplmCaptor.getValue().getRgprDcdReqCone())
+                .contains("수기 엑셀 이관")
+                .doesNotContain("MIG-");
+    }
+}
+```
+
+- [ ] **Step 2: 리포지토리 이름과 시퀀스 메서드를 확인한다**
+
+```bash
+cd /c/it/it_backend && ls src/main/java/com/kdb/it/common/approval/repository/
+grep -rn "getNextSequenceValue\|SQ_TPRMPP_CAPPLM" src/main/java/com/kdb/it/common/approval/repository/
+```
+
+`Capplm`용 시퀀스 조회 메서드가 없으면 추가한다.
+
+```java
+    /**
+     * 신청서식별번호 채번용 Oracle 시퀀스 원값을 가져옵니다.
+     *
+     * <p>번호 조립은 호출자가 {@code String.format("APF-%s-%08d", ...)}로 수행합니다. Oracle {@code LPAD}는 자릿수를
+     * 넘는 값을 잘라내 번호가 조용히 충돌하므로 쓰지 않습니다.
+     *
+     * @return 다음 시퀀스 값
+     */
+    @Query(value = "SELECT SQ_TPRMPP_CAPPLM_1.NEXTVAL FROM DUAL", nativeQuery = true)
+    Long getNextSequenceValue();
+```
+
+실제 시퀀스명은 DB에서 확인한다.
+
+```bash
+cd /c/it && { printf '%s\n' "$DB_PASSWORD"; printf "%s\n" "SELECT SEQUENCE_NAME FROM ALL_SEQUENCES WHERE SEQUENCE_OWNER='ITPOWN' AND SEQUENCE_NAME LIKE '%CAPPL%';" "EXIT"; } | sqlplus -S ITPAPP@127.0.0.1:11521/XEPDB1
+```
+
+- [ ] **Step 3: 테스트를 돌려 실패를 확인한다**
+
+Run: `cd it_backend && ./gradlew test --tests '*MigrationApprovalStamperTest' --no-daemon`
+Expected: 컴파일 실패 — `MigrationApprovalStamper` 없음
+
+- [ ] **Step 4: 구현한다**
+
+```java
+package com.kdb.it.domain.migration.service;
+
+import com.kdb.it.common.approval.domain.ApprovalStatus;
+import com.kdb.it.common.approval.entity.Cappla;
+import com.kdb.it.common.approval.entity.Capplm;
+import com.kdb.it.common.approval.repository.ApplicationMapRepository;
+import com.kdb.it.common.approval.repository.ApplicationRepository;
+import java.time.LocalDate;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * 이관한 원장에 결재완료 받이를 붙입니다.
+ *
+ * <p>예산 편성·집계 조회는 결재완료 신청서가 {@code CAPPLA}로 연결된 원장만 집계하므로(§3.6), 받이가 없으면 이관 데이터가 화면에서 0으로 보입니다.
+ * 상승된 결재이력({@code CDECIM} 등)은 만들지 않아 재현된 결재선이 아님이 구분됩니다.
+ *
+ * <p>신청서번호는 기존 {@code APF-{연도}-{8자리}} 형식을 그대로 씁니다. {@code ApplicationMapRepository}가 사전식 내림차순을
+ * 시간순으로 전제하므로 별도 접두어를 쓰면 이관 문서가 항상 최신으로 정렬되어 그 전제가 깨집니다.
+ */
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class MigrationApprovalStamper {
+
+    private final ApplicationRepository applicationRepository;
+    private final ApplicationMapRepository applicationMapRepository;
+
+    /**
+     * 원천 한 건에 결재완료 받이를 만듭니다.
+     *
+     * @param fntTbNm 원천테이블명 — `BCOSTM` 또는 `BPROJM`
+     * @param pkColNm 원천 PK (전산업무비코드 또는 사업관리번호)
+     * @param fntTbCrySno 원천 일련번호
+     * @param title 결재요청제목 (이관임을 알 수 있게 조립해 넘긴다)
+     * @param actorEno 업로드 사용자 사번
+     * @param bseYy 예산연도 (신청서번호 연도부에 씁니다)
+     * @return 생성한 신청서식별번호
+     */
+    public String stamp(
+            String fntTbNm,
+            String pkColNm,
+            Integer fntTbCrySno,
+            String title,
+            String actorEno,
+            String bseYy) {
+        Long sequence = applicationRepository.getNextSequenceValue();
+        String apfDcmNo = String.format("APF-%s-%08d", bseYy, sequence);
+
+        Capplm application =
+                Capplm.builder()
+                        .apfMngNo(apfDcmNo)
+                        .itPtlApfPrgStsC(ApprovalStatus.COMPLETED.code())
+                        .dcdReqTtl(title)
+                        .dcdReqUsid(actorEno)
+                        .dcdReqDtm(LocalDate.now())
+                        .rgprDcdReqCone("수기 엑셀 이관으로 생성된 결재완료 기록입니다. 실제 결재선을 거치지 않았습니다.")
+                        .build();
+        applicationRepository.save(application);
+
+        applicationMapRepository.save(
+                Cappla.builder()
+                        .apfDcmNo(apfDcmNo)
+                        .fntTbNm(fntTbNm)
+                        .pkColNm(pkColNm)
+                        .fntTbCrySno(fntTbCrySno)
+                        .build());
+        return apfDcmNo;
+    }
+}
+```
+
+> `Capplm`의 `DCD_REQ_BBR_C`가 NOT NULL이면 빌더에 업로드 사용자 부점코드를 함께 넣는다. 엔티티 정의에는 nullable이지만 물리 제약을 `ALL_TAB_COLUMNS`로 확인한다.
+
+- [ ] **Step 5: 테스트를 돌려 통과를 확인한다**
+
+Run: `cd it_backend && ./gradlew test --tests '*MigrationApprovalStamperTest' --no-daemon`
+Expected: PASS (4 tests)
+
+- [ ] **Step 6: 커밋**
+
+```bash
+cd /c/it/it_backend && ./gradlew spotlessApply --no-daemon
+git add src/main/java/com/kdb/it src/test/java/com/kdb/it/domain/migration
+git commit -m "feat: 이관용 결재완료 받이 생성기 추가"
+```
+
+---
+
+### Task 11: `MigrationImportService`
+
+트랜잭션 경계와 §7의 5단계 순서를 구현한다. 이 태스크가 계획의 중심이다.
+
+**Files:**
+- Create: `it_backend/src/main/java/com/kdb/it/domain/migration/service/MigrationImportService.java`
+- Create: `it_backend/src/main/java/com/kdb/it/domain/migration/service/MigrationIoeCatalogReader.java`
+- Test: `it_backend/src/test/java/com/kdb/it/domain/migration/service/MigrationImportServiceTest.java`
+
+**Interfaces:**
+- Consumes: 어댑터 4개(`List<SheetAdapter>` 주입), `MigrationValidator`, `MigrationYearSnapshot`, `OrgIdentityResolver`, `MigrationApprovalStamper`, `CostService`, `ProjectService`, `BudgetRateApplicationService`, `ProjectItemRepository`, `PlanService`
+- Produces: `MigrationImportService.dryRun(MigrationDto.DryRunRequest request)` → `MigrationDto.DryRunResponse`
+- Produces: `MigrationImportService.commit(MigrationDto.CommitRequest request, String actorEno)` → `MigrationDto.CommitResponse`
+- Produces: `MigrationIoeCatalogReader.ioeCodeByName()` → `Map<String,String>`, `xcrByCurrency()` → `Map<String,BigDecimal>`
+
+- [ ] **Step 1: 조회 인덱스 로더를 먼저 만든다**
+
+```java
+package com.kdb.it.domain.migration.service;
+
+import com.kdb.it.common.code.CommonCodeGroups;
+import com.kdb.it.common.code.entity.Ccodem;
+import com.kdb.it.common.code.repository.CodeRepository;
+import java.math.BigDecimal;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * 이관 검증·변환에 필요한 공통코드를 한 번에 읽습니다.
+ *
+ * <p>비목은 코드값명 → 코드값 역방향 맵, 환율은 통화 → 예산환율 맵으로 만듭니다. 환율은
+ * {@code XcrLookupService}와 같은 원천({@code C_ID='CUR_C'}, {@code C_TP='XCR'}, {@code CO_CDVA_NM})을 읽어
+ * dry-run의 금액 대조가 실제 저장값과 어긋나지 않게 합니다.
+ */
+@Service
+@RequiredArgsConstructor
+@Slf4j
+@Transactional(readOnly = true)
+public class MigrationIoeCatalogReader {
+
+    private final CodeRepository codeRepository;
+
+    /**
+     * 비목 코드값명 → 코드값 맵을 만듭니다.
+     *
+     * @return 예: `{"국내전산임차료" → "001", "유지보수료" → "011"}`. 코드값명이 중복되면 먼저 나온 것을 씁니다
+     */
+    public Map<String, String> ioeCodeByName() {
+        Map<String, String> out = new LinkedHashMap<>();
+        for (Ccodem code : codeRepository.findByCIdAndDelYn(CommonCodeGroups.IOE, "N")) {
+            if (code.getCdvaNm() != null) {
+                out.putIfAbsent(code.getCdvaNm().trim(), code.getCdva());
+            }
+        }
+        return out;
+    }
+
+    /**
+     * 통화 → 예산환율 맵을 만듭니다.
+     *
+     * @return 예: `{"GBP" → 1924, "USD" → 1432}`. 숫자로 파싱되지 않는 행은 건너뛰고 경고를 남깁니다
+     */
+    public Map<String, BigDecimal> xcrByCurrency() {
+        Map<String, BigDecimal> out = new LinkedHashMap<>();
+        for (Ccodem code : codeRepository.findByCIdAndDelYn(CommonCodeGroups.CURRENCY, "N")) {
+            if (!"XCR".equals(code.getCTp()) || code.getCdvaDtlC() == null) {
+                continue;
+            }
+            try {
+                out.putIfAbsent(code.getCdva(), new BigDecimal(code.getCdvaDtlC().trim()));
+            } catch (NumberFormatException e) {
+                log.warn("예산환율 공통코드 값을 숫자로 읽지 못했습니다: 통화={}", code.getCdva());
+            }
+        }
+        return out;
+    }
+}
+```
+
+`CodeRepository.findByCIdAndDelYn(String cId, String delYn)`이 없으면 추가한다. 실제 필드명은 `Ccodem.cId`(물리 `CO_C_ID_NM`)이므로 Spring Data 메서드명은 `findByCIdAndDelYn`이 맞다.
+
+- [ ] **Step 2: 실패하는 서비스 테스트를 작성한다**
+
+```java
+package com.kdb.it.domain.migration.service;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.kdb.it.domain.budget.cost.dto.CostDto;
+import com.kdb.it.domain.budget.cost.service.CostService;
+import com.kdb.it.domain.budget.project.dto.ProjectDto;
+import com.kdb.it.domain.budget.project.service.ProjectService;
+import com.kdb.it.domain.budget.work.dto.BudgetWorkDto;
+import com.kdb.it.domain.budget.work.service.BudgetRateApplicationService;
+import com.kdb.it.domain.migration.dto.MigrationDto;
+import com.kdb.it.domain.migration.dto.SheetKind;
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
+/** 반영 순서·전량 롤백·applyItemRates 단일 호출을 고정합니다 (§7). */
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class MigrationImportServiceTest {
+
+    @Mock private CostService costService;
+    @Mock private ProjectService projectService;
+    @Mock private BudgetRateApplicationService budgetRateApplicationService;
+    @Mock private MigrationApprovalStamper approvalStamper;
+    @Mock private MigrationValidator validator;
+    @Mock private MigrationYearSnapshot yearSnapshot;
+    @Mock private OrgIdentityResolver orgIdentityResolver;
+    @Mock private MigrationIoeCatalogReader catalogReader;
+
+    /** BLOCKER가 하나라도 있으면 아무 서비스도 호출되지 않는다. */
+    @Test
+    @DisplayName("BLOCKER가 있으면 원장을 하나도 쓰지 않고 실패한다")
+    void 블로커가_있으면_아무것도_쓰지_않는다() {
+        MigrationImportService service = service();
+        when(validator.validate(any(), any(), any(), any()))
+                .thenReturn(
+                        List.of(
+                                new MigrationDto.CellDiagnostic(
+                                        SheetKind.COST,
+                                        2,
+                                        "deptName",
+                                        "ORG_UNRESOLVED",
+                                        MigrationDto.Severity.BLOCKER,
+                                        "해석 실패",
+                                        List.of())));
+
+        assertThatThrownBy(() -> service.commit(commitRequest(), "999999"))
+                .isInstanceOf(com.kdb.it.exception.CustomGeneralException.class)
+                .hasMessageContaining("반영할 수 없습니다");
+
+        verify(costService, never()).createCost(any(), anyBoolean());
+        verify(projectService, never()).createProject(any(), anyBoolean());
+        verify(budgetRateApplicationService, never()).applyItemRates(any());
+    }
+
+    /** WARNING만 있으면 반영이 진행된다. */
+    @Test
+    @DisplayName("WARNING만 있으면 반영을 진행한다")
+    void 경고만_있으면_반영한다() {
+        MigrationImportService service = service();
+        when(validator.validate(any(), any(), any(), any()))
+                .thenReturn(
+                        List.of(
+                                new MigrationDto.CellDiagnostic(
+                                        SheetKind.COST,
+                                        2,
+                                        "krwAmount",
+                                        "AMOUNT_MISMATCH",
+                                        MigrationDto.Severity.WARNING,
+                                        "금액 불일치",
+                                        List.of())));
+        when(costService.createCost(any(), anyBoolean())).thenReturn("COST-2026-0001");
+
+        MigrationDto.CommitResponse response = service.commit(commitRequest(), "999999");
+
+        assertThat(response.costCount()).isEqualTo(1);
+        verify(costService).createCost(any(), anyBoolean());
+    }
+
+    /** 원장 생성은 기간 검증 생략 경로를 쓴다. */
+    @Test
+    @DisplayName("원장 생성은 기간 검증을 생략하는 오버로드를 호출한다")
+    void 기간검증_생략경로를_쓴다() {
+        MigrationImportService service = service();
+        when(validator.validate(any(), any(), any(), any())).thenReturn(List.of());
+        when(costService.createCost(any(), anyBoolean())).thenReturn("COST-2026-0001");
+
+        service.commit(commitRequest(), "999999");
+
+        ArgumentCaptor<Boolean> skip = ArgumentCaptor.forClass(Boolean.class);
+        verify(costService).createCost(any(CostDto.CreateRequest.class), skip.capture());
+        assertThat(skip.getValue()).isTrue();
+    }
+
+    /** applyItemRates는 정확히 한 번만 호출한다. */
+    @Test
+    @DisplayName("applyItemRates를 정확히 한 번만 호출한다")
+    void 편성률적용은_한번만_호출한다() {
+        MigrationImportService service = service();
+        when(validator.validate(any(), any(), any(), any())).thenReturn(List.of());
+        when(costService.createCost(any(), anyBoolean())).thenReturn("COST-2026-0001");
+
+        service.commit(commitRequest(), "999999");
+
+        verify(budgetRateApplicationService, times(1)).applyItemRates(any());
+    }
+
+    /** items에는 이관분과 기존 연도 데이터가 모두 담겨야 한다. */
+    @Test
+    @DisplayName("applyItemRates items에 이관분과 기존 연도 데이터를 함께 담는다")
+    void 편성률items에_연도전체를_담는다() {
+        MigrationImportService service = service();
+        when(validator.validate(any(), any(), any(), any())).thenReturn(List.of());
+        when(costService.createCost(any(), anyBoolean())).thenReturn("COST-2026-0001");
+        when(yearSnapshot.load("2026"))
+                .thenReturn(
+                        new MigrationYearSnapshot.Data(
+                                "2026",
+                                java.util.Set.of(),
+                                new java.util.LinkedHashMap<>(
+                                        Map.of("기존사업", "PRJ-2026-0099")),
+                                java.util.Set.of(),
+                                new java.util.LinkedHashMap<>(
+                                        Map.of("BPROJM|PRJ-2026-0099", 80)),
+                                List.of("COST-2026-0099")));
+
+        service.commit(commitRequest(), "999999");
+
+        ArgumentCaptor<BudgetWorkDto.ItemApplyRequest> captor =
+                ArgumentCaptor.forClass(BudgetWorkDto.ItemApplyRequest.class);
+        verify(budgetRateApplicationService).applyItemRates(captor.capture());
+
+        assertThat(captor.getValue().items())
+                .extracting(BudgetWorkDto.ItemRate::orcPkVl)
+                .contains("COST-2026-0001", "PRJ-2026-0099", "COST-2026-0099");
+        assertThat(captor.getValue().items())
+                .filteredOn(i -> "PRJ-2026-0099".equals(i.orcPkVl()))
+                .singleElement()
+                .satisfies(i -> assertThat(i.assetDupRt()).isEqualTo(80));
+    }
+
+    /** 원장 생성 직후 결재 받이를 만든다. */
+    @Test
+    @DisplayName("생성한 전산업무비마다 결재 받이를 만든다")
+    void 원장마다_결재받이를_만든다() {
+        MigrationImportService service = service();
+        when(validator.validate(any(), any(), any(), any())).thenReturn(List.of());
+        when(costService.createCost(any(), anyBoolean())).thenReturn("COST-2026-0001");
+
+        service.commit(commitRequest(), "999999");
+
+        verify(approvalStamper)
+                .stamp(
+                        org.mockito.ArgumentMatchers.eq("BCOSTM"),
+                        org.mockito.ArgumentMatchers.eq("COST-2026-0001"),
+                        any(),
+                        anyString(),
+                        org.mockito.ArgumentMatchers.eq("999999"),
+                        org.mockito.ArgumentMatchers.eq("2026"));
+    }
+
+    /** dry-run은 아무것도 쓰지 않는다. */
+    @Test
+    @DisplayName("dry-run은 원장을 쓰지 않고 진단만 돌려준다")
+    void dryRun은_쓰지_않는다() {
+        MigrationImportService service = service();
+        when(validator.validate(any(), any(), any(), any()))
+                .thenReturn(
+                        List.of(
+                                new MigrationDto.CellDiagnostic(
+                                        SheetKind.COST,
+                                        2,
+                                        "deptName",
+                                        "ORG_UNRESOLVED",
+                                        MigrationDto.Severity.BLOCKER,
+                                        "해석 실패",
+                                        List.of())));
+
+        MigrationDto.DryRunResponse response =
+                service.dryRun(new MigrationDto.DryRunRequest(commitRequest().sheets()));
+
+        assertThat(response.summary().blockerCount()).isEqualTo(1);
+        assertThat(response.summary().totalRows()).isEqualTo(1);
+        verify(costService, never()).createCost(any(), anyBoolean());
+    }
+
+    private MigrationImportService service() {
+        when(yearSnapshot.load(anyString())).thenReturn(TestSnapshots.empty("2026"));
+        when(orgIdentityResolver.snapshot())
+                .thenReturn(OrgIdentityResolver.Index.of(List.of(), List.of()));
+        when(catalogReader.ioeCodeByName()).thenReturn(Map.of("유지보수료", "011"));
+        when(catalogReader.xcrByCurrency()).thenReturn(Map.of());
+        return new MigrationImportService(
+                List.of(new com.kdb.it.domain.migration.service.adapter.CostSheetAdapter()),
+                validator,
+                yearSnapshot,
+                orgIdentityResolver,
+                catalogReader,
+                approvalStamper,
+                costService,
+                projectService,
+                budgetRateApplicationService,
+                null,
+                null);
+    }
+
+    private static MigrationDto.CommitRequest commitRequest() {
+        Map<String, String> cells =
+                new java.util.LinkedHashMap<>(
+                        Map.of(
+                                "abusCode", "571",
+                                "ioeName", "유지보수료",
+                                "abusTcLabel", "계속",
+                                "vendorName", "커브",
+                                "requestDetail", "올인원워크스페이스",
+                                "deptName", "IT기획부",
+                                "teamName", "IT기획팀",
+                                "currency", "KRW",
+                                "krwAmount", "15401"));
+        return new MigrationDto.CommitRequest(
+                List.of(
+                        new MigrationDto.SheetPayload(
+                                SheetKind.COST,
+                                "2026",
+                                List.of(new MigrationDto.NormalizedRow(2, cells)))),
+                List.of());
+    }
+}
+```
+
+> 마지막 두 생성자 인자(`null`)는 `ProjectItemRepository`와 `PlanService`다. 이 테스트는 전산업무비 경로만 검증하므로 `@Mock`으로 바꿔 넣되 사용되지 않는다. 부문계획 경로 검증은 Task 13의 Oracle 통합 테스트가 담당한다 — 목으로는 `BITEMM` 버전 교체와 `applyItemRates`의 상호작용을 신뢰성 있게 검증하기 어렵다.
+
+- [ ] **Step 3: 테스트를 돌려 실패를 확인한다**
+
+Run: `cd it_backend && ./gradlew test --tests '*MigrationImportServiceTest' --no-daemon`
+Expected: 컴파일 실패 — `MigrationImportService` 없음
+
+- [ ] **Step 4: 구현한다**
+
+```java
+package com.kdb.it.domain.migration.service;
+
+import com.kdb.it.domain.budget.cost.dto.CostDto;
+import com.kdb.it.domain.budget.cost.service.CostService;
+import com.kdb.it.domain.budget.plan.service.PlanService;
+import com.kdb.it.domain.budget.project.dto.ProjectDto;
+import com.kdb.it.domain.budget.project.entity.Bitemm;
+import com.kdb.it.domain.budget.project.repository.ProjectItemRepository;
+import com.kdb.it.domain.budget.project.service.ProjectService;
+import com.kdb.it.domain.budget.work.dto.BudgetWorkDto;
+import com.kdb.it.domain.budget.work.service.BudgetRateApplicationService;
+import com.kdb.it.domain.migration.dto.MigrationDto;
+import com.kdb.it.domain.migration.dto.SheetKind;
+import com.kdb.it.domain.migration.service.adapter.AdapterContext;
+import com.kdb.it.domain.migration.service.adapter.AdapterOutput;
+import com.kdb.it.domain.migration.service.adapter.PlanIntent;
+import com.kdb.it.domain.migration.service.adapter.RateIntent;
+import com.kdb.it.domain.migration.service.adapter.SheetAdapter;
+import com.kdb.it.exception.CustomGeneralException;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * 수기 엑셀 이관의 사전검증과 확정 반영을 조율합니다.
+ *
+ * <p>dry-run 결과를 서버에 보관하지 않으므로 확정 반영은 클라이언트가 보낸 값을 신뢰하지 않고 같은 검증을 다시 돌립니다. BLOCKER가 하나라도 있으면 아무
+ * 원장도 쓰지 않고 실패합니다.
+ *
+ * <p>반영 순서가 중요합니다(§7). 부문계획 조정은 자본예산이 만든 품목을 버전 교체하므로 원장 단계의 마지막이며, 편성행은
+ * {@code applyItemRates} 단일 호출이 전담합니다 — 이 메서드는 연도 전체를 재작성하고 삭제 이력을 남기지 않으므로 두 번 호출하면 첫 결과가 흔적 없이
+ * 사라집니다.
+ */
+@Service
+@Slf4j
+public class MigrationImportService {
+
+    private final Map<SheetKind, SheetAdapter> adapters = new EnumMap<>(SheetKind.class);
+    private final MigrationValidator validator;
+    private final MigrationYearSnapshot yearSnapshot;
+    private final OrgIdentityResolver orgIdentityResolver;
+    private final MigrationIoeCatalogReader catalogReader;
+    private final MigrationApprovalStamper approvalStamper;
+    private final CostService costService;
+    private final ProjectService projectService;
+    private final BudgetRateApplicationService budgetRateApplicationService;
+    private final ProjectItemRepository projectItemRepository;
+    private final PlanService planService;
+
+    /**
+     * 어댑터를 시트 종류별로 색인해 둡니다.
+     *
+     * @param sheetAdapters 등록된 어댑터 전체 (Spring이 주입)
+     */
+    public MigrationImportService(
+            List<SheetAdapter> sheetAdapters,
+            MigrationValidator validator,
+            MigrationYearSnapshot yearSnapshot,
+            OrgIdentityResolver orgIdentityResolver,
+            MigrationIoeCatalogReader catalogReader,
+            MigrationApprovalStamper approvalStamper,
+            CostService costService,
+            ProjectService projectService,
+            BudgetRateApplicationService budgetRateApplicationService,
+            ProjectItemRepository projectItemRepository,
+            PlanService planService) {
+        for (SheetAdapter adapter : sheetAdapters) {
+            adapters.put(adapter.supports(), adapter);
+        }
+        this.validator = validator;
+        this.yearSnapshot = yearSnapshot;
+        this.orgIdentityResolver = orgIdentityResolver;
+        this.catalogReader = catalogReader;
+        this.approvalStamper = approvalStamper;
+        this.costService = costService;
+        this.projectService = projectService;
+        this.budgetRateApplicationService = budgetRateApplicationService;
+        this.projectItemRepository = projectItemRepository;
+        this.planService = planService;
+    }
+
+    /**
+     * 올린 시트를 검증해 행별 진단을 돌려줍니다. 아무것도 저장하지 않습니다.
+     *
+     * @param request 시트 목록
+     * @return 진단 목록과 요약
+     * @throws IllegalArgumentException 시트 목록이 비었거나 지원하지 않는 시트 종류가 온 경우
+     */
+    @Transactional(readOnly = true)
+    public MigrationDto.DryRunResponse dryRun(MigrationDto.DryRunRequest request) {
+        requireSupported(request.sheets());
+        String bseYy = request.sheets().get(0).bseYy();
+        List<MigrationDto.CellDiagnostic> diagnostics =
+                validator.validate(request.sheets(), lookupIndex(), yearSnapshot.load(bseYy), Map.of());
+
+        int totalRows = request.sheets().stream().mapToInt(s -> s.rows().size()).sum();
+        int blockers = (int) diagnostics.stream().filter(d -> d.severity() == MigrationDto.Severity.BLOCKER).count();
+        return new MigrationDto.DryRunResponse(
+                diagnostics,
+                new MigrationDto.Summary(totalRows, blockers, diagnostics.size() - blockers));
+    }
+
+    /**
+     * 보정값을 반영해 원장과 결재 받이를 만들고 편성률을 적용합니다.
+     *
+     * <p>전 과정이 하나의 트랜잭션입니다. 검증에서 BLOCKER가 남거나 어느 단계에서든 예외가 나면 전부 롤백됩니다.
+     *
+     * @param request 시트 목록과 보정값
+     * @param actorEno 업로드 사용자 사번
+     * @return 반영 건수와 생성한 관리번호
+     * @throws CustomGeneralException 검증에 BLOCKER가 남은 경우
+     */
+    @Transactional
+    public MigrationDto.CommitResponse commit(
+            MigrationDto.CommitRequest request, String actorEno) {
+        requireSupported(request.sheets());
+        String bseYy = request.sheets().get(0).bseYy();
+        Map<String, String> overrides = foldOverrides(request.overrides());
+        MigrationYearSnapshot.Data snapshot = yearSnapshot.load(bseYy);
+        MigrationLookupIndex index = lookupIndex();
+
+        // 1단계: 재검증 — BLOCKER가 남으면 아무것도 쓰지 않는다
+        List<MigrationDto.CellDiagnostic> diagnostics =
+                validator.validate(request.sheets(), index, snapshot, overrides);
+        long blockers =
+                diagnostics.stream().filter(d -> d.severity() == MigrationDto.Severity.BLOCKER).count();
+        if (blockers > 0) {
+            throw new CustomGeneralException(
+                    "해결되지 않은 오류가 " + blockers + "건 있어 반영할 수 없습니다. 미리보기에서 보정해 주세요.");
+        }
+
+        AdapterContext ctx =
+                new AdapterContext(bseYy, index, snapshot, overrides, actorEno);
+
+        // 2단계: 이관 대상이 아닌 기존 편성행의 편성률을 유지하도록 미리 모아 둔다
+        List<BudgetWorkDto.ItemRate> rateItems = new ArrayList<>();
+        for (String projectNo : snapshot.allProjectNos()) {
+            Integer rate = snapshot.existingRateOf("BPROJM", projectNo);
+            rateItems.add(new BudgetWorkDto.ItemRate("BPROJM", projectNo, orDefault(rate), orDefault(rate)));
+        }
+        for (String costNo : snapshot.allCostNos()) {
+            Integer rate = snapshot.existingRateOf("BCOSTM", costNo);
+            rateItems.add(new BudgetWorkDto.ItemRate("BCOSTM", costNo, orDefault(rate), orDefault(rate)));
+        }
+
+        // 3단계: 어댑터 순서대로 원장 생성. 부문계획은 자본예산이 만든 품목을 교체하므로 마지막
+        List<String> createdIds = new ArrayList<>();
+        Map<String, String> projectNoByName = new LinkedHashMap<>(snapshot.projectNoByNormalizedName());
+        Map<String, String> costNoByNaturalKey = new LinkedHashMap<>();
+        List<RateIntent> rateIntents = new ArrayList<>();
+        List<PlanIntent> planIntents = new ArrayList<>();
+        int costCount = 0;
+        int projectCount = 0;
+        int itemCount = 0;
+
+        for (SheetKind kind : List.of(SheetKind.COST, SheetKind.CAPITAL_PROJECT, SheetKind.DELEGATED_BUDGET, SheetKind.PLAN_ADJUSTMENT)) {
+            for (MigrationDto.SheetPayload sheet : request.sheets()) {
+                if (sheet.kind() != kind) {
+                    continue;
+                }
+                AdapterOutput output = adapters.get(kind).adapt(sheet, ctx);
+                rateIntents.addAll(output.rates());
+                planIntents.addAll(output.plans());
+
+                for (CostDto.CreateRequest cost : output.costs()) {
+                    String costNo = costService.createCost(cost, true);
+                    costNoByNaturalKey.put(
+                            MigrationYearSnapshot.costNaturalKey(
+                                    bseYy,
+                                    cost.getBgUntAbusC(),
+                                    cost.getIoeC(),
+                                    cost.getCttOppNm(),
+                                    cost.getCttNm()),
+                            costNo);
+                    approvalStamper.stamp(
+                            "BCOSTM", costNo, 1, bseYy + "년 전산일반관리비 이관", actorEno, bseYy);
+                    createdIds.add(costNo);
+                    costCount++;
+                }
+                for (ProjectDto.CreateRequest project : output.projects()) {
+                    String projectNo = projectService.createProject(project, true);
+                    projectNoByName.put(
+                            MigrationYearSnapshot.normalizeName(project.getAbusNm()), projectNo);
+                    approvalStamper.stamp(
+                            "BPROJM", projectNo, 1, bseYy + "년 정보화사업 이관", actorEno, bseYy);
+                    createdIds.add(projectNo);
+                    projectCount++;
+                    itemCount += project.getItems() == null ? 0 : project.getItems().size();
+                }
+            }
+        }
+
+        // 부문계획: 대상 사업의 품목을 조정 금액으로 버전 교체
+        for (PlanIntent intent : planIntents) {
+            itemCount += replaceItems(intent, projectNoByName, bseYy);
+        }
+        String planReqDocNo = planIntents.isEmpty() ? null : createAdjustmentPlan(planIntents, projectNoByName, bseYy);
+
+        // 5단계: 편성률 단일 적용 — 이관분 편성률로 기존 항목을 덮어쓴다
+        for (RateIntent intent : rateIntents) {
+            String pk =
+                    "BPROJM".equals(intent.orcTb())
+                            ? projectNoByName.get(intent.naturalKeyOrPk())
+                            : costNoByNaturalKey.get(intent.naturalKeyOrPk());
+            if (pk == null) {
+                log.warn("편성률 대상 PK를 찾지 못해 건너뜁니다: {} {}", intent.orcTb(), intent.naturalKeyOrPk());
+                continue;
+            }
+            rateItems.removeIf(
+                    existing ->
+                            existing.orcTb().equals(intent.orcTb())
+                                    && existing.orcPkVl().equals(pk));
+            rateItems.add(
+                    new BudgetWorkDto.ItemRate(
+                            intent.orcTb(), pk, intent.percent(), intent.percent()));
+        }
+        BudgetWorkDto.ApplyResponse applied =
+                budgetRateApplicationService.applyItemRates(
+                        new BudgetWorkDto.ItemApplyRequest(bseYy, rateItems));
+
+        return new MigrationDto.CommitResponse(
+                costCount, projectCount, itemCount, applied.totalRecords(), planReqDocNo, createdIds);
+    }
+
+    /**
+     * 부문계획 조정 금액으로 대상 사업의 품목을 버전 교체합니다.
+     *
+     * <p>기존 활성 품목을 {@code LST_YN='N'}으로 닫고 조정 금액으로 새 품목을 만듭니다. 조정액은 비율 곱이 아니라 확정 금액이라 편성률로는 재현되지
+     * 않기 때문입니다(§5.4).
+     *
+     * @return 새로 만든 품목 수
+     */
+    private int replaceItems(
+            PlanIntent intent, Map<String, String> projectNoByName, String bseYy) {
+        String projectNo = projectNoByName.get(intent.normalizedProjectName());
+        if (projectNo == null) {
+            log.warn("부문계획 조정 대상 사업을 찾지 못해 건너뜁니다: {}", intent.normalizedProjectName());
+            return 0;
+        }
+        for (Bitemm existing :
+                projectItemRepository.findByAbusMngNoAndDelYnAndLstYn(projectNo, "N", "Y")) {
+            existing.delete();
+        }
+        ProjectDto.CreateRequest patch = new ProjectDto.CreateRequest();
+        patch.setAbusMngNo(projectNo);
+        patch.setBseYy(bseYy);
+        patch.setItems(
+                buildAdjustedItems(intent, bseYy));
+        // 사업 마스터는 그대로 두고 품목만 새 버전으로 추가한다
+        projectService.replaceItemsForMigration(projectNo, patch.getItems());
+        return patch.getItems().size();
+    }
+
+    /** 조정 금액이 있는 항목만 품목으로 만듭니다. 비목 기본값은 자본예산 어댑터와 같습니다. */
+    private List<ProjectDto.BitemmDto> buildAdjustedItems(PlanIntent intent, String bseYy) {
+        List<ProjectDto.BitemmDto> items = new ArrayList<>();
+        addAdjustedItem(items, intent.devAmount(), "103", "개발비", intent.paymentYm(), bseYy);
+        addAdjustedItem(items, intent.hwAmount(), "101", "기계장치", intent.paymentYm(), bseYy);
+        addAdjustedItem(items, intent.swAmount(), "106", "기타무형자산", intent.paymentYm(), bseYy);
+        return items;
+    }
+
+    private void addAdjustedItem(
+            List<ProjectDto.BitemmDto> items,
+            java.math.BigDecimal amount,
+            String ioeC,
+            String label,
+            String paymentYm,
+            String bseYy) {
+        if (amount == null) {
+            return;
+        }
+        ProjectDto.BitemmDto item = new ProjectDto.BitemmDto();
+        item.setIoeC(ioeC);
+        item.setGclNm(label);
+        item.setCurC("KRW");
+        item.setAmt(amount);
+        item.setBseYm(paymentYm);
+        item.setXcrBseDt(bseYy + "0101");
+        items.add(item);
+    }
+
+    /** 조정 계획({@code BPLANM} + {@code BPLANA})을 만듭니다. */
+    private String createAdjustmentPlan(
+            List<PlanIntent> intents, Map<String, String> projectNoByName, String bseYy) {
+        List<String> projectNos = new ArrayList<>();
+        for (PlanIntent intent : intents) {
+            String projectNo = projectNoByName.get(intent.normalizedProjectName());
+            if (projectNo != null) {
+                projectNos.add(projectNo);
+            }
+        }
+        return planService.createPlanForMigration(bseYy, "조정", projectNos, intents);
+    }
+
+    /** 보정값 목록을 {@code MigrationValidator.overrideKey} 키의 맵으로 접습니다. */
+    private Map<String, String> foldOverrides(List<MigrationDto.CellOverride> overrides) {
+        Map<String, String> out = new LinkedHashMap<>();
+        for (MigrationDto.CellOverride override : overrides) {
+            out.put(
+                    MigrationValidator.overrideKey(
+                            override.sheet(), override.excelRow(), override.column()),
+                    override.value());
+        }
+        return out;
+    }
+
+    private MigrationLookupIndex lookupIndex() {
+        return new MigrationLookupIndex(
+                orgIdentityResolver.snapshot(),
+                catalogReader.ioeCodeByName(),
+                catalogReader.xcrByCurrency());
+    }
+
+    private void requireSupported(List<MigrationDto.SheetPayload> sheets) {
+        if (sheets == null || sheets.isEmpty()) {
+            throw new IllegalArgumentException("올린 시트가 없습니다.");
+        }
+        for (MigrationDto.SheetPayload sheet : sheets) {
+            if (!adapters.containsKey(sheet.kind())) {
+                throw new IllegalArgumentException("지원하지 않는 시트 종류입니다: " + sheet.kind());
+            }
+        }
+    }
+
+    /** 기존 편성률이 없으면 100으로 둡니다. */
+    private static int orDefault(Integer rate) {
+        return rate == null ? 100 : rate;
+    }
+}
+```
+
+- [ ] **Step 5: `ProjectService`·`PlanService`에 이관 전용 메서드를 추가한다**
+
+`ProjectService.replaceItemsForMigration(String abusMngNo, List<ProjectDto.BitemmDto> items)`
+
+```java
+    /**
+     * 이관 전용 — 사업의 품목을 새 버전으로 교체합니다.
+     *
+     * <p>호출자가 기존 활성 품목을 이미 논리삭제한 상태를 전제합니다. 채번(`GCL-{연도}-{4자리}`)과 환율 표준 조회, 외화 금액 재계산은
+     * {@code createProject}와 같은 규칙을 따릅니다. 부문계획 조정액이 편성률로 재현되지 않아 품목 금액 자체를 바꿔야 하는 경로에만 씁니다(§5.4).
+     *
+     * @param abusMngNo 사업관리번호
+     * @param items 새 품목 목록 (비어 있으면 아무것도 하지 않습니다)
+     * @throws IllegalArgumentException 사업이 없거나 최종 버전이 아닌 경우
+     */
+    @Transactional
+    public void replaceItemsForMigration(String abusMngNo, List<ProjectDto.BitemmDto> items) {
+        if (items == null || items.isEmpty()) {
+            return;
+        }
+        Bprojm project =
+                projectRepository
+                        .findByAbusMngNoAndLstYnAndDelYn(abusMngNo, "Y", "N")
+                        .orElseThrow(
+                                () -> new IllegalArgumentException("사업을 찾을 수 없습니다: " + abusMngNo));
+        int gclSno = 0;
+        for (ProjectDto.BitemmDto itemDto : items) {
+            Long gclSeq = bitemmRepository.getNextSequenceValue();
+            String gclMngNo =
+                    String.format("GCL-%s-%04d", java.time.LocalDate.now().getYear(), gclSeq);
+            itemDto.setXcr(xcrLookupService.resolveXcr(itemDto.getCurC(), LocalDate.now()));
+            BigDecimal[] reconciled =
+                    BudgetAmountCalculator.reconcileAmount(
+                            itemDto.getFcAmt(),
+                            itemDto.getAmt(),
+                            itemDto.getCurC(),
+                            itemDto.getXcr());
+            bitemmRepository.save(
+                    Bitemm.builder()
+                            .gclMngNo(gclMngNo)
+                            .sno(++gclSno)
+                            .abusMngNo(project.getAbusMngNo())
+                            .fntTbCrySno(project.getSno())
+                            .ioeC(itemDto.getIoeC())
+                            .gclNm(itemDto.getGclNm())
+                            .qty(itemDto.getQty())
+                            .curC(itemDto.getCurC())
+                            .xcr(itemDto.getXcr())
+                            .xcrBseDt(DateFormatUtil.toYmd8(itemDto.getXcrBseDt()))
+                            .bseYm(itemDto.getBseYm())
+                            .dfrCleC(CodeDefaults.orNotApplicable(itemDto.getDfrCleC()))
+                            .lstYn("Y")
+                            .amt(reconciled[0])
+                            .fcAmt(reconciled[1])
+                            .build());
+        }
+    }
+```
+
+`PlanService.createPlanForMigration(String bseYy, String plnTp, List<String> projectNos, List<PlanIntent> intents)` — 기존 `createPlan`의 채번·스냅샷 조립을 재사용하고 `PlanIntent.snapshotFields()`를 스냅샷 JSON에 함께 넣는다. 기존 `createPlan`이 받는 요청 DTO(`PlanDto.CreateRequest`)로 조립할 수 있으면 새 메서드 대신 그 경로를 쓰고, 스냅샷 필드를 넣을 자리가 없을 때만 새 메서드를 만든다. **먼저 `PlanService.createPlan`을 읽고 판단한다.**
+
+```bash
+cd /c/it/it_backend && sed -n '260,380p' src/main/java/com/kdb/it/domain/budget/plan/service/PlanService.java
+```
+
+- [ ] **Step 6: 테스트를 돌려 통과를 확인한다**
+
+Run: `cd it_backend && ./gradlew test --tests '*MigrationImportServiceTest' --no-daemon`
+Expected: PASS (7 tests)
+
+- [ ] **Step 7: 커밋**
+
+```bash
+cd /c/it/it_backend && ./gradlew spotlessApply --no-daemon
+git add src/main/java/com/kdb/it src/test/java/com/kdb/it/domain/migration
+git commit -m "feat: 이관 오케스트레이션 서비스와 품목 버전 교체 경로 추가"
+```
+
+---
+
+### Task 12: `MigrationController`와 OpenAPI 계약
+
+**Files:**
+- Create: `it_backend/src/main/java/com/kdb/it/domain/migration/controller/MigrationController.java`
+- Test: `it_backend/src/test/java/com/kdb/it/domain/migration/controller/MigrationControllerTest.java`
+- Test: `it_backend/src/test/java/com/kdb/it/domain/migration/MigrationOpenApiContractTest.java`
+
+**Interfaces:**
+- Produces: `POST /api/admin/migration/imports/dry-run` — 본문 `MigrationDto.DryRunRequest`, 응답 `MigrationDto.DryRunResponse`
+- Produces: `POST /api/admin/migration/imports` — 본문 `MigrationDto.CommitRequest`, 응답 `MigrationDto.CommitResponse`, 201 Created
+
+- [ ] **Step 1: 실패하는 슬라이스 테스트를 작성한다**
+
+```java
+package com.kdb.it.domain.migration.controller;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kdb.it.domain.migration.dto.MigrationDto;
+import com.kdb.it.domain.migration.service.MigrationImportService;
+import java.util.List;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+
+/** 이관 API의 권한·계약을 고정합니다. */
+@org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest(MigrationController.class)
+class MigrationControllerTest {
+
+    @Autowired private MockMvc mockMvc;
+    @Autowired private ObjectMapper objectMapper;
+    @MockBean private MigrationImportService migrationImportService;
+
+    @Test
+    @DisplayName("관리자가 아니면 dry-run이 403이다")
+    @WithMockUser(roles = "USER")
+    void 비관리자는_거부된다() throws Exception {
+        mockMvc.perform(
+                        post("/api/admin/migration/imports/dry-run")
+                                .with(org.springframework.security.test.web.servlet.request
+                                        .SecurityMockMvcRequestPostProcessors.csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(dryRunRequest())))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("관리자는 dry-run 결과를 받는다")
+    @WithMockUser(roles = "ADMIN")
+    void 관리자는_사전검증을_수행한다() throws Exception {
+        when(migrationImportService.dryRun(any()))
+                .thenReturn(
+                        new MigrationDto.DryRunResponse(
+                                List.of(), new MigrationDto.Summary(3, 0, 1)));
+
+        mockMvc.perform(
+                        post("/api/admin/migration/imports/dry-run")
+                                .with(org.springframework.security.test.web.servlet.request
+                                        .SecurityMockMvcRequestPostProcessors.csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(dryRunRequest())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.summary.totalRows").value(3))
+                .andExpect(jsonPath("$.summary.blockerCount").value(0));
+    }
+
+    @Test
+    @DisplayName("시트가 비면 400이다")
+    @WithMockUser(roles = "ADMIN")
+    void 빈_시트목록은_400이다() throws Exception {
+        mockMvc.perform(
+                        post("/api/admin/migration/imports/dry-run")
+                                .with(org.springframework.security.test.web.servlet.request
+                                        .SecurityMockMvcRequestPostProcessors.csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"sheets\":[]}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("확정 반영은 201과 반영 건수를 돌려준다")
+    @WithMockUser(roles = "ADMIN", username = "999999")
+    void 확정반영은_201이다() throws Exception {
+        when(migrationImportService.commit(any(), anyString()))
+                .thenReturn(
+                        new MigrationDto.CommitResponse(
+                                14, 4, 9, 23, "PLN-2026-0001", List.of("COST-2026-0001")));
+
+        mockMvc.perform(
+                        post("/api/admin/migration/imports")
+                                .with(org.springframework.security.test.web.servlet.request
+                                        .SecurityMockMvcRequestPostProcessors.csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(commitRequest())))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.costCount").value(14))
+                .andExpect(jsonPath("$.planReqDocNo").value("PLN-2026-0001"));
+    }
+
+    @Test
+    @DisplayName("JSON이 아닌 Content-Type은 415다")
+    @WithMockUser(roles = "ADMIN")
+    void 잘못된_컨텐츠타입은_415다() throws Exception {
+        mockMvc.perform(
+                        post("/api/admin/migration/imports")
+                                .with(org.springframework.security.test.web.servlet.request
+                                        .SecurityMockMvcRequestPostProcessors.csrf())
+                                .contentType(MediaType.TEXT_PLAIN)
+                                .content("{}"))
+                .andExpect(status().isUnsupportedMediaType());
+    }
+
+    private static MigrationDto.DryRunRequest dryRunRequest() {
+        return new MigrationDto.DryRunRequest(
+                List.of(
+                        new MigrationDto.SheetPayload(
+                                com.kdb.it.domain.migration.dto.SheetKind.COST,
+                                "2026",
+                                List.of(
+                                        new MigrationDto.NormalizedRow(
+                                                2, java.util.Map.of("ioeName", "유지보수료"))))));
+    }
+
+    private static MigrationDto.CommitRequest commitRequest() {
+        return new MigrationDto.CommitRequest(dryRunRequest().sheets(), List.of());
+    }
+}
+```
+
+- [ ] **Step 2: 테스트를 돌려 실패를 확인한다**
+
+Run: `cd it_backend && ./gradlew test --tests '*MigrationControllerTest' --no-daemon`
+Expected: 컴파일 실패 — `MigrationController` 없음
+
+- [ ] **Step 3: 구현한다**
+
+```java
+package com.kdb.it.domain.migration.controller;
+
+import com.kdb.it.domain.migration.dto.MigrationDto;
+import com.kdb.it.domain.migration.service.MigrationImportService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/** 수기 엑셀 일괄 이관 API입니다. 관리자만 호출할 수 있습니다. */
+@Tag(name = "데이터 이관", description = "수기 엑셀 일괄 반입")
+@RestController
+@RequestMapping("/api/admin/migration")
+@RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
+public class MigrationController {
+
+    private final MigrationImportService migrationImportService;
+
+    /**
+     * 올린 시트를 검증해 행별 진단과 해석 후보를 돌려줍니다. 아무것도 저장하지 않습니다.
+     *
+     * @param request 시트 목록
+     * @return 진단 목록과 요약
+     */
+    @Operation(summary = "이관 사전검증", description = "조직·코드 해석과 중복·필수값 검증 결과를 돌려줍니다. 저장하지 않습니다.")
+    @PostMapping(path = "/imports/dry-run", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<MigrationDto.DryRunResponse> dryRun(
+            @Valid @RequestBody MigrationDto.DryRunRequest request) {
+        return ResponseEntity.ok(migrationImportService.dryRun(request));
+    }
+
+    /**
+     * 보정값을 반영해 원장과 결재 받이를 만들고 편성률을 적용합니다.
+     *
+     * @param request 시트 목록과 보정값
+     * @param user 인증 사용자 (사번을 업로드 작성자로 씁니다)
+     * @return 반영 건수와 생성한 관리번호
+     */
+    @Operation(summary = "이관 확정 반영", description = "단일 트랜잭션으로 원장을 만듭니다. 오류가 남아 있으면 전량 롤백됩니다.")
+    @PostMapping(path = "/imports", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<MigrationDto.CommitResponse> commit(
+            @Valid @RequestBody MigrationDto.CommitRequest request,
+            @AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(migrationImportService.commit(request, user.getUsername()));
+    }
+}
+```
+
+- [ ] **Step 4: `SecurityConfig`에 경로가 관리자 전용으로 걸려 있는지 확인한다**
+
+```bash
+cd /c/it/it_backend && grep -n "admin" src/main/java/com/kdb/it/config/SecurityConfig.java
+```
+
+`/api/admin/**`가 이미 `hasRole("ADMIN")`이면 추가 설정이 필요 없다. 없으면 규칙을 추가한다. 클래스 수준 `@PreAuthorize`가 이미 있으므로 이중 방어다.
+
+- [ ] **Step 5: OpenAPI 계약 테스트를 작성한다**
+
+기존 `ApiResponseOpenApiContractTest`가 도메인 전반을 검사하는 방식을 그대로 따른다. 먼저 그 파일을 읽고 같은 패턴으로 `MigrationOpenApiContractTest`를 만든다.
+
+```bash
+cd /c/it/it_backend && find src/test -name "*OpenApiContractTest.java" | head -3
+```
+
+응답 DTO 4개(`DryRunResponse`·`Summary`·`CellDiagnostic`·`CommitResponse`·`Candidate`)의 모든 속성이 `requiredMode = REQUIRED`이고, null이 올 수 있는 `CellDiagnostic.column`·`CommitResponse.planReqDocNo`만 `nullable = true`인지, `CellDiagnostic.code`에 `allowableValues`가 있는지 고정한다.
+
+- [ ] **Step 6: 테스트를 돌려 통과를 확인한다**
+
+Run: `cd it_backend && ./gradlew test --tests '*Migration*' --no-daemon`
+Expected: PASS (이관 관련 전체)
+
+- [ ] **Step 7: 커밋**
+
+```bash
+cd /c/it/it_backend && ./gradlew spotlessApply --no-daemon
+git add src/main/java/com/kdb/it src/test/java/com/kdb/it/domain/migration
+git commit -m "feat: 이관 dry-run·확정반영 API와 OpenAPI 계약 추가"
+```
+
+---
+
+### Task 13: Oracle 통합 테스트
+
+목으로는 검증할 수 없는 것들을 실제 Oracle에서 확인한다 — 전량 롤백, 결재 받이가 붙은 뒤 예산 집계에 실제로 잡히는지, `applyItemRates`가 연도 전체를 재작성해도 기존 편성행이 살아남는지, 품목 버전 교체.
+
+**Files:**
+- Test: `it_backend/src/test/java/com/kdb/it/domain/migration/MigrationImportIt.java`
+- Test: `it_backend/src/test/resources/fixtures/migration/*.json` (익명화 정규화 행 픽스처)
+
+**Interfaces:**
+- Consumes: `AbstractOracleRepositoryTest` (기존), `MigrationImportService`, 모든 리포지토리
+
+- [ ] **Step 1: 익명화 픽스처를 만든다**
+
+실 xlsx를 커밋하지 않는다. 대신 각 시트의 정규화 행을 JSON으로 손으로 적는다 — 실제 파일과 구조는 같고 이름·금액은 가공한다.
+
+`src/test/resources/fixtures/migration/cost.json`
+
+```json
+[
+  {
+    "excelRow": 2,
+    "cells": {
+      "abusCode": "571", "ioeName": "유지보수료", "abusTcLabel": "계속",
+      "vendorName": "테스트벤더", "requestDetail": "테스트 유지보수",
+      "securityFlag": "", "terminalFlag": "", "deptName": "IT기획부",
+      "teamName": "IT기획팀", "currency": "KRW", "fcAmount": "",
+      "krwAmount": "15000", "remark": "테스트"
+    }
+  },
+  {
+    "excelRow": 3,
+    "cells": {
+      "abusCode": "571", "ioeName": "국외전산임차료", "abusTcLabel": "계속",
+      "vendorName": "Test Vendor Ltd", "requestDetail": "테스트 해외 임차",
+      "securityFlag": "", "terminalFlag": "", "deptName": "IT기획부",
+      "teamName": "IT인프라팀", "currency": "GBP", "fcAmount": "1000",
+      "krwAmount": "1924", "remark": ""
+    }
+  }
+]
+```
+
+`capital.json`·`delegated.json`·`plan.json`도 같은 형태로 만든다. 부서·담당자 이름은 로컬 DB `TPRMPP_CORGNI`·`TPRMPP_CUSERI`에 실제로 있는 값을 골라야 해석이 통과한다. 먼저 조회한다.
+
+```bash
+cd /c/it && { printf '%s\n' "$DB_PASSWORD"; printf "%s\n" "SELECT PRLM_OGZ_C_CONE, BBR_NM FROM ITPOWN.TPRMPP_CORGNI WHERE DEL_YN='N' AND ROWNUM<=20;" "SELECT ENO, USR_NM, PT_C_NM, BBR_C FROM ITPOWN.TPRMPP_CUSERI WHERE DEL_YN='N' AND ROWNUM<=10;" "EXIT"; } | NLS_LANG=KOREAN_KOREA.AL32UTF8 sqlplus -S ITPAPP@127.0.0.1:11521/XEPDB1
+```
+
+- [ ] **Step 2: 통합 테스트를 작성한다**
+
+```java
+package com.kdb.it.domain.migration;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kdb.it.domain.budget.cost.repository.CostRepository;
+import com.kdb.it.domain.budget.project.repository.ProjectItemRepository;
+import com.kdb.it.domain.budget.project.repository.ProjectRepository;
+import com.kdb.it.domain.budget.work.repository.BbugtmRepository;
+import com.kdb.it.domain.migration.dto.MigrationDto;
+import com.kdb.it.domain.migration.dto.SheetKind;
+import com.kdb.it.domain.migration.service.MigrationImportService;
+import com.kdb.it.support.AbstractOracleRepositoryTest;
+import java.math.BigDecimal;
+import java.util.List;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+
+/** 실제 Oracle에서 이관 반영의 원자성과 집계 반영을 확인합니다. */
+@Tag("it")
+class MigrationImportIt extends AbstractOracleRepositoryTest {
+
+    private static final String BSE_YY = "2999"; // 실 데이터와 섞이지 않는 테스트 연도
+
+    @Autowired private MigrationImportService service;
+    @Autowired private CostRepository costRepository;
+    @Autowired private ProjectRepository projectRepository;
+    @Autowired private ProjectItemRepository projectItemRepository;
+    @Autowired private BbugtmRepository bbugtmRepository;
+    @Autowired private ObjectMapper objectMapper;
+
+    @Test
+    @DisplayName("전산업무비 픽스처를 반영하면 BCOSTM과 결재완료 받이가 함께 생긴다")
+    void 전산업무비를_반영하면_결재받이가_함께_생긴다() {
+        MigrationDto.CommitResponse response =
+                service.commit(
+                        new MigrationDto.CommitRequest(List.of(sheet(SheetKind.COST, "cost.json")), List.of()),
+                        actorEno());
+
+        assertThat(response.costCount()).isEqualTo(2);
+        assertThat(costRepository.findByBseYyAndLstYnAndDelYn(BSE_YY, "Y", "N")).hasSize(2);
+        // 결재완료 받이가 붙어야 예산 집계에 잡힌다 (§3.6)
+        assertThat(bbugtmRepository.findByBseYyAndFntTbNmAndDelYn(BSE_YY, "BCOSTM", "N"))
+                .isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("외화 행 금액은 서버가 FC_AMT × Ccodem 환율로 재계산해 저장한다")
+    void 외화행은_서버가_재계산한다() {
+        service.commit(
+                new MigrationDto.CommitRequest(List.of(sheet(SheetKind.COST, "cost.json")), List.of()),
+                actorEno());
+
+        assertThat(costRepository.findByBseYyAndLstYnAndDelYn(BSE_YY, "Y", "N"))
+                .filteredOn(c -> "GBP".equals(c.getCurC()))
+                .singleElement()
+                .satisfies(
+                        c -> {
+                            // 픽스처 외화 1,000 GBP × 시드 환율 1,924 = 1,924,000원
+                            assertThat(c.getCostTotXpAmt())
+                                    .isEqualByComparingTo(new BigDecimal("1924000"));
+                            assertThat(c.getFcAmt()).isEqualByComparingTo(new BigDecimal("1000"));
+                        });
+    }
+
+    @Test
+    @DisplayName("BLOCKER가 남은 요청은 아무 행도 남기지 않고 실패한다")
+    void 블로커가_있으면_전량_롤백된다() {
+        MigrationDto.SheetPayload broken =
+                new MigrationDto.SheetPayload(
+                        SheetKind.COST,
+                        BSE_YY,
+                        List.of(
+                                new MigrationDto.NormalizedRow(
+                                        2,
+                                        java.util.Map.of(
+                                                "deptName", "존재하지않는부서",
+                                                "requestDetail", "테스트",
+                                                "ioeName", "유지보수료",
+                                                "currency", "KRW",
+                                                "krwAmount", "1000"))));
+
+        assertThatThrownBy(
+                        () ->
+                                service.commit(
+                                        new MigrationDto.CommitRequest(List.of(broken), List.of()),
+                                        actorEno()))
+                .hasMessageContaining("반영할 수 없습니다");
+
+        assertThat(costRepository.findByBseYyAndLstYnAndDelYn(BSE_YY, "Y", "N")).isEmpty();
+    }
+
+    @Test
+    @DisplayName("자본예산과 부문계획을 함께 반영하면 품목이 조정 금액으로 교체된다")
+    void 부문계획_조정이_품목을_교체한다() {
+        service.commit(
+                new MigrationDto.CommitRequest(
+                        List.of(
+                                sheet(SheetKind.CAPITAL_PROJECT, "capital.json"),
+                                sheet(SheetKind.PLAN_ADJUSTMENT, "plan.json")),
+                        List.of()),
+                actorEno());
+
+        String projectNo =
+                projectRepository.findByBseYyAndLstYnAndDelYn(BSE_YY, "Y", "N").get(0).getAbusMngNo();
+
+        // 활성 품목은 조정 금액만 남고 편성요청 원값은 LST_YN='N'으로 보존된다 (§5.4)
+        assertThat(projectItemRepository.findByAbusMngNoAndDelYnAndLstYn(projectNo, "N", "Y"))
+                .isNotEmpty();
+        assertThat(projectItemRepository.findByAbusMngNoAndDelYn(projectNo, "Y"))
+                .as("편성요청 시점 품목이 논리삭제로 보존된다")
+                .isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("같은 파일을 다시 반영하면 중복으로 거부한다")
+    void 재업로드는_중복으로_거부된다() {
+        MigrationDto.CommitRequest request =
+                new MigrationDto.CommitRequest(List.of(sheet(SheetKind.COST, "cost.json")), List.of());
+        service.commit(request, actorEno());
+
+        assertThatThrownBy(() -> service.commit(request, actorEno()))
+                .hasMessageContaining("반영할 수 없습니다");
+    }
+
+    @Test
+    @DisplayName("이관 대상이 아닌 기존 연도 편성행은 편성률이 유지된다")
+    void 기존_편성행의_편성률이_유지된다() {
+        // 1차 반영으로 편성행을 만들고
+        service.commit(
+                new MigrationDto.CommitRequest(List.of(sheet(SheetKind.COST, "cost.json")), List.of()),
+                actorEno());
+        int before = bbugtmRepository.findByBseYyAndDelYn(BSE_YY, "N").size();
+
+        // 다른 시트를 추가 반영해도 앞서 만든 편성행이 사라지지 않는다 (§3.5)
+        service.commit(
+                new MigrationDto.CommitRequest(
+                        List.of(sheet(SheetKind.CAPITAL_PROJECT, "capital.json")), List.of()),
+                actorEno());
+
+        assertThat(bbugtmRepository.findByBseYyAndDelYn(BSE_YY, "N")).hasSizeGreaterThanOrEqualTo(before);
+    }
+
+    /** 픽스처 JSON을 읽어 시트 페이로드로 만듭니다. 예산연도는 테스트 연도로 바꿔 실 데이터와 섞이지 않게 합니다. */
+    private MigrationDto.SheetPayload sheet(SheetKind kind, String fixture) {
+        try {
+            List<MigrationDto.NormalizedRow> rows =
+                    objectMapper.readValue(
+                            new ClassPathResource("fixtures/migration/" + fixture).getInputStream(),
+                            new TypeReference<List<MigrationDto.NormalizedRow>>() {});
+            return new MigrationDto.SheetPayload(kind, BSE_YY, rows);
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException("픽스처를 읽지 못했습니다: " + fixture, e);
+        }
+    }
+
+    /** 로컬 DB에 실제로 있는 사번을 씁니다. 없는 사번이면 조직 스냅샷 해석이 비어 버립니다. */
+    private String actorEno() {
+        return "999999";
+    }
+}
+```
+
+- [ ] **Step 3: 테스트 연도 환율 시드를 보강한다**
+
+`BSE_YY = "2999"`를 쓰지만 `XcrLookupService`는 **오늘 날짜**로 환율을 조회하므로 Task 1의 2026년 유효기간 시드가 그대로 쓰인다. 오늘이 2026년 밖이면 통합 테스트가 실패한다. 이를 막기 위해 Task 1 시드의 `END_DT`를 `99991231`로 바꾼다.
+
+```sql
+-- V20260811_003__ExtendBudgetXcrValidity.sql
+-- 예산환율 유효기간을 열어 둔다. XcrLookupService가 조회 기준일로 오늘을 쓰므로
+-- 연도 경계를 넘기면 이관·통합테스트가 IllegalStateException으로 실패한다.
+UPDATE ITPOWN.TPRMPP_CCODEM
+   SET END_DT = '99991231', LST_CHG_USID = 'SYSTEM', LST_CHG_DTM = SYSTIMESTAMP
+ WHERE CO_C_ID_NM = 'CUR_C' AND CO_C_INTN_NM = 'XCR';
+```
+
+> Task 1의 스크립트는 이미 적용됐을 수 있어 수정하지 않고 새 버전으로 추가한다(Flyway 체크섬).
+
+- [ ] **Step 4: 통합 테스트를 돌린다**
+
+Run: `cd it_backend && ./gradlew integrationTest --tests '*MigrationImportIt*' --no-daemon`
+Expected: PASS (6 tests). 실패하면 픽스처의 부서·담당자 이름이 로컬 DB에 실제로 있는지 먼저 확인한다.
+
+- [ ] **Step 5: 테스트 데이터를 정리한다**
+
+`BSE_YY='2999'` 행이 남으면 다음 실행이 중복으로 거부된다. `@AfterEach`에서 정리한다.
+
+```java
+    @org.junit.jupiter.api.AfterEach
+    void 테스트연도_데이터를_정리한다() {
+        // 물리 삭제는 테스트 연도 한정. 운영 코드에서는 논리삭제만 쓴다
+        entityManager
+                .createNativeQuery("DELETE FROM ITPOWN.TPRMPP_BBUGTM WHERE BSE_YY = :yy")
+                .setParameter("yy", BSE_YY)
+                .executeUpdate();
+        entityManager
+                .createNativeQuery(
+                        "DELETE FROM ITPOWN.TPRMPP_BITEMM WHERE ABUS_MNG_NO IN"
+                                + " (SELECT ABUS_MNG_NO FROM ITPOWN.TPRMPP_BPROJM WHERE BSE_YY = :yy)")
+                .setParameter("yy", BSE_YY)
+                .executeUpdate();
+        entityManager
+                .createNativeQuery("DELETE FROM ITPOWN.TPRMPP_BPROJM WHERE BSE_YY = :yy")
+                .setParameter("yy", BSE_YY)
+                .executeUpdate();
+        entityManager
+                .createNativeQuery("DELETE FROM ITPOWN.TPRMPP_BCOSTM WHERE BSE_YY = :yy")
+                .setParameter("yy", BSE_YY)
+                .executeUpdate();
+        entityManager.flush();
+    }
+```
+
+`AbstractOracleRepositoryTest`가 `entityManager`를 노출하는지 확인하고, 없으면 `@Autowired EntityManager`를 선언한다. `CAPPLM`·`CAPPLA`는 연도 컬럼이 없으므로 `APF_DCM_NO LIKE 'APF-2999-%'`로 지운다.
+
+- [ ] **Step 6: 커밋**
+
+```bash
+cd /c/it/it_database && git add migrations/V20260811_003__ExtendBudgetXcrValidity.sql && git commit -m "fix: 예산환율 유효기간을 열어 연도 경계에서 조회 실패를 막음"
+cd /c/it/it_backend && ./gradlew spotlessApply --no-daemon
+git add src/test
+git commit -m "test: 이관 반영의 원자성·집계 반영 Oracle 통합 테스트 추가"
+```
+
+---
+
+Phase E(프론트 파서 · 미리보기 · 페이지 · E2E)는 이어서 작성한다.
