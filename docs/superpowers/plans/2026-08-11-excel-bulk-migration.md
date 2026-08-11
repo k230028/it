@@ -4539,9 +4539,13 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * 이관 검증·변환에 필요한 공통코드를 한 번에 읽습니다.
  *
- * <p>비목은 코드값명 → 코드값 역방향 맵, 환율은 통화 → 예산환율 맵으로 만듭니다. 환율은
- * {@code XcrLookupService}와 같은 원천({@code C_ID='CUR_C'}, {@code C_TP='XCR'}, {@code CO_CDVA_NM})을 읽어
- * dry-run의 금액 대조가 실제 저장값과 어긋나지 않게 합니다.
+ * <p>비목은 코드값명 → 코드값 역방향 맵, 환율은 통화 → 예산환율 맵으로 만듭니다.
+ *
+ * <p>환율은 {@code XcrLookupService.resolveXcr}와 **같은 판정 기준**으로 읽어야 합니다. 그 경로가 호출하는
+ * {@code CodeRepositoryImpl.findByCTpWithValidDate}가 아니라 {@code findByCIdAndCdvaWithValidDate}는
+ * {@code C_ID}·{@code CDVA}·{@code DEL_YN}·유효일자만 보고 {@code C_TP}를 필터하지 않습니다. 따라서 이 리더도
+ * {@code C_TP}로 걸러내지 않습니다 — 걸러내면 dry-run은 "환율 없음"으로 판정하는데 commit은 같은 행을 찾아
+ * 저장에 성공하는 어긋남이 생깁니다.
  */
 @Service
 @RequiredArgsConstructor
@@ -4574,7 +4578,7 @@ public class MigrationIoeCatalogReader {
     public Map<String, BigDecimal> xcrByCurrency() {
         Map<String, BigDecimal> out = new LinkedHashMap<>();
         for (Ccodem code : codeRepository.findByCIdAndDelYn(CommonCodeGroups.CURRENCY, "N")) {
-            if (!"XCR".equals(code.getCTp()) || code.getCdvaDtlC() == null) {
+            if (code.getCdvaDtlC() == null) {
                 continue;
             }
             try {
@@ -5725,20 +5729,17 @@ class MigrationImportIt extends AbstractOracleRepositoryTest {
 }
 ```
 
-- [ ] **Step 3: 테스트 연도 환율 시드를 보강한다**
+- [ ] **Step 3: 시드 적용 상태를 확인한다**
 
-`BSE_YY = "2999"`를 쓰지만 `XcrLookupService`는 **오늘 날짜**로 환율을 조회하므로 Task 1의 2026년 유효기간 시드가 그대로 쓰인다. 오늘이 2026년 밖이면 통합 테스트가 실패한다. 이를 막기 위해 Task 1 시드의 `END_DT`를 `99991231`로 바꾼다.
+Task 1의 fix 라운드에서 환율 유효기간을 `END_DT='99991231'`로 열어 두었으므로 연도 경계 문제는 없다. 다만 **로컬 스키마에는 Flyway 이력 테이블이 없어(`ITPOWN."flyway_schema_history"` → `ORA-00942`) 마이그레이션이 자동 적용되지 않는다.** 통합 테스트 프로파일(`test-it`)도 Flyway가 꺼져 있다.
 
-```sql
--- V20260811_003__ExtendBudgetXcrValidity.sql
--- 예산환율 유효기간을 열어 둔다. XcrLookupService가 조회 기준일로 오늘을 쓰므로
--- 연도 경계를 넘기면 이관·통합테스트가 IllegalStateException으로 실패한다.
-UPDATE ITPOWN.TPRMPP_CCODEM
-   SET END_DT = '99991231', LST_CHG_USID = 'SYSTEM', LST_CHG_DTM = SYSTIMESTAMP
- WHERE CO_C_ID_NM = 'CUR_C' AND CO_C_INTN_NM = 'XCR';
+따라서 통합 테스트를 돌리기 전에 시드가 실제로 들어가 있는지 확인한다.
+
+```bash
+cd /c/it && { printf '%s\n' "$DB_PASSWORD"; printf "%s\n" "SELECT CDVA_ID, CO_CDVA_NM, END_DT FROM ITPOWN.TPRMPP_CCODEM WHERE CO_C_ID_NM='CUR_C' AND CDVA_ID IN ('GBP','AUD');" "EXIT"; } | NLS_LANG=KOREAN_KOREA.AL32UTF8 sqlplus -S ITPAPP@127.0.0.1:11521/XEPDB1
 ```
 
-> Task 1의 스크립트는 이미 적용됐을 수 있어 수정하지 않고 새 버전으로 추가한다(Flyway 체크섬).
+GBP 1924 / AUD 929가 `END_DT='99991231'`로 나오지 않으면 `V20260811_001` 스크립트를 수동 적용한다.
 
 - [ ] **Step 4: 통합 테스트를 돌린다**
 
@@ -5780,7 +5781,6 @@ Expected: PASS (6 tests). 실패하면 픽스처의 부서·담당자 이름이 
 - [ ] **Step 6: 커밋**
 
 ```bash
-cd /c/it/it_database && git add migrations/V20260811_003__ExtendBudgetXcrValidity.sql && git commit -m "fix: 예산환율 유효기간을 열어 연도 경계에서 조회 실패를 막음"
 cd /c/it/it_backend && ./gradlew spotlessApply --no-daemon
 git add src/test
 git commit -m "test: 이관 반영의 원자성·집계 반영 Oracle 통합 테스트 추가"
