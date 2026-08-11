@@ -1,39 +1,21 @@
-# 내부망 MFA 작업 인계
+# 내부망 MFA 작업 완료 기록
 
-## 작업 브랜치와 worktree
+구현 계획의 Task 1~10을 모두 완료했습니다. 이 문서는 세션 인계용이었으므로 남은 참조만 정리합니다.
 
-- 루트 문서: `codex/internal-mfa`, `C:\it\.worktrees\internal-mfa`
-- 백엔드: `codex/internal-mfa`, `C:\it\.worktrees\internal-mfa\it_backend`
-- 프론트엔드: `codex/internal-mfa`, `C:\it\.worktrees\internal-mfa\it_frontend`
-- 데이터베이스: `codex/internal-mfa`, `C:\it\.worktrees\internal-mfa\it_database`
+## 산출물
 
-## 확정된 변경 요구
+- 설계: [`specs/done/2026-08-10-internal-mfa-integration-design.md`](specs/done/2026-08-10-internal-mfa-integration-design.md)
+- 계획: [`plans/done/2026-08-10-internal-mfa-integration.md`](plans/done/2026-08-10-internal-mfa-integration.md)
+- 운영 문서: [`it_backend/README.md`의 「내부망 MFA」](../../it_backend/README.md), [`it_frontend/README.md`의 「추가 인증(MFA) 연결」](../../it_frontend/README.md)
+- 재사용 규칙: `it_backend/CLAUDE.md` §5, `it_frontend/CLAUDE.md` §3, 루트 `CLAUDE.md` §4.2
 
-- MFA 적용 대상은 수동 로그인과 사용자 전자결재 신청·승인·반려·회수·상신이다.
-- 인증수단은 지정맥(기본), FIDO, mOTP이며 마지막 인증수단 코드만 쿠키에 저장한다.
-- 5분 인증 재사용 기능과 체크박스는 제거했다. 전자결재 동작마다 새 MFA를 수행한다.
-- MFA 거래는 서버 메모리의 1회용 거래이며 DB/JPA/Flyway 변경은 없다.
-- `local-ext`는 대화상자 확인 시 모의 성공한다. `local-int`, `dev`, `prod`는 실제 연동만 허용한다.
+## 계획과 달라진 결정
 
-## 완료 상태
+- **FIDO 재조회 판정** — `MfaVerificationResult`가 성공·실패 2값이라 미승인 응답이 실패로 집계됐고, 허용 실패 횟수(5)와 3초 폴링이 겹쳐 약 15초 만에 거래가 잠겼습니다. `Outcome(VERIFIED/UNDECIDED/FAILED)`을 도입해 재조회를 실패로 세지 않도록 고쳤습니다(계획에 없던 선행 수정).
+- **`openMfa`의 `loginPendingId` 제거** — Task 5가 로그인 대기 식별자를 httpOnly 쿠키로 만들어 프론트가 읽거나 되돌려보낼 수 없습니다. 계획 Task 8의 시그니처에서 이 인자를 뺐습니다.
+- **회수 명령 집약** — 두 화면에 인라인으로 흩어져 있던 회수 요청을 `useApprovals.recallApplication`으로 모았습니다. 화면마다 요청을 다시 조립하면 MFA 적용이 빠질 수 있습니다.
+- **단건 `/approve` 미사용** — 백엔드는 `POST /api/applications/{id}/approve`를 보호하지만 프론트는 단건도 `bulk-approve`로 처리하므로 호출부가 없습니다. 보호 엔드포인트 7개 중 프론트 연결은 6곳입니다.
 
-- Task 1: 메모리 거래 모델과 원자적 1회 소비 저장소 완료·리뷰 완료.
-- Task 2: 프로파일 설정과 mock 우회 방지 완료·리뷰 완료.
-- Task 3: OnePass/FIDO/mOTP/지정맥/모의 공급자 완료·리뷰 완료.
-- Task 4: MFA 거래 서비스와 `/api/mfa` 완료·리뷰 완료.
-- Task 5: 수동 로그인 `start → MFA → complete` 전환 완료·리뷰 완료.
-- Task 6: 전자결재 서버 강제 구현 및 리뷰 지적 수정 완료. 마지막 수정 커밋 `8cc88320`은 focused 40개, 관련 컨트롤러 회귀, Spotless를 통과했으나 종료 요청으로 독립 재리뷰와 전체 `test/check`는 아직 수행하지 않았다.
-- Task 7~9: 프론트 공통 MFA UI, 로그인 UI, 전자결재 UI 연결 미착수.
-- Task 10: 전체 검증·운영 문서·`versions.lock` 갱신 미착수.
+## 남은 과제
 
-## 다음 세션 첫 작업
-
-1. 백엔드 `8cc88320`의 Task 6 fix round 1 diff를 독립 재리뷰한다.
-2. 백엔드 `./gradlew test`, `./gradlew check`, `./gradlew jacocoTestCoverageVerification`를 실행한다.
-3. Task 7부터 프론트 구현을 재개한다.
-4. 최종 검증 뒤 각 저장소 커밋을 확정하고 `versions.lock`을 갱신한다.
-
-상세 요구사항과 작업 순서는 다음 문서를 따른다.
-
-- `docs/superpowers/specs/2026-08-10-internal-mfa-integration-design.md`
-- `docs/superpowers/plans/2026-08-10-internal-mfa-integration.md`
+`TASK.md`의 SEC-10~SEC-13(지정맥 연동 규격 확인, 서버 검증 규격 도입, FIDO 거부 상태 구분, 다중 인스턴스 지원)을 참조합니다.
