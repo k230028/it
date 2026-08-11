@@ -357,3 +357,138 @@ Function getErr(){
   <p><p>
   <div id="output"></div>
 ```
+
+API 호출 예시
+
+```mermaid
+graph TD
+    %% 스타일 정의
+    classDef blueBox fill:#6d8cc1,stroke:#4a6a9c,color:#fff,stroke-width:2px;
+    classDef diamond fill:#6d8cc1,stroke:#4a6a9c,color:#fff,stroke-width:2px;
+
+    %% 노드 정의
+    Start[지정맥인증 연계호출<br/>업무시스템]:::blueBox
+    Step1[인증 API CALL : Fv_identify_proc]:::blueBox
+    Step2[에러코드확인 API CALL : Fv_GetErrorCode]:::blueBox
+    Decision{에러코드 ==<br/>FE11}:::diamond
+    Step3[등록 API CALL : Fv_enroll_proc]:::blueBox
+
+    %% 연결 관계
+    Start --> Step1
+    Step1 --> Step2
+    Step2 --> Decision
+
+    Decision -- Y --> Step3
+
+    %% 전체를 감싸는 영역 표시 (SubGraph)
+    subgraph Page [책임자 승인 지정맥인증 연계 페이지]
+        Step1
+        Step2
+        Decision
+        Step3
+    end
+```
+
+지정맥인증 연계 보안방안
+
+```mermaid
+graph TD
+    %% 스타일 정의
+    classDef purple fill:#9b86b5,stroke:#7a6696,color:#fff,stroke-width:2px;
+    classDef blue fill:#6d8cc1,stroke:#4a6a9c,color:#fff,stroke-width:2px;
+    classDef orange fill:#e68a6e,stroke:#c46a52,color:#fff,stroke-width:2px;
+    classDef white fill:#fff,stroke:#ccc,color:#333,stroke-width:1px;
+
+    %% 제목 (노드 형태로 표현)
+    Title["<font color='red' size='5'>인증결과 단순 응답이 아닌 Hash 비교를 통한 로그인</font>"]
+    Title --- Server1
+
+    %% 연계 업무 서버 영역
+    subgraph Server1 [연계 업무 서버]
+        S1_1["Random Key : 123456 / Fixed Key : vusgktlsrjffh@"]:::purple
+        S1_2["Make Hash & Compare"]:::purple
+    end
+
+    %% 지정맥인증 에이전트 영역
+    subgraph Agent [지정맥인증 에이전트]
+        A1["Param : K140024(ID), 123456(Random Key)"]:::blue
+        A2["Return Hash Value"]:::blue
+    end
+
+    %% 지정맥인증 서버 영역
+    subgraph Server2 [지정맥인증 서버]
+        S2_1["지정맥인증 검증"]:::orange
+        S2_2["Value : 20230512593923123456SUCCvusgktlsrjff@<br/>SHA256 * 3회"]:::orange
+    end
+
+    %% 흐름 연결 (점선 화살표)
+    S1_1 -.-> A1
+    S2_2 -.-> S1_2
+    A2 -.-> S1_2
+
+    %% 우측 설명 텍스트
+    Note1["<font color='red'>256Hash 합수로<br/>3회 해쉬생성 후 비교</font>"]
+    S1_2 --- Note1
+
+    %% 하단 상세 분석 영역
+    subgraph Analysis [데이터 분석]
+        Detail1["<font color='red'>20230512</font>O20301313123456<font color='green'>SUCC</font>vusgktlsrjffh@<br/>년월일 / 사번 / 랜덤키 / 검증값 / 고정키"]:::white
+        Detail2["검증값 : 지정맥인증성공 = SUCC<br/>지정맥인증실패 = FAIL"]:::white
+        Detail3["<font color='blue'>90c7de8b10c3d53c750cf54650cb300f26f8e93be8cd2e347f995676c7144a07</font> Hash 값"]:::white
+    end
+
+    Server2 --- Analysis
+```
+
+지정맥인증 연계 호출 프로세스
+
+```mermaid
+sequenceDiagram
+    participant A as 연계업무 서버
+    participant B as 연계업무 화면JSP
+    participant C as 지정맥인증에이전트
+    participant D as 지정맥인증서버
+
+    A->>B: (1) 랜덤키 요청
+    B->>C: (2) 랜덤키 회신 (Param: 사번, 랜덤키)
+    B->>C: (3) 인증 요청
+    C->>C: (4) 인증 스캔
+    C->>D: (5) 인증 요청 (Param: 사번, 랜덤키, 지정맥정보)
+    D-->>C: (6) 인증 결과 (SUCC or FAIL + 랜덤키)
+
+    Note over C: (6) 랜덤키 비교 검증
+
+    C->>C: (7) 해쉬값생성
+    C->>A: (8) 해쉬값전달 (90c7de8b10c3d53c750cf54650cb300f26f8e93be8cd2e347f995676c7144a07)
+
+    A->>A: (9) 해쉬값 비교 요청
+    A->>A: (10) 해쉬값생성 및 비교
+
+    A->>B: (11) 인증성공 공시 승인처리
+    B->>B: (12) 승인화면 처리
+```
+
+해시값 생성 예시 (Make Hash)
+
+```javascript
+// SHA256 암호화 * 3회
+	public String encrypt(String msg) throws Exception {
+		MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
+		byte[] hash = digest.digest(msg.getBytes());
+
+		StringBuffer hexString = new StringBuffer();
+
+		for (int i = 0; i < hash.length; i++) {
+			String hex = Integer.toHexString(0xff & hash[i]);
+
+			if (hex.length() == 1) {
+				hexString.append("0");
+			}
+			hexString.append(hex);
+		}
+
+		return hexString.toString();
+	}
+
+```
