@@ -2965,13 +2965,9 @@ public final class AdapterSupport {
         if (parsed == null) {
             return null;
         }
-        BigDecimal multiplier =
-                switch (kind) {
-                    case COST -> new BigDecimal("1000");
-                    case CAPITAL_PROJECT, PLAN_ADJUSTMENT -> new BigDecimal("1000000");
-                    case DELEGATED_BUDGET -> BigDecimal.ONE;
-                };
-        return parsed.multiply(multiplier).setScale(3, RoundingMode.HALF_UP);
+        // 배수 규칙은 MigrationAmounts가 단일 출처다. 여기서 switch를 다시 만들면 검증기와 조용히 어긋난다
+        return parsed.multiply(MigrationAmounts.amountMultiplier(kind))
+                .setScale(3, RoundingMode.HALF_UP);
     }
 
     /**
