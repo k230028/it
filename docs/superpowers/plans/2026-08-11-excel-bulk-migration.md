@@ -1138,7 +1138,7 @@ public class OrgIdentityResolver {
      * @return 이름 → 코드 매칭 인덱스
      */
     public Index snapshot() {
-        return new Index(organizationRepository.findByDelYn("N"), userRepository.findByDelYn("N"));
+        return Index.of(organizationRepository.findByDelYn("N"), userRepository.findByDelYn("N"));
     }
 
     /** 이름 → 코드 역방향 매칭 인덱스입니다. 한 요청 처리 동안만 살아 있습니다. */
@@ -1150,6 +1150,20 @@ public class OrgIdentityResolver {
         private final List<CorgnI> allOrgs;
         private final List<CuserI> allUsers;
         private final Map<String, CuserI> userByEno = new LinkedHashMap<>();
+
+        /**
+         * 조직·사용자 목록으로 인덱스를 만듭니다.
+         *
+         * <p>운영 경로는 {@link OrgIdentityResolver#snapshot()}을 쓰고, 이 팩토리는 리포지토리 없이 인덱스를 조립해야 하는
+         * 단위 테스트가 씁니다(어댑터·검증기 테스트가 공유). 그래서 생성자 대신 패키지 밖에서도 보이는 정적 팩토리로 둡니다.
+         *
+         * @param orgs 조직 목록 (null 아님)
+         * @param users 사용자 목록 (null 아님)
+         * @return 이름 → 코드 매칭 인덱스
+         */
+        public static Index of(List<CorgnI> orgs, List<CuserI> users) {
+            return new Index(orgs, users);
+        }
 
         private Index(List<CorgnI> orgs, List<CuserI> users) {
             this.allOrgs = List.copyOf(orgs);
@@ -1342,9 +1356,11 @@ git commit -m "feat: 이관용 부서·팀·담당자 이름 역방향 해석기
 - Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/cost/repository/CostRepository.java`
 - Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/project/repository/ProjectRepository.java`
 - Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/plan/repository/PlanRepository.java`
+- Create: `it_backend/src/main/java/com/kdb/it/domain/migration/service/MigrationLookupIndex.java`
 - Create: `it_backend/src/main/java/com/kdb/it/domain/migration/service/MigrationYearSnapshot.java`
 - Create: `it_backend/src/main/java/com/kdb/it/domain/migration/service/MigrationValidator.java`
 - Test: `it_backend/src/test/java/com/kdb/it/domain/migration/service/MigrationValidatorTest.java`
+- Test: `it_backend/src/test/java/com/kdb/it/domain/migration/service/TestSnapshots.java` (Task 6·11 테스트가 공유하는 픽스처 헬퍼)
 
 **Interfaces:**
 - Produces: `CostRepository.findByBseYyAndLstYnAndDelYn(String bseYy, String lstYn, String delYn)` → `List<Bcostm>`
@@ -1437,8 +1453,8 @@ class MigrationValidatorTest {
         List<MigrationDto.CellDiagnostic> result =
                 validator.validate(
                         List.of(costSheet(row(2, costCells(Map.of("deptName", "없는부서"))))),
-                        TestFixtures.emptyIndex(),
-                        TestFixtures.emptySnapshot("2026"),
+                        TestSnapshots.emptyIndex(),
+                        TestSnapshots.empty("2026"),
                         Map.of());
 
         assertThat(result)
@@ -1458,8 +1474,8 @@ class MigrationValidatorTest {
         List<MigrationDto.CellDiagnostic> result =
                 validator.validate(
                         List.of(costSheet(row(2, costCells(Map.of("deptName", "금융공학"))))),
-                        TestFixtures.indexWithOrgs("0450", "금융공학실", "0451", "금융공학실 퀀트인프라팀"),
-                        TestFixtures.emptySnapshot("2026"),
+                        TestSnapshots.indexWithOrgs("0450", "금융공학실", "0451", "금융공학실 퀀트인프라팀"),
+                        TestSnapshots.empty("2026"),
                         Map.of());
 
         assertThat(result)
@@ -1475,8 +1491,8 @@ class MigrationValidatorTest {
         List<MigrationDto.CellDiagnostic> result =
                 validator.validate(
                         List.of(costSheet(row(2, costCells(Map.of("ioeName", "전산회의비"))))),
-                        TestFixtures.indexWithIoe("001", "국내전산임차료"),
-                        TestFixtures.emptySnapshot("2026"),
+                        TestSnapshots.indexWithIoe("001", "국내전산임차료"),
+                        TestSnapshots.empty("2026"),
                         Map.of());
 
         assertThat(result)
@@ -1497,8 +1513,8 @@ class MigrationValidatorTest {
         List<MigrationDto.CellDiagnostic> result =
                 validator.validate(
                         List.of(costSheet(row(2, costCells(Map.of("ioeName", "외주용역비"))))),
-                        TestFixtures.indexWithIoe("008", "외주용역(외주운영/관제 등)"),
-                        TestFixtures.emptySnapshot("2026"),
+                        TestSnapshots.indexWithIoe("008", "외주용역(외주운영/관제 등)"),
+                        TestSnapshots.empty("2026"),
                         overrides);
 
         assertThat(result).noneMatch(d -> "CODE_UNRESOLVED".equals(d.code()));
@@ -1513,8 +1529,8 @@ class MigrationValidatorTest {
         List<MigrationDto.CellDiagnostic> result =
                 validator.validate(
                         List.of(costSheet(row(2, cells))),
-                        TestFixtures.emptyIndex(),
-                        TestFixtures.emptySnapshot("2026"),
+                        TestSnapshots.emptyIndex(),
+                        TestSnapshots.empty("2026"),
                         Map.of());
 
         assertThat(result)
@@ -1534,8 +1550,8 @@ class MigrationValidatorTest {
         List<MigrationDto.CellDiagnostic> result =
                 validator.validate(
                         List.of(costSheet(row(2, cells))),
-                        TestFixtures.emptyIndex(),
-                        TestFixtures.emptySnapshot("2026"),
+                        TestSnapshots.emptyIndex(),
+                        TestSnapshots.empty("2026"),
                         Map.of());
 
         assertThat(result)
@@ -1561,8 +1577,8 @@ class MigrationValidatorTest {
         List<MigrationDto.CellDiagnostic> result =
                 validator.validate(
                         List.of(costSheet(row(2, cells))),
-                        TestFixtures.indexWithIoe("001", "국내전산임차료"),
-                        TestFixtures.snapshotWithCostKey("2026", "2026|571|001|커브|올인원워크스페이스"),
+                        TestSnapshots.indexWithIoe("001", "국내전산임차료"),
+                        TestSnapshots.snapshotWithCostKey("2026", "2026|571|001|커브|올인원워크스페이스"),
                         Map.of());
 
         assertThat(result).anyMatch(d -> "DUPLICATE_EXISTS".equals(d.code()));
@@ -1582,8 +1598,8 @@ class MigrationValidatorTest {
         List<MigrationDto.CellDiagnostic> result =
                 validator.validate(
                         List.of(costSheet(row(2, cells))),
-                        TestFixtures.indexWithXcr("GBP", "1924"),
-                        TestFixtures.emptySnapshot("2026"),
+                        TestSnapshots.indexWithXcr("GBP", "1924"),
+                        TestSnapshots.empty("2026"),
                         Map.of());
 
         assertThat(result)
@@ -1604,8 +1620,8 @@ class MigrationValidatorTest {
                         List.of(
                                 new MigrationDto.SheetPayload(
                                         SheetKind.CAPITAL_PROJECT, "2026", List.of(row(2, cells)))),
-                        TestFixtures.emptyIndex(),
-                        TestFixtures.emptySnapshot("2026"),
+                        TestSnapshots.emptyIndex(),
+                        TestSnapshots.empty("2026"),
                         Map.of());
 
         assertThat(result)
@@ -1626,8 +1642,8 @@ class MigrationValidatorTest {
                         List.of(
                                 new MigrationDto.SheetPayload(
                                         SheetKind.CAPITAL_PROJECT, "2026", List.of(row(2, cells)))),
-                        TestFixtures.emptyIndex(),
-                        TestFixtures.emptySnapshot("2026"),
+                        TestSnapshots.emptyIndex(),
+                        TestSnapshots.empty("2026"),
                         Map.of());
 
         assertThat(result).anyMatch(d -> "DATE_UNPARSEABLE".equals(d.code()));
@@ -1649,8 +1665,8 @@ class MigrationValidatorTest {
                         List.of(
                                 new MigrationDto.SheetPayload(
                                         SheetKind.PLAN_ADJUSTMENT, "2026", List.of(row(2, cells)))),
-                        TestFixtures.emptyIndex(),
-                        TestFixtures.emptySnapshot("2026"),
+                        TestSnapshots.emptyIndex(),
+                        TestSnapshots.empty("2026"),
                         Map.of());
 
         assertThat(result).anyMatch(d -> "PROJECT_NOT_FOUND".equals(d.code()));
@@ -1676,8 +1692,8 @@ class MigrationValidatorTest {
                                         SheetKind.CAPITAL_PROJECT, "2026", List.of(row(2, capital))),
                                 new MigrationDto.SheetPayload(
                                         SheetKind.PLAN_ADJUSTMENT, "2026", List.of(row(2, plan)))),
-                        TestFixtures.emptyIndex(),
-                        TestFixtures.emptySnapshot("2026"),
+                        TestSnapshots.emptyIndex(),
+                        TestSnapshots.empty("2026"),
                         Map.of());
 
         assertThat(result).noneMatch(d -> "PROJECT_NOT_FOUND".equals(d.code()));
@@ -1730,7 +1746,7 @@ class MigrationValidatorTest {
 
 - [ ] **Step 3: 테스트 픽스처 헬퍼를 작성한다**
 
-`it_backend/src/test/java/com/kdb/it/domain/migration/service/TestFixtures.java`
+`it_backend/src/test/java/com/kdb/it/domain/migration/service/TestSnapshots.java`
 
 ```java
 package com.kdb.it.domain.migration.service;
@@ -1744,13 +1760,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** MigrationValidator 단위 테스트용 인덱스·스냅샷 조립 헬퍼입니다. */
-final class TestFixtures {
+/** 이관 단위 테스트가 공유하는 인덱스·스냅샷 조립 헬퍼입니다. 검증기·어댑터·오케스트레이션 테스트가 함께 씁니다. */
+public final class TestSnapshots {
 
-    private TestFixtures() {}
+    private TestSnapshots() {}
 
     /** 아무것도 해석되지 않는 빈 인덱스. */
-    static MigrationLookupIndex emptyIndex() {
+    public static MigrationLookupIndex emptyIndex() {
         return new MigrationLookupIndex(
                 new OrgIdentityResolver(
                                 (delYn) -> List.of(), (delYn) -> List.of())
@@ -1760,7 +1776,7 @@ final class TestFixtures {
     }
 
     /** 조직만 담긴 인덱스. 인자는 (코드, 이름) 쌍의 반복입니다. */
-    static MigrationLookupIndex indexWithOrgs(String... codeNamePairs) {
+    public static MigrationLookupIndex indexWithOrgs(String... codeNamePairs) {
         List<CorgnI> orgs = new ArrayList<>();
         for (int i = 0; i < codeNamePairs.length; i += 2) {
             orgs.add(
@@ -1777,24 +1793,24 @@ final class TestFixtures {
     }
 
     /** 비목 코드값명 → 코드값 맵만 담긴 인덱스. */
-    static MigrationLookupIndex indexWithIoe(String code, String name) {
+    public static MigrationLookupIndex indexWithIoe(String code, String name) {
         return new MigrationLookupIndex(emptyIndex().org(), Map.of(name, code), Map.of());
     }
 
     /** 통화별 환율만 담긴 인덱스. */
-    static MigrationLookupIndex indexWithXcr(String curC, String xcr) {
+    public static MigrationLookupIndex indexWithXcr(String curC, String xcr) {
         return new MigrationLookupIndex(
                 emptyIndex().org(), Map.of(), Map.of(curC, new BigDecimal(xcr)));
     }
 
     /** 기존 데이터가 없는 연도 스냅샷. */
-    static MigrationYearSnapshot.Data emptySnapshot(String bseYy) {
+    public static MigrationYearSnapshot.Data empty(String bseYy) {
         return new MigrationYearSnapshot.Data(
                 bseYy, Set.of(), new LinkedHashMap<>(), Set.of(), new LinkedHashMap<>(), List.of());
     }
 
     /** 전산업무비 자연키 하나가 이미 있는 연도 스냅샷. */
-    static MigrationYearSnapshot.Data snapshotWithCostKey(String bseYy, String naturalKey) {
+    public static MigrationYearSnapshot.Data snapshotWithCostKey(String bseYy, String naturalKey) {
         Set<String> keys = new LinkedHashSet<>();
         keys.add(naturalKey);
         return new MigrationYearSnapshot.Data(
@@ -1803,7 +1819,41 @@ final class TestFixtures {
 }
 ```
 
-> `OrgIdentityResolver`가 리포지토리 인터페이스를 직접 의존하면 위 람다를 넘길 수 없다. Task 4에서 만든 생성자 주입 필드를 그대로 두되, **테스트가 조립할 수 있도록** `Index`의 생성자를 패키지-프라이빗 정적 팩토리 `Index.of(List<CorgnI>, List<CuserI>)`로 노출한다. 위 픽스처의 람다 표기는 그 팩토리 호출로 바꿔 쓴다 — `OrgIdentityResolver.Index.of(snapshot, List.of())`.
+> 위 픽스처의 람다 표기(`(delYn) -> List.of()`)는 **쓸 수 없다** — `OrgIdentityResolver`가 리포지토리 인터페이스를 생성자로 받기 때문이다. Task 4에서 추가한 정적 팩토리 `OrgIdentityResolver.Index.of(List<CorgnI>, List<CuserI>)`를 직접 호출한다.
+>
+> ```java
+>     public static MigrationLookupIndex emptyIndex() {
+>         return new MigrationLookupIndex(
+>                 OrgIdentityResolver.Index.of(List.of(), List.of()), Map.of(), Map.of());
+>     }
+>
+>     public static MigrationLookupIndex indexWithOrgs(String... codeNamePairs) {
+>         List<CorgnI> orgs = new ArrayList<>();
+>         for (int i = 0; i < codeNamePairs.length; i += 2) {
+>             orgs.add(
+>                     CorgnI.builder()
+>                             .prlmOgzCCone(codeNamePairs[i])
+>                             .bbrNm(codeNamePairs[i + 1])
+>                             .build());
+>         }
+>         return new MigrationLookupIndex(
+>                 OrgIdentityResolver.Index.of(orgs, List.of()), Map.of(), Map.of());
+>     }
+>
+>     public static MigrationLookupIndex indexWithIoe(String code, String name) {
+>         return new MigrationLookupIndex(
+>                 OrgIdentityResolver.Index.of(List.of(), List.of()), Map.of(name, code), Map.of());
+>     }
+>
+>     public static MigrationLookupIndex indexWithXcr(String curC, String xcr) {
+>         return new MigrationLookupIndex(
+>                 OrgIdentityResolver.Index.of(List.of(), List.of()),
+>                 Map.of(),
+>                 Map.of(curC, new BigDecimal(xcr)));
+>     }
+> ```
+>
+> 이 헬퍼는 Task 6·7·8·9의 어댑터 테스트와 Task 11의 오케스트레이션 테스트도 쓰므로 `public`으로 만든다. 테스트 전용 클래스지만 여러 테스트 클래스가 공유하므로 패키지-프라이빗으로 두면 어댑터 테스트(`...service.adapter` 패키지)에서 보이지 않는다.
 
 - [ ] **Step 4: `MigrationLookupIndex`와 `MigrationYearSnapshot`을 작성한다**
 
@@ -2706,7 +2756,7 @@ class CostSheetAdapterTest {
 }
 ```
 
-`TestSnapshots.empty(String)`는 Task 5의 `TestFixtures.emptySnapshot`을 어댑터 테스트에서도 쓰기 위한 공용 헬퍼다. `TestFixtures`를 `TestSnapshots`로 이름만 바꿔 `com.kdb.it.domain.migration.service` 패키지에 두고 `public`으로 올린 뒤 두 테스트가 함께 쓴다.
+`TestSnapshots`는 Task 5 Step 3에서 만든 공용 픽스처 헬퍼다. 이 테스트가 `...service.adapter` 패키지에 있으므로 FQN 또는 import로 참조한다.
 
 - [ ] **Step 2: 테스트를 돌려 실패를 확인한다**
 
@@ -5738,4 +5788,1983 @@ git commit -m "test: 이관 반영의 원자성·집계 반영 Oracle 통합 테
 
 ---
 
-Phase E(프론트 파서 · 미리보기 · 페이지 · E2E)는 이어서 작성한다.
+## Phase E — 프론트엔드
+
+### Task 14: 정규 컬럼 계약과 exceljs 파서
+
+엑셀 헤더는 파일마다 다르다(병합 2행 헤더, 줄바꿈, 공백). 파서가 헤더를 정규 컬럼 id로 접고, 위임예산은 부점명을 forward-fill한다.
+
+**Files:**
+- Create: `it_frontend/app/composables/migration/columns.ts`
+- Create: `it_frontend/app/composables/migration/useMigrationParser.ts`
+- Test: `it_frontend/tests/unit/composables/migration/useMigrationParser.test.ts`
+
+**Interfaces:**
+- Produces: `SHEET_COLUMNS: Record<SheetKind, string[]>` — 백엔드 `MigrationColumns`와 동일 리터럴
+- Produces: `type SheetKind = 'COST' | 'CAPITAL_PROJECT' | 'DELEGATED_BUDGET' | 'PLAN_ADJUSTMENT'`
+- Produces: `HEADER_PATTERNS: Record<SheetKind, Record<string, RegExp>>` — 컬럼 id → 헤더 매칭 정규식
+- Produces: `detectSheetKind(sheetName: string): SheetKind | null`
+- Produces: `useMigrationParser().parseFile(file: File): Promise<ParsedSheet[]>`
+- Produces: `interface ParsedSheet { kind: SheetKind; sheetName: string; rows: NormalizedRow[] }`
+- Produces: `interface NormalizedRow { excelRow: number; cells: Record<string, string> }`
+
+- [ ] **Step 1: 실패하는 테스트를 작성한다**
+
+`it_frontend/tests/unit/composables/migration/useMigrationParser.test.ts`
+
+```ts
+import { describe, expect, it } from 'vitest';
+import ExcelJS from 'exceljs';
+import { useMigrationParser } from '~/composables/migration/useMigrationParser';
+import { SHEET_COLUMNS, detectSheetKind } from '~/composables/migration/columns';
+
+/** 시트명으로 종류를 판별하고 헤더를 정규 컬럼 id로 접는 규칙을 고정합니다. */
+describe('useMigrationParser', () => {
+    describe('detectSheetKind', () => {
+        it('실제 시트명 4개를 각 종류로 판별한다', () => {
+            expect(detectSheetKind('전체취합(국내외)')).toBe('COST');
+            expect(detectSheetKind('1-1. 26년정보화사업(전산예산반영)')).toBe('CAPITAL_PROJECT');
+            expect(detectSheetKind('2. 위임예산(경상)')).toBe('DELEGATED_BUDGET');
+            expect(detectSheetKind('26년정보화사업(자본예산)')).toBe('PLAN_ADJUSTMENT');
+        });
+
+        it('참조표와 숨김 레거시 시트는 판별하지 않는다', () => {
+            expect(detectSheetKind('(환율 기준)')).toBeNull();
+            expect(detectSheetKind('조정구분')).toBeNull();
+            expect(detectSheetKind('국내')).toBeNull();
+            expect(detectSheetKind('국외')).toBeNull();
+        });
+
+        it('연도가 바뀐 시트명도 판별한다', () => {
+            expect(detectSheetKind('1-1. 27년정보화사업(전산예산반영)')).toBe('CAPITAL_PROJECT');
+            expect(detectSheetKind('27년정보화사업(자본예산)')).toBe('PLAN_ADJUSTMENT');
+        });
+    });
+
+    describe('parseFile', () => {
+        it('일반관리비 시트의 1행 헤더를 정규 컬럼 id로 접는다', async () => {
+            const file = await buildWorkbook('전체취합(국내외)', [
+                [
+                    '사업코드', '세   목', '세목코드', '구분', '계약업체명', '요구내역', '보안',
+                    '금융정보단말기', '요구부서', '팀', '25년 통화', '25년 요구액',
+                    '25년 요구액(원화)', '26년 통화', '26년 요구액', '26년 요구액(원화)',
+                    '증감액', '증감률', '비고',
+                ],
+                [
+                    '571', '유지보수료', '240-0200', '계속', '커브', '올인원워크스페이스', '', '',
+                    'IT기획부', 'IT기획팀', 'KRW', 15401, 15401, 'KRW', 15401, 15401, 0, 0,
+                    '전년도 동일수준',
+                ],
+            ]);
+
+            const [sheet] = await useMigrationParser().parseFile(file);
+
+            expect(sheet.kind).toBe('COST');
+            expect(sheet.rows).toHaveLength(1);
+            expect(sheet.rows[0]).toEqual({
+                excelRow: 2,
+                cells: expect.objectContaining({
+                    abusCode: '571',
+                    ioeName: '유지보수료',
+                    abusTcLabel: '계속',
+                    vendorName: '커브',
+                    requestDetail: '올인원워크스페이스',
+                    deptName: 'IT기획부',
+                    teamName: 'IT기획팀',
+                    currency: 'KRW',
+                    krwAmount: '15401',
+                    remark: '전년도 동일수준',
+                }),
+            });
+        });
+
+        it('26년 통화·요구액을 25년 열과 혼동하지 않는다', async () => {
+            const file = await buildWorkbook('전체취합(국내외)', [
+                [
+                    '사업코드', '세   목', '세목코드', '구분', '계약업체명', '요구내역', '보안',
+                    '금융정보단말기', '요구부서', '팀', '25년 통화', '25년 요구액',
+                    '25년 요구액(원화)', '26년 통화', '26년 요구액', '26년 요구액(원화)',
+                    '증감액', '증감률', '비고',
+                ],
+                [
+                    '571', '국외전산임차료', '237-9100', '계속', 'hansen', 'Teams', '', '',
+                    'PF2실', '', 'GBP', 2014, 3630, 'GBP', 2890, 5560.36, 1930, 0.53, '런던',
+                ],
+            ]);
+
+            const [sheet] = await useMigrationParser().parseFile(file);
+
+            expect(sheet.rows[0].cells.fcAmount).toBe('2890');
+            expect(sheet.rows[0].cells.krwAmount).toBe('5560.36');
+        });
+
+        it('부문계획의 2행 병합 헤더를 결합해 읽는다', async () => {
+            const file = await buildWorkbook('26년정보화사업(자본예산)', [
+                ['구분', '', '사 업 명', '주관부문', '주관부서', '', '', '', "'26년 6월 조정 기준"],
+                ['', '유형', '', '', '', '담당팀', '담당자', '담당팀장', '예산 변경'],
+                ['1', '법률/규제대응', '웹한글 기안기 도입', '기획관리부문', '종합기획부',
+                 '조직평가팀', '김성원 과장', '김도준 팀장', '감액'],
+            ]);
+
+            const [sheet] = await useMigrationParser().parseFile(file);
+
+            expect(sheet.kind).toBe('PLAN_ADJUSTMENT');
+            expect(sheet.rows).toHaveLength(1);
+            expect(sheet.rows[0].excelRow).toBe(3);
+            expect(sheet.rows[0].cells).toMatchObject({
+                projectName: '웹한글 기안기 도입',
+                projectType: '법률/규제대응',
+                headquarters: '기획관리부문',
+                deptName: '종합기획부',
+                teamName: '조직평가팀',
+                managerName: '김성원 과장',
+                teamLeaderName: '김도준 팀장',
+                budgetChangeLabel: '감액',
+            });
+        });
+
+        it('위임예산의 빈 부점명을 직전 행 값으로 채운다', async () => {
+            const file = await buildWorkbook('2. 위임예산(경상)', [
+                ['부점명', '내용', '통화', '수량', '단가', '기계장치 총금액(HW)', '합계(원화환산)',
+                 '수량', '단가', '기타무형자산 총금액(SW)', '합계(원화환산)'],
+                ['런던', '데스크탑(고사양)', 'GBP', 12, 1945.57, 23346.84, 44919320.16, '', '', 0, 0],
+                ['', '데스크탑(일반사양)', 'GBP', 82, 836.21, 68569.22, 131927179.28, '', '', 0, 0],
+                ['런던 PF', '내부망 PC', 'GBP', 2, 671, 1610.4, 3098409.6, '', '', 0, 0],
+            ]);
+
+            const [sheet] = await useMigrationParser().parseFile(file);
+
+            expect(sheet.rows.map((r) => r.cells.branchName)).toEqual(['런던', '런던', '런던 PF']);
+        });
+
+        it('전 컬럼 키를 빈 문자열로라도 채워 보낸다', async () => {
+            const file = await buildWorkbook('전체취합(국내외)', [
+                ['사업코드', '세   목', '요구내역'],
+                ['571', '유지보수료', '테스트'],
+            ]);
+
+            const [sheet] = await useMigrationParser().parseFile(file);
+
+            expect(Object.keys(sheet.rows[0].cells).sort()).toEqual([...SHEET_COLUMNS.COST].sort());
+        });
+
+        it('내용이 전부 빈 행은 건너뛴다', async () => {
+            const file = await buildWorkbook('전체취합(국내외)', [
+                ['사업코드', '세   목', '요구내역'],
+                ['571', '유지보수료', '테스트'],
+                ['', '', ''],
+                [null, null, null],
+            ]);
+
+            const [sheet] = await useMigrationParser().parseFile(file);
+
+            expect(sheet.rows).toHaveLength(1);
+        });
+
+        it('판별되지 않는 시트만 있는 파일은 빈 배열을 돌려준다', async () => {
+            const file = await buildWorkbook('(환율 기준)', [
+                ['통화코드', '예산환율'],
+                ['GBP', 1924],
+            ]);
+
+            await expect(useMigrationParser().parseFile(file)).resolves.toEqual([]);
+        });
+
+        it('숫자 셀을 문자열로 바꾸되 지수 표기를 만들지 않는다', async () => {
+            const file = await buildWorkbook('전체취합(국내외)', [
+                ['사업코드', '세   목', '요구내역', '26년 요구액(원화)'],
+                ['571', '유지보수료', '테스트', 131927179.28],
+            ]);
+
+            const [sheet] = await useMigrationParser().parseFile(file);
+
+            expect(sheet.rows[0].cells.krwAmount).toBe('131927179.28');
+        });
+    });
+});
+
+/** 메모리에서 xlsx를 만들어 File로 넘깁니다. 실 업무 데이터를 테스트에 쓰지 않기 위한 장치입니다. */
+async function buildWorkbook(sheetName: string, rows: unknown[][]): Promise<File> {
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet(sheetName);
+    rows.forEach((row) => ws.addRow(row));
+    const buffer = await wb.xlsx.writeBuffer();
+    return new File([buffer], 'test.xlsx', {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+}
+```
+
+- [ ] **Step 2: 테스트를 돌려 실패를 확인한다**
+
+Run: `cd it_frontend && npx vitest run tests/unit/composables/migration/useMigrationParser.test.ts`
+Expected: FAIL — 모듈 없음
+
+- [ ] **Step 3: `columns.ts`를 작성한다**
+
+```ts
+/**
+ * ============================================================================
+ * [migration/columns.ts] 수기 엑셀 이관 정규 컬럼 계약
+ * ============================================================================
+ * 백엔드 `MigrationColumns.java`와 **동일한 리터럴**을 갖습니다. 한쪽만 바꾸면 dry-run이
+ * 조용히 빈 셀을 읽으므로 컬럼을 추가·삭제할 때 두 파일과 양쪽 테스트를 함께 갱신합니다.
+ *
+ * 엑셀 헤더 문자열은 파일마다 공백·줄바꿈·병합이 달라 전송 계약에 쓰지 않습니다.
+ * 파서가 HEADER_PATTERNS로 헤더를 컬럼 id에 매칭해 정규화합니다.
+ * ============================================================================
+ */
+
+/** 이관 대상 시트 종류. 백엔드 `SheetKind` enum과 값이 같습니다. */
+export type SheetKind = 'COST' | 'CAPITAL_PROJECT' | 'DELEGATED_BUDGET' | 'PLAN_ADJUSTMENT';
+
+/** 시트별 정규 컬럼 id (엑셀 열 순서). */
+export const SHEET_COLUMNS: Record<SheetKind, readonly string[]> = {
+    COST: [
+        'abusCode', 'ioeName', 'abusTcLabel', 'vendorName', 'requestDetail',
+        'securityFlag', 'terminalFlag', 'deptName', 'teamName', 'currency',
+        'fcAmount', 'krwAmount', 'remark',
+    ],
+    CAPITAL_PROJECT: [
+        'projectName', 'projectType', 'progressLabel', 'projectOutline',
+        'headquarters', 'deptName', 'teamName', 'managerName', 'teamLeaderName',
+        'itTeamName', 'feasibility', 'startYm', 'endYm',
+        'devAmount', 'hwAmount', 'swAmount', 'adjustRate', 'delegationLabel',
+    ],
+    DELEGATED_BUDGET: [
+        'branchName', 'itemName', 'currency', 'hwQty', 'hwFcAmount',
+        'hwKrwAmount', 'swQty', 'swFcAmount', 'swKrwAmount',
+    ],
+    PLAN_ADJUSTMENT: [
+        'projectName', 'projectType', 'headquarters', 'deptName', 'teamName',
+        'managerName', 'teamLeaderName', 'budgetChangeLabel', 'startYm', 'endYm',
+        'devAmount', 'hwAmount', 'swAmount', 'generalAmount', 'totalAmount',
+        'spentBefore', 'spent26', 'planned26', 'paymentSchedule', 'plannedAfter27',
+        'progressLabel', 'remark',
+    ],
+} as const;
+
+/** 사용자에게 보여줄 컬럼 라벨. 미리보기 표 헤더에 씁니다. */
+export const COLUMN_LABELS: Record<string, string> = {
+    abusCode: '사업코드', ioeName: '세목', abusTcLabel: '구분', vendorName: '계약업체명',
+    requestDetail: '요구내역', securityFlag: '보안', terminalFlag: '금융정보단말기',
+    deptName: '요구부서', teamName: '팀', currency: '통화', fcAmount: '요구액',
+    krwAmount: '요구액(원화)', remark: '비고',
+    projectName: '사업명', projectType: '유형', progressLabel: '진행상황',
+    projectOutline: '사업개요', headquarters: '주관부문', managerName: '담당자',
+    teamLeaderName: '담당팀장', itTeamName: '담당IT팀', feasibility: '추진가능성',
+    startYm: '시작', endYm: '종료', devAmount: '개발비', hwAmount: '기계장치',
+    swAmount: '기타무형자산', adjustRate: '조정비율', delegationLabel: '전결권',
+    branchName: '부점명', itemName: '내용', hwQty: 'HW 수량', hwFcAmount: 'HW 외화',
+    hwKrwAmount: 'HW 원화', swQty: 'SW 수량', swFcAmount: 'SW 외화', swKrwAmount: 'SW 원화',
+    budgetChangeLabel: '예산 변경', generalAmount: '일반관리비', totalAmount: '총 사업금액',
+    spentBefore: '25년 이전', spent26: '26년 집행완료', planned26: '26년 집행예정',
+    paymentSchedule: '예상지급일정', plannedAfter27: '27년 이후',
+    devAmountIoeC: '개발비 비목', hwAmountIoeC: '기계장치 비목', swAmountIoeC: '기타무형 비목',
+};
+
+/**
+ * 컬럼 id → 헤더 매칭 정규식.
+ *
+ * 25년/26년 열이 나란히 있는 일반관리비 시트에서 연도를 구분해야 하므로 `26년`을 명시합니다.
+ * 연도가 바뀌어도 동작하도록 두 자리 연도는 `\d{2}`로 받고, 25년 열은 매칭하지 않도록
+ * `요구액`만으로는 잡지 않습니다 — 대신 파서가 같은 패턴에 매칭된 열 중 **가장 오른쪽**을
+ * 채택합니다(편성 문서는 항상 전년도 → 당해연도 순서로 배열됩니다).
+ */
+export const HEADER_PATTERNS: Record<SheetKind, Record<string, RegExp>> = {
+    COST: {
+        abusCode: /^사업코드$/,
+        ioeName: /^세\s*목$/,
+        abusTcLabel: /^구분$/,
+        vendorName: /^계약업체명$/,
+        requestDetail: /^요구내역$/,
+        securityFlag: /^보안$/,
+        terminalFlag: /금융정보단말기/,
+        deptName: /^요구부서$/,
+        teamName: /^팀$/,
+        currency: /^\d{2}년\s*통화$/,
+        fcAmount: /^\d{2}년\s*요구액$/,
+        krwAmount: /^\d{2}년\s*요구액\(원화\)$/,
+        remark: /^비고/,
+    },
+    CAPITAL_PROJECT: {
+        projectName: /^사\s*업\s*명$/,
+        projectType: /^유형$/,
+        progressLabel: /^진행상황$/,
+        projectOutline: /^사\s*업\s*개\s*요$/,
+        headquarters: /^주관부문$/,
+        deptName: /^주관부서$/,
+        teamName: /^담당팀$/,
+        managerName: /^담당자$/,
+        teamLeaderName: /^담당팀장$/,
+        itTeamName: /^담당IT팀$/,
+        feasibility: /^추진가능성$/,
+        startYm: /^시작$/,
+        endYm: /^종료$/,
+        devAmount: /^편성요청\s*개발비$/,
+        hwAmount: /^편성요청\s*기계장치$/,
+        swAmount: /^편성요청\s*기타무형$/,
+        adjustRate: /^조정비율$/,
+        delegationLabel: /^전결권$/,
+    },
+    DELEGATED_BUDGET: {
+        branchName: /^부점명$/,
+        itemName: /^내용$/,
+        currency: /^통화$/,
+        hwQty: /^수량$/,
+        hwFcAmount: /기계장치\s*총금액/,
+        hwKrwAmount: /^합계\(원화환산\)$/,
+        swQty: /^수량$/,
+        swFcAmount: /기타무형자산\s*총금액/,
+        swKrwAmount: /^합계\(원화환산\)$/,
+    },
+    PLAN_ADJUSTMENT: {
+        projectName: /^사\s*업\s*명$/,
+        projectType: /^유형$/,
+        headquarters: /^주관부문$/,
+        deptName: /^주관부서$/,
+        teamName: /^담당팀$/,
+        managerName: /^담당자$/,
+        teamLeaderName: /^담당팀장$/,
+        budgetChangeLabel: /^예산\s*변경$/,
+        startYm: /^시작$/,
+        endYm: /^종료$/,
+        devAmount: /^개발비$/,
+        hwAmount: /^기계장치$/,
+        swAmount: /^기타무형자산$/,
+        generalAmount: /^일반관리비$/,
+        totalAmount: /^총\s*사업금액$/,
+        spentBefore: /^'?\d{2}년\s*이전$/,
+        spent26: /^'?\d{2}년$/,
+        planned26: /^'?\d{2}년$/,
+        paymentSchedule: /예상지급일정/,
+        plannedAfter27: /^'?\d{2}년\s*이후$/,
+        progressLabel: /^사업\s*진행$/,
+        remark: /^비고$/,
+    },
+};
+
+/** 시트명 판별 규칙. 참조표와 숨김 레거시 시트는 어디에도 걸리지 않습니다. */
+const SHEET_NAME_PATTERNS: ReadonlyArray<[SheetKind, RegExp]> = [
+    ['COST', /^전체취합/],
+    ['CAPITAL_PROJECT', /^\d+-\d+\..*정보화사업.*전산예산반영/],
+    ['DELEGATED_BUDGET', /위임예산/],
+    ['PLAN_ADJUSTMENT', /^\d{2}년정보화사업\(자본예산\)$/],
+];
+
+/**
+ * 시트명으로 이관 대상 종류를 판별합니다.
+ *
+ * @param sheetName 엑셀 시트명
+ * @returns 대상이면 시트 종류, 아니면 null (참조표·레거시 시트)
+ */
+export function detectSheetKind(sheetName: string): SheetKind | null {
+    const name = sheetName.trim();
+    for (const [kind, pattern] of SHEET_NAME_PATTERNS) {
+        if (pattern.test(name)) return kind;
+    }
+    return null;
+}
+```
+
+- [ ] **Step 4: `useMigrationParser.ts`를 작성한다**
+
+```ts
+/**
+ * ============================================================================
+ * [migration/useMigrationParser.ts] 수기 엑셀 파싱·정규화
+ * ============================================================================
+ * exceljs로 파일을 읽어 대상 시트만 골라 정규 컬럼 id로 접습니다. 서버는 이 결과를
+ * 신뢰하지 않고 다시 검증하므로(§4.1) 파서는 형식 정규화만 책임집니다.
+ * ============================================================================
+ */
+import type { CellValue, Row, Worksheet } from 'exceljs';
+import {
+    HEADER_PATTERNS,
+    SHEET_COLUMNS,
+    detectSheetKind,
+    type SheetKind,
+} from '~/composables/migration/columns';
+
+/** 정규화된 엑셀 한 행. 백엔드 `MigrationDto.NormalizedRow`와 형태가 같습니다. */
+export interface NormalizedRow {
+    /** 엑셀 사용자 관점 행 번호 (1-based) */
+    excelRow: number;
+    /** 정규 컬럼 id → 셀 문자열. 빈 셀도 빈 문자열로 채웁니다 */
+    cells: Record<string, string>;
+}
+
+/** 파싱한 시트 하나. */
+export interface ParsedSheet {
+    kind: SheetKind;
+    sheetName: string;
+    rows: NormalizedRow[];
+}
+
+/** 헤더로 쓸 수 있는 최대 행 수. 부문계획이 2행 병합 헤더를 쓰므로 2까지 봅니다. */
+const MAX_HEADER_ROWS = 2;
+
+/** 부점명 forward-fill 대상 컬럼 (시트별). */
+const FORWARD_FILL: Partial<Record<SheetKind, string[]>> = {
+    DELEGATED_BUDGET: ['branchName'],
+};
+
+/**
+ * 엑셀 파싱·정규화 composable.
+ *
+ * @returns parseFile — 파일을 읽어 대상 시트만 정규화해 돌려준다
+ */
+export function useMigrationParser() {
+    /**
+     * xlsx 파일을 읽어 이관 대상 시트를 정규화합니다.
+     *
+     * @param file 사용자가 선택한 xlsx 파일
+     * @returns 대상 시트 목록. 대상이 없으면 빈 배열
+     * @throws Error 파일을 xlsx로 읽지 못한 경우 (호출자가 사용자에게 안내)
+     */
+    async function parseFile(file: File): Promise<ParsedSheet[]> {
+        const { default: ExcelJS } = await import('exceljs');
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(await file.arrayBuffer());
+
+        const parsed: ParsedSheet[] = [];
+        workbook.eachSheet((worksheet) => {
+            const kind = detectSheetKind(worksheet.name);
+            if (!kind) return;
+            parsed.push({
+                kind,
+                sheetName: worksheet.name,
+                rows: normalizeSheet(worksheet, kind),
+            });
+        });
+        return parsed;
+    }
+
+    return { parseFile };
+}
+
+/** 헤더를 찾아 컬럼 위치를 정하고 데이터 행을 정규화합니다. */
+function normalizeSheet(worksheet: Worksheet, kind: SheetKind): NormalizedRow[] {
+    const { columnIndex, firstDataRow } = mapHeader(worksheet, kind);
+    const rows: NormalizedRow[] = [];
+    const lastValue: Record<string, string> = {};
+
+    worksheet.eachRow({ includeEmpty: false }, (row: Row, rowNumber: number) => {
+        if (rowNumber < firstDataRow) return;
+
+        const cells: Record<string, string> = {};
+        for (const column of SHEET_COLUMNS[kind]) {
+            const index = columnIndex[column];
+            cells[column] = index ? cellText(row.getCell(index).value) : '';
+        }
+
+        // 전부 빈 행은 서식만 남은 잔재이므로 버린다
+        if (Object.values(cells).every((v) => v === '')) return;
+
+        for (const column of FORWARD_FILL[kind] ?? []) {
+            if (cells[column]) {
+                lastValue[column] = cells[column];
+            } else if (lastValue[column]) {
+                cells[column] = lastValue[column];
+            }
+        }
+        rows.push({ excelRow: rowNumber, cells });
+    });
+    return rows;
+}
+
+/**
+ * 헤더 행을 찾아 컬럼 id → 열 번호 맵을 만듭니다.
+ *
+ * 부문계획처럼 헤더가 2행에 걸쳐 병합된 시트가 있어 1~2행을 함께 봅니다. 같은 패턴에 여러 열이
+ * 걸리면 **가장 오른쪽**을 채택합니다 — 편성 문서는 전년도 열을 먼저, 당해연도 열을 뒤에 두므로
+ * 오른쪽이 당해연도입니다. 단 위임예산의 `수량`·`합계(원화환산)`는 HW·SW가 좌우로 짝을 이루므로
+ * 예외 처리합니다.
+ */
+function mapHeader(
+    worksheet: Worksheet,
+    kind: SheetKind,
+): { columnIndex: Record<string, number>; firstDataRow: number } {
+    const patterns = HEADER_PATTERNS[kind];
+    const columnIndex: Record<string, number> = {};
+    let headerRows = 1;
+
+    for (let rowNumber = 1; rowNumber <= MAX_HEADER_ROWS; rowNumber += 1) {
+        const row = worksheet.getRow(rowNumber);
+        let matchedInThisRow = false;
+        row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+            const text = cellText(cell.value);
+            if (!text) return;
+            for (const [column, pattern] of Object.entries(patterns)) {
+                if (!pattern.test(text)) continue;
+                matchedInThisRow = true;
+                // 오른쪽 열 우선. 이미 더 오른쪽 열이 잡혔으면 유지한다
+                if (!columnIndex[column] || colNumber > columnIndex[column]) {
+                    columnIndex[column] = colNumber;
+                }
+            }
+        });
+        if (matchedInThisRow) headerRows = rowNumber;
+    }
+
+    if (kind === 'DELEGATED_BUDGET') {
+        assignPairedColumns(worksheet, headerRows, columnIndex);
+    }
+    return { columnIndex, firstDataRow: headerRows + 1 };
+}
+
+/**
+ * 위임예산의 HW·SW 짝 컬럼을 좌우 순서로 배정합니다.
+ *
+ * `수량`과 `합계(원화환산)`가 각각 두 번 나오는데 앞쪽이 HW, 뒤쪽이 SW입니다. 오른쪽 우선 규칙을
+ * 그대로 적용하면 HW 컬럼이 SW 열을 가리키게 되므로 여기서 다시 배정합니다.
+ */
+function assignPairedColumns(
+    worksheet: Worksheet,
+    headerRow: number,
+    columnIndex: Record<string, number>,
+): void {
+    const qtyColumns: number[] = [];
+    const totalColumns: number[] = [];
+    worksheet.getRow(headerRow).eachCell({ includeEmpty: false }, (cell, colNumber) => {
+        const text = cellText(cell.value);
+        if (/^수량$/.test(text)) qtyColumns.push(colNumber);
+        if (/^합계\(원화환산\)$/.test(text)) totalColumns.push(colNumber);
+    });
+    qtyColumns.sort((a, b) => a - b);
+    totalColumns.sort((a, b) => a - b);
+    if (qtyColumns[0]) columnIndex.hwQty = qtyColumns[0];
+    if (qtyColumns[1]) columnIndex.swQty = qtyColumns[1];
+    if (totalColumns[0]) columnIndex.hwKrwAmount = totalColumns[0];
+    if (totalColumns[1]) columnIndex.swKrwAmount = totalColumns[1];
+}
+
+/**
+ * exceljs 셀 값을 문자열로 바꿉니다.
+ *
+ * 숫자는 지수 표기가 되지 않도록 다룹니다 — `String(131927179.28)`은 안전하지만 아주 크거나
+ * 작은 값은 지수가 되므로 서버가 `BigDecimal`로 파싱하지 못합니다. 수식 셀은 계산된 값을 씁니다.
+ */
+function cellText(value: CellValue): string {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'number') {
+        return Number.isInteger(value) ? String(value) : trimExponent(value);
+    }
+    if (typeof value === 'boolean') return value ? 'Y' : 'N';
+    if (value instanceof Date) {
+        const month = String(value.getMonth() + 1).padStart(2, '0');
+        return `'${String(value.getFullYear()).slice(2)}.${month}`;
+    }
+    if (typeof value === 'object') {
+        // 수식 셀 { formula, result } / 리치텍스트 { richText } / 하이퍼링크 { text }
+        const candidate = value as { result?: CellValue; text?: string; richText?: { text: string }[] };
+        if (candidate.result !== undefined) return cellText(candidate.result);
+        if (candidate.richText) return candidate.richText.map((r) => r.text).join('');
+        if (candidate.text !== undefined) return String(candidate.text).trim();
+        return '';
+    }
+    return String(value).trim();
+}
+
+/** 지수 표기를 십진 표기로 펴 서버 BigDecimal 파싱이 실패하지 않게 합니다. */
+function trimExponent(value: number): string {
+    const text = String(value);
+    if (!text.includes('e') && !text.includes('E')) return text;
+    return value.toFixed(10).replace(/0+$/, '').replace(/\.$/, '');
+}
+```
+
+- [ ] **Step 5: 테스트를 돌려 통과를 확인한다**
+
+Run: `cd it_frontend && npx vitest run tests/unit/composables/migration/useMigrationParser.test.ts`
+Expected: PASS (10 tests)
+
+- [ ] **Step 6: 백엔드 계약과 컬럼 리터럴이 같은지 눈으로 대조한다**
+
+`it_backend/.../MigrationColumns.java`의 4개 목록과 `columns.ts`의 `SHEET_COLUMNS`를 나란히 놓고 비교한다. 자동 검증 수단이 없으므로 이 대조가 유일한 게이트다.
+
+- [ ] **Step 7: 커밋**
+
+```bash
+cd /c/it/it_frontend && npm run format && npm run check
+git add app/composables/migration tests/unit/composables/migration
+git commit -m "feat: 수기 엑셀 파서와 정규 컬럼 계약 추가"
+```
+
+---
+
+### Task 15: dry-run 연동과 보정값 관리
+
+**Files:**
+- Create: `it_frontend/app/composables/migration/useMigrationPreview.ts`
+- Test: `it_frontend/tests/unit/composables/migration/useMigrationPreview.test.ts`
+
+**Interfaces:**
+- Consumes: `$apiFetch` (Nuxt 플러그인), `useRuntimeConfig().public.apiBase`
+- Consumes: `components['schemas']['MigrationDryRunResponse']` 등 `~/types/api` 생성 타입
+- Produces: `useMigrationPreview()` → `{ sheets, diagnostics, summary, overrides, blockerCount, canCommit, runDryRun, setOverride, clearOverride, commit, isRunning, errorMessage }`
+- Produces: `diagnosticsOf(sheet: SheetKind, excelRow: number, column: string)` → `CellDiagnostic[]`
+
+- [ ] **Step 1: 실패하는 테스트를 작성한다**
+
+```ts
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { useMigrationPreview } from '~/composables/migration/useMigrationPreview';
+
+const apiFetch = vi.fn();
+
+vi.mock('#app', () => ({
+    useNuxtApp: () => ({ $apiFetch: apiFetch }),
+    useRuntimeConfig: () => ({ public: { apiBase: 'http://localhost:28080' } }),
+}));
+
+/** dry-run 호출·진단 조회·보정값 관리·반영 가드를 고정합니다. */
+describe('useMigrationPreview', () => {
+    beforeEach(() => {
+        apiFetch.mockReset();
+    });
+
+    it('절대 URL로 dry-run을 호출한다', async () => {
+        apiFetch.mockResolvedValue({ diagnostics: [], summary: { totalRows: 1, blockerCount: 0, warningCount: 0 } });
+        const preview = useMigrationPreview();
+        preview.sheets.value = [{ kind: 'COST', bseYy: '2026', rows: [{ excelRow: 2, cells: {} }] }];
+
+        await preview.runDryRun();
+
+        expect(apiFetch).toHaveBeenCalledWith(
+            'http://localhost:28080/api/admin/migration/imports/dry-run',
+            expect.objectContaining({ method: 'POST' }),
+        );
+    });
+
+    it('BLOCKER가 있으면 반영을 막는다', async () => {
+        apiFetch.mockResolvedValue({
+            diagnostics: [
+                { sheet: 'COST', excelRow: 2, column: 'deptName', code: 'ORG_UNRESOLVED', severity: 'BLOCKER', message: '실패', candidates: [] },
+            ],
+            summary: { totalRows: 1, blockerCount: 1, warningCount: 0 },
+        });
+        const preview = useMigrationPreview();
+        preview.sheets.value = [{ kind: 'COST', bseYy: '2026', rows: [{ excelRow: 2, cells: {} }] }];
+
+        await preview.runDryRun();
+
+        expect(preview.blockerCount.value).toBe(1);
+        expect(preview.canCommit.value).toBe(false);
+    });
+
+    it('WARNING만 있으면 반영을 허용한다', async () => {
+        apiFetch.mockResolvedValue({
+            diagnostics: [
+                { sheet: 'COST', excelRow: 2, column: 'krwAmount', code: 'AMOUNT_MISMATCH', severity: 'WARNING', message: '차이', candidates: [] },
+            ],
+            summary: { totalRows: 1, blockerCount: 0, warningCount: 1 },
+        });
+        const preview = useMigrationPreview();
+        preview.sheets.value = [{ kind: 'COST', bseYy: '2026', rows: [{ excelRow: 2, cells: {} }] }];
+
+        await preview.runDryRun();
+
+        expect(preview.canCommit.value).toBe(true);
+    });
+
+    it('dry-run 전에는 반영을 허용하지 않는다', () => {
+        const preview = useMigrationPreview();
+        preview.sheets.value = [{ kind: 'COST', bseYy: '2026', rows: [{ excelRow: 2, cells: {} }] }];
+
+        expect(preview.canCommit.value).toBe(false);
+    });
+
+    it('보정값을 설정하면 dry-run을 다시 돌려 진단을 갱신한다', async () => {
+        apiFetch
+            .mockResolvedValueOnce({
+                diagnostics: [
+                    { sheet: 'COST', excelRow: 2, column: 'ioeName', code: 'CODE_UNRESOLVED', severity: 'BLOCKER', message: '실패', candidates: [{ code: '008', label: '외주용역' }] },
+                ],
+                summary: { totalRows: 1, blockerCount: 1, warningCount: 0 },
+            })
+            .mockResolvedValueOnce({ diagnostics: [], summary: { totalRows: 1, blockerCount: 0, warningCount: 0 } });
+
+        const preview = useMigrationPreview();
+        preview.sheets.value = [{ kind: 'COST', bseYy: '2026', rows: [{ excelRow: 2, cells: {} }] }];
+        await preview.runDryRun();
+
+        await preview.setOverride('COST', 2, 'ioeName', '008');
+
+        expect(preview.blockerCount.value).toBe(0);
+        expect(preview.canCommit.value).toBe(true);
+        expect(apiFetch).toHaveBeenCalledTimes(2);
+    });
+
+    it('셀 좌표로 진단을 조회한다', async () => {
+        apiFetch.mockResolvedValue({
+            diagnostics: [
+                { sheet: 'COST', excelRow: 2, column: 'deptName', code: 'ORG_UNRESOLVED', severity: 'BLOCKER', message: '실패', candidates: [] },
+                { sheet: 'COST', excelRow: 3, column: 'deptName', code: 'ORG_AMBIGUOUS', severity: 'BLOCKER', message: '중의', candidates: [] },
+            ],
+            summary: { totalRows: 2, blockerCount: 2, warningCount: 0 },
+        });
+        const preview = useMigrationPreview();
+        preview.sheets.value = [{ kind: 'COST', bseYy: '2026', rows: [] }];
+        await preview.runDryRun();
+
+        expect(preview.diagnosticsOf('COST', 2, 'deptName')).toHaveLength(1);
+        expect(preview.diagnosticsOf('COST', 2, 'deptName')[0].code).toBe('ORG_UNRESOLVED');
+        expect(preview.diagnosticsOf('COST', 9, 'deptName')).toHaveLength(0);
+    });
+
+    it('보정값을 CellOverride 배열로 접어 commit에 보낸다', async () => {
+        apiFetch.mockResolvedValue({ diagnostics: [], summary: { totalRows: 1, blockerCount: 0, warningCount: 0 } });
+        const preview = useMigrationPreview();
+        preview.sheets.value = [{ kind: 'COST', bseYy: '2026', rows: [{ excelRow: 2, cells: {} }] }];
+        await preview.runDryRun();
+        await preview.setOverride('COST', 2, 'ioeName', '008');
+        apiFetch.mockResolvedValue({ costCount: 1, projectCount: 0, itemCount: 0, budgetRowCount: 1, planReqDocNo: null, createdIds: ['COST-2026-0001'] });
+
+        await preview.commit();
+
+        const lastCall = apiFetch.mock.calls.at(-1);
+        expect(lastCall?.[0]).toBe('http://localhost:28080/api/admin/migration/imports');
+        expect(lastCall?.[1].body.overrides).toEqual([
+            { sheet: 'COST', excelRow: 2, column: 'ioeName', value: '008' },
+        ]);
+    });
+
+    it('dry-run 실패는 errorMessage에 담고 예외를 삼키지 않는다', async () => {
+        apiFetch.mockRejectedValue({ data: { message: '서버 오류' } });
+        const preview = useMigrationPreview();
+        preview.sheets.value = [{ kind: 'COST', bseYy: '2026', rows: [] }];
+
+        await expect(preview.runDryRun()).rejects.toBeTruthy();
+        expect(preview.errorMessage.value).toContain('서버 오류');
+        expect(preview.isRunning.value).toBe(false);
+    });
+});
+```
+
+- [ ] **Step 2: 테스트를 돌려 실패를 확인한다**
+
+Run: `cd it_frontend && npx vitest run tests/unit/composables/migration/useMigrationPreview.test.ts`
+Expected: FAIL — 모듈 없음
+
+- [ ] **Step 3: 구현한다**
+
+```ts
+/**
+ * ============================================================================
+ * [migration/useMigrationPreview.ts] dry-run 연동·보정값 관리
+ * ============================================================================
+ * dry-run 결과를 서버가 보관하지 않으므로(§4.1) 시트 원본과 보정값을 화면이 들고 있다가
+ * 확정 반영에 함께 보냅니다. 보정값이 바뀌면 dry-run을 다시 돌려 진단을 갱신합니다.
+ * ============================================================================
+ */
+import { computed, ref } from 'vue';
+import { useNuxtApp, useRuntimeConfig } from '#app';
+import { formatApiError } from '~/utils/common';
+import type { components } from '~/types/api';
+import type { SheetKind } from '~/composables/migration/columns';
+import type { NormalizedRow } from '~/composables/migration/useMigrationParser';
+
+type DryRunResponse = components['schemas']['MigrationDryRunResponse'];
+type CommitResponse = components['schemas']['MigrationCommitResponse'];
+type CellDiagnostic = components['schemas']['MigrationCellDiagnostic'];
+
+/** 서버로 보낼 시트 페이로드. */
+export interface SheetPayload {
+    kind: SheetKind;
+    bseYy: string;
+    rows: NormalizedRow[];
+}
+
+/**
+ * 이관 미리보기 상태와 서버 연동.
+ *
+ * @returns sheets(올린 시트), diagnostics·summary(dry-run 결과), overrides(보정값),
+ *   blockerCount·canCommit(반영 가드), runDryRun·setOverride·clearOverride·commit,
+ *   isRunning·errorMessage(진행·오류 표시)
+ */
+export function useMigrationPreview() {
+    const { $apiFetch } = useNuxtApp();
+    const apiBase = useRuntimeConfig().public.apiBase;
+
+    const sheets = ref<SheetPayload[]>([]);
+    const diagnostics = ref<CellDiagnostic[]>([]);
+    const summary = ref<DryRunResponse['summary'] | null>(null);
+    /** `{SheetKind}|{excelRow}|{column}` → 보정 코드값 */
+    const overrides = ref<Record<string, string>>({});
+    const isRunning = ref(false);
+    const errorMessage = ref('');
+    const hasRunDryRun = ref(false);
+    const commitResult = ref<CommitResponse | null>(null);
+
+    const blockerCount = computed(() => summary.value?.blockerCount ?? 0);
+    const warningCount = computed(() => summary.value?.warningCount ?? 0);
+
+    /** dry-run을 한 번은 돌렸고 BLOCKER가 없어야 반영을 허용합니다. */
+    const canCommit = computed(
+        () => hasRunDryRun.value && blockerCount.value === 0 && sheets.value.length > 0,
+    );
+
+    /**
+     * 현재 시트와 보정값으로 사전검증을 요청합니다.
+     *
+     * @throws 서버 오류를 그대로 전파합니다. 호출자가 Toast로 알립니다
+     */
+    async function runDryRun(): Promise<void> {
+        isRunning.value = true;
+        errorMessage.value = '';
+        try {
+            const response = await $apiFetch<DryRunResponse>(
+                `${apiBase}/api/admin/migration/imports/dry-run`,
+                { method: 'POST', body: { sheets: sheets.value } },
+            );
+            diagnostics.value = response.diagnostics;
+            summary.value = response.summary;
+            hasRunDryRun.value = true;
+        } catch (error) {
+            errorMessage.value = formatApiError(error);
+            throw error;
+        } finally {
+            isRunning.value = false;
+        }
+    }
+
+    /**
+     * 셀 보정값을 설정하고 사전검증을 다시 돌립니다.
+     *
+     * @param sheet 시트 종류
+     * @param excelRow 엑셀 행 번호
+     * @param column 정규 컬럼 id
+     * @param value 보정 코드값
+     */
+    async function setOverride(
+        sheet: SheetKind,
+        excelRow: number,
+        column: string,
+        value: string,
+    ): Promise<void> {
+        overrides.value = { ...overrides.value, [overrideKey(sheet, excelRow, column)]: value };
+        await runDryRun();
+    }
+
+    /**
+     * 셀 보정값을 지우고 사전검증을 다시 돌립니다.
+     *
+     * @param sheet 시트 종류
+     * @param excelRow 엑셀 행 번호
+     * @param column 정규 컬럼 id
+     */
+    async function clearOverride(
+        sheet: SheetKind,
+        excelRow: number,
+        column: string,
+    ): Promise<void> {
+        const next = { ...overrides.value };
+        delete next[overrideKey(sheet, excelRow, column)];
+        overrides.value = next;
+        await runDryRun();
+    }
+
+    /**
+     * 확정 반영을 요청합니다.
+     *
+     * @returns 반영 결과
+     * @throws 서버 오류를 그대로 전파합니다
+     */
+    async function commit(): Promise<CommitResponse> {
+        isRunning.value = true;
+        errorMessage.value = '';
+        try {
+            const response = await $apiFetch<CommitResponse>(
+                `${apiBase}/api/admin/migration/imports`,
+                {
+                    method: 'POST',
+                    body: {
+                        sheets: sheets.value,
+                        overrides: Object.entries(overrides.value).map(([key, value]) => {
+                            const [sheet, excelRow, column] = key.split('|');
+                            return {
+                                sheet: sheet as SheetKind,
+                                excelRow: Number(excelRow),
+                                column,
+                                value,
+                            };
+                        }),
+                    },
+                },
+            );
+            commitResult.value = response;
+            return response;
+        } catch (error) {
+            errorMessage.value = formatApiError(error);
+            throw error;
+        } finally {
+            isRunning.value = false;
+        }
+    }
+
+    /**
+     * 셀 좌표에 걸린 진단을 조회합니다.
+     *
+     * @param sheet 시트 종류
+     * @param excelRow 엑셀 행 번호
+     * @param column 정규 컬럼 id
+     * @returns 그 셀의 진단 목록
+     */
+    function diagnosticsOf(
+        sheet: SheetKind,
+        excelRow: number,
+        column: string,
+    ): CellDiagnostic[] {
+        return diagnostics.value.filter(
+            (d) => d.sheet === sheet && d.excelRow === excelRow && d.column === column,
+        );
+    }
+
+    /**
+     * 행 전체에 걸린 진단(컬럼 없음)을 조회합니다.
+     *
+     * @param sheet 시트 종류
+     * @param excelRow 엑셀 행 번호
+     * @returns 행 단위 진단 목록
+     */
+    function rowDiagnosticsOf(sheet: SheetKind, excelRow: number): CellDiagnostic[] {
+        return diagnostics.value.filter(
+            (d) => d.sheet === sheet && d.excelRow === excelRow && !d.column,
+        );
+    }
+
+    /** 시트를 다시 올릴 때 진단·보정값을 초기화합니다. */
+    function reset(): void {
+        diagnostics.value = [];
+        summary.value = null;
+        overrides.value = {};
+        hasRunDryRun.value = false;
+        commitResult.value = null;
+        errorMessage.value = '';
+    }
+
+    return {
+        sheets,
+        diagnostics,
+        summary,
+        overrides,
+        commitResult,
+        isRunning,
+        errorMessage,
+        blockerCount,
+        warningCount,
+        canCommit,
+        runDryRun,
+        setOverride,
+        clearOverride,
+        commit,
+        diagnosticsOf,
+        rowDiagnosticsOf,
+        reset,
+    };
+}
+
+/** 백엔드 `MigrationValidator.overrideKey`와 같은 형식입니다. */
+function overrideKey(sheet: SheetKind, excelRow: number, column: string): string {
+    return `${sheet}|${excelRow}|${column}`;
+}
+```
+
+- [ ] **Step 4: 테스트를 돌려 통과를 확인한다**
+
+Run: `cd it_frontend && npx vitest run tests/unit/composables/migration/useMigrationPreview.test.ts`
+Expected: PASS (8 tests)
+
+- [ ] **Step 5: 커밋**
+
+```bash
+cd /c/it/it_frontend && npm run format && npm run check
+git add app/composables/migration tests/unit/composables/migration
+git commit -m "feat: 이관 dry-run 연동과 보정값 관리 composable 추가"
+```
+
+---
+
+### Task 16: 미리보기 표와 파일 슬롯 컴포넌트
+
+**Files:**
+- Create: `it_frontend/app/components/migration/MigrationFileSlots.vue`
+- Create: `it_frontend/app/components/migration/MigrationPreviewTable.vue`
+- Modify: `it_frontend/tests/unit/architecture/component-boundaries.test.ts`
+- Test: `it_frontend/tests/unit/components/migration/MigrationPreviewTable.test.ts`
+
+**Interfaces:**
+- Produces: `MigrationFileSlots` props — `{ slots: SlotState[] }`, emits — `select(kind: SheetKind, file: File)`, `clear(kind: SheetKind)`
+- Produces: `interface SlotState { kind: SheetKind; label: string; fileName: string | null; rowCount: number }`
+- Produces: `MigrationPreviewTable` props — `{ sheet: SheetPayload; diagnosticsOf: Function; rowDiagnosticsOf: Function; overrides: Record<string,string> }`, emits — `override(sheet, excelRow, column, value)`
+
+- [ ] **Step 1: 컴포넌트 경계 테스트를 먼저 갱신한다**
+
+`tests/unit/architecture/component-boundaries.test.ts`가 파일 목록을 고정하므로 새 디렉터리를 등록한다. 먼저 그 테스트를 읽어 형식을 파악한다.
+
+```bash
+cd /c/it/it_frontend && sed -n '1,60p' tests/unit/architecture/component-boundaries.test.ts
+```
+
+`components/migration/MigrationFileSlots.vue`·`MigrationPreviewTable.vue` 두 항목을 그 테스트의 허용 목록에 추가한다.
+
+- [ ] **Step 2: 실패하는 컴포넌트 테스트를 작성한다**
+
+```ts
+import { describe, expect, it } from 'vitest';
+import { mount } from '@vue/test-utils';
+import MigrationPreviewTable from '~/components/migration/MigrationPreviewTable.vue';
+
+/** 진단 강조와 보정 드롭다운 노출 규칙을 고정합니다. */
+describe('MigrationPreviewTable', () => {
+    const sheet = {
+        kind: 'COST' as const,
+        bseYy: '2026',
+        rows: [
+            { excelRow: 2, cells: { ioeName: '외주용역비', deptName: 'IT기획부', requestDetail: '원가계산 용역' } },
+            { excelRow: 3, cells: { ioeName: '유지보수료', deptName: 'IT기획부', requestDetail: '올인원' } },
+        ],
+    };
+
+    it('BLOCKER 셀에 오류 클래스를 붙인다', () => {
+        const wrapper = mount(MigrationPreviewTable, {
+            props: {
+                sheet,
+                overrides: {},
+                diagnosticsOf: (_k: string, row: number, column: string) =>
+                    row === 2 && column === 'ioeName'
+                        ? [{ code: 'CODE_UNRESOLVED', severity: 'BLOCKER', message: '비목 미해석', candidates: [{ code: '008', label: '외주용역(외주운영/관제 등)' }] }]
+                        : [],
+                rowDiagnosticsOf: () => [],
+            },
+            global: { stubs: { StyledDataTable: false } },
+        });
+
+        expect(wrapper.find('.migration-cell--blocker').exists()).toBe(true);
+    });
+
+    it('후보가 있는 셀에 보정 드롭다운을 노출한다', () => {
+        const wrapper = mount(MigrationPreviewTable, {
+            props: {
+                sheet,
+                overrides: {},
+                diagnosticsOf: (_k: string, row: number, column: string) =>
+                    row === 2 && column === 'ioeName'
+                        ? [{ code: 'CODE_UNRESOLVED', severity: 'BLOCKER', message: '비목 미해석', candidates: [{ code: '008', label: '외주용역' }, { code: '009', label: '자문/심사' }] }]
+                        : [],
+                rowDiagnosticsOf: () => [],
+            },
+        });
+
+        expect(wrapper.find('[data-testid="override-select-2-ioeName"]').exists()).toBe(true);
+    });
+
+    it('WARNING 셀은 경고 클래스만 붙이고 드롭다운을 노출하지 않는다', () => {
+        const wrapper = mount(MigrationPreviewTable, {
+            props: {
+                sheet,
+                overrides: {},
+                diagnosticsOf: (_k: string, row: number, column: string) =>
+                    row === 2 && column === 'requestDetail'
+                        ? [{ code: 'AMOUNT_MISMATCH', severity: 'WARNING', message: '금액 차이', candidates: [] }]
+                        : [],
+                rowDiagnosticsOf: () => [],
+            },
+        });
+
+        expect(wrapper.find('.migration-cell--warning').exists()).toBe(true);
+        expect(wrapper.find('[data-testid="override-select-2-requestDetail"]').exists()).toBe(false);
+    });
+
+    it('보정된 셀은 보정 표시를 남긴다', () => {
+        const wrapper = mount(MigrationPreviewTable, {
+            props: {
+                sheet,
+                overrides: { 'COST|2|ioeName': '008' },
+                diagnosticsOf: () => [],
+                rowDiagnosticsOf: () => [],
+            },
+        });
+
+        expect(wrapper.find('.migration-cell--overridden').exists()).toBe(true);
+    });
+
+    it('진단이 없는 셀은 아무 클래스도 붙이지 않는다', () => {
+        const wrapper = mount(MigrationPreviewTable, {
+            props: { sheet, overrides: {}, diagnosticsOf: () => [], rowDiagnosticsOf: () => [] },
+        });
+
+        expect(wrapper.find('.migration-cell--blocker').exists()).toBe(false);
+        expect(wrapper.find('.migration-cell--warning').exists()).toBe(false);
+    });
+});
+```
+
+- [ ] **Step 3: 테스트를 돌려 실패를 확인한다**
+
+Run: `cd it_frontend && npx vitest run tests/unit/components/migration`
+Expected: FAIL — 컴포넌트 없음
+
+- [ ] **Step 4: `MigrationPreviewTable.vue`를 작성한다**
+
+```vue
+<!--
+  ============================================================================
+  [MigrationPreviewTable.vue] 이관 미리보기 표
+  ============================================================================
+  정규화 행을 StyledDataTable로 보여주며 진단이 걸린 셀을 강조하고, 해석 후보가 있는
+  셀에는 보정 드롭다운을 노출합니다. BLOCKER가 남아 있으면 페이지가 반영 버튼을 막습니다.
+  ============================================================================
+-->
+<script setup lang="ts">
+import { computed } from 'vue';
+import Select from 'primevue/select';
+import StyledDataTable from '~/components/common/StyledDataTable.vue';
+import Column from 'primevue/column';
+import { COLUMN_LABELS, SHEET_COLUMNS, type SheetKind } from '~/composables/migration/columns';
+import type { SheetPayload } from '~/composables/migration/useMigrationPreview';
+import type { components } from '~/types/api';
+
+type CellDiagnostic = components['schemas']['MigrationCellDiagnostic'];
+
+const props = defineProps<{
+    /** 보여줄 시트 */
+    sheet: SheetPayload;
+    /** 보정값 맵 (`{SheetKind}|{excelRow}|{column}` 키) */
+    overrides: Record<string, string>;
+    /** 셀 진단 조회 함수 */
+    diagnosticsOf: (sheet: SheetKind, excelRow: number, column: string) => CellDiagnostic[];
+    /** 행 단위 진단 조회 함수 */
+    rowDiagnosticsOf: (sheet: SheetKind, excelRow: number) => CellDiagnostic[];
+}>();
+
+const emit = defineEmits<{
+    override: [sheet: SheetKind, excelRow: number, column: string, value: string];
+}>();
+
+/** 표에 그릴 컬럼 목록. */
+const columns = computed(() => SHEET_COLUMNS[props.sheet.kind]);
+
+/** 표 행 데이터. StyledDataTable이 객체 배열을 받으므로 셀 맵을 그대로 넘긴다. */
+const rows = computed(() => props.sheet.rows);
+
+/** 셀 강조 클래스를 정한다. BLOCKER > WARNING > 보정됨 순으로 우선한다. */
+function cellClass(excelRow: number, column: string): string {
+    const diagnostics = props.diagnosticsOf(props.sheet.kind, excelRow, column);
+    if (diagnostics.some((d) => d.severity === 'BLOCKER')) return 'migration-cell--blocker';
+    if (diagnostics.some((d) => d.severity === 'WARNING')) return 'migration-cell--warning';
+    if (props.overrides[`${props.sheet.kind}|${excelRow}|${column}`]) {
+        return 'migration-cell--overridden';
+    }
+    return '';
+}
+
+/** 셀에 걸린 진단 문구를 툴팁용으로 합친다. */
+function cellTitle(excelRow: number, column: string): string {
+    return props
+        .diagnosticsOf(props.sheet.kind, excelRow, column)
+        .map((d) => d.message)
+        .join('\n');
+}
+
+/** 보정 후보가 있는 진단을 찾는다. 없으면 드롭다운을 그리지 않는다. */
+function candidatesOf(excelRow: number, column: string): { code: string; label: string }[] {
+    for (const diagnostic of props.diagnosticsOf(props.sheet.kind, excelRow, column)) {
+        if (diagnostic.candidates.length > 0) return diagnostic.candidates;
+    }
+    return [];
+}
+
+/** 현재 보정값을 읽는다. */
+function overrideValue(excelRow: number, column: string): string | null {
+    return props.overrides[`${props.sheet.kind}|${excelRow}|${column}`] ?? null;
+}
+</script>
+
+<template>
+    <div class="migration-preview">
+        <StyledDataTable :value="rows" :loading="false" data-key="excelRow" scrollable>
+            <Column field="excelRow" header="행" style="width: 4rem" />
+            <Column
+                v-for="column in columns"
+                :key="column"
+                :field="`cells.${column}`"
+                :header="COLUMN_LABELS[column] ?? column"
+            >
+                <template #body="{ data }">
+                    <div
+                        :class="['migration-cell', cellClass(data.excelRow, column)]"
+                        :title="cellTitle(data.excelRow, column)"
+                    >
+                        <span class="migration-cell__text">{{ data.cells[column] }}</span>
+                        <Select
+                            v-if="candidatesOf(data.excelRow, column).length > 0"
+                            :data-testid="`override-select-${data.excelRow}-${column}`"
+                            :model-value="overrideValue(data.excelRow, column)"
+                            :options="candidatesOf(data.excelRow, column)"
+                            option-label="label"
+                            option-value="code"
+                            placeholder="선택"
+                            class="migration-cell__select"
+                            @update:model-value="
+                                (value: string) => emit('override', sheet.kind, data.excelRow, column, value)
+                            "
+                        />
+                    </div>
+                </template>
+            </Column>
+        </StyledDataTable>
+    </div>
+</template>
+
+<style scoped>
+.migration-cell {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+}
+
+.migration-cell--blocker {
+    background-color: var(--color-danger-subtle);
+    outline: 1px solid var(--color-danger);
+}
+
+.migration-cell--warning {
+    background-color: var(--color-warning-subtle);
+}
+
+.migration-cell--overridden {
+    background-color: var(--color-success-subtle);
+}
+
+.migration-cell__select {
+    min-width: 12rem;
+}
+</style>
+```
+
+> `--color-danger-subtle` 등 토큰이 `assets/css/tokens.css`에 없으면 추가하지 말고 기존 토큰으로 대체한다. `npm run lint:css`가 통과해야 한다. 사용 가능한 토큰은 `docs/guides/styling/design-tokens.md`에서 확인한다.
+
+- [ ] **Step 5: `MigrationFileSlots.vue`를 작성한다**
+
+```vue
+<!--
+  ============================================================================
+  [MigrationFileSlots.vue] 이관 파일 슬롯 4개
+  ============================================================================
+  올린 파일에서 판별된 시트를 슬롯에 채웁니다. 슬롯을 비워 둔 채로도 반영할 수 있으나
+  부문계획만 단독으로 올리면 서버가 PROJECT_NOT_FOUND로 막습니다(§4.3).
+  ============================================================================
+-->
+<script setup lang="ts">
+import Button from 'primevue/button';
+import type { SheetKind } from '~/composables/migration/columns';
+
+/** 슬롯 하나의 상태. */
+export interface SlotState {
+    kind: SheetKind;
+    label: string;
+    fileName: string | null;
+    rowCount: number;
+}
+
+defineProps<{ slots: SlotState[] }>();
+
+const emit = defineEmits<{
+    select: [kind: SheetKind, file: File];
+    clear: [kind: SheetKind];
+}>();
+
+/** 파일 선택 이벤트에서 File을 꺼내 상위로 올립니다. */
+function onFileChange(kind: SheetKind, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) emit('select', kind, file);
+    // 같은 파일을 다시 고를 수 있도록 초기화한다
+    input.value = '';
+}
+</script>
+
+<template>
+    <div class="migration-slots">
+        <div v-for="slot in slots" :key="slot.kind" class="migration-slot">
+            <div class="migration-slot__label">{{ slot.label }}</div>
+            <div v-if="slot.fileName" class="migration-slot__file">
+                <span>{{ slot.fileName }}</span>
+                <span class="migration-slot__count">{{ slot.rowCount }}행</span>
+                <Button
+                    label="비우기"
+                    severity="secondary"
+                    text
+                    :data-testid="`clear-${slot.kind}`"
+                    @click="emit('clear', slot.kind)"
+                />
+            </div>
+            <label v-else class="migration-slot__picker">
+                <input
+                    type="file"
+                    accept=".xlsx"
+                    :data-testid="`file-${slot.kind}`"
+                    @change="(event) => onFileChange(slot.kind, event)"
+                />
+            </label>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.migration-slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: var(--spacing-3);
+}
+
+.migration-slot {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    padding: var(--spacing-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.migration-slot__file {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+</style>
+```
+
+- [ ] **Step 6: 테스트를 돌리고 스타일 검사를 통과시킨다**
+
+Run:
+```bash
+cd it_frontend && npx vitest run tests/unit/components/migration tests/unit/architecture/component-boundaries.test.ts && npm run lint:css
+```
+Expected: PASS (6 tests + Stylelint)
+
+- [ ] **Step 7: 커밋**
+
+```bash
+cd /c/it/it_frontend && npm run format && npm run check
+git add app/components/migration tests/unit
+git commit -m "feat: 이관 미리보기 표와 파일 슬롯 컴포넌트 추가"
+```
+
+---
+
+### Task 17: 관리자 화면과 메뉴 등록
+
+**Files:**
+- Create: `it_frontend/app/composables/useMigrationPage.ts`
+- Create: `it_frontend/app/pages/admin/migration/index.vue`
+- Create: `it_database/migrations/V20260811_002__SeedMigrationAdminMenu.sql`
+- Test: `it_frontend/tests/unit/pages/migrationPageBoundary.test.ts`
+- Test: `it_frontend/tests/unit/composables/useMigrationPage.test.ts`
+
+**Interfaces:**
+- Consumes: `useMigrationParser`, `useMigrationPreview`, `useToast`, `TOAST_LIFE`
+- Produces: `useMigrationPage()` → `{ slots, preview, bseYy, selectFile, clearSlot, runDryRun, commit }`
+
+- [ ] **Step 1: 실패하는 파사드 테스트를 작성한다**
+
+```ts
+import { describe, expect, it, vi } from 'vitest';
+import { useMigrationPage } from '~/composables/useMigrationPage';
+
+const parseFile = vi.fn();
+const runDryRun = vi.fn();
+const toastAdd = vi.fn();
+
+vi.mock('~/composables/migration/useMigrationParser', () => ({
+    useMigrationParser: () => ({ parseFile }),
+}));
+vi.mock('primevue/usetoast', () => ({ useToast: () => ({ add: toastAdd }) }));
+
+/** 파일 선택 → 슬롯 채움 → dry-run 흐름과 오류 안내를 고정합니다. */
+describe('useMigrationPage', () => {
+    it('파일에서 판별된 시트를 해당 슬롯에 채우고 dry-run을 돌린다', async () => {
+        parseFile.mockResolvedValue([
+            { kind: 'COST', sheetName: '전체취합(국내외)', rows: [{ excelRow: 2, cells: {} }] },
+        ]);
+        const page = useMigrationPage();
+        page.preview.runDryRun = runDryRun;
+
+        await page.selectFile('COST', new File([], '일반관리비.xlsx'));
+
+        expect(page.slots.value.find((s) => s.kind === 'COST')?.rowCount).toBe(1);
+        expect(runDryRun).toHaveBeenCalled();
+    });
+
+    it('한 파일에 여러 대상 시트가 있으면 슬롯을 모두 채운다', async () => {
+        parseFile.mockResolvedValue([
+            { kind: 'CAPITAL_PROJECT', sheetName: '1-1. 26년정보화사업(전산예산반영)', rows: [{ excelRow: 2, cells: {} }] },
+            { kind: 'DELEGATED_BUDGET', sheetName: '2. 위임예산(경상)', rows: [{ excelRow: 2, cells: {} }, { excelRow: 3, cells: {} }] },
+        ]);
+        const page = useMigrationPage();
+        page.preview.runDryRun = vi.fn();
+
+        await page.selectFile('CAPITAL_PROJECT', new File([], '자본예산.xlsx'));
+
+        expect(page.slots.value.find((s) => s.kind === 'CAPITAL_PROJECT')?.rowCount).toBe(1);
+        expect(page.slots.value.find((s) => s.kind === 'DELEGATED_BUDGET')?.rowCount).toBe(2);
+    });
+
+    it('대상 시트가 없는 파일은 경고 Toast를 띄우고 슬롯을 비워 둔다', async () => {
+        parseFile.mockResolvedValue([]);
+        const page = useMigrationPage();
+
+        await page.selectFile('COST', new File([], '엉뚱한파일.xlsx'));
+
+        expect(toastAdd).toHaveBeenCalledWith(
+            expect.objectContaining({ severity: 'warn' }),
+        );
+        expect(page.slots.value.find((s) => s.kind === 'COST')?.fileName).toBeNull();
+    });
+
+    it('파싱 실패는 오류 Toast로 알린다', async () => {
+        parseFile.mockRejectedValue(new Error('깨진 파일'));
+        const page = useMigrationPage();
+
+        await page.selectFile('COST', new File([], '깨진파일.xlsx'));
+
+        expect(toastAdd).toHaveBeenCalledWith(
+            expect.objectContaining({ severity: 'error' }),
+        );
+    });
+
+    it('슬롯을 비우면 시트와 진단을 함께 지운다', async () => {
+        parseFile.mockResolvedValue([
+            { kind: 'COST', sheetName: '전체취합(국내외)', rows: [{ excelRow: 2, cells: {} }] },
+        ]);
+        const page = useMigrationPage();
+        page.preview.runDryRun = vi.fn();
+        await page.selectFile('COST', new File([], '일반관리비.xlsx'));
+
+        await page.clearSlot('COST');
+
+        expect(page.slots.value.find((s) => s.kind === 'COST')?.fileName).toBeNull();
+        expect(page.preview.sheets.value).toHaveLength(0);
+    });
+});
+```
+
+- [ ] **Step 2: 페이지 경계 테스트를 작성한다**
+
+기존 `tests/unit/pages/*PageBoundary.test.ts` 형식을 먼저 읽고 같은 패턴으로 만든다.
+
+```bash
+cd /c/it/it_frontend && ls tests/unit/pages/ && sed -n '1,40p' "$(ls tests/unit/pages/*PageBoundary.test.ts | head -1)"
+```
+
+`app/pages/admin/migration/index.vue`가 `useMigrationPage`를 소비하는지 소스 문자열로 고정한다.
+
+- [ ] **Step 3: `useMigrationPage.ts`를 작성한다**
+
+```ts
+/**
+ * ============================================================================
+ * [useMigrationPage.ts] 관리자 데이터 일괄 반입 화면 파사드
+ * ============================================================================
+ * 파일 슬롯 4개, 파싱, dry-run, 확정 반영을 화면에서 분리해 담습니다.
+ * 페이지는 라우팅과 화면 조합만 담당합니다.
+ * ============================================================================
+ */
+import { computed, ref } from 'vue';
+import { useToast } from 'primevue/usetoast';
+import { TOAST_LIFE } from '~/utils/toast';
+import { formatApiError } from '~/utils/common';
+import { useMigrationParser } from '~/composables/migration/useMigrationParser';
+import { useMigrationPreview } from '~/composables/migration/useMigrationPreview';
+import type { SheetKind } from '~/composables/migration/columns';
+import type { SlotState } from '~/components/migration/MigrationFileSlots.vue';
+
+/** 슬롯 표시 순서와 라벨. 반영 순서와 같습니다(§7). */
+const SLOT_DEFS: ReadonlyArray<{ kind: SheetKind; label: string }> = [
+    { kind: 'COST', label: '전산일반관리비 편성 요구서' },
+    { kind: 'CAPITAL_PROJECT', label: '전산자본예산 편성 요구서' },
+    { kind: 'DELEGATED_BUDGET', label: '위임예산(경상)' },
+    { kind: 'PLAN_ADJUSTMENT', label: '정보기술부문계획 조정' },
+];
+
+/**
+ * 데이터 일괄 반입 화면 상태.
+ *
+ * @returns slots(슬롯 상태), preview(dry-run·보정·반영), bseYy(예산연도),
+ *   selectFile·clearSlot·runDryRun·commit
+ */
+export function useMigrationPage() {
+    const toast = useToast();
+    const parser = useMigrationParser();
+    const preview = useMigrationPreview();
+
+    /** 화면에서 지정하는 예산연도. 기본값은 올해입니다. */
+    const bseYy = ref(String(new Date().getFullYear()));
+
+    const slots = ref<SlotState[]>(
+        SLOT_DEFS.map((def) => ({ ...def, fileName: null, rowCount: 0 })),
+    );
+
+    /** 슬롯이 하나라도 채워졌는지. 반영 버튼 노출 조건입니다. */
+    const hasAnySheet = computed(() => preview.sheets.value.length > 0);
+
+    /**
+     * 파일을 파싱해 판별된 시트를 슬롯에 채우고 사전검증을 돌립니다.
+     *
+     * <p>한 파일에 대상 시트가 여럿 있을 수 있습니다(자본예산 파일은 정보화사업과 위임예산을 함께
+     * 담습니다). 어느 슬롯에서 골랐는지와 무관하게 판별된 종류대로 채웁니다.
+     *
+     * @param kind 사용자가 클릭한 슬롯 (안내 문구에만 씁니다)
+     * @param file 선택한 xlsx
+     */
+    async function selectFile(kind: SheetKind, file: File): Promise<void> {
+        try {
+            const parsed = await parser.parseFile(file);
+            if (parsed.length === 0) {
+                toast.add({
+                    severity: 'warn',
+                    summary: '반입 대상 없음',
+                    detail: '이 파일에서 반입할 수 있는 시트를 찾지 못했습니다. 시트명을 확인해 주세요.',
+                    life: TOAST_LIFE.MEDIUM,
+                });
+                return;
+            }
+            for (const sheet of parsed) {
+                upsertSheet(sheet.kind, file.name, sheet.rows);
+            }
+            await preview.runDryRun();
+        } catch (error) {
+            console.error('[Migration] 파일 파싱 실패', error);
+            toast.add({
+                severity: 'error',
+                summary: '파일 오류',
+                detail: formatApiError(error),
+                life: TOAST_LIFE.LONG,
+            });
+        }
+    }
+
+    /**
+     * 슬롯을 비우고 해당 시트를 반영 대상에서 제외합니다.
+     *
+     * @param kind 비울 슬롯
+     */
+    async function clearSlot(kind: SheetKind): Promise<void> {
+        preview.sheets.value = preview.sheets.value.filter((sheet) => sheet.kind !== kind);
+        slots.value = slots.value.map((slot) =>
+            slot.kind === kind ? { ...slot, fileName: null, rowCount: 0 } : slot,
+        );
+        if (preview.sheets.value.length === 0) {
+            preview.reset();
+            return;
+        }
+        await preview.runDryRun();
+    }
+
+    /** 사전검증을 다시 돌립니다. 실패는 Toast로 알립니다. */
+    async function runDryRun(): Promise<void> {
+        try {
+            await preview.runDryRun();
+        } catch (error) {
+            toast.add({
+                severity: 'error',
+                summary: '사전검증 실패',
+                detail: preview.errorMessage.value || formatApiError(error),
+                life: TOAST_LIFE.LONG,
+            });
+        }
+    }
+
+    /** 확정 반영합니다. 성공·실패를 모두 Toast로 알립니다. */
+    async function commit(): Promise<void> {
+        try {
+            const result = await preview.commit();
+            toast.add({
+                severity: 'success',
+                summary: '반영 완료',
+                detail:
+                    `전산업무비 ${result.costCount}건, 사업 ${result.projectCount}건, ` +
+                    `품목 ${result.itemCount}건, 편성행 ${result.budgetRowCount}건을 반영했습니다.`,
+                life: TOAST_LIFE.LONG,
+            });
+        } catch (error) {
+            toast.add({
+                severity: 'error',
+                summary: '반영 실패',
+                detail: preview.errorMessage.value || formatApiError(error),
+                life: TOAST_LIFE.LONG,
+            });
+        }
+    }
+
+    /** 같은 종류의 시트가 이미 있으면 교체합니다. */
+    function upsertSheet(
+        kind: SheetKind,
+        fileName: string,
+        rows: { excelRow: number; cells: Record<string, string> }[],
+    ): void {
+        const others = preview.sheets.value.filter((sheet) => sheet.kind !== kind);
+        preview.sheets.value = [...others, { kind, bseYy: bseYy.value, rows }];
+        slots.value = slots.value.map((slot) =>
+            slot.kind === kind ? { ...slot, fileName, rowCount: rows.length } : slot,
+        );
+    }
+
+    return { slots, preview, bseYy, hasAnySheet, selectFile, clearSlot, runDryRun, commit };
+}
+```
+
+- [ ] **Step 4: 페이지를 작성한다**
+
+```vue
+<!--
+  ============================================================================
+  [admin/migration/index.vue] 데이터 일괄 반입
+  ============================================================================
+  포탈 도입 전 수기 관리 엑셀을 원장으로 반입합니다. 파일을 올리면 서버가 조직·코드를
+  해석하고 검증해 진단을 돌려주며, 오류를 모두 보정한 뒤에만 반영할 수 있습니다.
+  상태와 업무 흐름은 useMigrationPage가 담당합니다.
+  ============================================================================
+-->
+<script setup lang="ts">
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
+import Message from 'primevue/message';
+import MigrationFileSlots from '~/components/migration/MigrationFileSlots.vue';
+import MigrationPreviewTable from '~/components/migration/MigrationPreviewTable.vue';
+import { useMigrationPage } from '~/composables/useMigrationPage';
+
+definePageMeta({ middleware: 'admin', title: '데이터 일괄 반입' });
+
+const { slots, preview, bseYy, hasAnySheet, selectFile, clearSlot, commit } = useMigrationPage();
+</script>
+
+<template>
+    <div class="migration-page">
+        <section class="migration-page__controls">
+            <label class="migration-page__year">
+                예산연도
+                <InputText v-model="bseYy" maxlength="4" data-testid="bse-yy" />
+            </label>
+            <MigrationFileSlots
+                :slots="slots"
+                @select="selectFile"
+                @clear="clearSlot"
+            />
+        </section>
+
+        <Message v-if="preview.errorMessage.value" severity="error" :closable="false">
+            {{ preview.errorMessage.value }}
+        </Message>
+
+        <Message
+            v-else-if="preview.summary.value && preview.blockerCount.value > 0"
+            severity="error"
+            :closable="false"
+        >
+            해결해야 하는 오류가 {{ preview.blockerCount.value }}건 있습니다. 표에서 빨갛게 표시된
+            셀을 보정해 주세요.
+        </Message>
+
+        <Message
+            v-else-if="preview.summary.value && preview.warningCount.value > 0"
+            severity="warn"
+            :closable="false"
+        >
+            확인이 필요한 경고가 {{ preview.warningCount.value }}건 있습니다. 반영은 가능합니다.
+        </Message>
+
+        <section v-if="hasAnySheet" class="migration-page__preview">
+            <div v-for="sheet in preview.sheets.value" :key="sheet.kind">
+                <h3>{{ slots.find((s) => s.kind === sheet.kind)?.label }}</h3>
+                <MigrationPreviewTable
+                    :sheet="sheet"
+                    :overrides="preview.overrides.value"
+                    :diagnostics-of="preview.diagnosticsOf"
+                    :row-diagnostics-of="preview.rowDiagnosticsOf"
+                    @override="preview.setOverride"
+                />
+            </div>
+        </section>
+
+        <footer v-if="hasAnySheet" class="migration-page__footer">
+            <Button
+                label="확정 반영"
+                :disabled="!preview.canCommit.value || preview.isRunning.value"
+                :loading="preview.isRunning.value"
+                data-testid="commit-button"
+                @click="commit"
+            />
+        </footer>
+
+        <section v-if="preview.commitResult.value" class="migration-page__result">
+            <h3>반영 결과</h3>
+            <ul>
+                <li>전산업무비 {{ preview.commitResult.value.costCount }}건</li>
+                <li>사업 {{ preview.commitResult.value.projectCount }}건</li>
+                <li>품목 {{ preview.commitResult.value.itemCount }}건</li>
+                <li>편성행 {{ preview.commitResult.value.budgetRowCount }}건</li>
+                <li v-if="preview.commitResult.value.planReqDocNo">
+                    계획 {{ preview.commitResult.value.planReqDocNo }}
+                </li>
+            </ul>
+        </section>
+    </div>
+</template>
+
+<style scoped>
+.migration-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+}
+
+.migration-page__controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.migration-page__footer {
+    display: flex;
+    justify-content: flex-end;
+}
+</style>
+```
+
+- [ ] **Step 5: 메뉴 시드를 작성한다**
+
+먼저 기존 관리자 메뉴 시드를 읽어 컬럼과 부모 메뉴 ID를 확인한다.
+
+```bash
+cd /c/it/it_database && grep -n "CMENUM" -A 25 migrations/V20260806_001__AddBoardMenuTypeAndSeedBoardMenus.sql | head -40
+```
+
+같은 패턴으로 `V20260811_002__SeedMigrationAdminMenu.sql`을 만든다. `MNU_TP_C='PGE'`, 화면경로 `/admin/migration`, 부모는 시스템 관리 메뉴, `IMK_NM`은 `^[a-z0-9 -]{1,100}$`를 만족하는 아이콘 클래스(예: `pi pi-upload`)로 둔다.
+
+- [ ] **Step 6: 테스트와 정적 검사를 통과시킨다**
+
+Run:
+```bash
+cd it_frontend && npx vitest run tests/unit/composables/useMigrationPage.test.ts tests/unit/pages/migrationPageBoundary.test.ts && npm run check && npm run lint:css
+```
+Expected: PASS
+
+- [ ] **Step 7: 커밋**
+
+```bash
+cd /c/it/it_database && git add migrations/V20260811_002__SeedMigrationAdminMenu.sql && git commit -m "feat: 데이터 일괄 반입 관리자 메뉴 시드"
+cd /c/it/it_frontend && npm run format
+git add app tests
+git commit -m "feat: 데이터 일괄 반입 관리자 화면 추가"
+```
+
+---
+
+### Task 18: 계약 재생성과 E2E 검증
+
+**Files:**
+- Modify: `it_frontend/app/types/api.d.ts` (생성물 — 직접 수정하지 않고 재생성)
+- Create: `it_frontend/tests/e2e/migration.spec.ts`
+- Modify: `C:\it\TASK.md`
+- Modify: `C:\it\versions.lock`
+
+- [ ] **Step 1: 백엔드를 기동하고 프론트 타입을 재생성한다**
+
+Run:
+```bash
+cd it_backend && ./gradlew bootRun
+```
+다른 셸에서:
+```bash
+cd it_frontend && npm run codegen && npm run codegen:check
+```
+Expected: `app/types/api.d.ts`에 `MigrationDryRunRequest`·`MigrationDryRunResponse`·`MigrationCommitRequest`·`MigrationCommitResponse`·`MigrationCellDiagnostic`·`MigrationCandidate`·`MigrationSheetPayload`·`MigrationNormalizedRow`·`MigrationCellOverride`·`MigrationSummary`·`MigrationSheetKind`·`MigrationSeverity` 스키마가 생긴다. `codegen:check`가 통과해야 한다.
+
+CI가 없으므로 이 확인이 스펙-타입 드리프트의 유일한 게이트다.
+
+- [ ] **Step 2: E2E 시나리오를 작성한다**
+
+`it_frontend/tests/e2e/migration.spec.ts`
+
+```ts
+import { expect, test } from '@playwright/test';
+import ExcelJS from 'exceljs';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+/**
+ * 관리자 데이터 일괄 반입 흐름을 검증합니다.
+ *
+ * 실 업무 xlsx를 저장소에 두지 않으므로 테스트가 픽스처를 즉석에서 만듭니다.
+ * 부서·담당자 이름은 dev DB에 실제로 있는 값이어야 해석이 통과합니다.
+ */
+test.describe('데이터 일괄 반입', () => {
+    test('파일 업로드 → 진단 표시 → 보정 → 반영', async ({ page }) => {
+        const filePath = await buildCostWorkbook();
+
+        await page.goto('/admin/migration');
+        await expect(page.getByTestId('bse-yy')).toBeVisible();
+
+        await page.getByTestId('bse-yy').fill('2999');
+        await page.getByTestId('file-COST').setInputFiles(filePath);
+
+        // dry-run이 끝나면 미리보기 표가 보인다
+        await expect(page.locator('.migration-cell').first()).toBeVisible();
+
+        // 미해석 비목 셀에 보정 드롭다운이 노출된다
+        const select = page.locator('[data-testid^="override-select-"]').first();
+        if (await select.count()) {
+            await select.click();
+            await page.getByRole('option').first().click();
+        }
+
+        // BLOCKER가 남아 있으면 반영 버튼이 비활성이다
+        const commitButton = page.getByTestId('commit-button');
+        await expect(commitButton).toBeVisible();
+
+        if (await commitButton.isEnabled()) {
+            await commitButton.click();
+            await expect(page.getByText('반영 완료')).toBeVisible();
+        } else {
+            await expect(page.getByText(/해결해야 하는 오류가/)).toBeVisible();
+        }
+    });
+
+    test('반입 대상 시트가 없는 파일은 경고를 띄운다', async ({ page }) => {
+        const filePath = await buildUnrelatedWorkbook();
+
+        await page.goto('/admin/migration');
+        await page.getByTestId('file-COST').setInputFiles(filePath);
+
+        await expect(page.getByText('반입 대상 없음')).toBeVisible();
+    });
+});
+
+/** 일반관리비 시트 픽스처를 임시 디렉터리에 만듭니다. */
+async function buildCostWorkbook(): Promise<string> {
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('전체취합(국내외)');
+    ws.addRow([
+        '사업코드', '세   목', '세목코드', '구분', '계약업체명', '요구내역', '보안',
+        '금융정보단말기', '요구부서', '팀', '25년 통화', '25년 요구액', '25년 요구액(원화)',
+        '26년 통화', '26년 요구액', '26년 요구액(원화)', '증감액', '증감률', '비고',
+    ]);
+    ws.addRow([
+        '571', '유지보수료', '240-0200', '계속', 'E2E벤더', 'E2E 유지보수', '', '',
+        'IT기획부', 'IT기획팀', 'KRW', 1000, 1000, 'KRW', 1000, 1000, 0, 0, 'E2E',
+    ]);
+    return writeTemp(wb, 'cost.xlsx');
+}
+
+/** 반입 대상이 아닌 시트만 담은 픽스처. */
+async function buildUnrelatedWorkbook(): Promise<string> {
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('(환율 기준)');
+    ws.addRow(['통화코드', '예산환율']);
+    ws.addRow(['GBP', 1924]);
+    return writeTemp(wb, 'unrelated.xlsx');
+}
+
+async function writeTemp(wb: ExcelJS.Workbook, name: string): Promise<string> {
+    const dir = mkdtempSync(join(tmpdir(), 'migration-e2e-'));
+    const filePath = join(dir, name);
+    writeFileSync(filePath, Buffer.from(await wb.xlsx.writeBuffer()));
+    return filePath;
+}
+```
+
+- [ ] **Step 3: E2E를 돌린다**
+
+두 서버를 모두 기동한 상태에서 실행한다.
+
+Run:
+```bash
+cd it_frontend && npm run test:e2e -- migration.spec.ts
+```
+Expected: PASS (2 tests). 첫 테스트는 dev DB의 조직·담당자 데이터에 따라 반영까지 가거나 오류 안내에서 멈춘다 — 두 경로 모두 통과로 본다.
+
+- [ ] **Step 4: 전체 Health Stack을 돌린다**
+
+Run:
+```bash
+cd it_backend && ./gradlew clean check --no-daemon
+cd it_frontend && npm run format:check && npm run check && npm run lint:css && npm test
+```
+Expected: 모두 PASS. `./gradlew check`가 Spotless와 JaCoCo 커버리지 검증까지 포함한다.
+
+`clean`이 Jacoco 리포트를 지우므로 커버리지 수치를 확인하려면 `clean` 없이 다시 돌린다.
+
+- [ ] **Step 5: `TASK.md`에 남은 과제를 등록한다**
+
+이번 범위에서 의도적으로 제외한 것을 기록한다.
+
+```markdown
+| MIG-01 | 🟡 Medium | 이관 | `사업진행`·집행 실적 열의 원장 반영 | 정보기술부문계획 조정의 `사업진행`(`진행(품의)`·`진행(계약)`·`취소(연기)`)과 집행 실적 4열은 대응하는 원장 코드셋이 없어 `BPLANM.REDT_CONE_INF` 스냅샷에만 남겼다(2026-08-11 이관 설계 §5.4). 이 값들을 조회·집계에 쓰려면 `BPROJA.IT_PTL_STS_TC` 또는 `BPROJM.IT_PTL_RPR_STS_TC`의 유효 코드셋을 먼저 확정하고 계약 테스트를 추가한다. |
+| MIG-02 | 🟢 Low | 이관 | 정규 컬럼 id 계약의 자동 검증 | `MigrationColumns.java`와 `columns.ts`가 같은 리터럴을 손으로 유지한다. 한쪽만 바꾸면 dry-run이 조용히 빈 셀을 읽는다. 백엔드가 컬럼 목록을 API로 노출하고 프론트 테스트가 그 응답과 대조하는 방식으로 게이트를 만들 수 있다. |
+| MIG-03 | 🟢 Low | 이관 | 위임예산 부점 사업의 담당자 지정 | 위임예산 시트에 담당자가 없어 업로드 사용자를 담당자·IT담당자로 넣는다(§5.5). 부점별 실제 담당자를 지정할 수 있는 입력을 미리보기에 추가할 수 있다. |
+```
+
+- [ ] **Step 6: `versions.lock`을 갱신하고 커밋한다**
+
+교차 저장소 변경이므로 백엔드 계약 커밋이 먼저, 프론트 커밋이 뒤에 있어야 한다(루트 `CLAUDE.md` 4-repo 토폴로지). 이미 그 순서로 커밋했으므로 lock만 갱신한다.
+
+```bash
+cd /c/it/it_frontend && git add app/types/api.d.ts tests/e2e/migration.spec.ts && git commit -m "test: 이관 화면 E2E 시나리오 추가와 API 타입 재생성"
+cd /c/it && pwsh -File scripts/update-versions-lock.ps1
+git add versions.lock TASK.md
+git commit -m "chore: 수기 엑셀 이관 반영해 versions.lock·TASK.md 갱신"
+```
+
+- [ ] **Step 7: 실물 파일로 최종 확인한다**
+
+로컬에서만 수행한다. `C:\it`의 세 xlsx를 화면에 올려 dry-run 진단을 눈으로 본다.
+
+확인할 것:
+1. 일반관리비 14행 중 비목 미해석이 정확히 3건(외주용역비·전산회의비·국외전산기타제비)인지
+2. GBP 4행의 금액 대조가 통과하는지 — 통과하지 못하면 Task 1의 환율 시드값을 확인한다
+3. 자본예산 2행·부문계획 3행의 담당자·부서가 해석되는지
+4. 위임예산 12행이 사업 2건(런던·런던 PF)으로 묶이는지
+5. 부문계획에만 있는 `문자메시지 안심마크 도입`이 `PROJECT_NOT_FOUND` 없이 사업으로 생성되는지
+
+반영은 로컬 DB에서만 하고, 결과를 예산 현황 화면에서 확인해 결재 받이가 실제로 집계에 반영되는지 본다. **이 파일들을 커밋하지 않는다.**
+
+---
+
+## 자체 검토 결과
+
+**스펙 커버리지** — §1~§11의 모든 요구가 태스크에 대응한다.
+
+| 스펙 절 | 태스크 |
+| --- | --- |
+| §3.1 IOE 미해석 3건 | Task 5(진단), Task 6(보정 흡수) |
+| §3.2 GBP·AUD 통화 | Task 1 |
+| §3.3 ABUS_TC 코드값 | Task 2(주석), Task 6(`AdapterSupport.abusTc`) |
+| §3.4 금액 단위 | Task 6(`AdapterSupport.amount`), Task 7·8·9 |
+| §3.5 BG_NO·SNO, applyItemRates | Task 2(주석), Task 11 |
+| §3.6 결재 받이 | Task 10, Task 13 |
+| §3.7 환율 Ccodem 결정 | Task 1, Task 11(`MigrationIoeCatalogReader`), Task 13 |
+| §3.8 기간 검증 | Task 2, Task 11 |
+| §4.1 3단계 흐름 | Task 12, Task 15 |
+| §4.2 백엔드 모듈 | Task 3~12 |
+| §4.3 프론트 모듈·슬롯 4개 | Task 14~17 |
+| §5.2~§5.5 어댑터 매핑 | Task 6~9 |
+| §6.1 진단 카탈로그 | Task 5 |
+| §6.2 중복 자연키 | Task 5, Task 13 |
+| §6.3 조직 해석 | Task 4 |
+| §7 트랜잭션 순서 | Task 11, Task 13 |
+| §8 오류 처리 | Task 15, Task 17 |
+| §9 선행 조치 | Task 1, Task 2, Task 17 |
+| §10 테스트 | 모든 태스크 + Task 18 |
+
+**타입 정합** — 태스크 간 이름이 일치하는지 확인했다. `MigrationValidator.overrideKey`는 Task 5에서 정의하고 Task 6·7·15가 같은 형식(`{SheetKind}|{excelRow}|{column}`)으로 쓴다. `OrgIdentityResolver.Index.of(List<CorgnI>, List<CuserI>)` 정적 팩토리는 Task 5 Step 3의 주석에서 요구하고 Task 4의 구현에 추가해야 한다 — **Task 4 Step 4의 `Index` 생성자를 `private`에서 패키지-프라이빗 정적 팩토리로 바꾸는 것을 잊지 않는다.** `AdapterOutput`·`RateIntent`·`PlanIntent`는 Task 6에서 정의하고 Task 7·8·9·11이 소비한다.
+
+**알려진 제약**
+
+1. 정규 컬럼 id 계약이 백엔드·프론트에 손으로 이중 관리된다(`MIG-02`).
+2. `MigrationImportServiceTest`가 전산업무비 경로만 목으로 검증한다. 부문계획 품목 교체와 `applyItemRates` 상호작용은 Task 13의 Oracle 통합 테스트가 담당한다 — 목으로는 신뢰성 있게 검증되지 않는다.
+3. `PlanService.createPlanForMigration`이 필요한지는 Task 11 Step 5에서 기존 `createPlan`을 읽고 판단한다. 기존 요청 DTO로 스냅샷 필드를 담을 수 있으면 새 메서드를 만들지 않는다.
+4. E2E 첫 시나리오는 dev DB의 조직·담당자 데이터에 따라 반영까지 가거나 오류 안내에서 멈춘다. 두 경로 모두 통과로 본다 — 데이터 의존을 없애려면 E2E 전용 시드가 필요하고, 그건 이번 범위를 넘는다.
