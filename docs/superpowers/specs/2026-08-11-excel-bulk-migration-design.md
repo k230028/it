@@ -103,7 +103,20 @@ BG-2026-0431  BCOSTM  SNO 24~35   DISTINCT 원천 12
 
 **같은 `BG_NO`에 `max(SNO)+1`로 조정 행을 덧붙이면 깨진다.** `BbugtmRepository.findByBseYyAndFntTbNmAndPkColNmAndFntTbCrySnoAndIoeCAndDelYn`이 `Optional`을 반환하므로 같은 (연도·원천·품목·비목) 조합에 2행이 생기는 순간 이후 모든 편성률 적용이 `IncorrectResultSizeDataAccessException`으로 실패한다.
 
-**결정**: 조정은 `BudgetRateApplicationService.applyItemRates()`를 호출한다. 사업 단위로 기존 편성행과 고아 행을 정리하고 새 `BG_NO`로 재삽입하는 기존 경로다. `BudgetRepresentativeSelector.pick()`이 `BG_NO` 내림차순으로 최신 조정을 대표행으로 고른다. 조정 이력은 `BBUGTM`이 아니라 감사로그(`BBUGT_L`)에 남는다.
+**결정**: 조정은 `BudgetRateApplicationService.applyItemRates()`를 호출한다. 어댑터가 `BBUGTM`을 직접 쓰지 않는다.
+
+단 이 메서드는 **사업별이 아니라 연도 전체를 재작성**한다.
+
+```java
+bbugtmRepository.softDeleteByBseYy(bgYy, changerUsid, LocalDateTime.now());  // 연도 전량 논리삭제
+for (ItemRate item : request.items()) { ... }                                 // items에 있는 것만 재삽입
+```
+
+따라서 `items`에는 **그 연도의 모든 사업(`BPROJM`) + 모든 전산업무비(`BCOSTM`)**를 담아야 한다. 빠진 것은 되살아나지 않고 유실된다. 게다가 `softDeleteByBseYy`는 벌크 UPDATE라 `@PreUpdate`→`ChangeLogEntityListener`를 우회하므로(해당 메서드 Javadoc에 명시) **삭제된 행의 이력이 `BBUGT_L`에도 남지 않는다.** 편성행을 두 번 만들어 첫 번째를 이력으로 남기는 방식은 성립하지 않는다.
+
+`ItemRate.orcTb`의 Javadoc은 `TPRMPP_BPROJM / TPRMPP_BCOSTM`이라고 적었으나 구현은 `"BPROJM".equals(...)`·`"BCOSTM".equals(...)`로 비교한다. 접두어 없는 이름을 쓴다.
+
+이관 대상이 아닌 기존 편성행의 `ASG_RT`는 `applyItemRates` 호출 전에 읽어 두고 같은 값으로 `items`에 담아 유지한다.
 
 ### 3.6 결재완료 없이는 예산 화면에 집계되지 않는다
 
@@ -112,6 +125,26 @@ BG-2026-0431  BCOSTM  SNO 24~35   DISTINCT 원천 12
 **결정**: 이관용 결재완료 받이를 함께 생성한다. `CAPPLM`(상태 `2`, 제목에 이관 명시, 요청자=업로드 사용자) + `CAPPLA`(`FNT_TB_NM`, `PK_COL_NM`, `FNT_TB_CRY_SNO`) 연결. 상승된 결재이력은 생성하지 않아 재현된 결재선이 아님이 구분된다.
 
 `APF_DCM_NO`에 별도 접두어를 쓰지 않는다. 형식은 기존 `APF-{YYYY}-{8자리}`를 유지한다. `ApplicationMapRepository`가 사전식 내림차순을 시간순으로 전제하므로, `MIG-` 같은 접두어는 `'A' < 'M'`이라 이관 문서가 항상 최신으로 정렬되어 그 전제를 깨뜨린다. 이관 여부는 제목과 `RGPR_DCD_REQ_CONE`으로 표시한다.
+
+### 3.7 환율은 엑셀이 아니라 `Ccodem`이 결정한다
+
+`XcrLookupService.resolveXcr(curC, baseDate)`는 클라이언트가 보낸 `xcr`을 신뢰하지 않고 `Ccodem(C_ID='CUR_C', CDVA=통화코드, C_TP='XCR', 유효기간 포함 baseDate)`의 `CO_CDVA_NM`을 파싱해 환율을 결정한다(설계 결정 E). 외화인데 유효한 행이 없으면 `IllegalStateException`으로 트랜잭션을 롤백한다.
+
+이어서 `BudgetAmountCalculator.reconcileAmount`의 **결정 C**가 외화 행(`curC != null && != "KRW"`, `fcAmt != null`, `xcr > 0`)이면 **클라이언트 원화금액을 버리고 `fcAmt × xcr`을 `setScale(3, HALF_UP)`으로 재계산**해 저장한다. 원화 행은 `krwAmt`를 보존하고 `fcAmt`를 `null`로 강제한다(결정 B).
+
+`CostService.createCost:96`은 `resolveXcr(curC, LocalDate.now())`를 호출한다 — **기준일이 오늘**이다.
+
+결론:
+- 외화 행의 저장 금액은 엑셀 원화열이 아니라 `FC_AMT × Ccodem 환율`이다.
+- 선행 시드는 단순 통화 코드 추가가 아니라 `C_TP='XCR'`, `CO_CDVA_NM=환율값`, **유효기간이 이관 실행일을 포함하는** 환율 행이어야 한다.
+- 그 값을 엑셀 `(환율 기준)` 시트의 2026년 예산환율로 넣으면 재계산 결과가 엑셀 원화열과 일치한다(`GBP 2,890 × 1,924 = 5,560,360` ✓). `AMOUNT_MISMATCH` 진단이 이 전제를 지키는 장치가 된다.
+- JPY는 엑셀 외화열이 천엔이므로 `FC_AMT`를 엔으로 ×1,000 변환해야 재계산이 맞는다(§5.1).
+
+### 3.8 `validateBudgetPeriod()`가 마이그레이션을 차단한다
+
+`CostService.createCost:87`과 `ProjectService.createProject:137`이 `codeService.validateBudgetPeriod()`를 호출한다. 오늘이 `BG_RQS/STA`~`BG_RQS/END` 밖이면 `CustomGeneralException`(400)으로 실패한다. 이관 작업이 편성 시즌 밖에서 돌면 무조건 막힌다.
+
+**결정**: 두 서비스에 기간 검증을 생략하는 오버로드를 추가하고, 기존 시그니처는 검증하는 경로로 위임한다. 마이그레이션만 생략 경로를 쓴다(관리자 전용 컨트롤러 뒤에 있다). 기존 화면 호출부의 동작은 바뀌지 않는다. 공통 `validateBudgetPeriod`에 관리자 예외를 넣는 방식은 기간 검증이 걸린 7개 호출 지점의 정책을 한꺼번에 바꾸므로 택하지 않는다.
 
 ## 4. 아키텍처
 
@@ -185,8 +218,8 @@ dry-run 결과를 서버가 보관하지 않는다. staging 테이블과 정리 
 | --- | --- |
 | 금액 단위 | §3.4 표에 따라 시트별 배수 적용 |
 | 외화 `FC_AMT` | 통화 기본 단위. JPY만 천엔→엔 ×1,000 |
-| 환율 | `(환율 기준)` 시트 통화별 조회 → `XCR`, `XCR_BSE_DT='20260101'` |
-| 금액 정합 | `원화열 ≈ 외화열 × 환율` 대조(허용 오차 1원). 불일치는 경고이며 엑셀 원화열을 권위값으로 채택 |
+| 환율 | 서버가 `Ccodem`에서 결정한다(§3.7). 어댑터는 `XCR`을 설정하지 않고 `XCR_BSE_DT='20260101'`만 채운다 |
+| 금액 정합 | 외화 행은 서버가 `FC_AMT × Ccodem 환율`로 재계산한다. dry-run이 그 재계산값을 엑셀 원화열과 대조하고(허용 오차 1원) 어긋나면 `AMOUNT_MISMATCH` 경고를 낸다. 원화 행은 엑셀 원화열이 그대로 저장된다 |
 | `ABUS_TC` | `신규`→`10`, `계속`→`20`, 그 외 `CodeDefaults.orNotApplicable` |
 | `O`/공백 | `Y`/`N` |
 | 공통 | `BSE_YY='2026'`, `LST_YN='Y'`, `DEL_YN='N'` |
@@ -224,7 +257,7 @@ dry-run 결과를 서버가 보관하지 않는다. staging 테이블과 정리 
 
 엑셀에 국내/국외·일반/감리 구분이 없다(`글로벌 표준 뱅킹시스템…(감리비 포함)`은 `104`가 섞여 있다). 기본값을 제시하고 미리보기에서 보정한다.
 
-`BBUGTM`: 새 `BG_NO` 1건 + 품목별 `SNO` 1..N. 조정비율→`ASG_RT`(×100, `0.7`→`70`), 개발비·기계장치·무형자산 조정→`BG_DUP_AMT`, `FNT_TB_NM='BITEMM'`, `PK_COL_NM=GCL_MNG_NO`, `FNT_TB_CRY_SNO=BITEMM.SNO`.
+`BBUGTM`은 이 어댑터가 직접 쓰지 않는다(§3.5). 조정비율 열(`0.7`·`1`)만 ×100해 `ItemRate`(`assetDupRt`=`costDupRt`=`70`·`100`)로 모아 두고, 반영 마지막 단계의 `applyItemRates` 단일 호출에 넘긴다. 자본예산 파일의 조정액은 실제로 비율 곱이라 이 방식으로 정확히 재현된다(`1,406 × 0.7 = 984` ✓).
 
 ### 5.4 `26년정보화사업(자본예산)` → `BPLANM` + `BPLANA` + 편성 조정
 
@@ -236,7 +269,11 @@ dry-run 결과를 서버가 보관하지 않는다. staging 테이블과 정리 
 
 `BPLANA`: 3행 각각 `(ABUS_MNG_NO, REQ_DOC_NO)` 연결.
 
-사업별 조정: 개발비·기계장치·기타무형자산 → `applyItemRates()` 입력. 예상지급일정(`'26.12월`) → `BITEMM.BSE_YM`.
+사업별 조정: 부문계획의 조정액은 비율 곱이 아니라 **확정 절대금액**이다. 웹한글 사업은 편성요청 `1,406`인데 조정이 `416`이고 비고가 `6.10자 품의 완료, 7.9자 계약 완료`다 — 실제 계약금액 반영이다. `416/1,406 = 29.6%`이고 `Bbugtm.asgRt`는 `Integer`라 `30%`밖에 담지 못해 `421.8`로 어긋난다.
+
+**결정**: 이 어댑터가 대상 사업의 기존 `BITEMM` 행을 `LST_YN='N'`으로 닫고 조정 금액으로 새 행을 `LST_YN='Y'`로 만든다. 그리고 `applyItemRates`에는 편성률 `100`을 준다. 편성액이 엑셀과 정확히 일치하고, 편성요청 원값은 `LST_YN='N'` 행으로 보존된다. 26년 6월 조정 기준액이 사업의 현재 요청금액이 되는 것이 도메인상 자연스럽다.
+
+예상지급일정(`'26.12월`) → 새 `BITEMM` 행의 `BSE_YM`.
 
 `사업진행` 열(`진행(품의)`·`진행(계약)`·`취소(연기)`)은 원장 코드에 매핑하지 않고 `BPLANM.REDT_CONE_INF` 스냅샷에만 남긴다. `BPROJA`의 PK는 `(ABUS_MNG_NO, CNCD_RFR_NO)`이고 사업계획 상태는 `(ABUS_MNG_NO, 'BIZ-' + ABUS_MNG_NO)` 행에 작성중(`21`)·작성완료(`29`)로만 기록하는 규약이므로(`it_backend/CLAUDE.md` §8), 이 세 값을 담을 자리가 없다. `BPROJM.IT_PTL_RPR_STS_TC`(보고상태)도 유효 코드셋이 이 값들과 다르다. 원장 코드셋을 새로 정의하는 것은 이번 범위를 넘으므로 스냅샷 보존으로 그친다.
 
@@ -299,16 +336,19 @@ dry-run에서 이미 존재하는 행을 `DUPLICATE_EXISTS`로 표시하고 기�
 
 ```
 1. 전체 재검증 — BLOCKER 하나라도 있으면 아무것도 쓰지 않고 실패
-2. 일반관리비(BCOSTM)
+2. 이관 대상이 아닌 기존 BBUGTM 행의 (원천, ASG_RT)를 미리 읽어 둔다
+3. 일반관리비(BCOSTM)
    → 자본예산(BPROJM·BITEMM)
    → 위임예산(BPROJM·BITEMM)
-   → 부문계획(BPLANM·BPLANA + applyItemRates)
-3. 원장 생성 직후 MigrationApprovalStamper가 CAPPLM(상태 '2') + CAPPLA 생성
+   → 부문계획(BPLANM·BPLANA, 대상 사업의 BITEMM 버전 교체)
+4. 원장 생성 직후 MigrationApprovalStamper가 CAPPLM(상태 '2') + CAPPLA 생성
+5. applyItemRates를 딱 한 번 호출 — items에 그 연도의 모든 사업 + 모든 전산업무비
+   (이관분은 어댑터가 모은 편성률, 그 외는 2에서 읽어 둔 기존 ASG_RT)
 ```
 
-부문계획 조정은 자본예산이 만든 `BITEMM`을 참조하므로 반드시 마지막이다.
+부문계획은 자본예산이 만든 `BITEMM`을 버전 교체하므로 반드시 원장 단계의 마지막이다.
 
-같은 사업이 두 파일에 모두 있으면 `BBUGTM` 편성행이 두 번 만들어진다. 자본예산 어댑터가 편성요청 편성행(`BG_NO` ①)을 넣고, 부문계획 어댑터의 `applyItemRates()`가 ①을 논리삭제하고 조정 편성행(`BG_NO` ②)을 넣는다. 최종 상태에 남는 활성 편성행은 ② 하나이고 ①은 감사로그(`BBUGT_L`)에만 남는다. 낭비가 아니라 의도된 순서다 — 편성요청 시점의 편성률·편성액이 이력으로 보존되고, `BudgetRepresentativeSelector.pick()`이 `BG_NO` 내림차순으로 ②를 대표행으로 고른다.
+편성행 생성은 5번의 단일 호출이 전담한다. 어댑터는 `BBUGTM`을 직접 쓰지 않는다. `applyItemRates`가 연도 전체를 재작성하면서 삭제 이력을 남기지 않으므로(§3.5), 두 번 호출하면 첫 번째 호출의 결과가 흔적 없이 사라진다.
 
 ## 8. 오류 처리
 
@@ -321,9 +361,10 @@ dry-run에서 이미 존재하는 행을 `DUPLICATE_EXISTS`로 표시하고 기�
 
 마이그레이션 기능과 분리된 커밋으로 먼저 반영한다.
 
-1. `it_database/migrations/V20260811_001__SeedCurrencyGbpAud.sql` — `CUR_C`에 `GBP`·`AUD` 추가. **이것 없이는 데이터 대부분이 적재 불가**(§3.2)
+1. `it_database/migrations/V20260811_001__SeedCurrencyAndBudgetXcr.sql` — `CUR_C`에 `GBP`·`AUD` 코드 추가 + 엑셀 `(환율 기준)` 시트의 2026년 예산환율을 `C_TP='XCR'`·`CO_CDVA_NM=환율값` 행으로 시드(유효기간이 이관 실행일 포함). **이것 없이는 데이터 대부분이 적재 불가**(§3.2, §3.7)
 2. `it_database/migrations/V20260811_002__SeedMigrationAdminMenu.sql` — `/admin/migration` `PGE` 메뉴 시드
-3. 주석 정정: `Bbugtm.java:58`(`FNT_TB_NM`은 `BITEMM`/`BCOSTM`), `Bprojm.java:219`(`ABUS_TC` 실제 저장값은 `10`/`20`)
+3. `CostService.createCost`·`ProjectService.createProject`에 기간 검증 생략 오버로드 추가(§3.8)
+4. 주석 정정: `Bbugtm.java:58`(`FNT_TB_NM`은 `BITEMM`/`BCOSTM`), `Bprojm.java:219`(`ABUS_TC` 실제 저장값은 `10`/`20`), `BudgetWorkDto.ItemRate.orcTb`(접두어 없는 `BPROJM`/`BCOSTM`)
 
 ## 10. 테스트
 
@@ -345,7 +386,10 @@ dry-run에서 이미 존재하는 행을 `DUPLICATE_EXISTS`로 표시하고 기�
 | 항목 | 결정 |
 | --- | --- |
 | 기능 성격 | 상시 관리자 일괄업로드 화면 (`/admin/migration`) |
-| 사업 적재 | 편성요청→`BPROJM`, 조정→`BBUGTM`(`applyItemRates()`) |
+| 사업 적재 | 편성요청→`BPROJM`, 조정→대상 `BITEMM` 버전 교체 |
+| 편성행 생성 | 반영 마지막에 `applyItemRates` **단일 호출**, `items`에 연도 전체(§3.5) |
+| 환율 | 서버가 `Ccodem`에서 결정. 외화 행 금액은 `FC_AMT × 환율` 재계산(§3.7) |
+| 기간 검증 | `createCost`·`createProject`에 생략 오버로드 추가(§3.8) |
 | 계획구분 | `IT_PTL_PLN_TP_C='조정'` |
 | 결재 | 이관용 결재완료 받이(`CAPPLM` 상태 `2` + `CAPPLA`) 생성 |
 | 파싱 위치 | 프런트 exceljs + 서버 검증·반영 (dry-run 결과 미보관, 2회 검증) |
