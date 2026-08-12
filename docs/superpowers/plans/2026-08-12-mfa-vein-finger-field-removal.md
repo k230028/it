@@ -154,12 +154,50 @@ Expected: 아이콘과 `mfa-challenge` 영역이 아직 없어 FAIL.
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    height: clamp(18rem, 45vh, 22rem);
+    height: 14rem;
     overflow-y: auto;
 }
 ```
 
 - [ ] **Step 5: 검증 실행**
+
+Run: `npm test -- tests/unit/components/mfa/MfaDialog.test.ts tests/unit/composables/useMfa.test.ts`
+
+Run: `npm run typecheck`
+
+Expected: 관련 테스트와 타입 검사가 통과한다.
+
+### Task 4: MFA 본문 밀도와 BioAgent 안내 조정
+
+**Files:**
+- Modify: `it_frontend/app/components/mfa/MfaDialog.vue`
+- Modify: `it_frontend/tests/unit/components/mfa/MfaDialog.test.ts`
+
+**Interfaces:**
+- Consumes: 기존 인증수단 버튼과 BioAgent 실행 안내
+- Produces: 52px 인증수단 버튼, 14rem 콘텐츠 영역, 한 줄 안내와 `실행` 버튼
+
+- [ ] **Step 1: 실패하는 라벨 테스트 작성**
+
+```ts
+expect(wrapper.get('[data-testid="mfa-agent-launch"]').text()).toBe('실행');
+```
+
+- [ ] **Step 2: RED 확인**
+
+Run: `npm test -- tests/unit/components/mfa/MfaDialog.test.ts`
+
+Expected: 기존 라벨 `BioAgent 실행` 때문에 FAIL.
+
+- [ ] **Step 3: 최소 구현**
+
+- 실행 버튼 라벨을 `실행`으로 변경한다.
+- `.mfa-dialog__method`에 `min-height: 3.25rem`을 적용한다.
+- `.mfa-dialog__challenge` 높이를 `14rem`으로 변경한다.
+- 안내 문구에 전용 클래스를 부여하고 `white-space: nowrap`, `font-size: 0.75rem`, `min-width: 0`을 적용한다.
+- 실행 버튼은 줄어들지 않도록 `flex-shrink: 0`으로 유지한다.
+
+- [ ] **Step 4: 검증**
 
 Run: `npm test -- tests/unit/components/mfa/MfaDialog.test.ts tests/unit/composables/useMfa.test.ts`
 
