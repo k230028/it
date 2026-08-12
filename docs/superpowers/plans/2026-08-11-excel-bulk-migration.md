@@ -5727,7 +5727,9 @@ class MigrationImportIt extends AbstractOracleRepositoryTest {
 
 - [ ] **Step 3: 시드 적용 상태를 확인한다**
 
-Task 1의 fix 라운드에서 환율 유효기간을 `END_DT='99991231'`로 열어 두었으므로 연도 경계 문제는 없다. 다만 **로컬 스키마에는 Flyway 이력 테이블이 없어(`ITPOWN."flyway_schema_history"` → `ORA-00942`) 마이그레이션이 자동 적용되지 않는다.** 통합 테스트 프로파일(`test-it`)도 Flyway가 꺼져 있다.
+Task 1의 fix 라운드에서 환율 유효기간을 `END_DT='99991231'`로 열어 두었으므로 연도 경계 문제는 없다. 다만 **통합 테스트 프로파일(`test-it`)은 Flyway가 꺼져 있어** 통합 테스트 실행이 마이그레이션을 적용해 주지 않는다. `local-ext`/`local-int`로 애플리케이션을 한 번 기동하면 Flyway가 적용한다.
+
+> **정정(2026-08-12)**: 이 절은 원래 "로컬 스키마에는 Flyway 이력 테이블이 없어 마이그레이션이 자동 적용되지 않는다"고 서술했다. **사실이 아니다.** 이력 테이블은 `ITPOWN.FLYWAY_SCHEMA_HISTORY`(대문자 비인용)로 존재하며 Flyway가 이 스키마를 계속 관리해 왔다. 인용된 소문자 이름(`ITPOWN."flyway_schema_history"`)으로 조회해 `ORA-00942`가 난 것을 "테이블 없음"으로 잘못 읽었고, 그 오판이 Task 13·18의 지시와 보고에 그대로 전파됐다. 실제로 `V20260811_001`·`V20260811_002`는 수기가 아니라 Flyway가 적용했다(이력 rank 78·79). 이력 테이블을 조회할 때는 대문자 비인용 이름을 쓰고, 컬럼은 반대로 인용된 소문자(`"version"`·`"installed_rank"` 등)임에 주의한다.
 
 따라서 통합 테스트를 돌리기 전에 시드가 실제로 들어가 있는지 확인한다.
 
@@ -5735,7 +5737,9 @@ Task 1의 fix 라운드에서 환율 유효기간을 `END_DT='99991231'`로 열�
 cd /c/it && { printf '%s\n' "$DB_PASSWORD"; printf "%s\n" "SELECT CDVA_ID, CO_CDVA_NM, END_DT FROM ITPOWN.TPRMPP_CCODEM WHERE CO_C_ID_NM='CUR_C' AND CDVA_ID IN ('GBP','AUD');" "EXIT"; } | NLS_LANG=KOREAN_KOREA.AL32UTF8 sqlplus -S ITPAPP@127.0.0.1:11521/XEPDB1
 ```
 
-GBP 1924 / AUD 929가 `END_DT='99991231'`로 나오지 않으면 `V20260811_001` 스크립트를 수동 적용한다.
+GBP 1924 / AUD 929가 `END_DT='99991231'`로 나오지 않으면 `local-ext` 프로파일로 애플리케이션을 한 번 기동해 Flyway가 적용하게 한다.
+
+**로컬에만 만든 마이그레이션은 적용 전에 커밋한다.** 적용해 이력에 기록한 뒤 스크립트를 커밋 없이 지우면, 다음 기동에서 Flyway가 `Detected applied migration not resolved locally`로 검증을 실패시켜 애플리케이션이 아예 뜨지 않는다(2026-08-12에 `20260810.001`로 실제 발생). 이때는 `flyway repair`로 고아 레코드를 정리한다. `baseline-on-migrate=true`는 빈 스키마 기준선용이라 고아 레코드를 처리하지 못한다.
 
 - [ ] **Step 4: 통합 테스트를 돌린다**
 
