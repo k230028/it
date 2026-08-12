@@ -1,6 +1,6 @@
 # 서브레포 커밋 잠금 — 릴리스/재현용. scripts/update-versions-lock.ps1로 갱신.
 # 형식: <레포>  <origin URL>  <브랜치>  <HEAD SHA>  (갱신시각은 마지막 줄 주석)
-it_frontend  https://github.com/gonnabe88/it_frontend      feat/excel-bulk-migration 9d469981cfe5a9a37f633935dac09aa19e59b202
-it_backend   https://github.com/gonnabe88/it_backend       feat/excel-bulk-migration 000be00abf843e33a6ca0820d7b277e737a17e60
-it_database  https://github.com/gonnabe88/it_database      feat/excel-bulk-migration f475bfdea3d1ada81c9fa87e08d57ef1773c55f9
-# 갱신시각: 2026-08-12 07:42:39
+it_frontend  https://github.com/gonnabe88/it_frontend      feat/excel-bulk-migration c05aea4848ba3b95fc16208c2a66b01d3985fede
+it_backend   https://github.com/gonnabe88/it_backend       feat/excel-bulk-migration 6fafbcba0597e452aa0dc8e79783ebfb1cf10730
+it_database  https://github.com/gonnabe88/it_database      feat/excel-bulk-migration 421b846c54f9fa1211d3f5300f181d61fd094652
+# 갱신시각: 2026-08-12 14:03:19
