@@ -288,6 +288,13 @@ COMMENT ON COLUMN TPRMPP_CMENUL.IMK_NM IS '이미지키명';
 기존 행은 아이콘 변경 이력이 없으므로 `NULL`로 둡니다(`V20260806_002`의 판단과 동일).
 반영 후 `meta/table.txt` 재추출이 필요합니다.
 
+**앱 측 조치(2026-08-13)** — `IMK_NM`이 없는 환경에서 메뉴 조회가 `ORA-00904`로 죽지 않도록 백엔드에
+내성을 넣었습니다(`docs/superpowers/specs/2026-08-13-menu-icon-missing-column-fallback-design.md`).
+컬럼이 없으면 조회 select에서 빼고 `MenuIconDefaults` 스냅샷으로 아이콘을 채웁니다.
+
+**이 조치는 위 DDL 반영을 대체하지 않습니다.** 내성이 걸린 범위는 조회뿐이며, 아이콘 편집(`CMENUM`)과
+아이콘 변경 이력(`CMENUL`)은 컬럼이 있어야 동작합니다.
+
 ### 5.2 운영 반영 요청 — `TPRMPP_CINFMM.INFM_SD_STS_C` 기본값 (3.5)
 
 ```sql
