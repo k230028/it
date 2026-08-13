@@ -133,7 +133,7 @@ it/
 
 ### 4.5 런타임 로그
 
-- 백엔드 파일 로그는 1개월 단위 롤오버. 경로: local `c:/itp_log`, dev/prod `/log/springitp`. 상세는 `it_backend/docs/guides/operations/logging.md`를 따릅니다.
+- 백엔드 파일 로그는 1개월 단위 롤오버. 모든 프로파일의 기본 경로는 `/log/springitp`입니다. 상세는 `it_backend/docs/guides/operations/logging.md`를 따릅니다.
 
 ## 5. AI 하네스 가이드
 

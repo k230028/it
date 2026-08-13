@@ -32,6 +32,11 @@ sqlplus ITPAPP@127.0.0.1:11521/XEPDB1
 
 ### 2. 백엔드
 
+배포파일 빌드
+```
+cd C:\it\it_backend; ./gradlew bootWar -x test
+```
+
 ```powershell
 cd C:\it\it_backend
 $env:SPRING_PROFILES_ACTIVE = "local-ext"
@@ -45,6 +50,11 @@ $env:SPRING_PROFILES_ACTIVE = "local-ext"
 외부망 로컬 개발은 모의 SSO와 Flyway 자동 적용을 사용하는 `local-ext`, 내부 ESSO 연동 환경은 `local-int` 프로파일을 사용합니다. `dev`와 `prod`에서는 Flyway를 자동 실행하지 않습니다.
 
 ### 3. 프론트엔드
+
+배포파일 빌드
+```
+cd C:\it\it_frontend; npm run generate:dev
+```
 
 ```powershell
 cd C:\it\it_frontend
