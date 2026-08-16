@@ -24,6 +24,16 @@ it/
 
 `C:\it`는 문서·도구만 추적하고 `it_frontend`/`it_backend`/`it_database`는 각각 독립 원격 저장소입니다(루트 `.gitignore`로 제외). 호환 커밋 조합은 `versions.lock`에 기록하며 `scripts/update-versions-lock.ps1`로 갱신합니다. 교차 저장소 변경은 백엔드 계약(API) 커밋을 먼저 만들고, 이를 참조하는 프론트 커밋을 뒤이어 만듭니다.
 
+### 커밋 스테이징 규칙
+
+네 저장소의 워킹트리를 여러 작업이 동시에 공유하므로, 커밋 시점에 **내 작업과 무관한 변경이 함께 올라와 있는 것이 정상 상태**입니다.
+
+- `git add`는 **경로를 명시**합니다. `git add -A`, `git add .`, `git commit -a`를 쓰지 않습니다.
+- 한 파일에 내 변경과 남의 변경이 섞였으면 `git add -p`(또는 `git diff` → `git apply --cached`)로 **내 hunk만** 스테이징합니다.
+- 커밋 직전 `git diff --cached --stat`으로 스테이징 목록이 의도한 경로와 정확히 일치하는지 확인합니다.
+- 브랜치를 바꾸기 전 현재 브랜치를 확인합니다. 다른 작업이 워킹트리의 브랜치를 전환해 둘 수 있으므로, `git commit` 결과의 브랜치명을 그대로 신뢰하지 말고 `git rev-parse --abbrev-ref HEAD`로 확인합니다.
+- 이 규칙을 어겨 무관한 커밋에 변경이 섞여 들어갔고 이미 푸시되어 후속 작업이 쌓였다면, 이력을 재작성하지 말고 `TASK_DONE.md`에 커밋 대응표를 남깁니다(선례: 2026-08-16 담당자 이름 표시 보정).
+
 각 영역의 단일 진실 공급원(Single Source of Truth):
 
 | 토픽                                                                | SoT                                                                                                                               |
