@@ -12,6 +12,9 @@ everything-claude-code/
 # Gradle (GRADLE_USER_HOME = C:\it\.gradle)
 /.gradle/
 
+# Node 의존성 (과거 .vite 캐시 1건이 실수로 추적되어 있었다)
+node_modules/
+
 # Python
 __pycache__/
 *.pyc
