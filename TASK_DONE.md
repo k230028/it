@@ -16,6 +16,23 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-16 담당자 이름 표시 보정 (이력 추적용 기록)
+
+> **이 절은 커밋 메시지로는 찾을 수 없는 변경을 기록하기 위한 것이다.** 아래 작업은 다른 작업의 미커밋 변경과 함께 진행되다가, 무관한 커밋 메시지를 단 두 커밋에 그대로 쓸려 들어갔다. 두 커밋 모두 `origin/main`에 푸시된 뒤 다른 작업이 그 위에 쌓였으므로 이력을 재작성하지 않고 대응표만 남긴다.
+
+**문제**: 정보화사업 담당자 컬럼(`USID`·`TLR_USID`·`DVM_USID`·`DVM_TLR_USID`)은 사번 **또는 이름**을 담는다(엔티티 `Bprojm` 주석에 명시). 서버는 이 값을 사번으로만 보고 `TPRMPP_CUSERI`를 조회하므로, 이름이 저장된 행은 조회가 실패해 `*Nm`이 `null`이 되고 화면에 `-`만 나왔다. 실제 데이터(`PRJ-2026-0499`)의 네 컬럼이 모두 한글 이름이었다.
+
+**판정 규칙**: 조회된 사용자명이 있으면 그 값, 없고 저장값에 비ASCII(한글 등)가 섞였으면 저장값을 이름으로, ASCII 값이면(퇴직·미등록 사번) `null`. 사번 형식(`^[A-Za-z]\d{6}$`) 기준을 쓰지 않은 이유는 실제 계정 `TEST001`과 테스트 픽스처 `E10001`이 그 형식에 맞지 않아 멀쩡한 사번을 이름으로 오인하기 때문이다.
+
+| 저장소 | 커밋 (실제 메시지) | 이 작업에 해당하는 파일 |
+| --- | --- | --- |
+| it_backend | `993abe90` — *feat(migration): read form controls and resolve org by folder code* | `common/util/UserNameResolver.java`(신규), `common/util/UserNameResolverTest.java`(신규, 4건), `domain/budget/project/service/ProjectQueryAssembler.java`(상세), `.../ProjectBatchAssembler.java`(목록·일괄), `domain/budget/status/repository/BudgetStatusQueryRepositoryImpl.java`(예산현황 4개 컬럼) |
+| it_frontend | `5fa4e97` — *feat(migration): rework request form import result view* | `components/common/EmployeeLink.vue`(사번 형식이 아닌 값은 링크 대신 텍스트), `tests/unit/components/EmployeeLink.test.ts`(케이스 1건 추가, 총 6건), `pages/info/projects/[id].vue`(IT부서 카드 담당팀장이 주관부서 팀장 `tlrUsidNm`을 참조하던 오류를 `dvmTlrUsidNm`으로 수정) |
+
+**부수 효과**: 예산현황은 `EmployeeLink`가 `eno` 폴백으로 이름을 이미 보여주고 있었으나 `*Nm` 필드가 비어 있어 **Excel 내보내기와 담당자 검색 필터**가 담당자를 놓치고 있었다. 이 수정으로 함께 해소된다.
+
+**범위 밖으로 둔 것**: 사업 목록·예산현황 표에 컬럼을 추가하지 않았고, `EmployeeLink`의 링크 판정 변경은 전 화면(14곳)에 적용되므로 사번이 ASCII인 기존 사용처는 동작이 같다.
+
 ### ✅ 2026-08-16 정보화사업 금액 컬럼 3종 추가 (MIG-05)
 
 | 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
