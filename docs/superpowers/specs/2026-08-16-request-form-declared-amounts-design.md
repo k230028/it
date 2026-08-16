@@ -143,6 +143,7 @@ DFR_AMT     = W − L − Y
 - `ProjectAmounts.none()` — 3필드 모두 null. 선언값이 없는 어댑터와 미적재 파일이 쓴다.
 - 컴팩트 생성자에서 `projectAmounts.size() == projects.size()`를 강제한다.
 - `merge()`는 두 리스트를 같은 순서로 이어 붙인다.
+- **기존 4-인자 생성자를 편의 생성자로 남긴다.** `projectAmounts`를 `none()`으로 채워 위임하므로, 선언값을 내지 않는 나머지 어댑터와 기존 테스트 19곳의 호출부가 그대로 컴파일된다. 5-인자 정규 생성자는 `CapitalProjectFormAdapter`만 쓴다.
 
 > **대안과 선택 이유:** `projects()`의 원소를 `record PreparedProject(CreateRequest, ProjectAmounts)`로 감싸는 방법이 타입 안전하지만, `RequestFormFileImporter`·`RequestFormValidator`와 어댑터 테스트 전반이 함께 바뀐다. 인덱스 대응은 footgun이나 생성자 불변식으로 고정되고 변경 범위가 훨씬 작아 병렬 리스트를 택한다.
 
