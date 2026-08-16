@@ -16,6 +16,15 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-16 정보화사업 금액 컬럼 3종 추가 (MIG-05)
+
+| 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✅ Done | MIG-05 | `updateProject`의 신규 품목 생성 분기가 `Bitemm.builder()`를 직접 호출해 `buildBitemm`과 필드 목록을 손으로 중복하던 것을 해소했다. 세 경로(`createProject`·`replaceItemsForMigration`·`updateProject`)가 모두 `buildBitemm` 하나를 거친다. 금액 컬럼 작업이 `ProjectService`를 800줄 상한 위로 밀어 올려 상쇄 분량을 찾던 중 처리했다 — 중복 제거가 곧 34줄 감축이었다. 19개 필드가 기존 인라인 빌더와 동일함(`dfrCleC` 기본값, `sectSysUtzYn`·`itrInfrYn` null→`"N"`, `lstYn("Y")`, `xcrBseDt` 정규화, `mplAmt` 클램프 포함)을 최종 리뷰가 필드 단위로 대조 확인했다. | it_backend `4af5c9ff` | `./gradlew test` 3287건 통과(실패 0). `MaxLinesRatchetTest` 통과 — `ProjectService.java` 816→785줄. 최종 전체 브랜치 리뷰가 behavior-preserving 확인 |
+
+> 같은 작업에서 발견한 잔여 항목은 `TASK.md`에 BE-35(`ProjectService` 800줄 근접)·BE-36(`totRqmAmt` 이름 불일치)·BE-37(`jacocoTestCoverageVerification` 기존 위반)로 등록했고, MIG-07에는 통합 테스트 실패 원인 재확인 결과를 보강했다.
+> 기능 자체(BPROJM/BPROJL 금액 3종 + 기 지급예산 입력)는 잔여과제가 아니라 신규 기능이므로 설계·계획 문서(`docs/superpowers/specs/2026-08-15-project-amount-columns-design.md`, `docs/superpowers/plans/2026-08-15-project-amount-columns.md`)를 근거로 남긴다.
+
 ### ✅ 2026-08-09 잔여과제 일괄 조치 (FE-36 · BE-24 · CQ-25 · CQ-26)
 
 | 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
