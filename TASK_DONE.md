@@ -16,6 +16,29 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-18 FE-37 사이트 전체 고정 문구 i18n 이관 — 도메인 5개 (1321건)
+
+FE-37 자체는 **아직 진행 중**입니다(잔여 209건, [`TASK.md`](TASK.md) 참조). 이 절은 그중
+완결한 도메인 다섯 개의 근거를 남깁니다. 감사 실측은 **1530 → 209건**입니다.
+
+| 상태 | 도메인 | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✅ Done | 협의회 | `components/council` 전체(타당성검토표·질의응답·주요 Q&A·개최통보·계획협의회·결과서·일정)와 요청 화면 4개(목록·상세·개최준비·개최결과), 화면 전용 composable, 목록 카드 표시 모듈까지 503건을 새 카탈로그 `i18n/messages/council.ts`로 옮겼다. 중복은 공용 키로 접었다 — 점수 선택지(`council.scoreOptions`)는 평가의견과 자체점검이, 파일 Toast(`council.files`)는 개최통보와 결과서 첨부가 함께 쓴다. `CouncilQna`의 `kind-label` prop을 `written` 불리언으로 바꿔 호출부 3곳의 리터럴을 없앴다. 위원유형 표시는 하드코딩 삼항을 지우고 `getMemberTypeLabel`로 바꿨다(공통코드 표시명은 DB가 SoT). | it_frontend `47bdb75`·`07b1717`·`7a6ce16` | `npm run check` 통과, `npm test` 3343건 통과 |
+| ✅ Done | 정보기술부문 계획 | 목록·등록·상세 세 화면, 카드 컴포넌트 5개, Excel·PDF·인쇄·목차 모듈 4개, composable 2개의 209건을 새 카탈로그 `i18n/messages/plan.ts`로 옮겼다. Excel 시트명·컬럼 헤더·행 라벨과 PDF 진행 단계 문구까지 포함한다(FE-39와 같은 결정). | it_frontend `9ab6a20` | 같음 |
+| ✅ Done | 관리자 | 상세 로그 화면(로그 21종 제목·메뉴 라벨 포함)·실시간 모니터링 컴포넌트 7개·관리자 화면 14개의 397건을 `admin` 카탈로그로 옮겼다. CRUD 화면이 공유하는 표·툴바 어휘는 `admin.crud`로 접고, 재조회 안내는 `{target}`에 화면별 대상명을 끼우는 한 벌로 통일했다. `ADMIN_LOG_TABLES`는 key·tableName만 갖는 순수 데이터가 되고 제목·라벨은 카탈로그로 갔다. | it_frontend `e7e552f`·`4457f11` | 같음 |
+| ✅ Done | 게시판 | 게시판 목록·게시물 목록·작성·수정·상세·댓글 트리·첨부파일 composable 86건을 새 카탈로그 `i18n/messages/board.ts`로 옮겼다. | it_frontend `8c41591` | 같음 |
+| ✅ Done | 사업 가이드 | 조회·작성·삭제 화면과 첨부 composable 38건을 `info.guide`로 옮겼다. | it_frontend `5065450` | 같음 |
+
+**이관 중 확정한 규칙 세 가지.**
+
+1. **순수 모듈은 `t`를 인자로 받는다.** `council-list-presentation`·`adminLogPresentation`·`realtimeLogs`·`useBoardAttachments`의 헬퍼는 Vue setup 밖이라 `useI18n()`을 부를 수 없다. 이미 `getDeptName`·`getStatusLabel`을 주입받던 방식과 같게 번역 함수를 받는다. 그 단위 테스트는 스텁 문자열이 아니라 **ko 카탈로그를 실제로 조회하는 `t`**를 넘겨, 키가 사라지면 테스트가 먼저 깨지게 했다.
+2. **백엔드가 주는 한국어 표시명보다 카탈로그를 우선한다.** 상세 로그 제목이 그 예다(`useAdminLogList`). 백엔드 제목은 한국어 고정이라 영어 화면에 그대로 노출할 수 없다(CLAUDE.md §6).
+3. **왕복하는 Excel 양식은 한국어로 고정한다.** 공통코드 화면은 내려받은 파일을 같은 화면이 다시 반입하므로 컬럼명·시트명을 locale에 따라 바꾸면 영어로 받은 파일을 반입 파서가 해석하지 못한다. allowlist에 근거를 남겼다.
+
+**800줄 상한 대응.** `t()` 호출로 줄바꿈이 늘자 상한에 닿아 있던 파일 넷이 초과했다. 기준선을 올리지 않고 책임을 분리했다 — `components/plan/PlanNoteField.vue`(계획 상세의 서술 필드 5개가 같은 구조를 반복하고 있었다), `components/council/CouncilApplyDialog.vue`, `components/council/result/CouncilResultReviewSection.vue`를 새로 만들고, `useCouncilRequestPage`는 catch마다 반복하던 서버 메시지 조립을 `failureDetail`로, 성공 Toast를 `notifySuccess`로 모았다. 네 파일 모두 상한 아래로 내려왔다(792·754·790·796줄).
+
+용어집([`it_frontend/docs/guides/i18n/glossary.md`](it_frontend/docs/guides/i18n/glossary.md))에 협의회 도메인 21개 용어를 추가했다.
+
 ### ✅ 2026-08-17 업무 판단 반영 배치 6 — 2차 (4건)
 
 | 상태 | ID | 결정 | 완료 범위 | 저장소 커밋 | 검증 증거 |
