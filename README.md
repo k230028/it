@@ -117,6 +117,37 @@ server {
       }
 ```
 
+## IDE 설정(VS Code)
+
+`.vscode/settings.json`·`.vscode/launch.json`은 **의도적으로 추적**합니다. 프로젝트 공통 함정의 회피책이 들어 있어 새 개발자가 같은 문제를 다시 겪지 않게 하는 것이 목적입니다. 대신 **머신 종속 값은 이 파일에 두지 않습니다** — 워크스페이스 설정이 사용자 설정을 덮으므로, 절대경로를 박아 두면 저장소를 다른 경로나 다른 PC에 클론한 사람의 Java 확장 임포트가 실패합니다(REPO-01).
+
+### 각자의 사용자 설정에 넣을 값
+
+`Ctrl+Shift+P` → `Preferences: Open User Settings (JSON)`에 아래 두 값을 자기 PC 경로로 넣습니다.
+
+```jsonc
+{
+    // Lombok javaagent 경로 — 클론 위치에 맞게 고칩니다.
+    // 이 설정은 키 단위로 덮이므로 GC·힙 옵션까지 함께 적어야 합니다.
+    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx2G -Xms100m -Xlog:disable -javaagent:C:/it/it_backend/lib/lombok.jar",
+    // 직접 풀어 둔 Gradle 설치본 경로 (버전은 gradle/wrapper/gradle-wrapper.properties와 맞춥니다)
+    "java.import.gradle.home": "C:/gradle/gradle-9.2.1"
+}
+```
+
+`java.import.gradle.home`이 필요한 이유는 워크스페이스 설정의 `java.import.gradle.wrapper.enabled: false`와 짝입니다. 어떤 환경에서는 `.gradle\wrapper\dists`의 zip rename이 보안 프로그램에 막혀 Gradle 확장(`vscjava.vscode-gradle`)이 배포판을 매번 삭제·재설치하다 실패합니다. 터미널의 `./gradlew`는 wrapper를 그대로 쓰므로 이 설정과 무관하게 동작합니다.
+
+### 지우면 기동이 깨지는 설정
+
+`java.import.exclusions`의 두 항목은 취향이 아니라 **장애 회피책**입니다.
+
+| 제외 경로 | 지우면 생기는 일 |
+| --- | --- |
+| `**/bin/**` | `bin` 아래에 `.project`·`build.gradle`이 생기면 JDT가 이를 별도 프로젝트로 임포트해 같은 클래스가 두 출력 루트(`bin/main`, `build/classes/java/main`)로 올라갑니다. Spring 기동이 `BeanDefinitionOverrideException`(already defined)으로 실패합니다. |
+| `**/.worktrees/**` | `.worktrees` 하위에 같은 이름의 `it_backend` 체크아웃이 있어 JDT가 프로젝트명 `it-it_backend`를 중복 등록하고 `Duplicate root element`로 임포트가 실패합니다. 워크트리는 각자의 창에서 엽니다. |
+
+`launch.json`의 `classPaths`에 `$Runtime`과 출력 폴더 제외를 명시한 이유도 같은 계열입니다. 기본값(`$Auto`)은 테스트 출력 폴더까지 런타임 클래스패스에 올려, 테스트의 중첩 `@SpringBootConfiguration`이 컴포넌트 스캔에 걸리고 JPA 리포지토리 빈이 두 번 등록되어 기동이 실패합니다.
+
 ## 품질 확인
 
 프론트엔드:
