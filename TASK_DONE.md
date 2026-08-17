@@ -16,7 +16,7 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
-### ✅ 2026-08-17 DDL 불필요 잔여과제 배치 3 — 품질 게이트 복구 (3건)
+### ✅ 2026-08-17 DDL 불필요 잔여과제 배치 3 — 품질 게이트 복구 (4건)
 
 > 앞 두 배치가 "기준에 맞지 않아 남긴다"고 적어 둔 **BE-37(커버리지 게이트 실패)** 을 정면으로 처리했다. 병합 전 품질 게이트가 무력화된 채 `./gradlew test`로 대체 운용하던 상태를 끝내는 것이 목표였고, 결과적으로 `./gradlew check`가 **다시 green**이다. 운영 코드는 한 줄도 바꾸지 않았다 — 전부 테스트·픽스처 추가다.
 
@@ -26,7 +26,9 @@
 | ✅ Done | (BE-37 별항) | **"POI로 만들 수 없어 사실상 미검증"이라던 `FormCheckboxReader`를 저수준 픽스처로 열었다**(`FormCheckboxFixtures`). 종전 판단은 "POI에 양식 컨트롤 생성 API가 없다"였고 그건 사실이지만, 생성 API 없이도 두 형식 모두 만들 수 있다. `.xls`는 Escher 도형 컨테이너와 `ObjRecord`를 직접 만들어 `EscherAggregate.associateShapeToObjRecord`로 시트에 등록하고, POI가 해석하지 않는 `FtCblsData`(sid `0x12`) 체크 상태는 `SubRecord.createSubRecord`에 실측 바이트(`12 00 08 00 01 00 …`)를 먹여 넣는다. `.xlsx`는 OPC 패키지를 파트 단위로 조립한다 — 시트 XML의 `control`(실 제출본처럼 `mc:AlternateContent`로 감싼 형태), `ctrlProps` 파트의 `checked`, VML 그림 파트의 문구, 그리고 셋을 잇는 `.rels`. 걸러져야 하는 갈래도 함께 담았다: 콤보 컨트롤, 앵커 없는 도형, 관계가 끊긴/빈 컨트롤, XML이 깨진 `ctrlProps`, 문구 도형이 없는 컨트롤, 행 번호가 숫자가 아닌 앵커. | it_backend `09f7fa26` | 신규 `FormCheckboxReaderTest` 6건 통과. 체크·해제·`FtCblsData` 누락(→해제)·콤보 제외를 두 형식에서 각각 단정하고, 읽기 실패가 배치를 무너뜨리지 않고 빈 목록으로 접히는지도 고정 |
 | ✅ Done | MIG-13 | `./gradlew integrationTest` 잔여 실패 1건을 해소했다. **원인은 TASK 항목의 추정과 달랐다** — 항목은 "프로젝션 단정이 로컬 Oracle 실제 데이터를 읽으므로 데이터 전제 문제인지 계약 위반인지 가려야 한다"고 적었지만, 실패한 `:224` 단정은 DB를 전혀 읽지 않는 **리플렉션 계약 단정**이었다. 두 겹의 원인이 겹쳐 있었다. ① `AdminUserView`에 `default getBbrNm()`이 추가되면서(`cd45bdf2`) 승인 필드 목록이 낡았다 — `AdminService`가 실제로 소비하는 필드이므로 목록에 추가하는 것이 맞다. ② 더 중요하게, JaCoCo 에이전트가 **본문 있는 메서드를 가진 인터페이스**에 합성 `$jacocoInit`을 넣어 `getDeclaredMethods()`에 섞여 들어왔다. 그래서 `integrationTest`(커버리지 켜짐)에서만 깨지고 격리 실행에서는 통과하는 모습이었다. 합성 메서드를 걸러내는 `declaredMethodNames` 헬퍼를 도입해 두 원인을 함께 닫았다. | it_backend `375ce33b` | `./gradlew integrationTest` **154건 실패 0**(종전 1실패). 스킵 4건은 `BoardReplySequenceMigrationIT` 한 클래스로 이 배치와 무관하다. 해당 클래스 단독 실행도 통과 |
 
-**남긴 관찰 (신규 등록)**: BE-40 — 같은 합성 메서드 함정이 나머지 `*ProjectionIt` 단정 20여 곳(`getDeclaredMethods()`를 `.hasSize(n)`으로 세는 형태)에 그대로 남아 있다. 지금은 `default` 메서드를 가진 프로젝션이 `AdminUserView` 하나뿐이라 통과하지만, 어느 프로젝션에든 `default`가 추가되면 **커버리지를 켠 실행에서만** 깨진다. 여러 저장소·작업이 공유하는 테스트 20여 개를 이 배치에서 함께 손대지 않고 `TASK.md`에 등록했다.
+| ✅ Done | BE-40 | MIG-13에서 등록한 합성 메서드 함정을 전수 제거했다. 걸러내는 책임을 공용 테스트 지원 `ProjectionContracts.declaredMethodNames`로 올리고, 계약 단정 **19곳(13파일)** 을 그것으로 바꿨다 — `.hasSize(n)`으로 세던 형태와 이름 목록을 대조하던 형태 모두 포함한다. **남긴 3곳은 취약하지 않아 남겼다**: `AdminCodeServiceCacheEvictTest`·`MfaGuardAspectTest`는 이름으로 메서드 하나를 찾아 애노테이션을 읽는 용도라 `Method` 객체가 필요하고(개수를 세지 않는다), `GuideDocServiceTest`는 특정 이름의 **부재**를 확인하므로 합성 메서드가 섞여도 결과가 바뀌지 않는다 — 다만 이름 단정 형태였으므로 원시 패턴 예시를 남기지 않으려 헬퍼로 옮겼다. 결과적으로 선언 메서드를 이름으로 다루는 리플렉션은 이제 헬퍼 한 곳에만 있다. 필터가 조용히 무력화되는 것을 막으려고 `ProjectionContractsTest`를 함께 두었다 — 좁힌 반환형 구현의 bridge 메서드(전제 단정으로 실제 생성 여부까지 확인)와 `default` 메서드를 가진 인터페이스의 `$jacocoInit`을 둘 다 재현한다. | it_backend `62505df9` | `./gradlew check` **BUILD SUCCESSFUL**, 단위 **3467건 실패 0**(신규 3건). `./gradlew integrationTest` **154건 실패 0**. 변환 전후 단정의 기대값(개수·이름 집합)은 그대로 두었으므로 통과가 곧 동등성의 증거다 |
+
+**남긴 관찰**: 없음.
 
 ### ✅ 2026-08-17 DDL 불필요 잔여과제 배치 2 (5건)
 
