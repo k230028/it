@@ -3545,7 +3545,8 @@ cd it_frontend && git add app/composables/migration/columns.ts tests/unit/compos
 **Files:**
 - Modify: `it_frontend/app/composables/migration/useMigrationPreview.ts`
 - Modify: `it_frontend/app/components/migration/MigrationPreviewTable.vue`
-- Modify: `it_frontend/app/i18n/messages/migration.ts` (없으면 생성하고 `i18n/messages/index.ts`에 등록)
+- Create: `it_frontend/i18n/messages/migration.ts` (**`app/` 아래가 아니다** — 실측 확인)
+- Modify: `it_frontend/i18n/locales/ko.ts`, `it_frontend/i18n/locales/en.ts` (등록. `index.ts`는 없다)
 - Modify: `it_frontend/scripts/user-facing-copy-baselines.mjs`
 - Test: `it_frontend/tests/unit/composables/migration/useMigrationPreview.test.ts`
 
@@ -3685,10 +3686,10 @@ export const DECISION_COLUMN = '__decision';
 
 - [ ] **Step 5: 문구를 i18n으로 옮긴다**
 
-`app/i18n/messages/migration.ts`에 키를 넣는다. 한국어 트리를 기준으로 영어 트리 구조가 강제되므로 두 언어를 함께 채운다.
+`i18n/messages/migration.ts`를 만든다(`app/` 아래가 아니다). 한국어 트리를 기준으로 영어 트리 구조가 강제되므로 두 언어를 함께 채운다. 기존 도메인 파일들과 같이 **명명 export**를 쓴다.
 
 ```ts
-export default defineDomainMessages(
+export const migrationMessages = defineDomainMessages(
     {
         preview: {
             decisionHeader: '결정',
@@ -3707,6 +3708,16 @@ export default defineDomainMessages(
     },
 );
 ```
+
+`i18n/locales/ko.ts`와 `i18n/locales/en.ts` **양쪽 모두**에 import와 스프레드를 더한다. 등록용 배럴(`index.ts`)은 없다.
+
+```ts
+import { migrationMessages } from '../messages/migration';
+// ...
+    ...migrationMessages.ko,   // en.ts에서는 .en
+```
+
+`migration` 키는 `admin.ts`에 아직 없다(실측 확인). 새 도메인 파일로 둔다.
 
 용어는 `docs/guides/i18n/glossary.md`를 따른다. 없는 용어는 그 문서에 추가한다.
 

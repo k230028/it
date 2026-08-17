@@ -44,6 +44,7 @@ it/
 | 컴포넌트 가이드 (StyledDataTable 등)                                | `it_frontend/docs/guides/`                                                                                                        |
 | 공통 게시판 도메인 규칙                                             | `it_backend/CLAUDE.md`, `it_frontend/CLAUDE.md`                                                                                   |
 | 엔티티, 컬럼명 명명 규칙 (메타용어사전)                             | `C:\it\meta\meta.txt`                                                                                                             |
+| 다국어 (화면 문구, 언어 추가)                                       | 프론트=`it_frontend/CLAUDE.md` §6 + `it_frontend/docs/guides/i18n/`, 백엔드 계약·번역 저장=`it_backend/CLAUDE.md` §9              |
 
 ## 3.1 개발 환경
 
@@ -216,7 +217,8 @@ Nuxt 전용 스킬(`nuxt4-patterns`)은 내용 대부분이 SSR·Nitro 라우트
 | 명령                                       | 디렉토리      | 용도                                  |
 | ------------------------------------------ | ------------- | ------------------------------------- |
 | `npm run format:check`                     | `it_frontend` | Prettier 검사                         |
-| `npm run check`                            | `it_frontend` | 타입 검사와 ESLint                    |
+| `npm run check`                            | `it_frontend` | 타입 검사, ESLint, 고정 문구 ratchet  |
+| `npm run check:copy`                       | `it_frontend` | 사용자 노출 고정 리터럴 ratchet 단독 실행 |
 | `npm run lint:css`                         | `it_frontend` | CSS 변경 시 Stylelint                 |
 | `npm test`                                 | `it_frontend` | 프론트 단위 테스트                    |
 | `npm run test:e2e`                         | `it_frontend` | 핵심 사용자 흐름 E2E 테스트           |
