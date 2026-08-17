@@ -1,6 +1,6 @@
 # 서브레포 커밋 잠금 — 릴리스/재현용. scripts/update-versions-lock.ps1로 갱신.
 # 형식: <레포>  <origin URL>  <브랜치>  <HEAD SHA>  (갱신시각은 마지막 줄 주석)
-it_frontend  https://github.com/gonnabe88/it_frontend      feat/migration-allocation 86e440500166c3baf30243f1b83a857980b4787f
-it_backend   https://github.com/gonnabe88/it_backend       feat/migration-allocation 180352dd9f40bce34ebdb6907d3f2beacf2bad2a
+it_frontend  https://github.com/gonnabe88/it_frontend      feat/migration-allocation d711c239f0e48fb23a830dc61ec23d1be12d62ce
+it_backend   https://github.com/gonnabe88/it_backend       feat/migration-allocation 1e0adad581a32224f806f813a0a16ee942ddbcb3
 it_database  https://github.com/gonnabe88/it_database      main  6721b5c504fa9609df0c73b9ec59b7281ffe5746
-# 갱신시각: 2026-08-17 14:45:49
+# 갱신시각: 2026-08-17 15:52:40
