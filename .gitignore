@@ -9,6 +9,14 @@ everything-claude-code/
 .superpowers/
 .bkit
 .claude
+# 로컬 에이전트 하네스 설정 (.claude와 같은 성격, 개발자 환경마다 다름)
+.agents/
+
+# 개인 Obsidian 볼트 본문 (.obsidian 설정과 함께 저장소 밖에서 관리)
+TaskNotes/
+
+# 일회성 리뷰 탐지 결과 캐시 (재생성 가능, 보존이 필요하면 docs/로 옮긴다)
+.review-cache/
 # Gradle (GRADLE_USER_HOME = C:\it\.gradle)
 /.gradle/
 

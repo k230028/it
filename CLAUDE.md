@@ -120,7 +120,9 @@ it/
 | `docs/superpowers/` | 구현 계획·스펙 산출물 (`plans/`, `specs/`, 완료 시 `done/` 하위 이관) |
 | `prds/`            | 제품 요구사항 문서                                          |
 | `docs/prompts/`    | 일회성 작업 지시문 (휘발성, 완료 후 보관용)                 |
-| `TaskNotes/`       | 개인 Obsidian 노트 (저장소 밖 관리 대상, 흡수/폐기 예정)    |
+| `TaskNotes/`       | 개인 Obsidian 노트. 2026-08-17 추적 해제 — 저장소 밖에서 관리하며 공유가 필요한 내용은 `TASK.md`·`docs/`로 흡수 |
+
+저장소 루트의 도구 산출물·로컬 하네스 설정(`.claude/`, `.agents/`, `.superpowers/`, `.review-cache/`, `.playwright-mcp/`, `graphify-out/`)은 추적하지 않습니다. 개발자 환경마다 다르거나 재생성 가능한 파일이므로, 공유해야 할 결론은 반드시 저장소 문서(`docs/`, `FP/` 등)에 옮겨 적습니다.
 
 ### 4.4 데이터베이스 마이그레이션 (Flyway)
 
