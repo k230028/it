@@ -1,0 +1,1645 @@
+<title>IT Portal 잔여과제 원장</title>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     토큰 — 라이트가 기준. 다크는 토큰만 재정의한다.
+     ───────────────────────────────────────────────────────────── */
+  :root {
+    --ground:      #F2F4F3;
+    --surface:     #FFFFFF;
+    --surface-2:   #E9EDEB;
+    --line:        #D3DAD8;
+    --line-soft:   #E3E8E6;
+    --ink:         #12201F;
+    --ink-2:       #3D4E4C;
+    --ink-3:       #6B7C79;
+    --accent:      #1F5F5B;
+    --accent-ink:  #14403D;
+    --accent-wash: #E2ECEA;
+    --on-accent:   #FFFFFF;
+
+    --sev-high:      #C2410C;
+    --sev-high-wash: #FBE7DC;
+    --sev-med:       #B4820A;
+    --sev-med-wash:  #F8EED4;
+    --sev-low:       #4A7A8C;
+    --sev-low-wash:  #E0EAEE;
+    --sev-ext:       #7A5AA3;
+    --sev-ext-wash:  #EBE4F3;
+
+    --st-done:       #1F5F5B;
+    --st-resolved:   #4A7A8C;
+    --st-accepted:   #B4820A;
+    --st-discarded:  #8A8F8E;
+
+    --shadow: 0 1px 2px rgba(18, 32, 31, .05), 0 8px 24px -16px rgba(18, 32, 31, .28);
+
+    --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+                 "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Cascadia Mono",
+                 "D2Coding", "Noto Sans Mono", "Malgun Gothic", monospace;
+
+    --maxw: 1140px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #0E1514;
+      --surface:     #18211F;
+      --surface-2:   #212C2A;
+      --line:        #2E3B39;
+      --line-soft:   #26302E;
+      --ink:         #E4E9E7;
+      --ink-2:       #B4C1BE;
+      --ink-3:       #7F8F8C;
+      --accent:      #58B0A6;
+      --accent-ink:  #8FD3CA;
+      --accent-wash: #17302D;
+      --on-accent:   #0E1514;
+
+      --sev-high:      #F08A5A;
+      --sev-high-wash: #3A2115;
+      --sev-med:       #E0B34A;
+      --sev-med-wash:  #362B10;
+      --sev-low:       #7FB3C6;
+      --sev-low-wash:  #1B2C33;
+      --sev-ext:       #B79AE0;
+      --sev-ext-wash:  #291E38;
+
+      --st-done:       #58B0A6;
+      --st-resolved:   #7FB3C6;
+      --st-accepted:   #E0B34A;
+      --st-discarded:  #6E7A78;
+
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 28px -18px rgba(0, 0, 0, .8);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #0E1514;
+    --surface:     #18211F;
+    --surface-2:   #212C2A;
+    --line:        #2E3B39;
+    --line-soft:   #26302E;
+    --ink:         #E4E9E7;
+    --ink-2:       #B4C1BE;
+    --ink-3:       #7F8F8C;
+    --accent:      #58B0A6;
+    --accent-ink:  #8FD3CA;
+    --accent-wash: #17302D;
+    --on-accent:   #0E1514;
+
+    --sev-high:      #F08A5A;
+    --sev-high-wash: #3A2115;
+    --sev-med:       #E0B34A;
+    --sev-med-wash:  #362B10;
+    --sev-low:       #7FB3C6;
+    --sev-low-wash:  #1B2C33;
+    --sev-ext:       #B79AE0;
+    --sev-ext-wash:  #291E38;
+
+    --st-done:       #58B0A6;
+    --st-resolved:   #7FB3C6;
+    --st-accepted:   #E0B34A;
+    --st-discarded:  #6E7A78;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 28px -18px rgba(0, 0, 0, .8);
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     기본
+     ───────────────────────────────────────────────────────────── */
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .wrap {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 0 24px 96px;
+  }
+
+  /* 작성자 스타일의 display가 UA의 [hidden] 규칙을 이기므로 명시적으로 되돌린다 */
+  [hidden] { display: none !important; }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: .86em;
+    background: var(--surface-2);
+    color: var(--ink-2);
+    padding: .1em .38em;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+
+  strong { font-weight: 700; color: var(--ink); }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* 라벨 — 한글이 섞이므로 모노 대신 산세리프에 약한 자간. 모노는 식별자·수치 전용. */
+  .eyebrow {
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0;
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     헤더
+     ───────────────────────────────────────────────────────────── */
+  .masthead {
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .masthead-inner {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 40px 24px 32px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px 40px;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .masthead h1 {
+    font-size: clamp(28px, 4.2vw, 42px);
+    line-height: 1.15;
+    letter-spacing: -.025em;
+    font-weight: 800;
+    margin: 8px 0 0;
+    text-wrap: balance;
+  }
+  .masthead .lede {
+    margin: 12px 0 0;
+    max-width: 58ch;
+    color: var(--ink-2);
+  }
+  .stamp {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.9;
+    color: var(--ink-3);
+    text-align: right;
+    white-space: nowrap;
+    border-left: 2px solid var(--accent);
+    padding-left: 14px;
+  }
+  .stamp b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+    letter-spacing: .04em;
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     요약 스트립
+     ───────────────────────────────────────────────────────────── */
+  .summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 20px;
+    margin-top: 32px;
+  }
+  @media (max-width: 860px) { .summary { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 22px 24px;
+  }
+  .panel-title {
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 18px;
+  }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px 8px;
+    margin-bottom: 22px;
+  }
+  @media (max-width: 520px) { .tiles { grid-template-columns: repeat(2, 1fr); gap: 16px 8px; } }
+  .tile .n {
+    font-family: var(--font-mono);
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    display: block;
+  }
+  .tile .k {
+    font-size: 12px;
+    color: var(--ink-3);
+    display: block;
+    margin-top: 4px;
+  }
+  .tile-high .n { color: var(--sev-high); }
+  .tile-ext  .n { color: var(--sev-ext); }
+  .tile-ok   .n { color: var(--accent); }
+
+  .meter {
+    display: flex;
+    height: 12px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--surface-2);
+  }
+  .meter span { display: block; }
+  .meter-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin-top: 14px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+  }
+  .meter-legend div { display: flex; align-items: center; gap: 7px; }
+  .meter-legend i {
+    width: 9px; height: 9px; border-radius: 2px; flex: none;
+  }
+  .meter-legend b {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  /* 유형 분포 */
+  .bars { display: flex; flex-direction: column; gap: 9px; }
+  .bar-row {
+    display: grid;
+    grid-template-columns: 74px minmax(0, 1fr) 28px;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+  }
+  .bar-row .lbl { color: var(--ink-2); text-align: right; }
+  .bar-track { background: var(--surface-2); border-radius: 2px; height: 9px; display: block; }
+  .bar-fill { background: var(--accent); height: 9px; border-radius: 2px; display: block; }
+  .bar-row .val {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 12.5px;
+    color: var(--ink-3);
+    text-align: right;
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     읽는 법
+     ───────────────────────────────────────────────────────────── */
+  .primer { margin-top: 20px; }
+  .primer > summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .primer > summary::-webkit-details-marker { display: none; }
+  .primer > summary .chev { transition: transform .18s ease; }
+  .primer[open] > summary .chev { transform: rotate(90deg); }
+  .primer > summary:hover { color: var(--accent); }
+
+  .primer-body {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 22px 36px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line-soft);
+  }
+  .primer-body h3 {
+    font-size: 13px;
+    margin: 0 0 8px;
+    letter-spacing: -.005em;
+  }
+  .primer-body p { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+  .primer-body dl { margin: 0; font-size: 13.5px; }
+  .primer-body dt {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink);
+    margin-top: 9px;
+    font-weight: 600;
+  }
+  .primer-body dt:first-child { margin-top: 0; }
+  .primer-body dd { margin: 1px 0 0; color: var(--ink-2); }
+
+  /* ─────────────────────────────────────────────────────────────
+     컨트롤 바
+     ───────────────────────────────────────────────────────────── */
+  .controls {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--ground);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0 13px;
+    margin-top: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+  }
+
+  .search {
+    flex: 1 1 240px;
+    min-width: 0;
+    font: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 8px 12px;
+  }
+  .search::placeholder { color: var(--ink-3); }
+
+  .chipset { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    font: inherit;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: .03em;
+    color: var(--ink-2);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 5px 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background .14s ease, border-color .14s ease, color .14s ease;
+  }
+  .chip:hover { border-color: var(--ink-3); }
+  .chip .dot { width: 7px; height: 7px; border-radius: 2px; flex: none; }
+  .chip .ct { font-variant-numeric: tabular-nums; opacity: .62; }
+  .chip[aria-pressed="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--ground);
+  }
+  .chip[aria-pressed="true"] .ct { opacity: .7; }
+
+  .ctl-btn {
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    color: var(--ink-2);
+    padding: 6px 11px;
+    cursor: pointer;
+  }
+  .ctl-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .count-live {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-3);
+    margin-left: auto;
+    white-space: nowrap;
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     원장
+     ───────────────────────────────────────────────────────────── */
+  .group { margin-top: 34px; }
+  .group-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .group-head h2 {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -.015em;
+    margin: 0;
+  }
+  .group-head .gc {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-3);
+  }
+  .group-head .gnote {
+    font-size: 12.5px;
+    color: var(--ink-3);
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .task {
+    border-bottom: 1px solid var(--line-soft);
+    background: var(--surface);
+  }
+  .task > summary {
+    list-style: none;
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: 3px 62px auto minmax(0, 1fr) 18px;
+    align-items: baseline;
+    gap: 0 14px;
+    padding: 13px 16px 13px 0;
+  }
+  .task > summary::-webkit-details-marker { display: none; }
+  .task > summary:hover { background: var(--accent-wash); }
+  .task[open] > summary { background: var(--accent-wash); }
+
+  .stripe { align-self: stretch; border-radius: 0 2px 2px 0; }
+
+  .tid {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: var(--ink-3);
+    padding-left: 13px;
+  }
+
+  .pill {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  .ttitle { min-width: 0; }
+  .ttitle .h {
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: -.008em;
+    display: block;
+  }
+  .ttitle .meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    margin-top: 3px;
+  }
+  .ttitle .s {
+    font-size: 13px;
+    color: var(--ink-3);
+  }
+  .ttype {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-3);
+    letter-spacing: .03em;
+    white-space: nowrap;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 1px 6px;
+  }
+
+  .chev {
+    color: var(--ink-3);
+    font-size: 11px;
+    transition: transform .18s ease;
+    align-self: center;
+    justify-self: end;
+  }
+  .task[open] .chev { transform: rotate(90deg); }
+
+  .tbody {
+    padding: 4px 24px 24px 79px;
+    max-width: 82ch;
+  }
+  .tbody p { margin: 0 0 12px; color: var(--ink-2); font-size: 13.8px; }
+  .tbody p:last-child { margin-bottom: 0; }
+  .tbody .label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: block;
+    margin: 0 0 5px;
+  }
+  .refs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+  .refs code { background: var(--accent-wash); color: var(--accent-ink); font-size: 11.5px; }
+
+  @media (max-width: 680px) {
+    /* 모바일에서는 컨트롤 바가 화면 절반을 먹으므로 고정을 해제한다 */
+    .controls { position: static; }
+    .group-head { flex-wrap: wrap; }
+    .group-head .gnote { margin-left: 0; flex-basis: 100%; text-align: left; }
+    .task > summary {
+      grid-template-columns: 3px minmax(0, 1fr) 18px;
+      row-gap: 6px;
+    }
+    .tid { grid-column: 2; }
+    .pill { grid-column: 2; justify-self: start; }
+    .ttitle { grid-column: 2; }
+    .chev { grid-column: 3; grid-row: 1; }
+    .tbody { padding-left: 17px; }
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     뷰 전환 탭
+     ───────────────────────────────────────────────────────────── */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 2px;
+    flex: none;
+  }
+  .tab {
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -.005em;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    color: var(--ink-3);
+    padding: 6px 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+  }
+  .tab .n {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+    opacity: .6;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab[aria-selected="true"] {
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .12);
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     완료 이력 타임라인
+     ───────────────────────────────────────────────────────────── */
+  .tl-note {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--sev-med);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-top: 30px;
+    font-size: 13.5px;
+    color: var(--ink-2);
+    max-width: 80ch;
+  }
+  .tl-note b { color: var(--ink); }
+
+  .tl-month {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin: 34px 0 0;
+    padding-bottom: 9px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .tl-month h2 {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    font-variant-numeric: tabular-nums;
+    margin: 0;
+  }
+  .tl-month .gc {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-3);
+  }
+
+  .tl-item {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 0 20px;
+    padding: 16px 4px 16px 0;
+    border-bottom: 1px solid var(--line-soft);
+    background: var(--surface);
+  }
+  .tl-date {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-3);
+    padding-left: 16px;
+    border-left: 3px solid var(--line);
+  }
+  .tl-head {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+  }
+  .tl-head h3 {
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: -.008em;
+    margin: 0;
+  }
+  .tl-state {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .03em;
+    padding: 1px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .tl-item p {
+    margin: 6px 0 0;
+    font-size: 13.5px;
+    color: var(--ink-2);
+    max-width: 78ch;
+  }
+  .tl-ids {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 10px;
+  }
+  .idchip {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: var(--ink-2);
+    background: var(--surface-2);
+    border-radius: 3px;
+    padding: 2px 7px;
+  }
+  .idchip.reused {
+    background: var(--sev-med-wash);
+    color: var(--sev-med);
+  }
+  .idchip.carried {
+    background: var(--accent-wash);
+    color: var(--accent-ink);
+  }
+
+  @media (max-width: 680px) {
+    .tl-item { grid-template-columns: minmax(0, 1fr); gap: 8px; padding-left: 14px; border-left: 3px solid var(--line); }
+    .tl-date { padding-left: 0; border-left: none; }
+  }
+
+  .empty-state {
+    padding: 48px 0;
+    text-align: center;
+    color: var(--ink-3);
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .empty-state p { margin: 0; }
+  .empty-state .hint { color: var(--ink-2); }
+  .empty-state .ctl-btn { margin-top: 8px; }
+
+  /* ─────────────────────────────────────────────────────────────
+     정리된 영역 / 푸터
+     ───────────────────────────────────────────────────────────── */
+  .cleared { margin-top: 52px; }
+  .cleared-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .cleared-list span {
+    font-size: 12.5px;
+    color: var(--ink-2);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 5px 13px;
+  }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    color: var(--ink-3);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+    justify-content: space-between;
+  }
+  footer code { background: none; padding: 0; color: var(--ink-2); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div>
+      <p class="eyebrow">IT Project Portal · 기술부채 원장</p>
+      <h1>잔여과제 원장</h1>
+      <p class="lede">
+        저장소 루트 <code>TASK.md</code>에 등록된 활성 과제 전부입니다. 각 항목은 무엇이 남았는지가 아니라
+        <strong>왜 아직 안 했는지</strong>를 기록합니다 — 업무 판단이 먼저 필요한 것, 외부 적용을 기다리는 것,
+        건드리면 다른 게 깨지는 것. 행을 펼치면 그 근거가 전부 나옵니다.
+      </p>
+    </div>
+    <div class="stamp">
+      <b>SNAPSHOT</b>
+      2026-08-17
+      <b style="margin-top:10px">SOURCE</b>
+      TASK.md
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="summary">
+    <div class="panel">
+      <p class="panel-title">활성 과제 집계</p>
+      <div class="tiles">
+        <div class="tile"><span class="n" id="t-total">–</span><span class="k">활성 과제</span></div>
+        <div class="tile tile-high"><span class="n" id="t-high">–</span><span class="k">조속 조치</span></div>
+        <div class="tile tile-ext"><span class="n" id="t-ext">–</span><span class="k">외부 의존</span></div>
+        <div class="tile tile-ok"><span class="n" id="t-clear">–</span><span class="k">정리 완료 영역</span></div>
+      </div>
+      <div class="meter" id="meter" role="img" aria-label="우선순위별 과제 비중"></div>
+      <div class="meter-legend" id="meter-legend"></div>
+    </div>
+
+    <div class="panel">
+      <p class="panel-title">유형 분포</p>
+      <div class="bars" id="typebars"></div>
+    </div>
+  </section>
+
+  <details class="panel primer" open>
+    <summary><span class="chev">▸</span> 처음 보는 사람을 위한 읽는 법</summary>
+    <div class="primer-body">
+      <div>
+        <h3>우선순위는 긴급도이지 난이도가 아니다</h3>
+        <dl>
+          <dt>🔴 Critical</dt><dd>즉시 조치 — 현재 0건</dd>
+          <dt>🟠 High</dt><dd>조속 조치. 방치하면 다음 변경이 막힌다</dd>
+          <dt>🟡 Medium</dt><dd>계획에 반영. 지금 당장은 동작한다</dd>
+          <dt>🟢 Low</dt><dd>선택 개선. 알고만 있으면 되는 것</dd>
+          <dt>🏛️ External</dt><dd>우리 손을 떠남 — DBA·업무 담당자 승인 대기</dd>
+        </dl>
+      </div>
+      <div>
+        <h3>과제가 여기 남아 있는 이유는 세 가지뿐</h3>
+        <p>
+          <strong>업무 판단 대기</strong> — 값이나 정책을 사람이 정해야 코드를 쓸 수 있다(엑셀 로케일 방침, 비율 상한).
+          <strong>다른 작업 소유</strong> — 내 브랜치 변경이 아니라 원 작업자가 정리한다.
+          <strong>비용 대비 낮은 순위</strong> — 알려진 제약으로 문서화하고 넘어간 것.
+          우선순위만 보고 "쉬운 것부터"로 집으면 첫 번째 부류에 걸려 멈춥니다.
+        </p>
+      </div>
+      <div>
+        <h3>여기서 사라지면 어디로 가나</h3>
+        <p>
+          완료된 과제는 삭제하지 않고 <code>TASK_DONE.md</code>로 이관하며, 활성 목록에는
+          "완료 근거는 TASK_DONE.md의 ○○ 절 참조" 한 줄만 남습니다. 그 아카이브가
+          <strong>완료 이력</strong> 탭입니다 — 어떤 ID가 활성 목록에 없으면 거기서 찾으세요.
+        </p>
+      </div>
+      <div>
+        <h3>같은 ID가 두 번 나올 수 있다</h3>
+        <p>
+          번호는 영역별 일련번호라 <strong>완료 이관 뒤 재사용됩니다</strong>. 활성 <code>SEC-12</code>는 OnePass FIDO,
+          아카이브의 <code>SEC-12</code>는 SSO 로그 원문 제거로 서로 다른 과제입니다.
+          <code>FE-33</code>은 충돌 때문에 이관하면서 <code>FE-35</code>로 재번호됐고요.
+          ID만으로 단정하지 말고 날짜와 제목을 함께 확인하세요.
+        </p>
+      </div>
+      <div>
+        <h3>이 페이지는 스냅샷이다</h3>
+        <p>
+          2026-08-17 시점의 <code>TASK.md</code>·<code>TASK_DONE.md</code>를 옮긴 읽기 전용 사본입니다.
+          단일 진실 공급원은 여전히 저장소의 두 파일이니, 과제를 추가·완료 처리할 때는 그 파일을 고치세요.
+          완료 이력은 각 항목의 요약만 담았고 커밋 해시·검증 증거 표는 원문에 있습니다.
+        </p>
+      </div>
+    </div>
+  </details>
+
+  <div class="controls">
+    <div class="tabs" role="tablist" aria-label="보기 전환">
+      <button class="tab" id="tab-active" type="button" role="tab" aria-selected="true" aria-controls="ledger">
+        활성 과제 <span class="n" id="tab-n-active"></span>
+      </button>
+      <button class="tab" id="tab-history" type="button" role="tab" aria-selected="false" aria-controls="timeline">
+        완료 이력 <span class="n" id="tab-n-history"></span>
+      </button>
+    </div>
+    <input class="search" id="q" type="search" placeholder="ID · 제목 · 본문 검색 (예: SEC-04, 커버리지, i18n)"
+           aria-label="검색" autocomplete="off" />
+    <div class="chipset" id="prio-chips" role="group" aria-label="우선순위 필터"></div>
+    <div class="chipset" id="state-chips" role="group" aria-label="종료 상태 필터" hidden></div>
+    <button class="ctl-btn" id="toggle-all" type="button" aria-expanded="false">전체 펼치기</button>
+    <span class="count-live" id="count-live"></span>
+  </div>
+
+  <main id="ledger" role="tabpanel" aria-labelledby="tab-active"></main>
+
+  <section id="history-view" role="tabpanel" aria-labelledby="tab-history" hidden>
+    <p class="tl-note">
+      <b>ID는 재사용됩니다.</b> 아카이브의 <code>SEC-12</code>·<code>SEC-13</code>은 SSO 로그 원문 제거와 prod OpenAPI 차단이고,
+      활성 목록의 같은 번호는 MFA 과제입니다. <code>FE-33</code>은 충돌 때문에 이관 시 <code>FE-35</code>로 재번호됐습니다.
+      ID로 검색할 때는 <b>날짜와 함께</b> 읽으세요. 아래에서 <span class="idchip reused">ID ⚠</span> 는 활성 목록의 같은 번호가
+      <b>다른 과제</b>라는 뜻이고, <span class="idchip carried">ID ↻</span> 는 <b>같은 과제가 아직 활성</b>이라는 뜻입니다.
+    </p>
+    <div id="timeline"></div>
+  </section>
+
+  <section class="cleared" id="cleared-section">
+    <p class="eyebrow">활성 과제가 없는 영역</p>
+    <div class="cleared-list" id="cleared"></div>
+  </section>
+
+  <footer>
+    <span>출처 <code>TASK.md</code> · <code>TASK_DONE.md</code> · 기준 2026-08-17 · 우선순위·상태 표기는 원문 그대로</span>
+    <span>설계 산출물 <code>docs/superpowers/</code> · 페이지 원본 <code>docs/artifacts/</code></span>
+  </footer>
+</div>
+
+<script type="application/json" id="data">
+{
+  "prios": {
+    "high":   { "label": "High",     "ko": "조속 조치",  "var": "--sev-high" },
+    "medium": { "label": "Medium",   "ko": "계획 반영",  "var": "--sev-med"  },
+    "low":    { "label": "Low",      "ko": "선택 개선",  "var": "--sev-low"  },
+    "ext":    { "label": "External", "ko": "외부 의존",  "var": "--sev-ext"  }
+  },
+  "groups": [
+    { "key": "sec",  "name": "🔒 보안",          "note": "MFA 연동 규격·운영 형상에 걸린 항목" },
+    { "key": "fe",   "name": "🎨 프론트엔드",     "note": "전부 다국어(i18n) 이관 잔여" },
+    { "key": "be",   "name": "⚙️ 백엔드",        "note": "구조 상한·계약 명명·품질 게이트" },
+    { "key": "mig",  "name": "🔄 수기 엑셀 이관", "note": "가장 큰 덩어리 — 최근 웨이브의 잔여" },
+    { "key": "repo", "name": "🗂️ 저장소 위생",   "note": "설정·문서 정합성" }
+  ],
+  "cleared": ["🤝 사전협의", "⚠️ 에러 처리", "🧹 Clean Code 부채", "📝 Tiptap 변수 입력", "📡 실시간 로그", "📬 공통 게시판"],
+  "tasks": [
+    {
+      "id": "SEC-12", "g": "sec", "p": "low", "type": "MFA",
+      "title": "OnePass FIDO 사용자 거부 상태 구분",
+      "sum": "거부와 대기를 못 가려서 거부한 거래도 90초 만료까지 미결정으로 남는다",
+      "detail": "`trResultConfirm`이 `resultCode=100000`이면서 `trStatus != 1`인 응답을 모두 미결정(UNDECIDED)으로 본다. 연동 규격에 사용자 거부를 뜻하는 `trStatus` 값이 정의되어 있지 않아 거부와 대기를 구분하지 못하며, 거부한 거래도 challenge 만료(90초)까지 미결정으로 남는다. 규격에 거부 상태값이 추가되면 `OnePassClient.confirmFido`의 분기에서 `failure()`로 분리한다.",
+      "refs": ["OnePassClient.confirmFido"]
+    },
+    {
+      "id": "SEC-13", "g": "sec", "p": "low", "type": "MFA",
+      "title": "MFA 거래의 다중 인스턴스 지원",
+      "sum": "거래를 애플리케이션 메모리에만 둬서 재시작하면 진행 중 거래가 폐기된다",
+      "detail": "로그인 대기·MFA 거래를 애플리케이션 메모리에만 두어 서버 재시작 시 진행 중 거래가 모두 폐기되고, 다중 인스턴스 배포를 지원하지 않는다(설계 §8에서 이번 범위 제외). 필요해지면 `MfaTransactionStore`·`LoginPendingTransactionStore` 인터페이스를 공유 캐시 구현으로 교체한다.",
+      "refs": ["MfaTransactionStore", "LoginPendingTransactionStore"]
+    },
+
+    {
+      "id": "FE-38", "g": "fe", "p": "high", "type": "다국어",
+      "title": "값과 표시명이 결합된 문구의 분리",
+      "sum": "감사기는 리터럴만 보므로 변수로 렌더되는 한글은 못 잡는다 — t()로 감싸면 비교 로직이 깨진다",
+      "detail": "감사기는 리터럴만 보므로 **변수로 렌더되는 한글은 잡지 못한다**. 실제로 `pages/info/index.vue`가 `{{ row.stage }}`로 `ProgressStage`(`'예산작성' | '사전협의' | ...`) union 값을 그대로 렌더하고 있었다(2026-08-16 조치). 같은 형태가 `app/utils/common.ts`에 남아 있다 — `getApprovalAuthorityBasis`의 반환 `label: '자본예산' | '일반관리비'`, `StageProgress = '완료' | '진행중' | '미실시' | '대상 아님'`, `IT_PTL_STS_TIMELINE[].label`. 값 자체를 로직이 비교하므로 `t()`로 감싸면 비교가 깨진다. 값은 유지하고 표시명만 i18n 키로 분리한 뒤 렌더 시점에 번역한다(선례: `pages/info/index.vue`의 `STAGE_LABEL_KEY`, `composables/budget/useBudgetStatusColumns.ts`).",
+      "refs": ["app/utils/common.ts", "pages/info/index.vue", "composables/budget/useBudgetStatusColumns.ts"]
+    },
+    {
+      "id": "FE-37", "g": "fe", "p": "medium", "type": "다국어",
+      "title": "사이트 전체 고정 문구의 i18n 카탈로그 이관 잔여",
+      "sum": "1553건 잔여. 화면 단위로 완결해 커밋 — 절반만 이관하면 이관 전보다 나쁘다",
+      "detail": "작업 브랜치는 `it_frontend`의 `codex/sitewide-fixed-copy-i18n`이다. 2026-08-16 기준 `node scripts/check-user-facing-copy.mjs --scope app`이 **1553건**을 보고한다. 완료 도메인은 공통 UI·사업(project)·전산업무비(cost)·예산·전자결재·메뉴 관리(admin/menus)·사업예산 홈·사전협의 문서 5화면이며 감사 0건이다. 잔여는 `components/council` 408, `pages/admin` 317, `pages/info`(plan·council-request) 287, `composables` 154, `pages/board` 62, `components/admin` 47, `components/plan` 42, 기타 236건이다. 카탈로그는 `i18n/messages/`에 도메인 파일로 두고 `i18n/locales/{ko,en}.ts`에 등록한다. 화면 단위로 완결해 커밋한다 — 절반만 이관하면 한 화면에 한글·영문이 섞여 이관 전보다 나쁘다.",
+      "refs": ["codex/sitewide-fixed-copy-i18n", "scripts/check-user-facing-copy.mjs", "i18n/messages/"]
+    },
+    {
+      "id": "FE-39", "g": "fe", "p": "medium", "type": "다국어",
+      "title": "Excel·문서 출력 문구의 locale 전환",
+      "sum": "시트명·헤더를 locale별로 바꿀지 원장 대조용으로 한글 고정할지 업무 판단이 먼저",
+      "detail": "화면 문구와 달리 Excel 시트명·헤더는 이관을 미루고 `scripts/user-facing-copy-allowlist.json`에 사유와 함께 기록해 두었다(13건: 사업목록·단말기상세목록·전산업무비·결재상신목록 시트명, `composables/budget/useBudgetWorkExcel.ts` 헤더 9건). 파일명·시트명·헤더를 locale별로 바꿀지, 원장 대조를 위해 한글로 고정할지 업무 판단이 먼저 필요하다. 방침이 정해지면 allowlist 항목을 지우면서 함께 처리한다.",
+      "refs": ["scripts/user-facing-copy-allowlist.json", "composables/budget/useBudgetWorkExcel.ts"]
+    },
+    {
+      "id": "FE-40", "g": "fe", "p": "medium", "type": "다국어",
+      "title": "탭 제목의 다국어 지원 부재",
+      "sum": "definePageMeta가 컴파일 타임이라 t() 불가 — 메뉴에 없는 라우트는 탭 제목이 경로 세그먼트로 떨어진다",
+      "detail": "`definePageMeta`는 컴파일 타임 평가라 `t()`를 부를 수 없어, 이관하면서 각 화면의 `title`을 제거하고 `/api/menus` 메뉴명에 의존하도록 바꿨다(CLAUDE.md §4의 메뉴 단일출처 규칙과 일치). 그 결과 **메뉴에 없는 라우트는 탭 제목이 경로 마지막 세그먼트로 떨어진다** — `documents/list`·`documents/form`·`documents/[id]`처럼 하위 경로로 여는 화면이 메뉴 엔트리인지 확인하지 못했다. 또 메뉴명 자체가 DB 한글이라 언어를 바꿔도 탭은 한글로 남는다. `composables/useTabs.ts`의 우선순위(`meta.tabTitle` → 메뉴명 → `meta.title`)가 i18n 키를 받도록 확장하는 방안을 검토한다.",
+      "refs": ["composables/useTabs.ts", "/api/menus"]
+    },
+    {
+      "id": "FE-41", "g": "fe", "p": "low", "type": "다국어",
+      "title": "고정 문구 감사기의 export-copy 오탐 정리",
+      "sum": "allowlist가 줄 번호 기준이라 파일이 바뀌면 오탐이 되살아난다",
+      "detail": "`export`된 문자열 상수를 전부 표시 문구로 보므로 코드 식별자가 오탐으로 잡힌다(CSS 선택자·localStorage 키·PrimeIcons 클래스·코드값·locale 태그 등 12건). 현재는 `scripts/user-facing-copy-allowlist.json`에 사유와 함께 기록해 억제하고 있으나 줄 번호 기준이라 파일이 바뀌면 되살아난다. 다만 휴리스틱을 ASCII 전용으로 좁히면 영문 표시 문구(감사기 테스트의 `English title`)를 놓치므로, 오탐을 줄이면서 영문 문구를 계속 잡을 판별 기준을 먼저 정해야 한다.",
+      "refs": ["scripts/user-facing-copy-allowlist.json"]
+    },
+
+    {
+      "id": "BE-35", "g": "be", "p": "high", "type": "구조",
+      "title": "ProjectService가 800줄 상한에 근접",
+      "sum": "766줄 / 상한 800줄. 다음 변경은 추출 분량을 먼저 계획에 잡아야 한다",
+      "detail": "2026-08-16 금액 컬럼 작업 후 **766줄**로, `MaxLinesRatchetTest`의 하드 상한 800줄까지 34줄만 남았다. 이 작업에서만 두 번 게이트에 걸려 `ProjectResponseMapper`(`ProjectDto.Response.fromEntity` 52줄)와 `ProjectItemChangeDetector`(`isItemChanged`·`defaultYn`·`bigDecimalChanged`)를 급히 추출해 상쇄했다. 규칙상 기준값 상향·기준선 항목 추가는 허용되지 않으므로, 다음 변경은 **추출 분량을 먼저 계획에 잡아야** 한다. 추출 후보: 품목 동기화(CUD) 블록 전체를 `ProjectItemSyncService`로 분리. 단 `ProjectServiceTest`의 dfrAmt 검증 7건이 `ProjectBudgetSummaryService`를 mock한 채 `ProjectService`를 통해 `applyAmountSnapshot`을 타므로, 그 경로를 옮기면 테스트가 조용히 무력화된다(2026-08-16 최종 리뷰에서 확인).",
+      "refs": ["ProjectService", "MaxLinesRatchetTest", "ProjectItemSyncService"]
+    },
+    {
+      "id": "BE-36", "g": "be", "p": "medium", "type": "계약",
+      "title": "totRqmAmt 이름과 값의 불일치",
+      "sum": "컬럼은 총 예산인데 응답 필드는 당해예산 — 소비처 10곳 이상 전수 조사가 필요",
+      "detail": "DB 컬럼 `TPRMPP_BPROJM.TOT_RQM_AMT`는 **총 예산**(∑품목 AMT)이고, 응답 필드 `ProjectDto.Response.totRqmAmt`는 **당해예산**(∑AMT − ∑MPL_AMT)이다. 2026-06-22 설계문서가 이미 \"컬럼명은 총소요금액이나 실제 저장값은 당해예산\"이라 적었고, 2026-08-16 컬럼 재추가 때 총 예산은 새 응답 필드 `prjBgAmt`로 분리해 충돌을 피했다. 현재는 `ProjectResponseMapper.fromEntity`가 엔티티 값을 동명 응답 필드로 흘리지 못하는 구조라 혼선이 차단되어 있으나(최종 리뷰가 세 저장소 전 소비처를 추적해 확인), 이름 자체를 정리하려면 `totRqmAmt` 소비처(예산목록·상세·PDF·전역검색 등 10곳 이상) 전수 조사가 필요하다.",
+      "refs": ["TPRMPP_BPROJM.TOT_RQM_AMT", "ProjectDto.Response.totRqmAmt", "prjBgAmt"]
+    },
+    {
+      "id": "BE-37", "g": "be", "p": "medium", "type": "테스트",
+      "title": "jacocoTestCoverageVerification 기존 위반으로 ./gradlew check 실패",
+      "sum": "위반 9개 클래스. 병합 전 품질 게이트가 무력화돼 ./gradlew test로 대체 운용 중",
+      "detail": "2026-08-16 기준 `./gradlew check`가 커버리지 게이트에서 실패한다(per-class 70% LINE/BRANCH/COMPLEXITY). **기준선을 실측했다** — `560706d3`(편성요청서 선언 금액 작업 분기점)에서 `./gradlew test jacocoTestCoverageVerification`을 돌려 위반 **10개 클래스**를 확인했다: `CodeService`, `migration.request.service.adapter`의 `FormPersonNames`·`IoeCandidates`·`FormCheckboxReader`·`GeneralExpenseFormAdapter`·`CapitalProjectFormAdapter`, `MigrationIoeCatalogReader`, i18n의 `TranslationTargetKey`·`TranslationCatalogService`·`TranslationAdminController`. 이후 선언 금액 작업(`463565b6`)이 `CapitalProjectFormAdapter`(complexity 0.68 → 기준선 초과)를 해소해 **현재 9개**다. 가장 낮은 것은 `FormCheckboxReader`(lines 0.04·branches 0.02·complexity 0.06) — 양식 컨트롤 체크박스 읽기가 POI 시트 픽스처를 요구해 사실상 미검증 상태다. 병합 전 품질 게이트가 무력화되어 `./gradlew test`로 대체 운용 중이다.",
+      "refs": ["./gradlew check", "FormCheckboxReader", "CodeService"]
+    },
+    {
+      "id": "BE-24", "g": "be", "p": "ext", "type": "DB",
+      "title": "집행 문서 활성 버전 UNIQUE 인덱스의 dev/prod 적용",
+      "sum": "코드·검증은 끝났고 DBA 적용만 남았다. 사전 점검(중복 활성행 0건)이 게이트",
+      "detail": "코드·마이그레이션·검증은 2026-08-09에 완료했다(`TASK_DONE.md` 2026-08-09 잔여과제 일괄 조치). 남은 것은 **DBA의 dev/prod 적용 하나뿐**이다. 적용 대상은 `it_database/migrations/V20260809_001__AddExecutionDocumentActiveVersionUniqueIndex.sql`(세 테이블에 `IX_TPRMPP_{BDELIM,BCONTM,BPAYMM}_03` 함수 기반 UNIQUE 인덱스), 절차·사전점검·롤백은 `it_database/docs/operations/2026-08-09-be24-active-version-index-handover.md`를 따른다. **사전 점검이 게이트다**: 활성행이 둘 이상인 문서가 있으면 `ORA-01452`로 실패하므로 인계 노트 §2의 중복 조회를 dev/prod에서 먼저 돌려 3건 모두 0인지 확인한다(로컬은 0 확인). 0이 아니면 어느 버전을 남길지 업무 담당자 확인이 선행되어야 하므로 적용하지 않는다.",
+      "refs": ["V20260809_001__AddExecutionDocumentActiveVersionUniqueIndex.sql", "2026-08-09-be24-active-version-index-handover.md"]
+    },
+
+    {
+      "id": "MIG-01", "g": "mig", "p": "medium", "type": "이관",
+      "title": "부문계획 사업진행·집행 실적 열의 원장 반영",
+      "sum": "대응 코드셋이 없어 계획 JSON 스냅샷에만 남아 있다 — 유효 코드셋 확정이 선행",
+      "detail": "정보기술부문계획 조정의 `사업진행`(`진행(품의)`·`진행(계약)`·`취소(연기)`)과 집행 실적 4열은 대응하는 원장 코드셋이 없어 `BPLANM.REDT_CONE_INF` 계획 JSON 스냅샷에만 남겼다(`docs/superpowers/specs/2026-08-11-excel-bulk-migration-design.md` §5.4). 이 값들을 조회·집계에 쓰려면 `BPROJA.IT_PTL_STS_TC` 또는 `BPROJM.IT_PTL_RPR_STS_TC`의 유효 코드셋을 먼저 확정하고 계약 테스트를 추가한다.",
+      "refs": ["BPLANM.REDT_CONE_INF", "BPROJA.IT_PTL_STS_TC"]
+    },
+    {
+      "id": "MIG-04", "g": "mig", "p": "medium", "type": "이관",
+      "title": "위임예산 연속행의 부점 보정값이 그룹을 분기시킴",
+      "sum": "병합 셀에 조직코드를 넣으면 그 행부터 새 그룹키가 생겨 엉뚱한 사업이 만들어진다",
+      "detail": "`DelegatedBudgetSheetAdapter.adapt`는 `branchName` 셀이 비어 있지 않을 때마다 `currentBranch`를 갱신해 그 값으로 `itemsByBranch`를 그룹핑한다. 연속행(병합 셀)에 보정값(대개 조직코드, 예: `0910`)을 입력하면 그 행부터 새 그룹키로 분기되어 `2026년 0910 위임예산(경상)`처럼 원래 부점명과 다른 사업이 만들어지고 형제 행에서 분리된다. 보정 UI에서 연속행에 조직코드를 입력할 때 부점명 그룹핑에 영향을 주지 않도록 별도 필드로 분리하거나 경고를 추가하는 방안을 검토한다.",
+      "refs": ["DelegatedBudgetSheetAdapter.adapt"]
+    },
+    {
+      "id": "MIG-10", "g": "mig", "p": "medium", "type": "이관",
+      "title": "자본예산 품목 비목 보정을 미리보기에서 고를 수 없음",
+      "sum": "드롭다운 선택지가 진단의 candidates에서만 나와서, 진단 없는 셀은 보정 경로가 없다",
+      "detail": "`CapitalProjectSheetAdapter`는 `devAmountIoeC`·`hwAmountIoeC`·`swAmountIoeC` 보정 키를 받고 `MigrationValidator.checkCapitalIoeOverrides`가 그 값을 검증하지만, 미리보기 표의 보정 드롭다운 선택지는 **그 셀에 걸린 진단의 `candidates`**에서만 나온다. 보정을 아직 넣지 않은 셀에는 진단이 없어 후보도 없으므로 사용자가 기본 비목(개발비 103·기계장치 101·기타무형 106)을 감리(104)·국외(102/105)·SW라이선스(107)로 바꿀 방법이 화면에 없다. 도달할 수 없는 컬럼 라벨은 `it_frontend/app/composables/migration/columns.ts`에서 제거해 두었다. 해소하려면 dry-run 응답에 자본 계열 비목 카탈로그를 실어야 하므로 API 계약 변경이 필요하다.",
+      "refs": ["CapitalProjectSheetAdapter", "MigrationValidator.checkCapitalIoeOverrides"]
+    },
+    {
+      "id": "MIG-13", "g": "mig", "p": "medium", "type": "테스트",
+      "title": "통합 테스트 잔여 실패 1건 (프로젝션 단정)",
+      "sum": "48건 → 8건 → 1건. OOM은 maxHeapSize 2g로 해소, 남은 1건은 데이터 전제 문제인지 계약 위반인지 가려야",
+      "detail": "MIG-07(`MfaProviderRegistry` 미등록)을 2026-08-16에 해소해 `./gradlew integrationTest` 실패가 48건에서 8건으로 줄었고, 같은 날 **OOM을 해소해 1건까지 줄었다**(144건 중 1실패·3스킵). OOM 조치: `build.gradle`의 `integrationTest` 태스크에 `maxHeapSize = '2g'`를 명시했다 — Gradle 기본 힙(512MB)으로는 `@SpringBootTest` 전체 컨텍스트가 캐시에 쌓이면서 도중에 `OutOfMemoryError`가 났고, **터지는 클래스가 실행마다 달라(실측 1건~12건) 무관한 도메인의 실패로 오인되기 쉬웠다.** 힙 명시 후 OOM 0건이며 실행 테스트 수도 132 → 144로 늘었다(실행기가 죽으면서 뒤 테스트가 누락되고 있었다). 남은 실패는 `UserReadProjectionIt`의 `사용자 row와 view는 승인된 필드만 노출한다`(`:224` `AssertionError`) 하나다. 프로젝션 단정은 로컬 Oracle의 실제 데이터를 읽으므로 **데이터 전제를 고정하지 않은 테스트인지, 실제 계약 위반인지 먼저 가려야 한다** — 전자면 픽스처를 심고, 후자면 쿼리를 고친다.",
+      "refs": ["UserReadProjectionIt:224", "build.gradle · maxHeapSize = '2g'"]
+    },
+    {
+      "id": "MIG-15", "g": "mig", "p": "medium", "type": "이관",
+      "title": "/budget/work의 편성률 입력이 정수 스테퍼",
+      "sum": "ASG_RT는 소수 5자리를 저장하는데 화면 컨트롤이 정수라 소수 편성률을 덮어쓴다",
+      "detail": "편성 전용 전환(Task 1) 이후 `ASG_RT`는 소수 5자리까지 저장할 수 있지만, `/budget/work` 화면의 편성률 입력 컨트롤은 여전히 정수 스테퍼다. 이 화면에서 소수 편성률이 걸린 사업을 저장하면 값이 정수로 덮인다. 경고 표시 또는 소수 입력 지원이 필요하다.",
+      "refs": ["/budget/work", "ASG_RT"]
+    },
+    {
+      "id": "MIG-21", "g": "mig", "p": "medium", "type": "이관",
+      "title": "MigrationPreviewTable.candidatesOf가 첫 진단의 후보만 씀",
+      "sum": "flatMap이 아니라 첫 진단에서 멈춘다 — 지금은 무해하지만 진단이 겹치면 조용히 빠진다",
+      "detail": "`it_frontend/app/components/migration/MigrationPreviewTable.vue`의 `candidatesOf`는 셀에 걸린 진단을 순회하다 `candidates`가 있는 **첫 진단**에서 멈춘다(`flatMap`이 아니다). 현재는 한 셀에 후보 있는 진단이 둘 이상 붙는 경우가 없어 무해하지만, 앞으로 그런 진단 조합이 생기면 두 번째 이후 진단의 후보가 화면에서 조용히 빠진다.",
+      "refs": ["app/components/migration/MigrationPreviewTable.vue"]
+    },
+    {
+      "id": "MIG-23", "g": "mig", "p": "medium", "type": "이관",
+      "title": "정보화사업 일반관리비 목표액이 두 경우에 진단 없이 미반영됨",
+      "sum": "조용한 손실에 경고를 붙이는 원칙과 대칭이 안 맞는다 — WARNING 진단 2건 추가가 해법",
+      "detail": "`CapitalProjectSheetAdapter`(`it_backend/src/main/java/com/kdb/it/domain/migration/service/adapter/CapitalProjectSheetAdapter.java`)가 종합본의 `일반관리비` 열(`generalAmount`)을 네 번째 비목그룹 목표액으로 반영하도록 확장됐으나(설계 §3.4, `docs/superpowers/specs/2026-08-16-migration-allocation-redesign-design.md`), 두 경우에는 목표액이 진단 없이 조용히 반영되지 않는다. ① `CREATE_NEW`로 원장을 새로 만드는 행에서 일반관리비 열이 채워져 있으면, 신규 품목은 자본 3열에서만 생성돼 담을 비자본 품목이 없다 — 엑셀에 비목 구분(001 전산임차료/007 국외전산용역비/013 국외회선사용료 등)이 없어 어느 비목으로 새로 만들지 정할 근거가 없다(어댑터 Javadoc에 한계로 명시). ② 일반관리비 열이 비어 있고 그 사업에 비자본 품목이 있으며 기존 편성행이 없으면, 설계 §3.4의 \"빈 열은 기존 편성률 유지\" 규칙이 적용될 기존값이 없어 `DEFAULT_DUP_RT = 100`이 실린다 — 조정비율 0.7 사업이어도 일반관리비 품목만 100%로 편성된다. 둘 다 회귀가 아니라 원래부터 미반영이던 경로지만, 같은 웨이브에서 부문계획 시트의 `CREATE_NEW` 무동작에는 `CREATE_NOT_SUPPORTED` WARNING을 붙여 조용한 손실에 경고를 붙이는 원칙과 대칭이 맞지 않는다. 해소하려면 두 경우 각각 WARNING 진단을 추가한다 — 좌표·문구 조립은 `MigrationMatchDiagnostics`의 기존 헬퍼로 재사용 가능하다. ①은 \"이 행은 원장을 새로 만드므로 일반관리비 목표액을 담을 품목이 없습니다\", ②는 \"일반관리비 열이 비어 있고 기존 편성률도 없어 100%로 편성됩니다\" 취지. ①은 비목 결정 정책(업무 판단)이 먼저 필요하고, ②는 설계가 명시한 동작이라 지시 위반 없이 구현되어 이번 웨이브에서는 보류했다.",
+      "refs": ["adapter/CapitalProjectSheetAdapter.java", "MigrationMatchDiagnostics", "2026-08-16-migration-allocation-redesign-design.md"]
+    },
+    {
+      "id": "MIG-25", "g": "mig", "p": "medium", "type": "테스트",
+      "title": "프론트 단위 테스트 3건이 전체 스위트 병렬 실행에서만 간헐 실패",
+      "sum": "격리 실행은 항상 통과. CI 도입 시 거짓 실패로 사람을 멈춰 세우므로 원인을 찾아야 한다",
+      "detail": "`cd it_frontend && npm test`(284파일 3306건)를 돌리면 드물게 3건이 타임아웃으로 실패하고, 같은 트리에서 다시 돌리면 전부 통과한다. 격리 실행(`npm test -- <파일>`)에서는 항상 통과한다. `feat/migration-allocation` 작업 중 여러 구현자가 `tests/unit/composables/useRefreshGuard/onactivated-refresh-guard.test.ts`와 `tests/unit/components/board/refresh-banner-visibility.test.ts`를 이름으로 지목했고, 브랜치 병합 검증 때도 한 번 3건이 실패한 뒤 이어진 두 번의 전체 실행이 모두 통과했다(그때는 파일명을 포착하지 못했다). 병합이 fast-forward라 트리가 동일했으므로 코드 변경과 무관한 실행 환경 문제로 판단된다. **병합 검증·CI 도입 시 거짓 실패로 사람을 멈춰 세우므로 원인을 찾아야 한다.** 조사 방향: `vitest` 워커 수·`testTimeout` 조정으로 재현률을 보고, 두 테스트가 공유하는 타이머·`nextTick`·전역 상태(특히 `useRefreshGuard`의 asyncData 키 공유)에 경합이 있는지 확인한다. 재현이 어려우면 `--reporter=verbose --no-file-parallelism`으로 순차 실행 시 사라지는지부터 가른다.",
+      "refs": ["useRefreshGuard/onactivated-refresh-guard.test.ts", "board/refresh-banner-visibility.test.ts"]
+    },
+    {
+      "id": "MIG-02", "g": "mig", "p": "low", "type": "이관",
+      "title": "정규 컬럼 id 계약의 자동 검증",
+      "sum": "백엔드·프론트가 같은 리터럴 목록을 손으로 유지 — 한쪽만 바꾸면 dry-run이 조용히 빈 셀을 읽는다",
+      "detail": "`it_backend/src/main/java/com/kdb/it/domain/migration/dto/MigrationColumns.java`와 `it_frontend/app/composables/migration/columns.ts`가 같은 리터럴 목록을 손으로 유지하며 빌드 타임에 대조하는 장치가 없다. 한쪽만 바꾸면 dry-run이 조용히 빈 셀을 읽는다. 백엔드가 컬럼 목록을 API로 노출하고 프론트 테스트가 그 응답과 대조하는 방식으로 게이트를 만들 수 있다.",
+      "refs": ["dto/MigrationColumns.java", "composables/migration/columns.ts"]
+    },
+    {
+      "id": "MIG-03", "g": "mig", "p": "low", "type": "이관",
+      "title": "위임예산 부점 사업의 담당자 지정",
+      "sum": "시트에 담당자 열이 없어 업로드 사용자 사번이 그대로 담당자로 들어간다",
+      "detail": "위임예산 시트에 담당자 열이 없어 `DelegatedBudgetSheetAdapter`가 업로드 사용자 사번(`ctx.actorEno()`)을 담당자·IT담당자로 그대로 넣는다(설계 §5.5). 부점별 실제 담당자를 지정할 수 있는 입력을 미리보기 화면에 추가할 수 있다.",
+      "refs": ["DelegatedBudgetSheetAdapter", "ctx.actorEno()"]
+    },
+    {
+      "id": "MIG-06", "g": "mig", "p": "low", "type": "이관",
+      "title": "미해결 편성률·계획 intent가 조용히 드롭됨",
+      "sum": "대상을 못 찾으면 log.warn만 남기고 건너뛴다 — 응답에 건너뛴 건수를 노출하자",
+      "detail": "`MigrationImportService`의 편성률(270행)·부문계획 조정(305행) 반영 루프는 대상 PK·사업을 찾지 못하면 `log.warn`만 남기고 건너뛴다. 반영 응답(`MigrationCommitResponse`)에 건너뛴 건수를 노출해 사용자가 로그를 보지 않아도 알 수 있게 하는 방안을 검토한다.",
+      "refs": ["MigrationImportService", "MigrationCommitResponse"]
+    },
+    {
+      "id": "MIG-12", "g": "mig", "p": "low", "type": "이관",
+      "title": "편성요청서 국문·영문 대조표 보강",
+      "sum": "대조표가 런던지점 제출본 1건에서 나왔다. 해외점포 제출본이 들어오면 어휘를 추가한다",
+      "detail": "`FormLexicon`의 라벨·비목 대조표는 런던지점 제출본 1건에서 뽑았다. 다른 해외점포(시드니·뉴욕·도쿄 등)의 번역이 다를 수 있고, 실제로 런던 파일에도 `Machinery` › `Tape backup software`처럼 대응 비목이 애매한 행이 있다. 해외점포 제출본이 들어오면 미해석(`CODE_UNRESOLVED`)으로 남은 어휘를 수집해 대조표에 추가한다. 어휘 추가는 `FormLexicon` 상수 한 줄이면 된다.",
+      "refs": ["FormLexicon"]
+    },
+    {
+      "id": "MIG-14", "g": "mig", "p": "low", "type": "이관",
+      "title": "편성요청서 1-1 단위 뒤섞임의 잔여 미탐지",
+      "sum": "모호성 가드로 대부분 닫혔다. 남은 구멍은 이미 내부 모순인 파일에서만 열린다",
+      "detail": "폴백 경로(`총 사업금액(전체기간)` 칸에 접미사가 없어 요약표 배수를 적용하는 경우)의 과대 기재는 **조건 ⑥(모호성 가드, `59cc67f9`)** 으로 대부분 닫혔다 — 배수 적용 해석과 원 단위 해석이 둘 다 `DFR ≥ 0`이면 확정 불가로 보고 미적재+경고를 낸다. 임계값을 쓰지 않아 업무 수치 합의가 필요 없고, 적재값은 그대로 배수 적용값이라 조이기만 한다. **남은 구멍은 좁다**: 원 단위로 적힌 총액에 배수가 곱해졌는데 원 단위 해석의 `DFR`이 음수인 경우(= 선언 총액이 `'26년도 합계 + '26년도 이후`보다 작은 경우)는 모호로 판정되지 않아 부푼 값이 적재된다. 다만 그 조건 자체가 **전체기간 총액이 당해 예산보다 작다는 뜻이라 이미 내부 모순인 파일**이다. 또 접미사가 적혀 있는데 그 접미사 자체가 오기인 경우는 원리상 탐지 불가다(접미사가 그 칸의 단일 출처). 실제 제출본에서 이 잔여 경우가 관측되면 폴백 경로에 `총액 / ('26년도 합계 + '26년도 이후)` 비율 상한을 덧붙여 닫을 수 있으나, **정상 다년도 사업의 비율 상한이 업무 판단**이라 값을 먼저 정해야 한다(단위가 섞이면 5자릿수 이상 벌어지고 정상은 한~두 자릿수로 관측).",
+      "refs": ["조건 ⑥ 모호성 가드 · 59cc67f9"]
+    },
+    {
+      "id": "MIG-16", "g": "mig", "p": "low", "type": "이관",
+      "title": "/admin/migration 메뉴명이 옛 성격을 유지",
+      "sum": "탭 제목만 고쳐서 사이드바·Breadcrumb에는 '데이터 일괄 반입'이 남아 있다",
+      "detail": "Task 13에서 화면 성격을 데이터 반입에서 편성률 반영으로 바꾸며 탭 제목(`definePageMeta({ tabTitle: '편성률 반영' })`)만 고쳤다. 메뉴명 단일 출처인 `TPRMPP_CMENUM`의 `/admin/migration` 행은 여전히 `데이터 일괄 반입`이라 사이드바·Breadcrumb에는 옛 이름이 남는다. `it_database/migrations`에 메뉴명 갱신 스크립트를 추가하면 해소된다.",
+      "refs": ["TPRMPP_CMENUM", "it_database/migrations"]
+    },
+    {
+      "id": "MIG-17", "g": "mig", "p": "low", "type": "이관",
+      "title": "위임예산 시트는 조정률 열이 없어 편성률 100% 고정",
+      "sum": "예산담당자가 위임예산에도 하반기 조정을 걸기 시작하면 이 가정을 재검토해야 한다",
+      "detail": "위임예산(경상) 시트는 자본예산 시트와 달리 조정 3열이 없어 종합본 금액을 그대로(편성률 100%) 편성한다. 예산담당자가 위임예산에도 하반기 조정을 걸기 시작하면 시트에 조정률 열을 추가하고 이 가정을 재검토해야 한다.",
+      "refs": []
+    },
+    {
+      "id": "MIG-18", "g": "mig", "p": "low", "type": "테스트",
+      "title": "jacocoTestCoverageVerification 위반 7건 (이 브랜치 무관)",
+      "sum": "merge-base 대조로 7건 모두 다른 작업 소유임을 확인 — 손대지 말고 원 작업자가 정리",
+      "detail": "`./gradlew check` 실행 시 `CodeService`·`TranslationTargetKey`·`TranslationCatalogService`·`TranslationAdminController`(기존 부채)·`IoeCandidates`·`FormCheckboxReader`(main에 이미 존재)·`GeneralExpenseFormAdapter`(다른 작업 진행 중)에서 커버리지 기준 미달이 난다. `git log <merge-base>..HEAD`로 확인한 결과 이 7건 모두 `feat/migration-allocation` 브랜치의 변경이 아니다. 손대지 말고 해당 파일의 원 작업자가 정리한다.",
+      "refs": ["./gradlew check"]
+    },
+    {
+      "id": "MIG-19", "g": "mig", "p": "low", "type": "테스트",
+      "title": "MigrationImportIt의 @Disabled 1건 정리",
+      "sum": "Task 9 재설계로 전제가 폐지됨. 대체 동작은 다른 테스트가 이미 고정한다",
+      "detail": "`부문계획_조정이_품목을_교체한다`(`:319`)는 Task 9 재설계로 \"품목 버전을 교체한다\"는 전제 자체가 폐지되어 `@Disabled`로 남겨 두었다. 대체 동작(\"요청 품목이 활성으로 남는다\")은 `하반기_조정_후에도_요청_품목이_활성으로_남는다`(`:532`)가 이미 고정한다. 옛 테스트는 전제가 유효했던 시점의 기록으로 남기거나, 재설계가 안정화되면 삭제를 검토한다.",
+      "refs": ["MigrationImportIt:319", "MigrationImportIt:532"]
+    },
+    {
+      "id": "MIG-20", "g": "mig", "p": "low", "type": "이관",
+      "title": "Map<SheetKind, …> 키로 같은 시트 종류 중복 업로드 시 행 번호가 섞임",
+      "sum": "UI는 슬롯당 1개만 허용하지만 API 계약상으로는 막혀 있지 않다",
+      "detail": "`MigrationImportService`의 시트별 처리 상태(`createNewRows`·`matchedPkByRow` 등)가 `SheetKind`를 키로 쓴다. 같은 종류(예: `COST`)의 시트를 두 번 올리면(현재 UI는 슬롯당 1개만 허용해 실무상 발생하지 않지만 API 계약상으로는 막혀 있지 않다) 두 페이로드의 엑셀 행 번호가 같은 키 아래 섞인다. 계약을 좁히려면 요청 DTO에서 같은 `SheetKind` 중복을 거부하거나 키를 (시트 종류, 업로드 순번)으로 넓혀야 한다.",
+      "refs": ["MigrationImportService", "SheetKind"]
+    },
+    {
+      "id": "MIG-22", "g": "mig", "p": "low", "type": "이관",
+      "title": "/admin/migration·requests의 tabTitle이 i18n을 안 거침",
+      "sum": "한국어 단일 로케일이라 지금은 무해. FE-40과 같은 매크로 제약",
+      "detail": "`definePageMeta`는 컴파일 타임 매크로라 `t()`를 인자로 못 받아 두 화면 모두 `tabTitle`에 한국어 리터럴을 그대로 둔다(`index.vue`의 `'편성률 반영'`, `requests.vue`의 `'편성요청서 반입'`). 지금은 한국어 단일 로케일이라 무해하지만, 영어 UI를 지원해야 할 때는 매크로 인자 제약을 우회할 방법(예: 라우트 메타에 i18n 키만 저장하고 레이아웃이 `t()`로 해석)을 마련해야 두 값이 로케일을 따라간다.",
+      "refs": ["pages/admin/migration/index.vue", "pages/admin/migration/requests.vue"]
+    },
+    {
+      "id": "MIG-24", "g": "mig", "p": "low", "type": "테스트",
+      "title": "@decision-clear·@decision-clear-all 페이지 배선이 무커버리지",
+      "sum": "컴포넌트와 컴포저블은 각각 덮이는데 둘을 잇는 페이지 배선 2줄만 비어 있다",
+      "detail": "`it_frontend/app/pages/admin/migration/index.vue`의 `@decision-clear`·`@decision-clear-all` 배선 두 줄이 어떤 테스트도 밟지 않는다. 컴포넌트 테스트는 이벤트 방출을, 컴포저블 테스트는 `clearDecision`·`clearDecisionsOf` 동작을 각각 고정하지만 둘을 잇는 페이지 배선만 비어 있다. E2E가 백엔드·프론트 두 서버 기동을 요구해 `feat/migration-allocation` 웨이브에서 돌리지 못한 채 남았다. 기존 이관 E2E 시나리오에 \"결정을 고른 뒤 지우기 → 드롭다운이 되살아난다\" 단계를 추가하면 닫힌다. 배선 자체가 선언적 2줄이라 위험은 낮다.",
+      "refs": ["app/pages/admin/migration/index.vue"]
+    },
+
+    {
+      "id": "REPO-01", "g": "repo", "p": "low", "type": "설정",
+      "title": ".vscode/ 설정의 머신 종속 절대경로",
+      "sum": "다른 경로·다른 PC에 클론하면 Java 임포트가 실패한다. 그래도 의도적으로 추적한다",
+      "detail": "`.vscode/settings.json`이 `java.import.gradle.home: C:/gradle/gradle-9.2.1`과 `java.jdt.ls.vmargs`의 `-javaagent:C:/it/it_backend/lib/lombok.jar`를 절대경로로 박아 두어, 저장소를 다른 경로나 다른 PC에 클론하면 Java 확장 임포트가 실패한다. 두 파일은 **의도적으로 추적한다** — 주석에 중복 빈 등록(`BeanDefinitionOverrideException`)·워크트리 프로젝트명 중복 같은 프로젝트 공통 함정의 원인과 회피책이 기록되어 있어 공유 가치가 크다. 개발자가 늘어나면 머신 종속 값만 `.vscode/settings.local.json` 또는 환경변수로 분리하고, 주석이 담은 함정 설명은 `README.md`로 옮긴다.",
+      "refs": [".vscode/settings.json"]
+    },
+    {
+      "id": "REPO-02", "g": "repo", "p": "low", "type": "문서",
+      "title": "CLAUDE.md §2 디렉토리 트리가 실제 루트 구성과 불일치",
+      "sum": "meta/·prds/·tools/·FP/·scripts/·sample/이 트리에 없다. 2026-07-08 리뷰가 이미 지적",
+      "detail": "§2 트리는 `it_frontend`·`it_backend`·`it_database`·`docs`·`TASK.md`만 기술하는데, 실제 추적 중인 루트에는 `meta/`(용어사전 SoT, §2 표에서는 참조하면서 트리에는 없음)·`prds/`·`tools/`·`FP/`·`scripts/`·`sample/`이 함께 있다. 2026-07-08 아키텍처 리뷰(`docs/superpowers/specs/done/architecture-review-2026-07-08.md:133`)가 이미 지적한 항목이다. 트리에 누락 디렉터리를 채우고 각 디렉터리의 역할을 한 줄로 적는다.",
+      "refs": ["CLAUDE.md §2", "architecture-review-2026-07-08.md:133"]
+    },
+    {
+      "id": "REPO-03", "g": "repo", "p": "low", "type": "정리",
+      "title": ".gitignore 사멸 항목 2건",
+      "sum": "대응 디렉터리가 없는 규칙 2줄. 다음에 .gitignore를 손댈 때 함께 지운다",
+      "detail": "`everything-claude-code/`(6행)와 `.bkit`(10행)은 대응하는 디렉터리가 저장소에 존재하지 않는다. 전자는 외부 도구 fork를 걷어낸 뒤 남은 잔재다(`df01928` 참조). 규칙 자체는 무해하므로 급하지 않으나, 다음에 `.gitignore`를 손댈 때 함께 지운다.",
+      "refs": [".gitignore"]
+    }
+  ],
+  "idNotes": {
+    "SEC-12": { "kind": "reused", "note": "같은 번호가 활성 목록에도 있지만 서로 다른 과제입니다 (활성 = OnePass FIDO 거부 상태 구분)" },
+    "SEC-13": { "kind": "reused", "note": "같은 번호가 활성 목록에도 있지만 서로 다른 과제입니다 (활성 = MFA 거래의 다중 인스턴스 지원)" },
+    "BE-24":  { "kind": "carried", "note": "같은 과제가 활성 목록에 남아 있습니다 — 코드는 완료, dev/prod 적용 대기" }
+  },
+  "states": {
+    "done":      { "label": "완료",  "glyph": "✅", "var": "--st-done" },
+    "resolved":  { "label": "해소",  "glyph": "✔️", "var": "--st-resolved" },
+    "accepted":  { "label": "감내",  "glyph": "☑️", "var": "--st-accepted" },
+    "discarded": { "label": "폐기",  "glyph": "⛔", "var": "--st-discarded" }
+  },
+  "history": [
+    { "d": "2026-08-16", "st": "done", "t": "정보화사업 금액 컬럼 3종 추가", "ids": ["MIG-05"],
+      "s": "`updateProject`의 신규 품목 생성 분기가 `Bitemm.builder()`를 직접 호출해 필드 목록을 손으로 중복하던 것을 해소했다. 세 경로가 모두 `buildBitemm` 하나를 거친다 — 중복 제거가 곧 `ProjectService` 816→785줄 감축이었다. 이 작업에서 BE-35·BE-36·BE-37이 잔여로 등록됐다." },
+    { "d": "2026-08-16", "st": "done", "t": "담당자 이름 표시 보정 (이력 추적용 기록)", "ids": [],
+      "s": "담당자 컬럼(`USID`·`TLR_USID` 등)은 사번 **또는 이름**을 담는데 서버가 사번으로만 조회해 이름이 저장된 행은 화면에 `-`만 나왔다. 이 변경은 무관한 커밋 메시지를 단 두 커밋에 쓸려 들어가 **커밋 메시지로는 찾을 수 없어**, 이력 재작성 대신 대응표만 남긴 절이다." },
+    { "d": "2026-08-16", "st": "done", "t": "통합 테스트 컨텍스트 로딩 실패 해소", "ids": ["MIG-07"],
+      "s": "`test-it` 전체 컨텍스트 통합 테스트가 `MfaProviderRegistry` 빈을 찾지 못해 로딩 단계에서 전부 실패하던 문제. 운영 `MfaConfig`의 `@Profile`을 넓히는 대신 테스트 쪽에서 해소했다." },
+    { "d": "2026-08-16", "st": "done", "t": "prevBgAmt 주석의 코드값 오기 정정", "ids": ["MIG-08"],
+      "s": "`CostDto.Response.prevBgAmt` 주석의 `abusTc` 코드값 오기 정정(01/02 → 10/20). `V20260720_008__AlignCommonCodesWithProd.sql`이 이관한 뒤에도 주석만 옛 값으로 남아 있었다." },
+    { "d": "2026-08-16", "st": "done", "t": "편성요청서 반입 후 편성행 생성 절차 안내", "ids": ["MIG-11"],
+      "s": "반입은 원장까지만 만들고 `BBUGTM`을 만들지 않아 반입 직후 예산 화면에 아무것도 없는 것처럼 보였다. 후속 절차를 반입 화면(`admin/migration/requests`)에 안내로 명시." },
+
+    { "d": "2026-08-09", "st": "done", "t": "잔여과제 일괄 조치", "ids": ["FE-36", "BE-24", "CQ-25", "CQ-26"],
+      "s": "`/budget/list` 500 오류의 **실제 원인은 undefined 컴포넌트가 아니었다** — 첫 `await` 뒤에 주입 컨텍스트가 소실되는 문제였다. BE-24는 코드·마이그레이션·검증까지 끝내고 dev/prod 적용만 남겨 활성 목록에 External로 남아 있다." },
+    { "d": "2026-08-09", "st": "done", "t": "FE-15 전면 마이그레이션·BE-03 읽기 프로젝션 후속", "ids": ["FE-15", "BE-03"],
+      "s": "API 응답 DTO의 required·nullable·enum OpenAPI 계약을 전 도메인에 고정하고, 프론트의 수동 API 응답 미러를 생성 스키마 alias로 전환했다." },
+    { "d": "2026-08-09", "st": "done", "t": "비DDL Wave 2·3 구조·ORM 상환", "ids": ["CQ-22", "CQ-15", "CQ-18", "BE-25"],
+      "s": "Tiptap extension barrel 2개와 툴바 2개를 책임별 모듈·하위 컴포넌트로 분해해 네 기준 파일을 모두 800줄 이하로 만들었다. runtime export·PluginKey·schema 계약은 유지." },
+    { "d": "2026-08-09", "st": "accepted", "t": "비DDL Wave 1 감사·정책 정렬", "ids": ["FE-29", "BE-32"],
+      "s": "\"다시\" 문구의 유무는 최초 로드와 명시적 재시도 실패의 실행 맥락 차이이므로 전역 치환하지 않기로 하고 감내 종결했다." },
+    { "d": "2026-08-09", "st": "accepted", "t": "DDL 없는 조건부 과제 3건 종결", "ids": ["FE-25", "BE-21", "BE-28"],
+      "s": "각 항목의 후속 트리거와 근거를 명시하고 감내 종결. 조건이 성립하면 다시 열도록 트리거를 문서에 남겼다." },
+    { "d": "2026-08-09", "st": "done", "t": "KST 날짜 경계 보정", "ids": ["FE-35"],
+      "s": "**ID 재번호 사례**: 활성표에서 이미 쓰이던 FE-33과 충돌해 완료 이관 시 다음 빈 번호 FE-35로 정규화했다. 구현 커밋에 적힌 FE-33 표기는 이관 전 ID를 가리킨다." },
+    { "d": "2026-08-09", "st": "done", "t": "TASK.md 완료 행 정리·프론트 의존성 감사 0건", "ids": ["SEC-10", "ERR-15", "FE-16", "FE-20", "FE-22", "FE-23", "FE-26", "FE-27", "FE-28", "FE-30", "FE-32", "BE-19", "BE-20", "BE-22", "BE-27", "BE-33", "CQ-19", "CQ-23", "CQ-24"],
+      "s": "활성 목록에 남아 있던 완료 행 17건을 한 번에 이관했다. 마지막 dev 전용 `js-yaml` advisory까지 정리해 프론트 의존성 감사가 0건이 됐다." },
+    { "d": "2026-08-09", "st": "done", "t": "REVIEW.md 재실행 (델타)", "ids": [],
+      "s": "대상 문서 마지막 커밋 이후 델타 기준(프론트 45커밋·백엔드 13커밋). 최대 수확은 협의회 위원유형 코드값 드리프트였다." },
+
+    { "d": "2026-08-06", "st": "done", "t": "잔여과제 저비용 배치 1", "ids": ["ERR-14", "BE-34", "FE-21", "FE-30"],
+      "s": "설계·실행 계획대로 진행했으나 **세 항목이 계획이 상정한 것과 다른 결말**을 맞았다. 저비용 배치라도 계획 단계의 가정이 코드와 어긋날 수 있다는 사례." },
+    { "d": "2026-08-06", "st": "done", "t": "대형 서비스 분해·결정론 보완", "ids": ["CQ-01", "BE-30"],
+      "s": "`CouncilController` 분해에 이어 서비스 3개를 도메인 경계로 분리 — `ProjectService` 1549→670, `CostService` 1159→351줄. 현재 활성 BE-35(800줄 근접)는 그 뒤 다시 쌓인 분량이다." },
+    { "d": "2026-08-06", "st": "done", "t": "비-CQ 잔여과제 Quick Win", "ids": ["BE-26", "BE-29", "BE-31", "FE-24", "FE-33"],
+      "s": "활성 항목을 전수 분류해 **설계 결정·DBA 협의·외부 의존 없이 코드로 끝낼 수 있는 것만** 골라 상환했다. 지금 활성 목록에 남은 것들이 그 분류에서 걸러진 나머지다." },
+
+    { "d": "2026-08-05", "st": "done", "t": "admin/menus 관리 트리 가드 주석 정정", "ids": ["FE-31"],
+      "s": "실패하면 `adminTree`가 undefined가 된다던 주석을 실제 동작에 맞춰 정정했다." },
+
+    { "d": "2026-08-04", "st": "done", "t": "Clean Code Wave 3 — Wave B·C", "ids": ["CQ-16"],
+      "s": "`it_frontend` 단일 저장소 대상. HWPX·컴포저블 분해를 동작·UI 불변으로 수행했다." },
+    { "d": "2026-08-04", "st": "done", "t": "Clean Code Wave 3 — Wave A", "ids": ["CQ-17", "CQ-06", "CQ-21"],
+      "s": "`it_backend` 단일 저장소 대상. REST API·DTO·DB 스키마·트랜잭션 경계·인증 실패 응답을 모두 불변으로 유지했다." },
+
+    { "d": "2026-08-01", "st": "resolved", "t": "Prettier 잔여 위반 해소", "ids": ["CQ-20"],
+      "s": "3개 파일(`useAuth.ts`·`types/menu.ts`·`useAdminMenu.test.ts`)의 포맷 드리프트가 별도 브랜치에서 이미 정리된 것을 확인해 해소 처리했다." },
+
+    { "d": "2026-07-31", "st": "done", "t": "ERR-13·FE-15~19 조치", "ids": ["ERR-13", "FE-16", "FE-17", "FE-18", "FE-19"],
+      "s": "계획 Task 1~9를 실행하고 `it_frontend` 브랜치 71커밋을 `main`에 병합했다." },
+
+    { "d": "2026-07-30", "st": "done", "t": "SEC-11~15 보안 조치 완료", "ids": ["SEC-11", "SEC-12", "SEC-13", "SEC-14", "SEC-15"],
+      "s": "**주의 — 이 SEC-12·SEC-13은 현재 활성 목록의 같은 번호와 다른 과제다.** 여기서는 SSO 로그 원문 제거(SEC-12)와 prod OpenAPI 속성 강제 차단(SEC-13)이다. 그 밖에 Oracle 도구 비밀번호를 명령행·환경변수에서 제거(SEC-11), URL canonicalize(SEC-14), CSRF·쿠키 경계 보강(SEC-15)." },
+    { "d": "2026-07-29", "st": "done", "t": "ERR-11·ERR-12·FE-12~14 조치", "ids": ["ERR-11", "ERR-12", "FE-12", "FE-13", "FE-14"],
+      "s": "서브에이전트 기반(구현 → 스펙 리뷰 → 품질 리뷰 → 재작업 루프)으로 실행했다." },
+
+    { "d": "2026-07-27", "st": "done", "t": "보수적 프로젝션 1차 적용", "ids": ["BE-03"],
+      "s": "사용자 승인에 따라 경계선 6개 묶음 전부에 응답 전용 프로젝션을 적용하고 가이드 목록 계약을 분리했다." },
+    { "d": "2026-07-27", "st": "done", "t": "프로젝션 보류 정책 확정·대표행 결정론화", "ids": ["BE-17"],
+      "s": "대표행 선택 규칙 4건 확정 — BITEMM GCL은 `LST_YN='Y'` 우선(없으면 SNO 최대), BBUGTM 편성률은 최신 편성 실행(`bgNo` 최대) 기준." },
+
+    { "d": "2026-07-26", "st": "discarded", "t": "프론트엔드 잔여과제 범위 종료", "ids": [],
+      "s": "사용자 결정에 따라 구현 완료로 간주하지 않고 후속 범위에서 폐기했다. 알려진 제한과 검증 증거는 추후 의사결정용으로 보존." },
+    { "d": "2026-07-26", "st": "done", "t": "프론트엔드 잔여과제 통합 조치", "ids": ["FE-01", "FE-04", "FE-07", "FE-08", "FE-09", "FE-10", "FE-11"],
+      "s": "여기의 FE-01은 공지·협의회 일정 운영 피드 범위로, 앞선 KPI·진행현황 API 전환 범위의 FE-01과 구분해 기록했다." },
+    { "d": "2026-07-26", "st": "done", "t": "프론트 Prettier 포맷 드리프트 정리", "ids": ["FE-03"],
+      "s": "기능 변경이 끝난 시점의 `prettier --list-different` 기준선 39개를 보존한 뒤 `npm run format`을 한 번 적용했다." },
+    { "d": "2026-07-26", "st": "done", "t": "프론트 포맷터·사업카드 색상 정책 정리", "ids": ["FE-02", "FE-05", "FE-06"],
+      "s": "파일 크기·통화·금액 표시 중복을 공용 유틸로 단일화했다." },
+    { "d": "2026-07-26", "st": "done", "t": "에러 표면화·복구", "ids": ["ERR-09", "ERR-10"],
+      "s": "보안·에러 remediation 설계의 Phase B·C를 구현·검증하고 종료 이관했다." },
+
+    { "d": "2026-07-25", "st": "done", "t": "보안 트랜잭션 무결성", "ids": ["SEC-08", "SEC-09"],
+      "s": "같은 설계의 Phase A를 구현·검증하고 종료 이관했다." },
+    { "d": "2026-07-25", "st": "done", "t": "백엔드 잔여과제 정리 (Wave 1~3)", "ids": ["ERR-08", "BE-12", "BE-13", "BE-14", "BE-15", "BE-16", "BE-18"],
+      "s": "즉시 구현 가능한 항목을 해소하고, **BE-02·BE-06은 과제가 아니라 상시 규칙**이라 `it_backend/CLAUDE.md`로 이관했다." },
+    { "d": "2026-07-25", "st": "done", "t": "TASK.md 완료 항목 정리 이관", "ids": ["CQ-02", "CQ-09"],
+      "s": "Clean Code 부채 §에서 완료 행을 활성 목록에서 제거했다." },
+
+    { "d": "2026-07-21", "st": "done", "t": "Clean Code Wave 2 (구조·타입 개선)", "ids": ["CQ-03", "CQ-04", "CQ-11"],
+      "s": "Wave 0에서 구축한 안전망(PDF 구조 스냅샷·핵심 E2E·커버리지 게이트) 위에서 실행했다." },
+    { "d": "2026-07-21", "st": "done", "t": "Clean Code Wave 1 (저위험 일괄 정리)", "ids": ["CQ-07", "CQ-08", "CQ-10", "CQ-12", "CQ-14"],
+      "s": "모든 태스크가 동작 변경 없는 기능 불변 정리였다." },
+    { "d": "2026-07-21", "st": "done", "t": "Clean Code Wave 0 (검증 기반 구축)", "ids": ["CQ-05", "CQ-13"],
+      "s": "Wave 2 리팩터링의 안전망 — 커버리지 게이트·PDF 회귀 스냅샷·핵심 E2E를 먼저 세웠다. **리팩터링보다 안전망이 먼저**라는 순서가 이 저장소의 선례다." },
+
+    { "d": "2026-07-20", "st": "done", "t": "백엔드 잔여과제 조치 (Phase A~C)", "ids": ["BE-09", "BE-10", "BE-11"],
+      "s": "비결정 대표행 선택, 팀 조회 N+1·검토자 API 계약, 파일 메타 NULL 정책을 정리했다." },
+
+    { "d": "2026-07-19", "st": "done", "t": "보안·에러 처리 Remediation Phase 1", "ids": ["SEC-04", "SEC-05", "ERR-06"],
+      "s": "JWT 용도 allowlist, 업무 파일 부모 권한·default-deny, 감사로그 실패 메트릭·재진입 방지를 코드·정책 문서·회귀 테스트와 대조해 완료 판정했다." },
+    { "d": "2026-07-19", "st": "done", "t": "보안·에러 처리 Remediation Phase 2", "ids": ["SEC-03", "SEC-07", "ERR-07"],
+      "s": "설계·실행 계획 문서를 근거로 구현·검증했다." },
+    { "d": "2026-07-19", "st": "done", "t": "배포 정합성 후속", "ids": ["SEC-06", "ERR-05"],
+      "s": "Phase 2에서 환원했던 Flyway 버전 중복(SEC-06)과 알림 outbox 마이그레이션 미적용(ERR-05)을 개번·적용·검증으로 종결했다." },
+    { "d": "2026-07-19", "st": "done", "t": "보안·에러 처리 Remediation Phase 3", "ids": ["ERR-03", "ERR-04"],
+      "s": "HWPX 부분 누락 경고, 파일 메타 실패 ID 보존·재시도, Tiptap rate-limit 진단. **QA 5개를 브라우저 수동 조작 대신 동일 실패를 자동 주입해 재현**했고 자동 검증 4개가 모두 통과했다." },
+
+    { "d": "2026-07-07", "st": "done", "t": "TASK 잔여 조치 (Subagent-Driven)", "ids": [],
+      "s": "에러 처리·DB/JPA·리팩토링 잔여 중 구현 가능한 항목을 서브에이전트 방식으로 조치했다." },
+    { "d": "2026-07-07", "st": "done", "t": "무테이블 DDL 잔여 개선", "ids": ["SEC-01", "SEC-02", "ERR-01", "ERR-02", "BE-01", "BE-04", "BE-05"],
+      "s": "DB 테이블·컬럼·PK 변경이 불필요한 항목만 선별해 구현·검증했다." },
+    { "d": "2026-07-06", "st": "done", "t": "DB/JPA dev·prod 적용 확인", "ids": [],
+      "s": "P4 후보 인덱스 `V20260629_002~005`가 실제 적용됐는지 라이브 DDL로 확인했다." },
+    { "d": "2026-07-02", "st": "done", "t": "협의회 후속 정비 + 작성자 소속 컬럼", "ids": [],
+      "s": "관리 액션 서버 권한·컬럼 드리프트·생략판정 필터 3건을 라이브 스키마/코드 대조로 완료 확인했다." },
+
+    { "d": "2026-06-30", "st": "done", "t": "DB/JPA 최적화 (P0~P5)", "ids": [],
+      "s": "DB/JPA § 12건 전체 조치. 페이즈별 서브에이전트 구현 + 2단계 리뷰(스펙·품질)." },
+    { "d": "2026-06-29", "st": "done", "t": "보안 하드닝 구현", "ids": [],
+      "s": "보안 § 잔여 6건 구현. #4 Blocklist는 감내로 종결했다. Bearer 헤더 폴백을 `app.auth.allow-bearer-header`로 게이팅한 것이 이때다." },
+    { "d": "2026-06-29", "st": "done", "t": "보안 하드닝 착수 정비", "ids": [],
+      "s": "설계·계획 문서를 세우고 범위를 확정했다." },
+    { "d": "2026-06-29", "st": "done", "t": "영향도 낮은 백로그 묶음 처리", "ids": [],
+      "s": "W2(코드부채)+Low 잔여 13건을 단독 수정 가능한 작업으로 묶어 4 PR로 처리했다." },
+    { "d": "2026-06-29", "st": "done", "t": "재검증 종료", "ids": [],
+      "s": "잔여 항목을 6개 병렬 에이전트로 코드 재대조해, 이미 해소됐거나 코드 부재로 실행 불가한 7건을 종료 이관했다." },
+    { "d": "2026-06-28", "st": "done", "t": "코드 대조 검증 — stale Open 이관", "ids": [],
+      "s": "전체 Open 항목을 read-only로 코드베이스와 대조해 실제로는 해소된 stale 3건을 이관했다." },
+    { "d": "2026-06-27", "st": "done", "t": "High 잔여 조치 (Batch 1~3)", "ids": [],
+      "s": "`feature/task-high-remediation` 브랜치에서 High 잔여를 3배치로 처리했다." },
+    { "d": "2026-06-22", "st": "done", "t": "백엔드 로드맵 Phase 2~5 실행 완료", "ids": [],
+      "s": "`NotFoundException`(404) + `ResponseStatusException` 핸들러, 에러 로깅 표준화 9곳, 공통 유틸 추출 등. 이 저장소의 백엔드 예외 처리 관례가 이때 정해졌다." },
+    { "d": "2026-06-22", "st": "done", "t": "코드 대조 검증 완료 (백엔드)", "ids": [],
+      "s": "`CodeNameMapBuilder` 공통 추출, `sumDupBg` 3건 통합, `.toList()` 전환 50/51건 등 백엔드 정리 묶음." }
+  ]
+}
+</script>
+
+<script>
+  (function () {
+    'use strict';
+
+    var DATA = JSON.parse(document.getElementById('data').textContent);
+    var TASKS = DATA.tasks;
+    var PRIOS = DATA.prios;
+    var GROUPS = DATA.groups;
+    var HISTORY = DATA.history;
+    var STATES = DATA.states;
+    var ORDER = ['high', 'medium', 'low', 'ext'];
+    var ST_ORDER = ['done', 'resolved', 'accepted', 'discarded'];
+
+    // 같은 번호가 활성 목록에도 있는 경우. reused=다른 과제, carried=같은 과제가 진행 중.
+    // 자동 대조로는 둘을 구분할 수 없어 명시적으로 관리한다.
+    var ID_NOTES = DATA.idNotes;
+
+    // ── 마크다운-라이트 렌더 (이스케이프 후 `code`·**strong**만 해석)
+    function esc(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    function md(s) {
+      return esc(s)
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    }
+
+    // ── 집계
+    var byPrio = {};
+    ORDER.forEach(function (p) { byPrio[p] = 0; });
+    TASKS.forEach(function (t) { byPrio[t.p]++; });
+
+    document.getElementById('t-total').textContent = TASKS.length;
+    document.getElementById('t-high').textContent = byPrio.high;
+    document.getElementById('t-ext').textContent = byPrio.ext;
+    document.getElementById('t-clear').textContent = DATA.cleared.length;
+
+    // ── 심각도 누적 막대
+    var meter = document.getElementById('meter');
+    var legend = document.getElementById('meter-legend');
+    ORDER.forEach(function (p) {
+      var seg = document.createElement('span');
+      seg.style.width = (byPrio[p] / TASKS.length * 100).toFixed(2) + '%';
+      seg.style.background = 'var(' + PRIOS[p]['var'] + ')';
+      meter.appendChild(seg);
+
+      var row = document.createElement('div');
+      row.innerHTML = '<i style="background:var(' + PRIOS[p]['var'] + ')"></i>' +
+        PRIOS[p].ko + ' <b>' + byPrio[p] + '</b>';
+      legend.appendChild(row);
+    });
+
+    // ── 유형 분포
+    var byType = {};
+    TASKS.forEach(function (t) { byType[t.type] = (byType[t.type] || 0) + 1; });
+    var typeRows = Object.keys(byType).sort(function (a, b) { return byType[b] - byType[a]; });
+    var maxType = byType[typeRows[0]];
+    var bars = document.getElementById('typebars');
+    typeRows.forEach(function (k) {
+      var row = document.createElement('div');
+      row.className = 'bar-row';
+      row.innerHTML =
+        '<span class="lbl">' + esc(k) + '</span>' +
+        '<span class="bar-track"><span class="bar-fill" style="width:' +
+          (byType[k] / maxType * 100).toFixed(1) + '%"></span></span>' +
+        '<span class="val">' + byType[k] + '</span>';
+      bars.appendChild(row);
+    });
+
+    // ── 우선순위 필터 칩
+    var active = {};
+    var chipBox = document.getElementById('prio-chips');
+    ORDER.forEach(function (p) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip';
+      b.setAttribute('aria-pressed', 'false');
+      b.dataset.p = p;
+      b.innerHTML = '<span class="dot" style="background:var(' + PRIOS[p]['var'] + ')"></span>' +
+        PRIOS[p].label + ' <span class="ct">' + byPrio[p] + '</span>';
+      b.addEventListener('click', function () {
+        if (active[p]) { delete active[p]; } else { active[p] = true; }
+        b.setAttribute('aria-pressed', active[p] ? 'true' : 'false');
+        render();
+      });
+      chipBox.appendChild(b);
+    });
+
+    // ── 원장 렌더
+    var ledger = document.getElementById('ledger');
+    var qEl = document.getElementById('q');
+    var countEl = document.getElementById('count-live');
+    var expandAll = false;
+
+    /** 빈 결과 안내. hint가 있으면 반대편 탭으로 넘어가는 버튼을 함께 준다. */
+    function emptyState(msg, hint, jumpTo) {
+      var box = document.createElement('div');
+      box.className = 'empty-state';
+      box.appendChild(Object.assign(document.createElement('p'), { textContent: msg }));
+      if (hint) {
+        box.appendChild(Object.assign(document.createElement('p'), { className: 'hint', textContent: hint }));
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'ctl-btn';
+        btn.textContent = jumpTo === 'history' ? '완료 이력에서 보기' : '활성 과제에서 보기';
+        btn.addEventListener('click', function () { setView(jumpTo); });
+        box.appendChild(btn);
+      }
+      return box;
+    }
+
+    function matches(t, q) {
+      if (Object.keys(active).length && !active[t.p]) return false;
+      if (!q) return true;
+      var hay = (t.id + ' ' + t.title + ' ' + t.sum + ' ' + t.detail + ' ' + t.type + ' ' +
+                 t.refs.join(' ')).toLowerCase();
+      return hay.indexOf(q) !== -1;
+    }
+
+    function taskNode(t) {
+      var d = document.createElement('details');
+      d.className = 'task';
+      if (expandAll) d.open = true;
+
+      var refsHtml = t.refs.length
+        ? '<div class="refs">' + t.refs.map(function (r) {
+            return '<code>' + esc(r) + '</code>';
+          }).join('') + '</div>'
+        : '';
+
+      d.innerHTML =
+        '<summary>' +
+          '<span class="stripe" style="background:var(' + PRIOS[t.p]['var'] + ')"></span>' +
+          '<span class="tid">' + t.id + '</span>' +
+          '<span class="pill" style="background:var(' + PRIOS[t.p]['var'] + '-wash);color:var(' +
+            PRIOS[t.p]['var'] + ')">' + PRIOS[t.p].label + '</span>' +
+          '<span class="ttitle">' +
+            '<span class="h">' + esc(t.title) + '</span>' +
+            '<span class="meta">' +
+              '<span class="s">' + esc(t.sum) + '</span>' +
+              '<span class="ttype">' + esc(t.type) + '</span>' +
+            '</span>' +
+          '</span>' +
+          '<span class="chev">▸</span>' +
+        '</summary>' +
+        '<div class="tbody">' +
+          '<span class="label">근거 / 조건</span>' +
+          '<p>' + md(t.detail) + '</p>' +
+          refsHtml +
+        '</div>';
+      return d;
+    }
+
+    function render() {
+      var q = qEl.value.trim().toLowerCase();
+      ledger.textContent = '';
+      var shown = 0;
+
+      GROUPS.forEach(function (g) {
+        var items = TASKS.filter(function (t) { return t.g === g.key && matches(t, q); });
+        if (!items.length) return;
+        shown += items.length;
+
+        var sec = document.createElement('section');
+        sec.className = 'group';
+        var head = document.createElement('div');
+        head.className = 'group-head';
+        head.innerHTML = '<h2>' + esc(g.name) + '</h2>' +
+          '<span class="gc">' + items.length + '건</span>' +
+          '<span class="gnote">' + esc(g.note) + '</span>';
+        sec.appendChild(head);
+
+        items.sort(function (a, b) { return ORDER.indexOf(a.p) - ORDER.indexOf(b.p); });
+        items.forEach(function (t) { sec.appendChild(taskNode(t)); });
+        ledger.appendChild(sec);
+      });
+
+      if (!shown) {
+        // 완료된 ID를 활성 탭에서 찾는 경우가 흔하므로 반대편 탭의 결과를 안내한다
+        var inHistory = q ? HISTORY.filter(function (h) {
+          return (h.d + ' ' + h.t + ' ' + h.s + ' ' + h.ids.join(' ')).toLowerCase().indexOf(q) !== -1;
+        }).length : 0;
+        ledger.appendChild(emptyState(
+          '조건에 맞는 활성 과제가 없습니다.',
+          inHistory ? '완료 이력에는 ' + inHistory + '건 있습니다 — 이미 끝난 과제일 수 있습니다.' : null,
+          inHistory ? 'history' : null
+        ));
+      }
+
+      countEl.textContent = shown + ' / ' + TASKS.length + '건';
+    }
+
+    qEl.addEventListener('input', function () {
+      if (view === 'active') { render(); } else { renderHistory(); }
+    });
+
+    var toggleBtn = document.getElementById('toggle-all');
+    toggleBtn.addEventListener('click', function () {
+      expandAll = !expandAll;
+      toggleBtn.textContent = expandAll ? '전체 접기' : '전체 펼치기';
+      toggleBtn.setAttribute('aria-expanded', expandAll ? 'true' : 'false');
+      render();
+    });
+
+    // ── 완료 이력 타임라인
+    var stActive = {};
+    var stChipBox = document.getElementById('state-chips');
+    var byState = {};
+    ST_ORDER.forEach(function (s) { byState[s] = 0; });
+    HISTORY.forEach(function (h) { byState[h.st]++; });
+
+    ST_ORDER.forEach(function (s) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip';
+      b.setAttribute('aria-pressed', 'false');
+      b.innerHTML = '<span class="dot" style="background:var(' + STATES[s]['var'] + ')"></span>' +
+        STATES[s].label + ' <span class="ct">' + byState[s] + '</span>';
+      b.addEventListener('click', function () {
+        if (stActive[s]) { delete stActive[s]; } else { stActive[s] = true; }
+        b.setAttribute('aria-pressed', stActive[s] ? 'true' : 'false');
+        renderHistory();
+      });
+      stChipBox.appendChild(b);
+    });
+
+    var timeline = document.getElementById('timeline');
+
+    function matchesH(h, q) {
+      if (Object.keys(stActive).length && !stActive[h.st]) return false;
+      if (!q) return true;
+      var hay = (h.d + ' ' + h.t + ' ' + h.s + ' ' + h.ids.join(' ')).toLowerCase();
+      return hay.indexOf(q) !== -1;
+    }
+
+    function renderHistory() {
+      var q = qEl.value.trim().toLowerCase();
+      timeline.textContent = '';
+      var items = HISTORY.filter(function (h) { return matchesH(h, q); });
+
+      var lastMonth = '';
+      items.forEach(function (h) {
+        var month = h.d.slice(0, 7);
+        if (month !== lastMonth) {
+          lastMonth = month;
+          var cnt = items.filter(function (x) { return x.d.slice(0, 7) === month; }).length;
+          var mh = document.createElement('div');
+          mh.className = 'tl-month';
+          mh.innerHTML = '<h2>' + month.replace('-', '년 ') + '월</h2>' +
+            '<span class="gc">' + cnt + '건</span>';
+          timeline.appendChild(mh);
+        }
+
+        var st = STATES[h.st];
+        var idsHtml = h.ids.length
+          ? '<div class="tl-ids">' + h.ids.map(function (id) {
+              var n = ID_NOTES[id];
+              if (!n) return '<span class="idchip">' + esc(id) + '</span>';
+              return '<span class="idchip ' + n.kind + '" title="' + esc(n.note) + '">' +
+                esc(id) + (n.kind === 'reused' ? ' ⚠' : ' ↻') + '</span>';
+            }).join('') + '</div>'
+          : '';
+
+        var el = document.createElement('article');
+        el.className = 'tl-item';
+        el.innerHTML =
+          '<div class="tl-date">' + h.d + '</div>' +
+          '<div>' +
+            '<div class="tl-head">' +
+              '<h3>' + esc(h.t) + '</h3>' +
+              '<span class="tl-state" style="background:var(--surface-2);color:var(' + st['var'] + ')">' +
+                st.glyph + ' ' + st.label + '</span>' +
+            '</div>' +
+            '<p>' + md(h.s) + '</p>' +
+            idsHtml +
+          '</div>';
+        timeline.appendChild(el);
+      });
+
+      if (!items.length) {
+        var inActive = q ? TASKS.filter(function (t) {
+          return (t.id + ' ' + t.title + ' ' + t.sum + ' ' + t.detail + ' ' + t.type + ' ' +
+                  t.refs.join(' ')).toLowerCase().indexOf(q) !== -1;
+        }).length : 0;
+        timeline.appendChild(emptyState(
+          '조건에 맞는 완료 이력이 없습니다.',
+          inActive ? '활성 과제에는 ' + inActive + '건 있습니다 — 아직 진행 중인 과제입니다.' : null,
+          inActive ? 'active' : null
+        ));
+      }
+
+      countEl.textContent = items.length + ' / ' + HISTORY.length + '건';
+    }
+
+    // ── 뷰 전환
+    var view = 'active';
+    var tabActive = document.getElementById('tab-active');
+    var tabHistory = document.getElementById('tab-history');
+    var historyView = document.getElementById('history-view');
+    var clearedSection = document.getElementById('cleared-section');
+    var prioChipBox = document.getElementById('prio-chips');
+
+    document.getElementById('tab-n-active').textContent = TASKS.length;
+    document.getElementById('tab-n-history').textContent = HISTORY.length;
+
+    function setView(next) {
+      view = next;
+      var isActive = view === 'active';
+
+      tabActive.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      tabHistory.setAttribute('aria-selected', isActive ? 'false' : 'true');
+      ledger.hidden = !isActive;
+      clearedSection.hidden = !isActive;
+      historyView.hidden = isActive;
+      prioChipBox.hidden = !isActive;
+      stChipBox.hidden = isActive;
+      toggleBtn.hidden = !isActive;
+      qEl.placeholder = isActive
+        ? 'ID · 제목 · 본문 검색 (예: SEC-04, 커버리지, i18n)'
+        : '완료 이력 검색 (예: SEC-04, Clean Code, 프로젝션)';
+
+      if (isActive) { render(); } else { renderHistory(); }
+    }
+
+    tabActive.addEventListener('click', function () { setView('active'); });
+    tabHistory.addEventListener('click', function () { setView('history'); });
+
+    // ── 정리 완료 영역
+    var cl = document.getElementById('cleared');
+    DATA.cleared.forEach(function (name) {
+      var s = document.createElement('span');
+      s.textContent = name;
+      cl.appendChild(s);
+    });
+
+    setView('active');
+  })();
+</script>
