@@ -16,6 +16,20 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-17 DDL 불필요 잔여과제 배치 2 (5건)
+
+> 앞 배치와 같은 기준(DDL 변경 불필요 + 업무 판단 선행 없음)으로 골랐다. 세 건은 **재발 구조를 닫는 게이트 추가**가 핵심이라 조치와 함께 자동 검증을 남겼다.
+
+| 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✅ Done | BE-35 | `ProjectService`의 품목 CUD 블록을 `ProjectItemSynchronizer`로 분리했다(741 → **550줄**, 800줄 상한까지 250줄 확보). 등록 경로의 품목 저장 루프, 수정 경로의 CUD 병합, `buildBitemm`·`toItdYm`·`clampMpl`이 함께 옮겨 갔고 채번→환율 표준 조회→외화 재계산→저장 순서는 그대로 보존했다. **Spring 빈으로 만들지 않고 `ProjectService`가 호출 시점에 직접 생성한다** — 빈으로 주입하면 `@InjectMocks`가 mock으로 대체해 품목 동기화 검증이 조용히 무력화되기 때문이다(같은 이유로 `ProjectItemChangeDetector`·`ProjectResponseMapper`도 정적 협력자다). TASK 항목이 경고한 `applyAmountSnapshot`·`sumActiveItems` 경로는 `ProjectService`에 그대로 남겨 `ProjectServiceTest`의 dfrAmt 검증 7건이 실제 코드를 계속 탄다. | it_backend `f119b7c3` | `./gradlew test` **3426건 통과·실패 0·스킵 1**. 테스트 코드는 한 줄도 고치지 않았다 — 기존 품목 동기화 단정이 그대로 통과하는 것이 behavior-preserving의 증거다 |
+| ✅ Done | BE-38 | 진단 코드를 `MigrationDiagnosticCode` enum(20개)으로 모으고 `MigrationDiagnostics.blocker`·`warning`이 그 타입만 받도록 좁혔다. 호출부 27곳의 문자열 리터럴을 상수로 바꿨으므로 **목록에 없는 코드는 컴파일되지 않는다**. 여기에 `MigrationDiagnosticCodeContractTest`가 enum 집합과 `MigrationDto.CellDiagnostic.code`의 `allowableValues`가 정확히 같은지 리플렉션으로 대조한다(어느 한쪽만 늘어도 실패). MIG-23에서 `CREATE_NOT_SUPPORTED`가 발행되면서도 목록에서 빠졌던 드리프트가 이 두 겹으로 닫힌다. | it_backend `deca8691` | 대조 테스트가 현재 20 = 20으로 통과. `migration.*` 전체 통과 |
+| ✅ Done | BE-39 | `TranslationAdminController`의 `@PathVariable(name = "target")`·`@RequestParam(name = "targetKey")`를 명시했다. 재발 방지로 `RequestParameterNamingTest`를 추가해 `src/main/java` 전수에서 이름 없는 `@RequestParam`·`@PathVariable`·`@RequestHeader`를 잡는다(축약형 `("eno")`와 `name =`·`value =` 모두 허용). | it_backend `46806b74` | 전수 스캔 위반 **0건**. 빌드가 `-parameters`를 이미 주므로 스펙 값은 종전과 같고, 커밋된 `api.d.ts`의 `targetKey`와 일치해 프론트 영향 없음 |
+| ✅ Done | REPO-02 | `CLAUDE.md` §2 트리에 실제 추적 중인 루트 구성을 채웠다 — `meta/`·`prds/`·`FP/`·`tools/`·`scripts/`·`sample/`·`.vscode/`·`versions.lock`에 역할을 한 줄씩 달고, 세 하위 저장소에는 `[별도 원격 저장소]` 표시를 붙였다. `REVIEW.md`·`TEST.md`가 반복 워크플로우 지시문이고 `AGENTS.md`가 포인터라는 점도 트리 아래 한 문장으로 남겼다. | (루트 문서 커밋) | `git ls-files` 루트 집계와 트리 항목 대조 |
+| ✅ Done | REPO-03 | `.gitignore`의 사멸 규칙 `everything-claude-code/`·`.bkit`을 제거했다. | (루트 문서 커밋) | 제거 후 `git status --porcelain`이 편집한 두 파일만 보고 — 새로 노출되는 파일이 없어 두 규칙이 실제로 죽어 있었음을 확인 |
+
+**남긴 관찰**: 없음. BE-36(`totRqmAmt` 이름 불일치, 소비처 10곳 이상 전수 조사 필요)·BE-37(커버리지 게이트 기존 위반 9건)은 이 배치의 기준(저비용·판단 불요)에 맞지 않아 `TASK.md`에 남겼다.
+
 ### ✅ 2026-08-17 DDL 불필요 잔여과제 배치 (9건)
 
 > DDL 변경이 필요 없고 업무 판단이 선행되지 않는 과제를 골라 TDD로 처리했다. 각 과제는 개별 커밋이며, 두 저장소에 걸친 과제는 백엔드 계약 커밋을 먼저 만들고 프론트가 뒤따른다.

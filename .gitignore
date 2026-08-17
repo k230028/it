@@ -3,11 +3,9 @@ it_backend
 it_database
 
 .obsidian
-everything-claude-code/
 .worktrees/
 .playwright-mcp/
 .superpowers/
-.bkit
 .claude
 # 로컬 에이전트 하네스 설정 (.claude와 같은 성격, 개발자 환경마다 다름)
 .agents/

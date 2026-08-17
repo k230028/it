@@ -13,12 +13,23 @@ AI 어시스턴트는 코드 생성 시 모든 주석을 한글로 작성합니�
 
 ```
 it/
-├── it_frontend/        ← Nuxt 4 (UI). 상세는 it_frontend/CLAUDE.md
-├── it_backend/         ← Spring Boot (API). 상세는 it_backend/CLAUDE.md
-├── it_database/        ← DDL/시드/마이그레이션
-├── docs/               ← 문서, 리포트, Superpowers 산출물
-└── TASK.md             ← 미구현/기술부채/장기 과제
+├── it_frontend/        ← Nuxt 4 (UI). 상세는 it_frontend/CLAUDE.md         [별도 원격 저장소]
+├── it_backend/         ← Spring Boot (API). 상세는 it_backend/CLAUDE.md    [별도 원격 저장소]
+├── it_database/        ← DDL/시드/마이그레이션                             [별도 원격 저장소]
+├── docs/               ← 문서, 리포트, Superpowers 산출물, 일회성 지시문
+├── meta/               ← 메타 용어사전(엔티티·컬럼 명명 SoT), 코드·조직·테이블·시퀀스 목록
+├── prds/               ← 제품 요구사항 문서
+├── FP/                 ← 기능점수 산정 규칙·집계 스크립트·산출 CSV/리포트
+├── tools/              ← 일회성 분석 도구 (colname-align 등 Python 스크립트)
+├── scripts/            ← 루트 운영 스크립트 (versions.lock 갱신 등 PowerShell)
+├── sample/             ← 수기 엑셀 이관 검증용 실제 제출본 표본
+├── .vscode/            ← 공유 IDE 설정 (프로젝트 공통 함정 회피책 주석 포함, REPO-01 참조)
+├── versions.lock       ← 세 저장소의 호환 커밋 조합
+├── TASK.md             ← 미구현/기술부채/장기 과제 (완료분은 TASK_DONE.md)
+└── README.md           ← 개발 노트
 ```
+
+루트 문서 중 `REVIEW.md`(문서 현행화)와 `TEST.md`(테스트 작성·개선)는 반복 실행하는 워크플로우 지시문이고, `AGENTS.md`는 이 문서를 가리키는 포인터입니다.
 
 ### 4-repo 토폴로지
 
