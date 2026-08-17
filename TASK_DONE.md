@@ -1,6 +1,6 @@
 # ✅ IT Portal 완료·종료 내역 (Archive)
 
-> 🗓️ **기준일:** 2026-08-09
+> 🗓️ **기준일:** 2026-08-17
 > 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️)·폐기(⛔) 항목을 보관합니다.
 
 ### 🔑 범례 (Legend)
@@ -15,6 +15,24 @@
 ---
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
+
+### ✅ 2026-08-17 DDL 불필요 잔여과제 배치 (9건)
+
+> DDL 변경이 필요 없고 업무 판단이 선행되지 않는 과제를 골라 TDD로 처리했다. 각 과제는 개별 커밋이며, 두 저장소에 걸친 과제는 백엔드 계약 커밋을 먼저 만들고 프론트가 뒤따른다.
+
+| 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✅ Done | MIG-19 | 전제가 폐지된 `@Disabled` 테스트(`부문계획_조정이_품목을_교체한다`)와 그 유일한 소비처였던 `plan.json` 픽스처를 삭제했다. Task 9 재설계가 품목 버전 교체를 폐지하고 경로(`ProjectService.replaceItemsForMigration`)까지 지웠으므로 다시 켤 수 없는 테스트다. 대체 동작은 `하반기_조정_후에도_요청_품목이_활성으로_남는다`가 고정한다. | it_backend `bdf0672d` | `./gradlew compileTestJava` 통과 |
+| ✅ Done | MIG-20 | `requireSupported`가 dry-run·commit 양쪽에서 같은 `SheetKind`의 중복 업로드를 거부한다. 시트별 처리 상태(`createNewRows`·`matchedPkByRow`·`createdPkByRow`)가 `SheetKind`를 키로 쓰므로 중복 업로드는 두 페이로드의 엑셀 행 번호를 같은 키 아래 섞었다. 판정은 종류·연도 검사 뒤에 둬 기존 연도 혼재 메시지를 보존한다. | it_backend `b67ec0bf` | RED 2건(예외 미발생) 확인 후 GREEN. `migration.*` 31→33건 통과 |
+| ✅ Done | MIG-23 | 일반관리비 목표액이 진단 없이 미반영되던 두 경로에 WARNING을 붙였다. ① `CREATE_NEW` 행에 일반관리비 열이 채워진 경우(`GENERAL_AMOUNT_NOT_CREATABLE`) — 신규 품목은 자본 3열에서만 생성돼 담을 품목이 없다. ② 열이 비었고 그 비목에 기존 편성률이 하나도 없어 `DEFAULT_DUP_RT = 100`이 실리는 경우(`GENERAL_RATE_DEFAULTED`) — 판정 단위는 품목이 아니라 **비목코드**다(`itemRates`가 비목 칸에 담고, 같은 비목의 품목 하나라도 기존값이 있으면 보존되므로). 부수 수정: 서비스가 이미 발행하던 `CREATE_NOT_SUPPORTED`가 `allowableValues`에 빠져 프론트 생성 타입 union에서 누락돼 있었다(→ BE-38로 등록). | it_backend `157ae6f7` | RED(진단 미발생) 확인 후 GREEN. 위임예산·열이 채워진 경우·기존 편성률이 있는 경우에 경고가 나지 않음을 음성 케이스 4건으로 고정 |
+| ✅ Done | MIG-06 | 조용히 건너뛰던 두 경로의 건수를 `CommitResponse`에 노출하고 반영 결과 화면에 경고색으로 표시한다. `skippedRateCount`(배분됐지만 그 PK가 연도 스냅샷에 없어 `itemRates`에 실리지 못한 원장), `skippedPlanCount`(부문계획 조정 대상 사업 미발견). `createAdjustmentPlan`이 문서번호와 건수를 함께 돌려주도록 `AdjustmentPlan` 레코드로 감쌌다. | it_backend `01cc1da7`, it_frontend `36f42f0` | RED(필드 부재) → GREEN. 0건일 때 0을 내는 음성 케이스 포함. `api.d.ts` 재생성 후 `codegen:check` 드리프트 없음 |
+| ✅ Done | MIG-04 | 위임예산 부점 그룹을 표기가 아니라 **해석된 조직코드**로 묶는다. 종전 조치(`6fafbcba`)는 사업명이 `2026년 0910 위임예산(경상)`이 되는 표면 증상만 닫았고, `resolveOrg`의 부분 일치 단계가 엑셀 `런던`을 정식명 `런던지점`으로 확정하는 경우엔 보정 행(정식명)과 형제 행(엑셀 표기)의 그룹키가 갈려 한 부점이 두 사업으로 쪼개졌다. 두 그룹 모두 `svnDpmC`가 같은 코드로 해석되므로 BLOCKER도 나지 않았다. 사업명 표시명과 주관부서는 그룹 안 첫 행 값을 써 기존 출력을 보존한다. | it_backend `bff602f9` | 정식명≠엑셀 표기 픽스처로 RED(사업 2건) 확인 후 GREEN. 기존 12건 유지 |
+| ✅ Done | MIG-02 | 정규 컬럼 계약을 **양방향**으로 자동 대조한다. 양쪽의 리터럴 고정 테스트는 각자의 목록만 지켜 "두 목록이 서로 다르게 바뀐" 상태를 통과시켰고, 그때 dry-run은 진단 없이 빈 셀을 읽는다. 형제 디렉터리의 상대 파일을 읽어 시트별 목록과 순서까지 대조하며, 상대 저장소가 없으면 건너뛴다(그때는 반대편 테스트가 게이트). 파싱 무력화로 대조가 조용히 통과하지 않도록 "네 시트 모두에서 실제로 뽑아냈는지"를 따로 단정한다. | it_backend `247c4ff9`, it_frontend `cadb857` | 컬럼 하나를 일부러 어긋내 **두 저장소 테스트가 모두 실패**하는 것을 확인한 뒤 원복 |
+| ✅ Done | MIG-21 | `MigrationPreviewTable.candidatesOf`가 후보를 가진 첫 진단에서 멈추던 것을 진단 전체 합산으로 바꿨다. 같은 코드는 한 번만 남긴다 — 서로 다른 진단이 같은 후보를 함께 제시하면(미해석 + 모호) 선택지가 중복된다. | it_frontend `100708c` | 한 셀에 후보 있는 진단 2건을 걸어 RED(후보 1개) 확인 후 GREEN. mount 기반 컴포넌트 테스트 15건 통과 |
+| ✅ Done | FE-38 | 값과 표시명이 결합된 세 형태를 분리했다. ① `IT_PTL_STS_TIMELINE[].labelKey` 신설 — 화면은 키만 `t()`에 넘기고, 소비처가 갖고 있던 인덱스 평행 배열(`STAGE_MESSAGE_KEYS`)과 앞자리 맵(`PROJECT_STATUS_BAND_KEYS`)을 삭제했다(둘 다 타임라인 순서가 바뀌면 조용히 어긋났다). 단일 출처는 `getProjectStatusBandLabelKey`. ② `getApprovalAuthorityBasis().label`용 `APPROVAL_BASIS_LABEL_KEY` 맵 — 소요예산 화면의 `label === '자본예산'` 리터럴 비교를 없애고, 사업 상세의 한글 템플릿(`… 기준으로 결정`)을 `common.approvalBasis.text` 키로 옮겼다. ③ `StageProgress`는 유일 소비처가 클래스·아이콘 분기에만 쓰고 텍스트로 렌더하지 않음을 확인해 키를 두지 않고 타입 주석에 명시했다. 부수: `labelKey` 추가로 `common.ts`가 800줄을 넘어 `app/utils/projectTimeline.ts`로 책임 분리(844 → 649 + 206). | it_frontend `2f55333` | RED 9건 확인 후 GREEN. `npm run check` 통과, `npm test` 3325건 통과(286파일) |
+| ✅ Done | MIG-15 | `/budget/work` 편성률 입력이 소수를 받는다. 원인이 둘이었다 — 백엔드 2버킷(`assetDupRt`·`costDupRt`)이 `Integer`라 Jackson이 `70.5`를 조용히 `70`으로 잘랐고, 프론트 InputNumber는 `max-fraction-digits`가 없으면 **소수 구분자 입력 자체를 무시**한다(`insert()`의 `decimalCharIndex === -1 && this.maxFractionDigits` 분기). 계약을 `BigDecimal`로 넓히고 입력에 `max-fraction-digits=5`(ASG_RT 스케일)·`min-fraction-digits=0`을 지정했다. | it_backend `d1e97915`, it_frontend `a8b58d8` | RED(컴파일 거부 → 소수 미반영) 확인 후 GREEN. `./gradlew test` 전체 통과, `codegen:check` 드리프트 없음 |
+
+**남긴 관찰 (신규 등록)**: MIG-26(`/budget/work`가 기존 편성률을 조회하지 않고 DUP 기본값으로 덮음 — 화면 성격 판단 선행), BE-38(진단 코드 `allowableValues` 드리프트를 막을 장치 없음), BE-39(`TranslationAdminController` 파라미터명 미지정으로 스펙이 흔들림), FE-41 보강(감사기가 로직 값으로 남겨야 하는 한글까지 셈), FE-42(기준선 분할 규약이 미커밋 파일에만 있음).
 
 ### ✅ 2026-08-16 담당자 이름 표시 보정 (이력 추적용 기록)
 
