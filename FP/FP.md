@@ -138,7 +138,8 @@ node FP/generate-report.mjs --date=2026-07-17  # 특정 날짜로 생성
 
 | 파일 | 역할 |
 |------|------|
-| `FP/generate-report.mjs` | 진입점. **보정계수·FP당 단가·이윤율(`CONFIG`)** 을 여기서 교체 |
+| `FP/generate-report.mjs` | 리포트 진입점 |
+| `FP/lib/config.mjs` | **보정계수·FP당 단가·이윤율(`CONFIG`)** 과 금액 산식. 리포트·아티팩트가 공유하므로 단가 교체는 여기 한 곳만 고칩니다 |
 | `FP/lib/fp-rules.mjs` | Step 2·3 복잡도 매트릭스와 점수표 |
 | `FP/lib/csv.mjs` | `fp-estimate-YYYY-MM-DD.csv` 파싱·검증 |
 | `FP/lib/scan.mjs` | 테이블·화면·API 실측 |
@@ -157,6 +158,33 @@ node FP/generate-report.mjs --date=2026-07-17  # 특정 날짜로 생성
   차이를 리포트·콘솔에 고아 목록으로 노출합니다. 덤프가 없으면 엔티티 기준으로 폴백합니다.
   덤프가 낡으면 `unmapped` 경고가 뜨므로 스키마 변경 후에는 덤프를 갱신하십시오.
 - 매트릭스를 수정할 때는 본 문서(Step 2·3)와 `lib/fp-rules.mjs`를 **함께** 고칩니다.
+
+### Step 7: 보고용 아티팩트 생성 (선택)
+
+경영진·발주처 보고가 필요할 때 실행합니다. Step 6 리포트가 "산정이 정확한가"를 검증하는
+실무 문서라면, 아티팩트는 "규모와 금액이 얼마인가"에 결론부터 답하는 보고 문서입니다.
+
+```bash
+node FP/build-artifact.mjs                    # 가장 최신 산정본 기준
+node FP/build-artifact.mjs --date=2026-08-09  # 특정 산정본 기준
+```
+
+- **입력**: `FP/fp-estimate-*.csv` 전체(추이용) + 지정 날짜 CSV(본문용) + 코드베이스 실측
+- **출력**: `FP/artifact/fp-artifact-YYYY-MM-DD.html`
+- 산정 로직을 새로 만들지 않고 `lib/`의 파서·집계기·실측기를 그대로 재사용하므로,
+  같은 산정본이면 리포트와 아티팩트의 수치가 항상 일치합니다.
+- 279행 전수 명세는 담지 않습니다. 그 역할은 Step 6 리포트가 맡습니다.
+- 물리 규모(테이블·화면·엔드포인트)는 **생성 시점** 코드베이스 실측이라 산정 기준일의
+  스냅샷과 다를 수 있으며, 아티팩트 본문에 그 사실을 명시합니다.
+- 생성 후 Claude Code의 Artifact 도구로 게시하면 공유 가능한 웹 페이지가 됩니다.
+
+| 파일 | 역할 |
+|------|------|
+| `FP/build-artifact.mjs` | 진입점. 산정본 선택·추이 조립·출력 |
+| `FP/lib/artifact-render.mjs` | 보고 페이지 레이아웃(HTML/CSS/인라인 SVG 차트) |
+
+⚠️ 차트는 외부 라이브러리 없이 인라인 SVG로 그립니다. 아티팩트 CSP가 CDN·외부 폰트·
+원격 이미지를 차단하므로 `<script src>`나 웹폰트 URL을 추가하면 조용히 깨집니다.
 
 ---
 

@@ -1,0 +1,938 @@
+<title>정보화 포탈 기능점수 산정</title>
+<style>
+  :root {
+    color-scheme: light;
+    --plane: #f2f5f9;
+    --surface: #ffffff;
+    --sunk: #f7f9fc;
+    --rule: #dde3ec;
+    --rule-strong: #c3ccda;
+    --ink: #131922;
+    --ink-2: #4a5566;
+    --ink-3: #7d8798;
+    --accent: #1b4f9c;
+    --accent-bar: #2a78d6;
+    --accent-area: rgba(42, 120, 214, 0.10);
+    --seal: #b0392c;
+    --seal-bg: #fdf3f1;
+    --seal-rule: #edc9c2;
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4;
+    --o1: #86b6ef; --o2: #2a78d6; --o3: #104281;
+    --grid: #e6ebf2;
+    --shadow: 0 1px 2px rgba(19, 25, 34, .05), 0 8px 24px -18px rgba(19, 25, 34, .35);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --plane: #0b0e13;
+      --surface: #14181f;
+      --sunk: #171c24;
+      --rule: #242c37;
+      --rule-strong: #333d4b;
+      --ink: #eef2f7;
+      --ink-2: #aab5c4;
+      --ink-3: #7e8899;
+      --accent: #6aa6ec;
+      --accent-bar: #3987e5;
+      --accent-area: rgba(57, 135, 229, 0.14);
+      --seal: #e08072;
+      --seal-bg: #23181a;
+      --seal-rule: #4a2b28;
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
+      --o1: #9ec5f4; --o2: #3987e5; --o3: #184f95;
+      --grid: #212934;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 8px 24px -18px rgba(0, 0, 0, .9);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --plane: #0b0e13;
+    --surface: #14181f;
+    --sunk: #171c24;
+    --rule: #242c37;
+    --rule-strong: #333d4b;
+    --ink: #eef2f7;
+    --ink-2: #aab5c4;
+    --ink-3: #7e8899;
+    --accent: #6aa6ec;
+    --accent-bar: #3987e5;
+    --accent-area: rgba(57, 135, 229, 0.14);
+    --seal: #e08072;
+    --seal-bg: #23181a;
+    --seal-rule: #4a2b28;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
+    --o1: #9ec5f4; --o2: #3987e5; --o3: #184f95;
+    --grid: #212934;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .5), 0 8px 24px -18px rgba(0, 0, 0, .9);
+  }
+
+  * { box-sizing: border-box; }
+
+  /* 한글 본문이라 웹폰트를 인라인하기엔 용량이 과해, 한글을 온전히 지원하는
+     시스템 스택으로 고정하고 위계는 크기·굵기·자간으로 만듭니다. */
+  body {
+    margin: 0;
+    background: var(--plane);
+    color: var(--ink);
+    font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo",
+                 "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    word-break: keep-all;
+  }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px 96px; }
+
+  /* 계기 눈금 같은 유틸리티 목소리 — 라벨·수치 축에 씁니다. */
+  .mono {
+    font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "SF Mono", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── 머리말 ── */
+  .masthead { padding: 56px 0 28px; border-bottom: 2px solid var(--ink); }
+  .eyebrow {
+    font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "SF Mono", Consolas, monospace;
+    font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-3); margin: 0 0 14px;
+  }
+  h1 { font-size: 40px; line-height: 1.2; letter-spacing: -.02em; margin: 0 0 14px; text-wrap: balance; }
+  .dek { font-size: 17px; color: var(--ink-2); max-width: 62ch; margin: 0; }
+  .stamp {
+    display: flex; flex-wrap: wrap; gap: 8px 28px; margin-top: 22px;
+    font-size: 13px; color: var(--ink-3);
+  }
+  .stamp b { color: var(--ink-2); font-weight: 600; }
+
+  /* ── 섹션 ── */
+  section { padding-top: 56px; }
+  .sec-head { display: flex; align-items: baseline; gap: 16px; border-bottom: 1px solid var(--rule-strong); padding-bottom: 10px; margin-bottom: 26px; }
+  .sec-head h2 { font-size: 21px; letter-spacing: -.01em; margin: 0; flex: 1; }
+  .sec-step {
+    font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "SF Mono", Consolas, monospace;
+    font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3);
+    white-space: nowrap;
+  }
+  .lede { color: var(--ink-2); max-width: 68ch; margin: -8px 0 26px; }
+
+  /* ── 결론 ── */
+  .verdict {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+    background: var(--rule); border: 1px solid var(--rule);
+    border-radius: 10px; overflow: hidden; margin-top: 34px; box-shadow: var(--shadow);
+  }
+  .verdict > div { background: var(--surface); padding: 30px 30px 26px; }
+  .v-label {
+    font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "SF Mono", Consolas, monospace;
+    font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3);
+    margin-bottom: 10px;
+  }
+  .v-fig { font-size: 60px; line-height: 1; letter-spacing: -.035em; font-weight: 700; }
+  .v-fig .u { font-size: 24px; font-weight: 600; letter-spacing: -.01em; margin-left: 6px; color: var(--ink-2); }
+  .v-sub { margin-top: 12px; color: var(--ink-2); font-size: 14px; }
+  .v-exact {
+    margin-top: 4px; font-size: 13px; color: var(--ink-3);
+    font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "SF Mono", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .chain {
+    display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px;
+    margin-top: 20px; padding: 0; list-style: none;
+  }
+  .chain li {
+    flex: 1 1 150px; background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 8px; padding: 12px 14px;
+  }
+  .chain .op {
+    font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "SF Mono", Consolas, monospace;
+    font-size: 11px; letter-spacing: .08em; color: var(--ink-3); display: block; margin-bottom: 4px;
+  }
+  .chain .val { font-size: 18px; font-weight: 650; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+
+  /* ── 가정값 경고 ── */
+  .caution {
+    margin-top: 24px; background: var(--seal-bg); border: 1px solid var(--seal-rule);
+    border-left: 4px solid var(--seal); border-radius: 8px; padding: 18px 22px;
+  }
+  .caution h3 {
+    margin: 0 0 6px; font-size: 14.5px; color: var(--seal); letter-spacing: -.005em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .caution h3 svg { flex: none; }
+  .caution p { margin: 0; font-size: 14px; color: var(--ink-2); max-width: 74ch; }
+  .caution p + p { margin-top: 8px; }
+
+  /* ── 지표 타일 ── */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+  .tile { background: var(--surface); padding: 20px 20px 18px; }
+  .tile .t-l {
+    font-size: 12.5px; color: var(--ink-3); margin-bottom: 8px;
+  }
+  .tile .t-v { font-size: 30px; font-weight: 680; letter-spacing: -.025em; line-height: 1.1; }
+  .tile .t-v small { font-size: 14px; font-weight: 500; color: var(--ink-2); margin-left: 3px; letter-spacing: 0; }
+  .tile .t-s { margin-top: 7px; font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+
+  /* ── 도표 ── */
+  .figure { margin: 0; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 24px; }
+  .figure + .figure { margin-top: 16px; }
+  figcaption { font-size: 13.5px; color: var(--ink-2); margin-bottom: 18px; }
+  figcaption b { color: var(--ink); font-weight: 640; }
+  .chart-box { overflow-x: auto; }
+  .chart { display: block; width: 100%; min-width: 520px; height: auto; overflow: visible; }
+  .chart .mk { transition: opacity .12s ease; cursor: default; }
+  .chart:hover .mk { opacity: .45; }
+  .chart .mk:hover { opacity: 1; }
+  .seg-t {
+    font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "SF Mono", Consolas, monospace;
+    font-size: 12px; letter-spacing: .08em; fill: var(--ink-2); text-anchor: middle;
+  }
+  .seg-v { font-size: 18px; font-weight: 680; fill: var(--ink); text-anchor: middle; font-variant-numeric: tabular-nums; }
+  .seg-u { font-size: 12px; font-weight: 600; fill: var(--ink-3); }
+  .seg-p {
+    font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "SF Mono", Consolas, monospace;
+    font-size: 12px; fill: var(--ink-3); text-anchor: middle; font-variant-numeric: tabular-nums;
+  }
+  .row-l {
+    font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "SF Mono", Consolas, monospace;
+    font-size: 13px; fill: var(--ink-2);
+  }
+  .row-v { font-size: 13px; fill: var(--ink); font-variant-numeric: tabular-nums; font-weight: 600; }
+  .row-v2 { fill: var(--ink-3); font-weight: 500; }
+  .grid { stroke: var(--grid); stroke-width: 1; }
+  .tick, .xtick {
+    font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "SF Mono", Consolas, monospace;
+    font-size: 11.5px; fill: var(--ink-3); font-variant-numeric: tabular-nums;
+  }
+  .tick { text-anchor: end; }
+  .xtick { text-anchor: middle; }
+  .end-l { font-size: 14px; font-weight: 680; fill: var(--ink); font-variant-numeric: tabular-nums; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 20px; margin-top: 18px; font-size: 12.5px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; vertical-align: -1px; margin-right: 7px; }
+  .swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
+
+  /* ── 표 ── */
+  .t-box { overflow-x: auto; margin-top: 20px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 460px; }
+  caption { text-align: left; font-size: 12.5px; color: var(--ink-3); padding-bottom: 10px; }
+  th, td { padding: 9px 12px; border-bottom: 1px solid var(--rule); text-align: left; }
+  thead th {
+    font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "SF Mono", Consolas, monospace;
+    font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3);
+    font-weight: 500; border-bottom: 1px solid var(--rule-strong);
+  }
+  tbody th { font-weight: 600; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .sm { font-size: 12.5px; color: var(--ink-2); }
+  .mut { color: var(--ink-3); font-weight: 400; margin-left: 7px; font-size: 12.5px; }
+  .basis { color: var(--ink-2); font-size: 12.5px; }
+  tfoot th, tfoot td { border-bottom: none; border-top: 1px solid var(--rule-strong); font-weight: 680; padding-top: 11px; }
+  tr.now th, tr.now td { font-weight: 680; }
+  .up { color: var(--accent); }
+
+  details { margin-top: 18px; border-top: 1px solid var(--rule); padding-top: 14px; }
+  summary { cursor: pointer; font-size: 13.5px; color: var(--accent); font-weight: 600; }
+  summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+
+  /* ── 매트릭스 ── */
+  .mx { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .mx table { min-width: 0; font-size: 12.5px; }
+  .mx th, .mx td { padding: 7px 9px; }
+  .mx td { text-align: center; font-variant-numeric: tabular-nums; }
+  .mx caption { font-weight: 640; color: var(--ink); font-size: 13px; }
+  .cx-L { color: var(--ink-3); }
+  .cx-A { color: var(--ink-2); }
+  .cx-H { color: var(--ink); font-weight: 680; }
+
+  .assure {
+    margin-top: 20px; background: var(--sunk); border: 1px solid var(--rule);
+    border-radius: 8px; padding: 18px 22px; font-size: 13.5px; color: var(--ink-2);
+  }
+  .assure b { color: var(--ink); }
+  .assure ul { margin: 10px 0 0; padding-left: 18px; }
+  .assure li + li { margin-top: 5px; }
+
+  footer {
+    margin-top: 64px; padding-top: 22px; border-top: 1px solid var(--rule);
+    font-size: 12.5px; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 6px 24px;
+  }
+
+  #tip {
+    position: fixed; pointer-events: none; opacity: 0; transform: translate(-50%, -130%);
+    background: var(--ink); color: var(--plane); padding: 7px 11px; border-radius: 6px;
+    font-size: 12.5px; line-height: 1.45; white-space: nowrap; z-index: 50;
+    transition: opacity .1s ease; box-shadow: 0 4px 14px rgba(0,0,0,.22);
+  }
+  #tip b { display: block; font-weight: 640; }
+  #tip span {
+    font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "SF Mono", Consolas, monospace;
+    font-variant-numeric: tabular-nums; opacity: .82;
+  }
+
+  @media (max-width: 720px) {
+    .wrap { padding: 0 16px 72px; }
+    h1 { font-size: 30px; }
+    .verdict { grid-template-columns: 1fr; }
+    .v-fig { font-size: 46px; }
+    .masthead { padding-top: 36px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">소프트웨어사업 대가산정 가이드 · 정통법 Detailed FP</p>
+    <h1>IT 정보화 포탈 기능점수 산정 결과</h1>
+    <p class="dek">
+      정보화 예산·사업·인력 관리 포탈의 개발 규모를 정통법 기준으로 측정한 결과입니다.
+      단위프로세스 279건을 개별 산정해 합산했습니다.
+    </p>
+    <div class="stamp mono">
+      <span>산정 기준일 <b>2026-08-09</b></span>
+      <span>산정 회차 <b>5차</b></span>
+      <span>대상 <b>it_frontend · it_backend</b></span>
+    </div>
+  </header>
+
+  <section id="verdict">
+    <div class="sec-head">
+      <h2>결론</h2>
+      <span class="sec-step">Step 4–5 · UFP 합산과 보정</span>
+    </div>
+
+    <div class="verdict">
+      <div>
+        <div class="v-label">보정 후 기능점수</div>
+        <div class="v-fig">1,304.3<span class="u">FP</span></div>
+        <div class="v-sub">미조정 1,309 FP에 보정계수 ×0.9964 적용</div>
+      </div>
+      <div>
+        <div class="v-label">부가세 포함 최종 금액</div>
+        <div class="v-fig">10.3<span class="u">억 원</span></div>
+        <div class="v-exact">₩1,032,995,779</div>
+      </div>
+    </div>
+
+    <ol class="chain mono">
+      <li><span class="op">미조정 UFP</span><span class="val">1,309 FP</span></li>
+      <li><span class="op">× 보정계수 0.9964</span><span class="val">1,304.3 FP</span></li>
+      <li><span class="op">× 600,000원/FP</span><span class="val">7.8억 원</span></li>
+      <li><span class="op">+ 이윤 20%</span><span class="val">9.4억 원</span></li>
+      <li><span class="op">+ 부가세 10%</span><span class="val">10.3억 원</span></li>
+    </ol>
+
+    <div class="caution">
+      <h3>
+        <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M8 1.6 15 14H1L8 1.6Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M8 6.2v3.4M8 11.6v.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        보정계수와 FP 단가는 대표 가정값입니다
+      </h3>
+      <p>
+        위 금액은 아래 「보정계수」 표의 가정값과 FP당 600,000원 단가로 계산한 것입니다.
+        실제 제안·예산 산정 시에는 해당 연도 고시 「소프트웨어사업 대가산정 가이드」의
+        보정계수표와 FP당 단가로 교체해야 합니다.
+      </p>
+      <p>
+        <b>규모 수치(1,309 FP)는 가정값의 영향을 받지 않습니다.</b>
+        단가·계수가 바뀌어도 기능점수 자체는 그대로이며 금액만 재계산됩니다.
+      </p>
+    </div>
+  </section>
+
+  <section id="scale">
+    <div class="sec-head">
+      <h2>규모 요약</h2>
+      <span class="sec-step">Step 1 · 산정 범위</span>
+    </div>
+    <p class="lede">
+      기능점수는 산정 명세에서, 물리 규모는 소스코드·DDL에서 각각 측정했습니다.
+      물리 규모는 <b>이 페이지를 생성한 시점(2026-08-17)</b>의 코드베이스 기준이라
+      산정 기준일 2026-08-09의 스냅샷과는 다를 수 있습니다.
+    </p>
+    <div class="tiles">
+      <div class="tile">
+        <div class="t-l">미조정 기능점수</div>
+        <div class="t-v">1,309<small>FP</small></div>
+        <div class="t-s">데이터 328 + 트랜잭션 981</div>
+      </div>
+      <div class="tile">
+        <div class="t-l">단위프로세스</div>
+        <div class="t-v">279<small>건</small></div>
+        <div class="t-s">업무 도메인 19개</div>
+      </div>
+      <div class="tile">
+        <div class="t-l">물리 테이블</div>
+        <div class="t-v">88<small>개</small></div>
+        <div class="t-s">DDL 덤프 실측</div>
+      </div>
+      <div class="tile">
+        <div class="t-l">화면</div>
+        <div class="t-v">71<small>개</small></div>
+        <div class="t-s">Nuxt 라우트 · 컴포넌트 122</div>
+      </div>
+      <div class="tile">
+        <div class="t-l">API 엔드포인트</div>
+        <div class="t-v">251<small>개</small></div>
+        <div class="t-s">REST 컨트롤러 49개</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="types">
+    <div class="sec-head">
+      <h2>기능 유형별 구성</h2>
+      <span class="sec-step">Step 2–3 · 데이터·트랜잭션 기능</span>
+    </div>
+    <p class="lede">
+      전체 1,309 FP 중 데이터를 보관하는 기능이 328 FP(25.1%),
+      사용자가 실제로 수행하는 처리 기능이 981 FP(74.9%)입니다.
+      화면과 API에서 일어나는 처리가 규모의 대부분을 차지하는, 업무 트랜잭션 중심 시스템의 전형적인 분포입니다.
+    </p>
+
+    <figure class="figure">
+      <figcaption><b>유형별 기능점수 구성</b> — 전체 1,309 FP 대비 비중</figcaption>
+      <div class="chart-box"><svg viewBox="0 0 1000 128" class="chart" role="img"
+    aria-label="FP 유형별 구성 누적 막대. 총 1,309 FP.">
+    <path d="M4.0,30H240.9V76H4.0a4,4 0 0 1 -4,-4V34a4,4 0 0 1 4,-4Z" fill="var(--s1)" class="mk" data-label="ILF · 내부논리파일" data-value="318 FP · 37건 · 24.3%"/>
+    <path d="M242.9,30H248.6V76H242.9V30Z" fill="var(--s2)" class="mk" data-label="EIF · 외부인터페이스파일" data-value="10 FP · 2건 · 0.8%"/>
+    <path d="M250.6,30H638.9V76H250.6V30Z" fill="var(--s3)" class="mk" data-label="EI · 외부입력" data-value="511 FP · 136건 · 39.0%"/>
+    <path d="M640.9,30H766.5V76H640.9V30Z" fill="var(--s4)" class="mk" data-label="EO · 외부출력" data-value="167 FP · 31건 · 12.8%"/>
+    <path d="M768.5,30H994.0a4,4 0 0 1 4,4V72a4,4 0 0 1 -4,4H768.5V30Z" fill="var(--s5)" class="mk" data-label="EQ · 외부조회" data-value="303 FP · 73건 · 23.1%"/>
+    <text x="120.5" y="19" class="seg-t">ILF</text>
+    <text x="120.5" y="102" class="seg-v">318<tspan class="seg-u"> FP</tspan></text>
+    <text x="120.5" y="120" class="seg-p">24.3%</text>
+    <text x="444.8" y="19" class="seg-t">EI</text>
+    <text x="444.8" y="102" class="seg-v">511<tspan class="seg-u"> FP</tspan></text>
+    <text x="444.8" y="120" class="seg-p">39.0%</text>
+    <text x="703.7" y="19" class="seg-t">EO</text>
+    <text x="703.7" y="102" class="seg-v">167<tspan class="seg-u"> FP</tspan></text>
+    <text x="703.7" y="120" class="seg-p">12.8%</text>
+    <text x="883.3" y="19" class="seg-t">EQ</text>
+    <text x="883.3" y="102" class="seg-v">303<tspan class="seg-u"> FP</tspan></text>
+    <text x="883.3" y="120" class="seg-p">23.1%</text>
+  </svg></div>
+      <div class="legend">
+        <span><i class="swatch" style="background:var(--s1)"></i>ILF 내부논리파일 · 318 FP</span>
+        <span><i class="swatch" style="background:var(--s2)"></i>EIF 외부인터페이스파일 · 10 FP</span>
+        <span><i class="swatch" style="background:var(--s3)"></i>EI 외부입력 · 511 FP</span>
+        <span><i class="swatch" style="background:var(--s4)"></i>EO 외부출력 · 167 FP</span>
+        <span><i class="swatch" style="background:var(--s5)"></i>EQ 외부조회 · 303 FP</span>
+      </div>
+      <div class="t-box">
+        <table>
+          <caption>유형별 건수·점수·복잡도 분포</caption>
+          <thead>
+            <tr><th>유형</th><th class="num">건수</th><th class="num">FP</th><th class="num">비중</th><th class="num">단순 / 보통 / 복잡</th></tr>
+          </thead>
+          <tbody>
+<tr>
+      <th scope="row"><span class="dot" style="background:var(--s1)"></span>ILF
+        <span class="mut">내부논리파일</span></th>
+      <td class="num">37</td>
+      <td class="num">318</td>
+      <td class="num">24.3%</td>
+      <td class="num sm">24 / 9 / 4</td>
+    </tr>
+<tr>
+      <th scope="row"><span class="dot" style="background:var(--s2)"></span>EIF
+        <span class="mut">외부인터페이스파일</span></th>
+      <td class="num">2</td>
+      <td class="num">10</td>
+      <td class="num">0.8%</td>
+      <td class="num sm">2 / 0 / 0</td>
+    </tr>
+<tr>
+      <th scope="row"><span class="dot" style="background:var(--s3)"></span>EI
+        <span class="mut">외부입력</span></th>
+      <td class="num">136</td>
+      <td class="num">511</td>
+      <td class="num">39.0%</td>
+      <td class="num sm">85 / 25 / 26</td>
+    </tr>
+<tr>
+      <th scope="row"><span class="dot" style="background:var(--s4)"></span>EO
+        <span class="mut">외부출력</span></th>
+      <td class="num">31</td>
+      <td class="num">167</td>
+      <td class="num">12.8%</td>
+      <td class="num sm">6 / 16 / 9</td>
+    </tr>
+<tr>
+      <th scope="row"><span class="dot" style="background:var(--s5)"></span>EQ
+        <span class="mut">외부조회</span></th>
+      <td class="num">73</td>
+      <td class="num">303</td>
+      <td class="num">23.1%</td>
+      <td class="num sm">19 / 39 / 15</td>
+    </tr>
+          </tbody>
+          <tfoot>
+            <tr><th>합계</th><td class="num">279</td><td class="num">1,309</td><td class="num">100.0%</td><td class="num sm">136 / 89 / 54</td></tr>
+          </tfoot>
+        </table>
+      </div>
+    </figure>
+
+    <figure class="figure">
+      <figcaption><b>유형별 복잡도 분포</b> — 색이 진할수록 복잡도가 높습니다</figcaption>
+      <div class="chart-box"><svg viewBox="0 0 1000 150" class="chart" role="img"
+    aria-label="FP 유형별 복잡도 분포 막대.">
+    <text x="0" y="19" class="row-l">ILF</text><rect x="66.0" y="7" width="152.2" height="16" rx="2" fill="var(--o1)" class="mk" data-label="ILF · 단순(Low)" data-value="24건"/><rect x="220.2" y="7" width="55.8" height="16" rx="2" fill="var(--o2)" class="mk" data-label="ILF · 보통(Average)" data-value="9건"/><rect x="278.1" y="7" width="23.7" height="16" rx="2" fill="var(--o3)" class="mk" data-label="ILF · 복잡(High)" data-value="4건"/><text x="311.8" y="19" class="row-v">37건</text>
+    <text x="0" y="49" class="row-l">EIF</text><rect x="66.0" y="37" width="10.9" height="16" rx="2" fill="var(--o1)" class="mk" data-label="EIF · 단순(Low)" data-value="2건"/><text x="86.9" y="49" class="row-v">2건</text>
+    <text x="0" y="79" class="row-l">EI</text><rect x="66.0" y="67" width="544.3" height="16" rx="2" fill="var(--o1)" class="mk" data-label="EI · 단순(Low)" data-value="85건"/><rect x="612.3" y="67" width="158.7" height="16" rx="2" fill="var(--o2)" class="mk" data-label="EI · 보통(Average)" data-value="25건"/><rect x="772.9" y="67" width="165.1" height="16" rx="2" fill="var(--o3)" class="mk" data-label="EI · 복잡(High)" data-value="26건"/><text x="948.0" y="79" class="row-v">136건</text>
+    <text x="0" y="109" class="row-l">EO</text><rect x="66.0" y="97" width="36.6" height="16" rx="2" fill="var(--o1)" class="mk" data-label="EO · 단순(Low)" data-value="6건"/><rect x="104.6" y="97" width="100.8" height="16" rx="2" fill="var(--o2)" class="mk" data-label="EO · 보통(Average)" data-value="16건"/><rect x="207.4" y="97" width="55.8" height="16" rx="2" fill="var(--o3)" class="mk" data-label="EO · 복잡(High)" data-value="9건"/><text x="273.2" y="109" class="row-v">31건</text>
+    <text x="0" y="139" class="row-l">EQ</text><rect x="66.0" y="127" width="120.1" height="16" rx="2" fill="var(--o1)" class="mk" data-label="EQ · 단순(Low)" data-value="19건"/><rect x="188.1" y="127" width="248.6" height="16" rx="2" fill="var(--o2)" class="mk" data-label="EQ · 보통(Average)" data-value="39건"/><rect x="438.7" y="127" width="94.4" height="16" rx="2" fill="var(--o3)" class="mk" data-label="EQ · 복잡(High)" data-value="15건"/><text x="543.1" y="139" class="row-v">73건</text>
+  </svg></div>
+      <div class="legend">
+        <span><i class="swatch" style="background:var(--o1)"></i>단순 Low</span>
+        <span><i class="swatch" style="background:var(--o2)"></i>보통 Average</span>
+        <span><i class="swatch" style="background:var(--o3)"></i>복잡 High</span>
+      </div>
+    </figure>
+  </section>
+
+  <section id="areas">
+    <div class="sec-head">
+      <h2>업무 영역별 규모</h2>
+      <span class="sec-step">Step 1 · 경계 내 업무 분해</span>
+    </div>
+    <p class="lede">
+      가장 큰 덩어리는 공통·인프라 영역입니다. 결재·게시판·인증·코드·메뉴·알림·파일처럼
+      모든 업무가 공유하는 기반 기능이 여기에 모여 있어, 특정 업무 하나가 아니라
+      시스템 전반을 떠받치는 규모로 보아야 합니다.
+    </p>
+    <figure class="figure">
+      <figcaption><b>업무 영역별 기능점수</b></figcaption>
+      <div class="chart-box"><svg viewBox="0 0 1000 184" class="chart" role="img"
+    aria-label="업무영역별 기능점수 막대.">
+    <text x="0" y="28" class="row-l">공통·인프라</text><rect x="132" y="12" width="718.0" height="22" rx="4" fill="var(--accent-bar)" class="mk" data-label="공통·인프라" data-value="695 FP · 155건 · 53.1%"/><text x="862.0" y="28" class="row-v">695 FP<tspan class="row-v2">  53.1%</tspan></text>
+    <text x="0" y="74" class="row-l">협의회</text><rect x="132" y="58" width="292.4" height="22" rx="4" fill="var(--accent-bar)" class="mk" data-label="협의회" data-value="283 FP · 61건 · 21.6%"/><text x="436.4" y="74" class="row-v">283 FP<tspan class="row-v2">  21.6%</tspan></text>
+    <text x="0" y="120" class="row-l">예산관리</text><rect x="132" y="104" width="201.5" height="22" rx="4" fill="var(--accent-bar)" class="mk" data-label="예산관리" data-value="195 FP · 31건 · 14.9%"/><text x="345.5" y="120" class="row-v">195 FP<tspan class="row-v2">  14.9%</tspan></text>
+    <text x="0" y="166" class="row-l">집행 4단계</text><rect x="132" y="150" width="140.5" height="22" rx="4" fill="var(--accent-bar)" class="mk" data-label="집행 4단계" data-value="136 FP · 32건 · 10.4%"/><text x="284.5" y="166" class="row-v">136 FP<tspan class="row-v2">  10.4%</tspan></text>
+  </svg></div>
+      <div class="t-box">
+        <table>
+          <caption>영역별 구성 — 데이터 기능과 트랜잭션 기능 건수</caption>
+          <thead>
+            <tr><th>영역</th><th>포함 업무</th><th class="num">데이터</th><th class="num">트랜잭션</th><th class="num">FP</th><th class="num">비중</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">공통·인프라</th>
+              <td class="basis">시스템관리·결재·게시판·코드·인증·메뉴·알림·파일·AI</td>
+              <td class="num">21</td>
+              <td class="num">134</td>
+              <td class="num">695</td>
+              <td class="num">53.1%</td>
+            </tr>
+            <tr>
+              <th scope="row">협의회</th>
+              <td class="basis">타당성검토·평가위원·일정·평가의견·결과서·Q&amp;A</td>
+              <td class="num">10</td>
+              <td class="num">51</td>
+              <td class="num">283</td>
+              <td class="num">21.6%</td>
+            </tr>
+            <tr>
+              <th scope="row">예산관리</th>
+              <td class="basis">사업·전산관리비 CRUD, 예산현황·편성률 집계, IT부문 비교</td>
+              <td class="num">4</td>
+              <td class="num">27</td>
+              <td class="num">195</td>
+              <td class="num">14.9%</td>
+            </tr>
+            <tr>
+              <th scope="row">집행 4단계</th>
+              <td class="basis">산정 · 심의 · 계약 · 지급</td>
+              <td class="num">4</td>
+              <td class="num">28</td>
+              <td class="num">136</td>
+              <td class="num">10.4%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <details>
+        <summary>세부 도메인 19개 펼치기</summary>
+        <div class="t-box">
+          <table>
+            <caption>산정 명세의 도메인 단위 집계 (FP 내림차순)</caption>
+            <thead><tr><th>도메인</th><th class="num">건수</th><th class="num">FP</th><th class="num">비중</th></tr></thead>
+            <tbody>
+<tr>
+      <th scope="row">council</th>
+      <td class="num">61</td>
+      <td class="num">283</td>
+      <td class="num">21.6%</td>
+    </tr>
+<tr>
+      <th scope="row">budget</th>
+      <td class="num">31</td>
+      <td class="num">195</td>
+      <td class="num">14.9%</td>
+    </tr>
+<tr>
+      <th scope="row">board</th>
+      <td class="num">20</td>
+      <td class="num">99</td>
+      <td class="num">7.6%</td>
+    </tr>
+<tr>
+      <th scope="row">admin</th>
+      <td class="num">25</td>
+      <td class="num">88</td>
+      <td class="num">6.7%</td>
+    </tr>
+<tr>
+      <th scope="row">document</th>
+      <td class="num">21</td>
+      <td class="num">85</td>
+      <td class="num">6.5%</td>
+    </tr>
+<tr>
+      <th scope="row">system</th>
+      <td class="num">18</td>
+      <td class="num">79</td>
+      <td class="num">6.0%</td>
+    </tr>
+<tr>
+      <th scope="row">approval</th>
+      <td class="num">12</td>
+      <td class="num">64</td>
+      <td class="num">4.9%</td>
+    </tr>
+<tr>
+      <th scope="row">menu</th>
+      <td class="num">14</td>
+      <td class="num">56</td>
+      <td class="num">4.3%</td>
+    </tr>
+<tr>
+      <th scope="row">bizplan</th>
+      <td class="num">6</td>
+      <td class="num">43</td>
+      <td class="num">3.3%</td>
+    </tr>
+<tr>
+      <th scope="row">file</th>
+      <td class="num">11</td>
+      <td class="num">43</td>
+      <td class="num">3.3%</td>
+    </tr>
+<tr>
+      <th scope="row">code</th>
+      <td class="num">8</td>
+      <td class="num">37</td>
+      <td class="num">2.8%</td>
+    </tr>
+<tr>
+      <th scope="row">iam</th>
+      <td class="num">7</td>
+      <td class="num">36</td>
+      <td class="num">2.8%</td>
+    </tr>
+<tr>
+      <th scope="row">deliberation</th>
+      <td class="num">8</td>
+      <td class="num">34</td>
+      <td class="num">2.6%</td>
+    </tr>
+<tr>
+      <th scope="row">contract</th>
+      <td class="num">8</td>
+      <td class="num">34</td>
+      <td class="num">2.6%</td>
+    </tr>
+<tr>
+      <th scope="row">estimate</th>
+      <td class="num">8</td>
+      <td class="num">34</td>
+      <td class="num">2.6%</td>
+    </tr>
+<tr>
+      <th scope="row">payment</th>
+      <td class="num">8</td>
+      <td class="num">34</td>
+      <td class="num">2.6%</td>
+    </tr>
+<tr>
+      <th scope="row">log</th>
+      <td class="num">5</td>
+      <td class="num">32</td>
+      <td class="num">2.4%</td>
+    </tr>
+<tr>
+      <th scope="row">notification</th>
+      <td class="num">6</td>
+      <td class="num">23</td>
+      <td class="num">1.8%</td>
+    </tr>
+<tr>
+      <th scope="row">ai</th>
+      <td class="num">2</td>
+      <td class="num">10</td>
+      <td class="num">0.8%</td>
+    </tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </figure>
+  </section>
+
+  <section id="trend">
+    <div class="sec-head">
+      <h2>규모 추이</h2>
+      <span class="sec-step">5차 산정 누적</span>
+    </div>
+    <p class="lede">
+      2026-07-17 최초 산정 이후 5차에 걸쳐 규모가
+      1,250 FP에서 1,309 FP로 <b>+59 FP(4.7%)</b>
+      늘었습니다. 증가분의 대부분은 2026-07-21 회차에 발생했고, 이후는 소폭 조정입니다.
+    </p>
+    <figure class="figure">
+      <figcaption><b>회차별 미조정 기능점수(UFP)</b></figcaption>
+      <div class="chart-box"><svg viewBox="0 0 1000 260" class="chart" role="img"
+    aria-label="회차별 미조정 기능점수 추이. 1,250에서 1,309로 증가.">
+    <line x1="56" y1="220.0" x2="926" y2="220.0" class="grid"/><text x="44" y="224.0" class="tick">1,200</text>
+    <line x1="56" y1="187.7" x2="926" y2="187.7" class="grid"/><text x="44" y="191.7" class="tick">1,225</text>
+    <line x1="56" y1="155.3" x2="926" y2="155.3" class="grid"/><text x="44" y="159.3" class="tick">1,250</text>
+    <line x1="56" y1="123.0" x2="926" y2="123.0" class="grid"/><text x="44" y="127.0" class="tick">1,275</text>
+    <line x1="56" y1="90.7" x2="926" y2="90.7" class="grid"/><text x="44" y="94.7" class="tick">1,300</text>
+    <line x1="56" y1="58.3" x2="926" y2="58.3" class="grid"/><text x="44" y="62.3" class="tick">1,325</text>
+    <line x1="56" y1="26.0" x2="926" y2="26.0" class="grid"/><text x="44" y="30.0" class="tick">1,350</text>
+    <path d="M56,220.0 L56.0,155.3 L273.5,155.3 L491.0,88.1 L708.5,84.2 L926.0,79.0 L926.0,220.0 Z" fill="var(--accent-area)"/>
+    <polyline points="56.0,155.3 273.5,155.3 491.0,88.1 708.5,84.2 926.0,79.0" fill="none" stroke="var(--accent-bar)" stroke-width="2"
+      stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="56.0" cy="155.3" r="5" fill="var(--surface)" stroke="var(--accent-bar)" stroke-width="2.5" class="mk" data-label="2026-07-17" data-value="UFP 1,250 · 269건"/><circle cx="273.5" cy="155.3" r="5" fill="var(--surface)" stroke="var(--accent-bar)" stroke-width="2.5" class="mk" data-label="2026-07-19" data-value="UFP 1,250 · 269건"/><circle cx="491.0" cy="88.1" r="5" fill="var(--surface)" stroke="var(--accent-bar)" stroke-width="2.5" class="mk" data-label="2026-07-21" data-value="UFP 1,302 · 277건"/><circle cx="708.5" cy="84.2" r="5" fill="var(--surface)" stroke="var(--accent-bar)" stroke-width="2.5" class="mk" data-label="2026-07-24" data-value="UFP 1,305 · 278건"/><circle cx="926.0" cy="79.0" r="7" fill="var(--accent-bar)" stroke="var(--accent-bar)" stroke-width="2.5" class="mk" data-label="2026-08-09" data-value="UFP 1,309 · 279건"/>
+    <text x="56.0" y="248" class="xtick">07-17</text><text x="273.5" y="248" class="xtick">07-19</text><text x="491.0" y="248" class="xtick">07-21</text><text x="708.5" y="248" class="xtick">07-24</text><text x="926.0" y="248" class="xtick">08-09</text>
+    <text x="940.0" y="73.0" class="end-l">1,309 FP</text>
+  </svg></div>
+      <div class="t-box">
+        <table>
+          <caption>회차별 단위프로세스 수와 UFP</caption>
+          <thead><tr><th>산정일</th><th class="num">단위프로세스</th><th class="num">UFP</th><th class="num">증감</th></tr></thead>
+          <tbody>
+<tr>
+      <th scope="row">2026-07-17</th>
+      <td class="num">269</td>
+      <td class="num">1,250</td>
+      <td class="num ">최초</td>
+    </tr>
+<tr>
+      <th scope="row">2026-07-19</th>
+      <td class="num">269</td>
+      <td class="num">1,250</td>
+      <td class="num ">0</td>
+    </tr>
+<tr>
+      <th scope="row">2026-07-21</th>
+      <td class="num">277</td>
+      <td class="num">1,302</td>
+      <td class="num up">+52</td>
+    </tr>
+<tr>
+      <th scope="row">2026-07-24</th>
+      <td class="num">278</td>
+      <td class="num">1,305</td>
+      <td class="num up">+3</td>
+    </tr>
+<tr class="now">
+      <th scope="row">2026-08-09</th>
+      <td class="num">279</td>
+      <td class="num">1,309</td>
+      <td class="num up">+4</td>
+    </tr>
+          </tbody>
+        </table>
+      </div>
+    </figure>
+
+    <div class="assure">
+      <b>최신 회차(2026-08-09)의 직전 대비 변경</b> —
+      2026-07-24 산정본과 비교해 추가 1건 · 삭제 0건 ·
+             수정 22건 · 변동 없음 256건입니다.
+             수정 22건은 응답 필드가 몇 개씩 늘어난 DET 미세 조정이 대부분이라
+             복잡도 등급이 바뀌지 않아 점수 증분이 0이며, UFP 증가 +4 FP는
+             사실상 신규 기능 1건에서 나왔습니다.
+    </div>
+  </section>
+
+  <section id="basis">
+    <div class="sec-head">
+      <h2>산정 근거</h2>
+      <span class="sec-step">Step 2–3 · 복잡도 판정 규칙</span>
+    </div>
+    <p class="lede">
+      각 기능의 점수는 임의로 매기지 않고, 참조하는 파일 수(RET/FTR)와 데이터 항목 수(DET)를
+      세어 아래 매트릭스에 대입해 결정합니다. 같은 입력이면 항상 같은 점수가 나옵니다.
+    </p>
+
+    <figure class="figure">
+      <figcaption><b>복잡도 판정 매트릭스</b> — 셀 안의 값은 판정되는 복잡도 등급입니다</figcaption>
+      <div class="mx">
+        <div class="t-box">
+          <table>
+            <caption>데이터 기능 (ILF · EIF) — RET × DET</caption>
+            <thead><tr><th>RET \ DET</th><th>1–19</th><th>20–50</th><th>51+</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">1</th><td class="cx-L">단순</td><td class="cx-L">단순</td><td class="cx-A">보통</td></tr>
+              <tr><th scope="row">2–5</th><td class="cx-L">단순</td><td class="cx-A">보통</td><td class="cx-H">복잡</td></tr>
+              <tr><th scope="row">6+</th><td class="cx-A">보통</td><td class="cx-H">복잡</td><td class="cx-H">복잡</td></tr>
+            </tbody>
+            <tfoot><tr><th scope="row">점수</th><td colspan="3" class="basis">ILF 7 / 10 / 15 · EIF 5 / 7 / 10</td></tr></tfoot>
+          </table>
+        </div>
+        <div class="t-box">
+          <table>
+            <caption>외부입력 (EI) — FTR × DET</caption>
+            <thead><tr><th>FTR \ DET</th><th>1–4</th><th>5–15</th><th>16+</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">0–1</th><td class="cx-L">단순</td><td class="cx-L">단순</td><td class="cx-A">보통</td></tr>
+              <tr><th scope="row">2</th><td class="cx-L">단순</td><td class="cx-A">보통</td><td class="cx-H">복잡</td></tr>
+              <tr><th scope="row">3+</th><td class="cx-A">보통</td><td class="cx-H">복잡</td><td class="cx-H">복잡</td></tr>
+            </tbody>
+            <tfoot><tr><th scope="row">점수</th><td colspan="3" class="basis">EI 3 / 4 / 6</td></tr></tfoot>
+          </table>
+        </div>
+        <div class="t-box">
+          <table>
+            <caption>외부출력·조회 (EO · EQ) — FTR × DET</caption>
+            <thead><tr><th>FTR \ DET</th><th>1–5</th><th>6–19</th><th>20+</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">0–1</th><td class="cx-L">단순</td><td class="cx-L">단순</td><td class="cx-A">보통</td></tr>
+              <tr><th scope="row">2–3</th><td class="cx-L">단순</td><td class="cx-A">보통</td><td class="cx-H">복잡</td></tr>
+              <tr><th scope="row">4+</th><td class="cx-A">보통</td><td class="cx-H">복잡</td><td class="cx-H">복잡</td></tr>
+            </tbody>
+            <tfoot><tr><th scope="row">점수</th><td colspan="3" class="basis">EO 4 / 5 / 7 · EQ 3 / 4 / 6</td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+    </figure>
+
+    <figure class="figure">
+      <figcaption><b>보정계수와 금액 산식</b> — 아래 값은 모두 대표 가정값입니다</figcaption>
+      <div class="t-box">
+        <table>
+          <caption>적용 보정계수</caption>
+          <thead><tr><th>항목</th><th class="num">계수</th><th>적용 근거</th></tr></thead>
+          <tbody>
+<tr>
+      <th scope="row">규모 보정계수</th>
+      <td class="num">×0.94</td>
+      <td class="basis">1,000 FP 이상 대규모 구간 (규모↑ → 단위생산성↑ → 계수↓)</td>
+    </tr>
+<tr>
+      <th scope="row">애플리케이션 유형 보정</th>
+      <td class="num">×1.00</td>
+      <td class="basis">업무용 웹/DB 표준 애플리케이션</td>
+    </tr>
+<tr>
+      <th scope="row">언어 보정계수</th>
+      <td class="num">×1.00</td>
+      <td class="basis">Java / JavaScript 표준</td>
+    </tr>
+<tr>
+      <th scope="row">품질·특성 보정계수</th>
+      <td class="num">×1.06</td>
+      <td class="basis">보안(JWT·RBAC·감사로그)·신뢰성 요건 반영</td>
+    </tr>
+<tr>
+      <th scope="row">다중 사이트 보정</th>
+      <td class="num">×1.00</td>
+      <td class="basis">단일 운영 사이트</td>
+    </tr>
+          </tbody>
+          <tfoot>
+            <tr><th>누적 보정계수</th><td class="num">×0.9964</td><td class="basis">1,309 FP → 1,304.3 FP</td></tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="t-box">
+        <table>
+          <caption>금액 산식 전개</caption>
+          <thead><tr><th>단계</th><th>계산</th><th class="num">금액</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">개발원가</th><td class="basis">1,304.3 FP × 600,000원</td><td class="num">₩782,572,560</td></tr>
+            <tr><th scope="row">이윤</th><td class="basis">개발원가 × 20%</td><td class="num">₩156,514,512</td></tr>
+            <tr><th scope="row">공급가액</th><td class="basis">개발원가 + 이윤</td><td class="num">₩939,087,072</td></tr>
+            <tr><th scope="row">부가세</th><td class="basis">공급가액 × 10%</td><td class="num">₩93,908,707</td></tr>
+          </tbody>
+          <tfoot><tr><th>최종 금액</th><td class="basis">공급가액 + 부가세</td><td class="num">₩1,032,995,779</td></tr></tfoot>
+        </table>
+      </div>
+    </figure>
+
+    <div class="assure">
+      <b>이 수치를 믿을 수 있는 근거</b>
+      <ul>
+        <li>
+          산정 명세에 적힌 복잡도·점수를 그대로 쓰지 않고, 리포트 생성기가 RET/FTR·DET에
+          매트릭스를 <b>다시 적용해 재계산</b>합니다. 이번 회차의 재계산 불일치는
+          <b>0건</b>입니다.
+        </li>
+        <li>
+          테이블·화면·엔드포인트 같은 물리 규모는 하드코딩하지 않고 매 실행 시
+          DDL과 소스코드에서 직접 셉니다.
+        </li>
+        <li>
+          산정본을 덮어쓰지 않고 날짜별로 누적하므로, 회차 간 규모 변화를 행 단위로 추적할 수 있습니다.
+        </li>
+        <li>
+          다만 DDL 덤프에 없는 엔티티 매핑이 1건
+          (TPRMPP_CLANGM) 있습니다. 덤프가 최신이 아닐 수 있어
+          물리 테이블 수는 실제보다 적게 잡혔을 가능성이 있습니다.
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="mono">
+    <span>산정 명세 fp-estimate-2026-08-09.csv</span>
+    <span>생성 2026-08-17</span>
+    <span>FP/build-artifact.mjs</span>
+  </footer>
+</div>
+
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script>
+  // 차트 마크 위에 값을 띄우는 최소 툴팁. 마크는 data-label/data-value를 갖습니다.
+  (function () {
+    var tip = document.getElementById('tip');
+    if (!tip) return;
+
+    // 마크의 라벨은 산정 명세(CSV)에서 온 값이므로 HTML로 해석하지 않고
+    // textContent로만 넣습니다.
+    var label = document.createElement('b');
+    var value = document.createElement('span');
+    tip.appendChild(label);
+    tip.appendChild(value);
+
+    function show(el, x, y) {
+      label.textContent = el.getAttribute('data-label') || '';
+      value.textContent = el.getAttribute('data-value') || '';
+      tip.style.left = x + 'px';
+      tip.style.top = y + 'px';
+      tip.style.opacity = '1';
+    }
+
+    document.addEventListener('mousemove', function (e) {
+      var mark = e.target.closest ? e.target.closest('.mk') : null;
+      if (mark) show(mark, e.clientX, e.clientY);
+      else tip.style.opacity = '0';
+    });
+
+    document.addEventListener('mouseleave', function () {
+      tip.style.opacity = '0';
+    });
+  })();
+</script>
