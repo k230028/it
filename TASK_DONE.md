@@ -16,6 +16,18 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-17 DDL 불필요 잔여과제 배치 3 — 품질 게이트 복구 (3건)
+
+> 앞 두 배치가 "기준에 맞지 않아 남긴다"고 적어 둔 **BE-37(커버리지 게이트 실패)** 을 정면으로 처리했다. 병합 전 품질 게이트가 무력화된 채 `./gradlew test`로 대체 운용하던 상태를 끝내는 것이 목표였고, 결과적으로 `./gradlew check`가 **다시 green**이다. 운영 코드는 한 줄도 바꾸지 않았다 — 전부 테스트·픽스처 추가다.
+
+| 상태 | ID | 완료 범위 | 저장소 커밋 | 검증 증거 |
+| :--: | :--: | --- | --- | --- |
+| ✅ Done | BE-37 / MIG-18 | 커버리지 게이트 위반 **7클래스**를 해소해 `./gradlew check`를 복구했다(두 항목은 같은 위반을 각자 기록한 것이라 함께 닫는다). ① `TranslationTargetKey`·`TranslationAdminController`·`TranslationCatalogService` — 미검증 분기(구성요소 공백 판정, 대상 문자열 파싱, 신규행 저장·논리삭제·대상키 이동·2000자 상한)를 채웠다. ② `CodeService` — **`@InjectMocks`에 `TranslationCatalogService` mock이 아예 없어** 언어별 조회(`localize`) 4메서드가 통째로 미검증이었다. mock을 추가하고 KO 경로(번역 저장소 미호출)·EN 경로(필드 단위 fallback)를 고정했다. ③ `IoeCandidates` — 유틸 생성자 차단. ④ `GeneralExpenseFormAdapter` — 비목 해석의 미검증 갈래 세 개(중분류 기본값 → 대안 후보와 함께 경고, 중분류로도 못 좁힘 → 후보 실은 중의적 진단, 카탈로그가 비어 후보가 없음 → 미해석)와 JPY 천엔 전개·헤더만 있는 시트를 픽스처로 덮었다. ⑤ `FormCheckboxReader`(lines **0.04 → 0.98**) — 아래 별항. | it_backend `09f7fa26` | `./gradlew check` **BUILD SUCCESSFUL**. 단위 3464건 통과·실패 0·스킵 1(403파일). 7클래스 실측 비율: `CodeService`·`IoeCandidates`·`TranslationTargetKey`·`TranslationCatalogService`·`TranslationAdminController` 1.00, `GeneralExpenseFormAdapter` LINE 1.00·BRANCH 0.96·COMPLEXITY 0.95, `FormCheckboxReader` LINE 0.98·BRANCH 0.83·COMPLEXITY 0.74 |
+| ✅ Done | (BE-37 별항) | **"POI로 만들 수 없어 사실상 미검증"이라던 `FormCheckboxReader`를 저수준 픽스처로 열었다**(`FormCheckboxFixtures`). 종전 판단은 "POI에 양식 컨트롤 생성 API가 없다"였고 그건 사실이지만, 생성 API 없이도 두 형식 모두 만들 수 있다. `.xls`는 Escher 도형 컨테이너와 `ObjRecord`를 직접 만들어 `EscherAggregate.associateShapeToObjRecord`로 시트에 등록하고, POI가 해석하지 않는 `FtCblsData`(sid `0x12`) 체크 상태는 `SubRecord.createSubRecord`에 실측 바이트(`12 00 08 00 01 00 …`)를 먹여 넣는다. `.xlsx`는 OPC 패키지를 파트 단위로 조립한다 — 시트 XML의 `control`(실 제출본처럼 `mc:AlternateContent`로 감싼 형태), `ctrlProps` 파트의 `checked`, VML 그림 파트의 문구, 그리고 셋을 잇는 `.rels`. 걸러져야 하는 갈래도 함께 담았다: 콤보 컨트롤, 앵커 없는 도형, 관계가 끊긴/빈 컨트롤, XML이 깨진 `ctrlProps`, 문구 도형이 없는 컨트롤, 행 번호가 숫자가 아닌 앵커. | it_backend `09f7fa26` | 신규 `FormCheckboxReaderTest` 6건 통과. 체크·해제·`FtCblsData` 누락(→해제)·콤보 제외를 두 형식에서 각각 단정하고, 읽기 실패가 배치를 무너뜨리지 않고 빈 목록으로 접히는지도 고정 |
+| ✅ Done | MIG-13 | `./gradlew integrationTest` 잔여 실패 1건을 해소했다. **원인은 TASK 항목의 추정과 달랐다** — 항목은 "프로젝션 단정이 로컬 Oracle 실제 데이터를 읽으므로 데이터 전제 문제인지 계약 위반인지 가려야 한다"고 적었지만, 실패한 `:224` 단정은 DB를 전혀 읽지 않는 **리플렉션 계약 단정**이었다. 두 겹의 원인이 겹쳐 있었다. ① `AdminUserView`에 `default getBbrNm()`이 추가되면서(`cd45bdf2`) 승인 필드 목록이 낡았다 — `AdminService`가 실제로 소비하는 필드이므로 목록에 추가하는 것이 맞다. ② 더 중요하게, JaCoCo 에이전트가 **본문 있는 메서드를 가진 인터페이스**에 합성 `$jacocoInit`을 넣어 `getDeclaredMethods()`에 섞여 들어왔다. 그래서 `integrationTest`(커버리지 켜짐)에서만 깨지고 격리 실행에서는 통과하는 모습이었다. 합성 메서드를 걸러내는 `declaredMethodNames` 헬퍼를 도입해 두 원인을 함께 닫았다. | it_backend `375ce33b` | `./gradlew integrationTest` **154건 실패 0**(종전 1실패). 스킵 4건은 `BoardReplySequenceMigrationIT` 한 클래스로 이 배치와 무관하다. 해당 클래스 단독 실행도 통과 |
+
+**남긴 관찰 (신규 등록)**: BE-40 — 같은 합성 메서드 함정이 나머지 `*ProjectionIt` 단정 20여 곳(`getDeclaredMethods()`를 `.hasSize(n)`으로 세는 형태)에 그대로 남아 있다. 지금은 `default` 메서드를 가진 프로젝션이 `AdminUserView` 하나뿐이라 통과하지만, 어느 프로젝션에든 `default`가 추가되면 **커버리지를 켠 실행에서만** 깨진다. 여러 저장소·작업이 공유하는 테스트 20여 개를 이 배치에서 함께 손대지 않고 `TASK.md`에 등록했다.
+
 ### ✅ 2026-08-17 DDL 불필요 잔여과제 배치 2 (5건)
 
 > 앞 배치와 같은 기준(DDL 변경 불필요 + 업무 판단 선행 없음)으로 골랐다. 세 건은 **재발 구조를 닫는 게이트 추가**가 핵심이라 조치와 함께 자동 검증을 남겼다.
@@ -28,7 +40,7 @@
 | ✅ Done | REPO-02 | `CLAUDE.md` §2 트리에 실제 추적 중인 루트 구성을 채웠다 — `meta/`·`prds/`·`FP/`·`tools/`·`scripts/`·`sample/`·`.vscode/`·`versions.lock`에 역할을 한 줄씩 달고, 세 하위 저장소에는 `[별도 원격 저장소]` 표시를 붙였다. `REVIEW.md`·`TEST.md`가 반복 워크플로우 지시문이고 `AGENTS.md`가 포인터라는 점도 트리 아래 한 문장으로 남겼다. | (루트 문서 커밋) | `git ls-files` 루트 집계와 트리 항목 대조 |
 | ✅ Done | REPO-03 | `.gitignore`의 사멸 규칙 `everything-claude-code/`·`.bkit`을 제거했다. | (루트 문서 커밋) | 제거 후 `git status --porcelain`이 편집한 두 파일만 보고 — 새로 노출되는 파일이 없어 두 규칙이 실제로 죽어 있었음을 확인 |
 
-**남긴 관찰**: 없음. BE-36(`totRqmAmt` 이름 불일치, 소비처 10곳 이상 전수 조사 필요)·BE-37(커버리지 게이트 기존 위반 9건)은 이 배치의 기준(저비용·판단 불요)에 맞지 않아 `TASK.md`에 남겼다.
+**남긴 관찰**: 없음. BE-36(`totRqmAmt` 이름 불일치, 소비처 10곳 이상 전수 조사 필요)·BE-37(커버리지 게이트 기존 위반 9건)은 이 배치의 기준(저비용·판단 불요)에 맞지 않아 `TASK.md`에 남겼다. BE-37은 같은 날 배치 3에서 처리했다(실측 위반은 7클래스였다).
 
 ### ✅ 2026-08-17 DDL 불필요 잔여과제 배치 (9건)
 
