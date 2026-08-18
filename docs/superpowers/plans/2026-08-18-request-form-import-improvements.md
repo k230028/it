@@ -687,18 +687,11 @@ git -C it_backend commit -m 'fix: 일반관리비 통화를 공통코드로 확�
                 .extracting(RequestFormDto.FormDiagnostic::code)
                 .doesNotContain(RequestFormDiagnosticCode.UNIT_UNCERTAIN);
     }
-
-    @Test
-    @DisplayName("원화 행이 있으면 배수 미지정 시 확인을 묻는다")
-    void keepsUnitWarningWhenKrwRowExists() {
-        FormAdapterOutput output =
-                adapter.adapt(contextOf(RequestFormFixtures.fullFormXls(), null));
-
-        assertThat(output.diagnostics())
-                .extracting(RequestFormDto.FormDiagnostic::code)
-                .contains(RequestFormDiagnosticCode.UNIT_UNCERTAIN);
-    }
 ```
+
+반대쪽(원화 행이 있으면 경고를 낸다)은 **새로 쓰지 않는다.** 같은 파일의 기존
+`suggestsMultiplierWhenAbsent`가 이미 `fullFormXls` + 배수 미지정으로 `UNIT_UNCERTAIN`이
+나오는 것을 단언한다. 같은 픽스처·같은 인자로 한 줄만 다른 테스트를 더하면 중복이다.
 
 - [ ] **Step 2: 테스트가 실패하는지 확인한다**
 
@@ -754,8 +747,7 @@ Expected: FAIL — `skipsUnitWarningWhenNoKrwRow`가 `UNIT_UNCERTAIN`을 찾아�
 cd it_backend && ./gradlew test --tests '*GeneralExpenseFormAdapterTest*'
 ```
 
-Expected: PASS.
-
+Expected: PASS. 반대쪽 경로는 기존 테스트가 지킨다 —
 `suggestsMultiplierWhenAbsent`(`fullFormXls`, KRW 행 있음)와
 `excludesBlankAmountRowFromUnitSuggestion`(`generalExpenseIoeBranchesXls`, KRW 행 있음)은
 모두 원화 행이 있으므로 그대로 통과한다.
@@ -1114,13 +1106,44 @@ cd it_frontend && npm test -- RequestFormResultTable
 
 Expected: PASS.
 
-- [ ] **Step 6: 커밋**
+- [ ] **Step 6: `api.d.ts`에서 내 hunk만 스테이징한다**
+
+이 파일에는 **다른 작업의 미커밋 변경**(결재자 변경 API 타입, 49줄)이 이미 얹혀 있다.
+재생성하면 그 변경과 이번 `SKIPPED` 추가가 한 파일에 섞인다. 통째로 `git add`하면 남의 계약이
+내 커밋에 딸려 들어간다.
+
+컨트롤러가 작업 시작 전에 남의 hunk만 담은 패치를 떠 두었다
+(`.superpowers/sdd/2026-08-18-request-form-import/api-dts-others.patch`, 역적용 가능 확인 완료).
+그것을 워킹 파일에서 되돌린 상태로 스테이징한 뒤 워킹 파일을 원상복구한다:
 
 ```bash
-git -C it_frontend add app/types/api.d.ts app/components/migration/RequestFormResultTable.vue tests/unit/components/migration/RequestFormResultTable.test.ts
+cd it_frontend
+cp app/types/api.d.ts ../.superpowers/sdd/2026-08-18-request-form-import/api-dts-both.bak
+git apply -R ../.superpowers/sdd/2026-08-18-request-form-import/api-dts-others.patch
+git add app/types/api.d.ts
+cp ../.superpowers/sdd/2026-08-18-request-form-import/api-dts-both.bak app/types/api.d.ts
+```
+
+스테이징된 내용이 `SKIPPED` 한 줄만인지 반드시 확인한다:
+
+```bash
+git -C it_frontend diff --cached -- app/types/api.d.ts
+```
+
+Expected: `RequestFormFileStatus` enum 유니언에 `"SKIPPED"`가 더해지는 hunk **하나만** 보인다.
+`approvers/{dcdSqn}`·`changePendingApprover`가 보이면 중단하고 컨트롤러에게 보고한다.
+
+- [ ] **Step 7: 커밋**
+
+`api.d.ts`는 Step 6에서 이미 스테이징했으므로 여기서 다시 `add`하지 않는다:
+
+```bash
+git -C it_frontend add app/components/migration/RequestFormResultTable.vue tests/unit/components/migration/RequestFormResultTable.test.ts
 git -C it_frontend diff --cached --stat
 git -C it_frontend commit -m 'feat: 반입 결과 표에 대상 아님 상태와 통화 결정 표기 추가'
 ```
+
+Expected: `--stat`에 세 파일만(`api.d.ts`, `RequestFormResultTable.vue`, 그 테스트) 나온다.
 
 ---
 
