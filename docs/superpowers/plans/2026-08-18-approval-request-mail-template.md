@@ -354,6 +354,30 @@ class MailHtmlTest {
                 .doesNotContain("<script>")
                 .contains("&lt;script&gt;");
     }
+
+    @Test
+    @DisplayName("테두리·여백은 표가 주고 셀은 반복하지 않는다")
+    void cells_doNotRepeatBorderStyle() {
+        // 셀마다 인라인 테두리를 반복하면 필수 항목만으로 4000바이트 예산을 넘는다(실측 5007바이트).
+        assertThat(MailHtml.textCell("값")).doesNotContain("border").doesNotContain("padding");
+        assertThat(MailHtml.amountCell("1 원")).doesNotContain("border").doesNotContain("padding");
+        assertThat(MailHtml.labelCell("구분")).doesNotContain("border").doesNotContain("padding");
+
+        String table = MailHtml.table(MailHtml.row(MailHtml.textCell("값")));
+        assertThat(table).contains("cellpadding=").contains("border=");
+    }
+
+    @Test
+    @DisplayName("5열 표 한 행이 200바이트를 넘지 않는다")
+    void row_staysCheap() {
+        String row =
+                MailHtml.row(
+                        MailHtml.textCell("정보화사업"),
+                        MailHtml.textCell("차세대 통합 시스템 구축 사업"),
+                        MailHtml.amountCell("3,000 원"));
+
+        assertThat(MailHtml.utf8Length(row)).isLessThanOrEqualTo(200);
+    }
 }
 ```
 
@@ -395,8 +419,17 @@ final class MailHtml {
     /** 표 테두리색. */
     static final String BORDER = "#d1d5db";
 
-    private static final String CELL_BASE =
-            "border:1px solid " + BORDER + ";padding:6px 8px;font-size:13px;";
+    /**
+     * 표 여는 태그 — 테두리와 여백을 <b>표 수준 표현 속성</b>({@code border}/{@code cellpadding})으로 준다.
+     *
+     * <p>셀마다 인라인 스타일을 반복하면 필수 항목(개요+총괄표)만으로 4000바이트 예산을 넘는다(실측 5007바이트).
+     * 표현 속성은 메일 클라이언트 호환성도 인라인 스타일보다 넓다.
+     */
+    private static final String TABLE_OPEN =
+            "<table border=\"1\" cellpadding=\"6\" cellspacing=\"0\" style=\"border-collapse:collapse;"
+                    + "width:100%;margin:0 0 12px;border-color:"
+                    + BORDER
+                    + ";font-size:13px;\">";
 
     private MailHtml() {}
 
@@ -416,29 +449,19 @@ final class MailHtml {
         return html == null ? 0 : html.getBytes(StandardCharsets.UTF_8).length;
     }
 
-    /** 머리글 셀. */
+    /** 머리글 셀 — 테두리·여백은 표가 주므로 배경색만 남긴다. */
     static String labelCell(String text) {
-        return "<th style=\""
-                + CELL_BASE
-                + "background:"
-                + HEADER_BG
-                + ";text-align:center;font-weight:600;\">"
-                + escape(text)
-                + "</th>";
+        return "<th style=\"background:" + HEADER_BG + ";\">" + escape(text) + "</th>";
     }
 
     /** 좌측 정렬 본문 셀. */
     static String textCell(String text) {
-        return "<td style=\"" + CELL_BASE + "\">" + escape(text) + "</td>";
+        return "<td>" + escape(text) + "</td>";
     }
 
     /** 우측 정렬 금액 셀. */
     static String amountCell(String text) {
-        return "<td style=\""
-                + CELL_BASE
-                + "text-align:right;white-space:nowrap;\">"
-                + escape(text)
-                + "</td>";
+        return "<td align=\"right\">" + escape(text) + "</td>";
     }
 
     /** 행 조립. 인자는 이미 셀 HTML이어야 한다. */
@@ -448,9 +471,7 @@ final class MailHtml {
 
     /** 표 조립. 인자는 이미 행 HTML이어야 한다. */
     static String table(String bodyRows) {
-        return "<table style=\"border-collapse:collapse;width:100%;margin:0 0 14px;\">"
-                + bodyRows
-                + "</table>";
+        return TABLE_OPEN + bodyRows + "</table>";
     }
 
     /** 구분 제목. */
@@ -467,7 +488,7 @@ final class MailHtml {
 - [ ] **Step 4: 테스트가 통과하는지 확인한다**
 
 Run: `./gradlew test --tests 'com.kdb.it.common.approval.mail.MailHtmlTest'`
-Expected: PASS (6 tests)
+Expected: PASS (8 tests)
 
 - [ ] **Step 5: 커밋한다**
 
@@ -686,11 +707,22 @@ class ApprovalMailRendererTest {
     }
 
     @Test
-    @DisplayName("목록은 총 예산 내림차순으로 정렬한다")
+    @DisplayName("목록은 구분 안에서 총 예산 내림차순으로 정렬한다")
     void html_listSortedByTotalDesc() throws Exception {
         String html = render(SNAPSHOT).html();
 
         assertThat(html.indexOf("차세대 시스템")).isLessThan(html.indexOf("소규모 개선"));
+    }
+
+    @Test
+    @DisplayName("목록은 구분 열을 가진 표 하나로 합친다")
+    void html_listIsSingleTableWithCategoryColumn() throws Exception {
+        String html = render(SNAPSHOT).html();
+
+        assertThat(html).contains("신청 사업 목록").contains("사업명/계약명");
+        // 구분별로 표를 나누면 머리글이 반복된다. 합친 표는 목록 머리글이 한 번만 나온다.
+        assertThat(html.split("사업명/계약명", -1).length - 1).isEqualTo(1);
+        assertThat(html).contains("유지보수 계약");
     }
 
     @Test
@@ -719,6 +751,8 @@ class ApprovalMailRendererTest {
         assertThat(html.getBytes(StandardCharsets.UTF_8).length)
                 .isLessThanOrEqualTo(ApprovalMailRenderer.CONTENTS_BUDGET_BYTES);
         assertThat(html).contains("외 ").contains("건");
+        // 예산이 실제로 쓰이는지 확인 — 머리글만 넣고 행을 못 싣는 회귀를 잡는다.
+        assertThat(html).contains("매우 긴 이름을 가진 정보화사업 항목 0");
     }
 
     @Test
@@ -880,27 +914,11 @@ public class ApprovalMailRenderer {
         body.append(overview(context));
         body.append(summary(regular, ordinary, costs));
 
-        body.append(
-                listSection(
-                        "정보화사업",
-                        context,
-                        projectRows(regular),
-                        regular.size(),
-                        MailHtml.utf8Length(wrap(body.toString()))));
-        body.append(
-                listSection(
-                        "전산업무비",
-                        context,
-                        costRows(costs),
-                        costs.size(),
-                        MailHtml.utf8Length(wrap(body.toString()))));
-        body.append(
-                listSection(
-                        "경상사업",
-                        context,
-                        projectRows(ordinary),
-                        ordinary.size(),
-                        MailHtml.utf8Length(wrap(body.toString()))));
+        List<ListEntry> entries = new ArrayList<>();
+        regular.forEach(p -> entries.add(new ListEntry("정보화사업", p.abusNm(), p.total())));
+        costs.forEach(c -> entries.add(new ListEntry("전산업무비", c.cttNm(), c.total())));
+        ordinary.forEach(p -> entries.add(new ListEntry("경상사업", p.abusNm(), p.total())));
+        body.append(itemList(context, entries, MailHtml.utf8Length(wrap(body.toString()))));
 
         return wrap(body.toString());
     }
@@ -1044,65 +1062,48 @@ public class ApprovalMailRenderer {
         return values.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private static List<String> projectRows(List<ProjectItem> items) {
-        List<String> rows = new ArrayList<>();
-        for (int i = 0; i < items.size(); i++) {
-            ProjectItem item = items.get(i);
-            rows.add(itemRow(i + 1, item.abusNm(), item.total(), item.asset(), item.cost()));
-        }
-        return rows;
-    }
-
-    private static List<String> costRows(List<CostItem> items) {
-        List<String> rows = new ArrayList<>();
-        for (int i = 0; i < items.size(); i++) {
-            CostItem item = items.get(i);
-            rows.add(itemRow(i + 1, item.cttNm(), item.total(), item.asset(), item.cost()));
-        }
-        return rows;
-    }
-
-    private static String itemRow(
-            int seq, String name, BigDecimal total, BigDecimal asset, BigDecimal cost) {
-        return MailHtml.row(
-                MailHtml.amountCell(String.valueOf(seq)),
-                MailHtml.textCell(name == null ? "" : name),
-                MailHtml.amountCell(MailHtml.amount(total)),
-                MailHtml.amountCell(MailHtml.amount(asset)),
-                MailHtml.amountCell(MailHtml.amount(cost)));
-    }
+    /**
+     * 목록 한 줄. 자본예산·일반관리비는 바로 위 합계 총괄표가 구분별로 이미 보여주므로 목록에서는 생략하고, 그만큼 더 많은 사업을 싣는다.
+     *
+     * @param category 구분명 (정보화사업/전산업무비/경상사업)
+     * @param name 사업명 또는 계약명. null 허용
+     * @param total 총 예산
+     */
+    private record ListEntry(String category, String name, BigDecimal total) {}
 
     /** 목록 표 머리글 행. */
-    private static String headerRow() {
+    private static String listHeaderRow() {
         return MailHtml.row(
-                MailHtml.labelCell("순번"),
+                MailHtml.labelCell("구분"),
                 MailHtml.labelCell("사업명/계약명"),
-                MailHtml.labelCell("총 예산"),
-                MailHtml.labelCell("자본예산"),
-                MailHtml.labelCell("일반관리비"));
+                MailHtml.labelCell("총 예산"));
+    }
+
+    private static String listRow(ListEntry entry) {
+        return MailHtml.row(
+                MailHtml.textCell(entry.category()),
+                MailHtml.textCell(entry.name() == null ? "" : entry.name()),
+                MailHtml.amountCell(MailHtml.amount(entry.total())));
     }
 
     /**
-     * 구분별 목록을 남는 예산만큼 싣는다. 한 행도 못 넣으면 구분 전체를 생략하고, 일부만 실었으면 남은 건수와 전체 보기 링크를 붙인다.
+     * 신청 사업 목록을 남는 예산만큼 싣는다.
      *
-     * @param label 구분 제목
+     * <p>구분별로 표를 따로 두면 머리글이 세 번 반복되어 예산 대부분을 머리글이 먹는다. 구분 열을 가진 표 하나로 합치고 구분 순서(정보화사업 → 전산업무비 →
+     * 경상사업), 구분 안에서는 총 예산 내림차순으로 싣는다.
+     *
      * @param context 렌더링 입력 (전체 보기 링크용)
-     * @param rows 미리 만들어 둔 행 HTML 목록
-     * @param totalCount 해당 구분의 전체 건수
+     * @param entries 구분 순서로 이미 정렬된 목록
      * @param usedBytes 지금까지 조립한 본문의 UTF-8 바이트
-     * @return 구분 섹션 HTML. 예산이 없으면 빈 문자열
+     * @return 목록 섹션 HTML. 머리글조차 못 넣을 예산이면 빈 문자열
      */
-    private String listSection(
-            String label,
-            ApprovalMailContext context,
-            List<String> rows,
-            int totalCount,
-            int usedBytes) {
-        if (rows.isEmpty()) {
+    private String itemList(
+            ApprovalMailContext context, List<ListEntry> entries, int usedBytes) {
+        if (entries.isEmpty()) {
             return "";
         }
         int budget = CONTENTS_BUDGET_BYTES - TAIL_RESERVE_BYTES - usedBytes;
-        String shell = MailHtml.sectionTitle(label) + MailHtml.table(headerRow());
+        String shell = MailHtml.sectionTitle("신청 사업 목록") + MailHtml.table(listHeaderRow());
         int consumed = MailHtml.utf8Length(shell);
         if (consumed > budget) {
             return "";
@@ -1110,7 +1111,8 @@ public class ApprovalMailRenderer {
 
         StringBuilder included = new StringBuilder();
         int taken = 0;
-        for (String row : rows) {
+        for (ListEntry entry : entries) {
+            String row = listRow(entry);
             int next = MailHtml.utf8Length(row);
             if (consumed + next > budget) {
                 break;
@@ -1123,9 +1125,10 @@ public class ApprovalMailRenderer {
             return "";
         }
         String section =
-                MailHtml.sectionTitle(label) + MailHtml.table(headerRow() + included);
-        if (taken < totalCount) {
-            section += moreLink(totalCount - taken, context);
+                MailHtml.sectionTitle("신청 사업 목록")
+                        + MailHtml.table(listHeaderRow() + included);
+        if (taken < entries.size()) {
+            section += moreLink(entries.size() - taken, context);
         }
         return section;
     }
@@ -1149,9 +1152,9 @@ public class ApprovalMailRenderer {
 - [ ] **Step 5: 테스트가 통과하는지 확인한다**
 
 Run: `./gradlew test --tests 'com.kdb.it.common.approval.mail.ApprovalMailRendererTest'`
-Expected: PASS (9 tests)
+Expected: PASS (10 tests)
 
-예산 테스트가 실패하면 `TAIL_RESERVE_BYTES`를 키우기 전에, `listSection`에 넘기는 `usedBytes`가 `wrap()`으로 감싼 뒤의 길이인지 먼저 확인한다. 감싸지 않은 길이를 넘기면 바깥 `div` 몫이 빠져 예산을 넘길 수 있다.
+예산 테스트가 실패하면 `TAIL_RESERVE_BYTES`를 키우지 말고, 먼저 개요+총괄표만의 바이트를 재어 본다. 이 계획의 초판은 셀마다 인라인 테두리 스타일을 반복해 **필수 항목만으로 5007바이트**(예산 4000)를 써서 목록이 한 줄도 못 들어갔다. Task 2가 표 수준 표현 속성으로 바뀐 뒤 필수 항목은 약 2263바이트이고 목록에 약 1737바이트가 남는다. 필수 항목이 2500바이트를 넘으면 `MailHtml` 쪽이 되돌아간 것이다.
 
 - [ ] **Step 6: 커밋한다**
 
@@ -1189,6 +1192,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kdb.it.common.notification.entity.Cinfmm;
 import com.kdb.it.infra.eai.config.GweProperties;
 import com.kdb.it.infra.eai.dto.EaiRequest;
@@ -1205,7 +1209,10 @@ class NotificationDispatcherRouterMailPayloadTest {
     private final EaiService eaiService = mock(EaiService.class);
     private final NotificationDispatcherRouter router =
             new NotificationDispatcherRouter(
-                    eaiService, new GweProperties("ITPO00051630"), "https://it.kdb.co.kr");
+                    eaiService,
+                    new GweProperties("ITPO00051630"),
+                    "https://it.kdb.co.kr",
+                    new ObjectMapper());
 
     private GwePayload dispatchAndCapture(String sdPayload) {
         when(eaiService.sendEai(any())).thenReturn(EaiResult.success(""));
@@ -1264,7 +1271,9 @@ class NotificationDispatcherRouterMailPayloadTest {
 Run: `./gradlew test --tests 'com.kdb.it.common.notification.dispatcher.NotificationDispatcherRouterMailPayloadTest'`
 Expected: 첫 테스트 FAIL — subject가 `"결재요청: 전산예산 신청서"`로 나옴(페이로드 무시)
 
-3-인자 생성자가 없어 컴파일이 먼저 실패하면 Step 3의 생성자 변경을 반영한 뒤 다시 돌린다.
+생성자 인자가 3개뿐이라 컴파일이 먼저 실패하면 Step 3의 생성자 변경을 반영한 뒤 다시 돌린다.
+테스트 전용 편의 생성자는 두지 않는다 — 프로덕션 코드에 테스트 전용 진입점을 남기지 않기 위해
+테스트가 `new ObjectMapper()`를 직접 넘긴다.
 
 - [ ] **Step 3: dispatcher를 수정한다**
 
@@ -1298,12 +1307,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
         this.gweProperties = gweProperties;
         this.frontendUrl = frontendUrl;
         this.objectMapper = objectMapper;
-    }
-
-    /** 테스트 편의 생성자 — 기본 ObjectMapper를 쓴다. */
-    NotificationDispatcherRouter(
-            EaiService eaiService, GweProperties gweProperties, String frontendUrl) {
-        this(eaiService, gweProperties, frontendUrl, new ObjectMapper());
     }
 ```
 
