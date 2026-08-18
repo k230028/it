@@ -157,8 +157,10 @@ PDF 총괄표(`useItBudgetApprovalFormPdf.ts`)와 동일하게 계산한다. 값
 | --- | --- | --- |
 | `ApprovalMailRenderer` | `common.approval.mail` | 신청서 + 스냅샷 → `{subject, html}` |
 | `ApprovalMailSnapshot` | `common.approval.mail` | `dcdReqInf` 파싱용 record (projects/costs) |
-| `ApprovalMailPayload` | `common.approval.mail` | `{subject, html}` record. dispatcher가 역직렬화 |
+| `MailPayload` | `common.notification.dispatcher` | `{subject, html}` record. 결재가 만들고 발송 계층이 역직렬화한다. 계약을 소비자 쪽에 두어 알림 계층이 결재 패키지를 참조하지 않게 한다 |
 | `MailHtml` | `common.approval.mail` | 인라인 CSS 상수, 표·행 조립, HTML 이스케이프, 바이트 계수 |
+| `ApprovalMailContext` | `common.approval.mail` | 렌더링 입력 record (개요 값 + 스냅샷 JSON) |
+| `ApprovalMailContextFactory` | `common.approval.mail` | 신청서 → 렌더링 입력. 상세 URL 정규화를 맡아 `ApplicationService`를 더 키우지 않는다 |
 
 `ApprovalMailRenderer`는 리포지토리를 주입받지 않는다. 필요한 값은 전부 인자로 받으므로
 단위 테스트가 DB 없이 돈다.
