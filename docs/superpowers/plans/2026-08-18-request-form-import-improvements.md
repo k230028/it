@@ -1646,6 +1646,28 @@ git -C it_frontend commit -m 'feat: 반입 진단의 파일 경로를 눌러 원
 cd it_backend && ./gradlew check
 ```
 
+Expected: **내 변경으로 인한 신규 실패 0건.** BUILD SUCCESSFUL이 아닐 수 있다 —
+이 워킹트리에는 동시 진행 중인 다른 작업의 미커밋 코드가 있고, 그것이 아키텍처 게이트 2건을
+이미 깨 놓았다(Task 4 시점 실측):
+
+- `MaxLinesRatchetTest` — `ApplicationService.java`가 ratchet 기준 804줄인데 워킹트리는 837줄
+  (HEAD는 804줄. 즉 미커밋 변경이 33줄을 늘렸다)
+- `RequestParameterNamingTest` — `ApplicationController.java`가 264줄 → 281줄
+  (신규 `changePendingApprover` 엔드포인트)
+
+이 두 건 **말고** 다른 실패가 나오면 그것은 내 변경 탓이므로 고친다. 두 건만 나오면 통과로 본다.
+판정 근거를 남기려면 실패한 테스트 이름과 위 줄 수 대조를 보고서에 적는다:
+
+```bash
+cd it_backend && wc -l src/main/java/com/kdb/it/common/approval/service/ApplicationService.java && git show HEAD:src/main/java/com/kdb/it/common/approval/service/ApplicationService.java | wc -l
+```
+
+내 변경분만 좁혀 확인하려면:
+
+```bash
+cd it_backend && ./gradlew test --tests '*RequestForm*' --tests '*FormAdapter*' --tests '*CapitalOverview*' --tests '*MigrationIoeCatalog*'
+```
+
 Expected: BUILD SUCCESSFUL.
 
 - [ ] **Step 2: 프론트 게이트**
