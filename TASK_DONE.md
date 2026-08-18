@@ -16,10 +16,11 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
-### ✅ 2026-08-18 FE-37 사이트 전체 고정 문구 i18n 이관 — 도메인 5개 (1321건)
+### ✅ 2026-08-18 FE-37 사이트 전체 고정 문구 i18n 이관 완료 (1530건)
 
-FE-37 자체는 **아직 진행 중**입니다(잔여 209건, [`TASK.md`](TASK.md) 참조). 이 절은 그중
-완결한 도메인 다섯 개의 근거를 남깁니다. 감사 실측은 **1530 → 209건**입니다.
+`node scripts/check-user-facing-copy.mjs --scope app` 실측이 **1530 → 0건**이 되었고,
+감소 전용 기준선 `scripts/user-facing-copy-baselines.mjs`가 **비었습니다**. 이제 이 규칙은
+"새 파일에서 고정 리터럴이 발견되면 실패"라는 순수 회귀 차단으로만 동작합니다.
 
 | 상태 | 도메인 | 완료 범위 | 저장소 커밋 | 검증 증거 |
 | :--: | :--: | --- | --- | --- |
@@ -28,6 +29,9 @@ FE-37 자체는 **아직 진행 중**입니다(잔여 209건, [`TASK.md`](TASK.m
 | ✅ Done | 관리자 | 상세 로그 화면(로그 21종 제목·메뉴 라벨 포함)·실시간 모니터링 컴포넌트 7개·관리자 화면 14개의 397건을 `admin` 카탈로그로 옮겼다. CRUD 화면이 공유하는 표·툴바 어휘는 `admin.crud`로 접고, 재조회 안내는 `{target}`에 화면별 대상명을 끼우는 한 벌로 통일했다. `ADMIN_LOG_TABLES`는 key·tableName만 갖는 순수 데이터가 되고 제목·라벨은 카탈로그로 갔다. | it_frontend `e7e552f`·`4457f11` | 같음 |
 | ✅ Done | 게시판 | 게시판 목록·게시물 목록·작성·수정·상세·댓글 트리·첨부파일 composable 86건을 새 카탈로그 `i18n/messages/board.ts`로 옮겼다. | it_frontend `8c41591` | 같음 |
 | ✅ Done | 사업 가이드 | 조회·작성·삭제 화면과 첨부 composable 38건을 `info.guide`로 옮겼다. | it_frontend `5065450` | 같음 |
+| ✅ Done | 사전진단·감사·기타 화면 | 사전진단 설문(선택지 코드값 분리 포함)·감사 대시보드·준비중 화면·루트 리다이렉트 43건. | it_frontend `6f58e89` | 같음 |
+| ✅ Done | 데이터 일괄 반입 | 슬롯·미리보기 표·편성요청서 결과표와 화면 전용 composable 32건. | it_frontend `8c7eb2b` | 같음 |
+| ✅ Done | 잔여 composable·유틸·타입 | 문서 상세·사업 상세·표 테두리·API 오류·전산업무비 헬퍼·HWPX·PDF 폰트·알림 종류·지정맥 손가락 134건. 이 커밋으로 감사 0건에 도달했다. | it_frontend `507929b` | 같음 |
 
 **이관 중 확정한 규칙 세 가지.**
 
@@ -36,6 +40,21 @@ FE-37 자체는 **아직 진행 중**입니다(잔여 209건, [`TASK.md`](TASK.m
 3. **왕복하는 Excel 양식은 한국어로 고정한다.** 공통코드 화면은 내려받은 파일을 같은 화면이 다시 반입하므로 컬럼명·시트명을 locale에 따라 바꾸면 영어로 받은 파일을 반입 파서가 해석하지 못한다. allowlist에 근거를 남겼다.
 
 **800줄 상한 대응.** `t()` 호출로 줄바꿈이 늘자 상한에 닿아 있던 파일 넷이 초과했다. 기준선을 올리지 않고 책임을 분리했다 — `components/plan/PlanNoteField.vue`(계획 상세의 서술 필드 5개가 같은 구조를 반복하고 있었다), `components/council/CouncilApplyDialog.vue`, `components/council/result/CouncilResultReviewSection.vue`를 새로 만들고, `useCouncilRequestPage`는 catch마다 반복하던 서버 메시지 조립을 `failureDetail`로, 성공 Toast를 `notifySuccess`로 모았다. 네 파일 모두 상한 아래로 내려왔다(792·754·790·796줄).
+
+**사전진단 선택지의 코드값 분리(선행 판단이 필요했던 유일한 건).** 설문 선택지 문자열이 그대로
+`calculateResult()`의 분기 값이라 문구만 옮기면 업무 분기가 깨졌다. 선택지를 `value`(코드값)와
+표시명(카탈로그)으로 나눴다 — CLAUDE.md §6의 "업무 분기와 저장에는 번역된 명칭이 아니라 코드값만"
+규칙 그대로다. 문자열 포함 검사(`serviceTypes.some(t => t.includes('신규'))`)는 `NEW_SERVICE_TYPES`
+집합 비교로 바꿨다. 이 과정에서 **도달할 수 없던 가지 하나를 지웠다** — 정보보호팀 조건의
+`workTypes.includes('정보보호')`는 업무 유형 선택지에 정보보호가 없어 항상 거짓이었다(주석에 복구
+조건을 남겼다).
+
+**allowlist에 남긴 것과 그 근거.** 번역 대상이 아닌 리터럴만 넣었다 — ① 로직이 값 자체를 비교하는
+상수(`utils/common.ts`의 전결권 기준, `utils/projectTimeline.ts`의 단계명; 표시는 각각
+`common.approvalBasis.*`와 같은 항목의 `labelKey`가 담당), ② 언어와 무관한 기호·단위·코드
+(테두리 기호 `─ ╌ ⋯ ═`, CSS 단위 `1px~5px`, 통화 코드 `KRW`, 단계 배지 숫자, 정보 배지 `i`),
+③ 공통코드 값(`MAIN_CODE_TYPE`), ④ 같은 화면이 왕복하는 한국어 Excel 양식(공통코드),
+⑤ 실데이터 연동 전 자리표시자 숫자(감사 대시보드).
 
 용어집([`it_frontend/docs/guides/i18n/glossary.md`](it_frontend/docs/guides/i18n/glossary.md))에 협의회 도메인 21개 용어를 추가했다.
 
