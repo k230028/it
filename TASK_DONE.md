@@ -16,6 +16,23 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-19 BE-49 다국어 변경로그·관리자 메뉴 시드 마이그레이션 복원
+
+2026-08-18 다국어 배치가 계획한 `V20260818_001__CreateClangmChangeLog.sql`(TPRMPP_CLANGL +
+SQ_TPRMPP_CLANGL_1)과 `V20260818_002__SeedTranslationAdminMenu.sql`이 **미푸시 임시 클론에서만
+커밋되어 유실**됐던 것을 같은 날 REVIEW가 발견(당시 versions.lock의 it_database SHA `809db9c9`가
+어디에도 없는 유령이었던 것이 증거)하고, 계획 문서의 SQL 전문으로 원래 버전명 그대로 복원했다.
+어느 환경의 schema history에도 `20260818.*`가 없음을 확인한 뒤였다.
+
+| 상태 | 항목 | 조치 | 저장소 커밋 | 검증 증거 |
+| :--: | --- | --- | --- | --- |
+| ✅ Done | BE-49 | 마이그레이션 2건 + 검증 스크립트 복원, 로컬 Flyway 적용(임시 28081 기동) | it_database `c791c63` | Flyway `20260818.001/002` success=1, 검증 [1]~[5] 기대값 일치([5] 길이 불일치 0건), 메뉴 `MNU0001014`(부모 MADM0004, `pi pi-language`, en=Translations) 시드, `./gradlew integrationTest --tests '*ClangmChangeLogIt*'` BUILD SUCCESSFUL |
+
+유실됐던 기간의 영향(정리): `ClangmChangeLogIt` 통합 테스트 차단, 번역 저장 변경로그의 무음 유실
+(afterCommit 감사 경로 — 지표만 증가), 관리자 사이드바 메뉴 미노출. 복원 후 모두 해소. 단,
+**복원 전에 기동된 백엔드는 메뉴 캐시에 새 메뉴가 없으므로 재기동(또는 메뉴 저장으로 캐시 무효화)
+후 사이드바에 나타난다.** BE-45(시드의 권한 매핑 미포함)는 별건으로 계속 열려 있다.
+
 ### ✅ 2026-08-18 FE-37 사이트 전체 고정 문구 i18n 이관 완료 (1530건)
 
 `node scripts/check-user-facing-copy.mjs --scope app` 실측이 **1530 → 0건**이 되었고,
