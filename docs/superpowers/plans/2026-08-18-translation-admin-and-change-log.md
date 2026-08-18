@@ -184,7 +184,7 @@ Run:
 { printf '%s\n' "$DB_PASSWORD"; cat it_database/docs/verification/V20260818_001__CreateClangmChangeLog.verify.sql; } | sqlplus -S ITPAPP@127.0.0.1:11521/XEPDB1
 ```
 
-Expected: [1]에 17개 컬럼, [2]에 `PK_CLANGL` / position 1 / `LOG_HIS_TGR_SNO`, [3]에 `NOT NULL` 조건만, [4]에 `MAX_VALUE = 999999999999999000`, **[5]는 0건**(no rows selected).
+Expected: [1]에 16개 컬럼, [2]에 `PK_CLANGL` / position 1 / `LOG_HIS_TGR_SNO`, [3]에 `NOT NULL` 조건만, [4]에 `MAX_VALUE = 999999999999999000`, **[5]는 0건**(no rows selected).
 
 - [ ] **Step 6: 커밋**
 
