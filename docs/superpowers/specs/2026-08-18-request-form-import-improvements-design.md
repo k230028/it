@@ -88,8 +88,8 @@
   찾지 못하면 `false`(결과만 남고 선택이 초기화된 상태).
 - 반환 객체에 `openSourceFile`을 노출한다.
 
-**`useRequestFormPage`**
-- `upload.openSourceFile`을 그대로 통과시킨다(파사드 일관성).
+`useRequestFormPage`는 바꾸지 않는다. 화면이 이미 `page.upload.summary` 형태로 업로드
+상태를 직접 읽고 있으므로 `page.upload.openSourceFile`을 그대로 쓴다.
 
 **`RequestFormResultTable.vue`**
 - `props`에 `openSourceFile?: (fileKey: string) => boolean` 추가. 없으면 경로를 표기만
@@ -213,7 +213,7 @@
 | 저장소 | 파일 |
 | --- | --- |
 | `it_backend` | `RequestFormDto`, `RequestFormDiagnosticCode`, `RequestFormImportService`, `GeneralExpenseFormAdapter`, `CapitalOverviewReader`, `CapitalProjectFormAdapter`, `MigrationIoeCatalogReader` |
-| `it_frontend` | `useRequestFormUpload.ts`, `useRequestFormPage.ts`, `RequestFormResultTable.vue`, `requests.vue`, `i18n/messages/migration.ts` |
+| `it_frontend` | `useRequestFormUpload.ts`, `RequestFormResultTable.vue`, `requests.vue`, `i18n/messages/migration.ts`, `app/types/api.d.ts`(생성물) |
 | `it_database` | 없음 (Flyway 스크립트 불필요) |
 
 DB 스키마 변경 없음. 신규 테이블·컬럼 없음. `meta/table.txt` 변경 없음.
