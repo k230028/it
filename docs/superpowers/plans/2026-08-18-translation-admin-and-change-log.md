@@ -1396,20 +1396,30 @@ git -C it_frontend commit -m "feat: 다국어 번역 관리자 API 클라이언�
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
+
+import { useAdminTranslationsPage } from '~/composables/useAdminTranslationsPage';
 import type { AdminTranslationEntryResponse } from '~/composables/useAdminApi';
 
-const mockFetchTranslationEntries = vi.fn();
-const mockSaveTranslations = vi.fn();
-const mockToastAdd = vi.fn();
-
-vi.stubGlobal('useAdminApi', () => ({
-    fetchTranslationEntries: mockFetchTranslationEntries,
-    saveTranslations: mockSaveTranslations,
+// useAdminApi와 primevue/usetoast는 컴포저블이 명시적으로 import하므로 vi.mock으로 대체한다
+// (useAdminCodesPage.test.ts와 같은 경계). useI18n은 Nuxt 자동 import라 stubGlobal을 쓴다.
+const mocks = vi.hoisted(() => ({
+    fetchTranslationEntries: vi.fn(),
+    saveTranslations: vi.fn(),
+    toastAdd: vi.fn(),
 }));
-vi.stubGlobal('useToast', () => ({ add: mockToastAdd }));
-vi.stubGlobal('useI18n', () => ({ t: (key: string) => key }));
 
-const { useAdminTranslationsPage } = await import('~/composables/useAdminTranslationsPage');
+vi.mock('~/composables/useAdminApi', () => ({
+    useAdminApi: () => ({
+        fetchTranslationEntries: mocks.fetchTranslationEntries,
+        saveTranslations: mocks.saveTranslations,
+    }),
+}));
+
+vi.mock('primevue/usetoast', () => ({
+    useToast: () => ({ add: mocks.toastAdd }),
+}));
+
+vi.stubGlobal('useI18n', () => ({ t: (key: string) => key }));
 
 const menuEntry = (
     targetKey: string,
@@ -1434,10 +1444,10 @@ const menuEntry = (
 
 describe('다국어 관리 화면 컴포저블', () => {
     beforeEach(() => {
-        mockFetchTranslationEntries.mockReset();
-        mockSaveTranslations.mockReset();
-        mockToastAdd.mockReset();
-        mockFetchTranslationEntries.mockReturnValue({
+        mocks.fetchTranslationEntries.mockReset();
+        mocks.saveTranslations.mockReset();
+        mocks.toastAdd.mockReset();
+        mocks.fetchTranslationEntries.mockReturnValue({
             data: ref([
                 menuEntry('MNU0001001', '대시보드', 'Dashboard'),
                 menuEntry('MNU0001002', '예산', null),
@@ -1445,7 +1455,7 @@ describe('다국어 관리 화면 컴포저블', () => {
             pending: ref(false),
             refresh: vi.fn(),
         });
-        mockSaveTranslations.mockResolvedValue(undefined);
+        mocks.saveTranslations.mockResolvedValue(undefined);
     });
 
     it('미번역 필터는 번역이 비어 있는 항목만 남긴다', () => {
@@ -1489,7 +1499,7 @@ describe('다국어 관리 화면 컴포저블', () => {
         page.draft.value.MNU_NM = 'Main Dashboard';
         await page.saveDialog();
 
-        expect(mockSaveTranslations).toHaveBeenCalledWith('menu', 'MNU0001001', [
+        expect(mocks.saveTranslations).toHaveBeenCalledWith('menu', 'MNU0001001', [
             { language: 'en', columnName: 'MNU_NM', text: 'Main Dashboard' },
         ]);
     });
@@ -1500,7 +1510,7 @@ describe('다국어 관리 화면 컴포저블', () => {
 
         await page.saveDialog();
 
-        expect(mockSaveTranslations).not.toHaveBeenCalled();
+        expect(mocks.saveTranslations).not.toHaveBeenCalled();
         expect(page.dialogVisible.value).toBe(false);
     });
 
@@ -1511,7 +1521,7 @@ describe('다국어 관리 화면 컴포저블', () => {
         page.draft.value.MNU_NM = '';
         await page.saveDialog();
 
-        expect(mockSaveTranslations).toHaveBeenCalledWith('menu', 'MNU0001001', [
+        expect(mocks.saveTranslations).toHaveBeenCalledWith('menu', 'MNU0001001', [
             { language: 'en', columnName: 'MNU_NM', text: '' },
         ]);
     });
@@ -1536,12 +1546,14 @@ Expected: FAIL — `Failed to resolve import "~/composables/useAdminTranslations
  * 편집 언어는 영어 하나이며, 지원 언어가 늘면 draft를 언어별 맵으로 넓힙니다.
  * ============================================================================
  */
+import { useToast } from 'primevue/usetoast';
 import {
     useAdminApi,
     type AdminTranslationEntryResponse,
     type AdminTranslationTarget,
     type AdminTranslationValueRequest,
 } from '~/composables/useAdminApi';
+import { TOAST_LIFE } from '~/utils/toast';
 
 /** 번역 현황 필터 */
 export type TranslationStatusFilter = 'all' | 'untranslated' | 'translated';
@@ -1658,7 +1670,7 @@ export const useAdminTranslationsPage = () => {
                 severity: 'success',
                 summary: t('admin.translations.toast.saved'),
                 detail: t('admin.translations.toast.savedDetail'),
-                life: 3000,
+                life: TOAST_LIFE.NORMAL,
             });
             closeDialog();
             await refresh();
@@ -1667,7 +1679,7 @@ export const useAdminTranslationsPage = () => {
                 severity: 'error',
                 summary: t('admin.translations.toast.saveFailed'),
                 detail: t('admin.translations.toast.saveFailedDetail'),
-                life: 5000,
+                life: TOAST_LIFE.LONG,
             });
         } finally {
             saving.value = false;
