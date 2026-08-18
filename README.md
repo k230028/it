@@ -270,3 +270,9 @@ Nuxt 페이지·컴포넌트
 | `it_frontend` | `/vue-patterns`                                                                                          |
 
 이 스킬들은 일반 프레임워크 관례를 담은 참고 자료입니다. 본 프로젝트는 CSR 전용 프론트, `useApiFetch`/`$apiFetch` 래퍼, Flyway 전용 스키마 변경을 사용하므로 스킬의 SSR·`ddl-auto` 전제와 어긋나는 부분이 있습니다. 충돌 시 항상 코드와 저장소 문서의 SoT를 우선하며, 예외 목록은 [CLAUDE.md](CLAUDE.md) §5.4에 정리했습니다.
+
+## 변경 이력
+
+새 개발자가 최근 흐름을 파악할 수 있도록 주요 변경을 최신순으로 기록합니다. 시점성 정보(파일 수·테스트 건수 등)는 [CLAUDE.md](CLAUDE.md) §4.3에 따라 여기 또는 `TASK.md`에만 남기고 `CLAUDE.md`에는 남기지 않습니다.
+
+- 2026-08-18: 다국어 번역 변경로그(TPRMPP_CLANGL) 추가와 관리자 다국어 관리 화면(/admin/translations) 신설
