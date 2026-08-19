@@ -1070,6 +1070,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.kdb.it.common.admin.waslog.dto.WasLogDto;
 import com.kdb.it.common.admin.waslog.dto.WasLogEntry;
 import com.kdb.it.common.admin.waslog.service.WasLogService;
+import com.kdb.it.common.system.security.JwtUtil;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -1084,6 +1085,9 @@ import org.springframework.test.web.servlet.MockMvc;
 class WasLogControllerTest {
 
     @Autowired private MockMvc mockMvc;
+
+    // JwtAuthenticationFilter는 @Component Filter라 @WebMvcTest가 자동 포함한다. 그 생성자 의존을 채운다.
+    @MockitoBean private JwtUtil jwtUtil;
 
     @MockitoBean private WasLogService service;
 
