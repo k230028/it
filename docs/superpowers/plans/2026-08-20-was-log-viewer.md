@@ -629,6 +629,26 @@ class WasLogServiceTest {
         assertThat(snapshot.entries())
                 .extracting(WasLogEntry::seq)
                 .containsExactly(base + 1, base + 2);
+        assertThat(snapshot.lastSeq()).isEqualTo(base + 2);
+    }
+
+    @Test
+    @DisplayName("조회 상한 때문에 오래된 항목을 버리면 dropped를 세운다")
+    void localSnapshot_상한초과_dropped() {
+        WasLogDto.Snapshot snapshot =
+                service.localSnapshot(new WasLogDto.Query(0L, 2, Set.of(), null, null));
+
+        assertThat(snapshot.dropped()).isTrue();
+    }
+
+    @Test
+    @DisplayName("상한에 걸리지 않으면 dropped를 세우지 않는다")
+    void localSnapshot_상한미달_dropped없음() {
+        WasLogDto.Snapshot snapshot =
+                service.localSnapshot(new WasLogDto.Query(0L, 200, Set.of(), null, null));
+
+        assertThat(snapshot.entries()).hasSize(3);
+        assertThat(snapshot.dropped()).isFalse();
     }
 
     @Test
@@ -852,11 +872,16 @@ public class WasLogService {
             if (!matchesKeyword(entry, query.keyword())) continue;
             filtered.add(entry);
         }
-        if (filtered.size() > limit) {
+        boolean truncated = filtered.size() > limit;
+        if (truncated) {
             filtered = new ArrayList<>(filtered.subList(filtered.size() - limit, filtered.size()));
         }
 
-        boolean dropped = query.afterSeq() > 0 && buffer.oldestSeq() > query.afterSeq() + 1;
+        // 커서 이후 항목을 건너뛰는 경로는 둘이다 — ① 버퍼에서 밀려남 ② 조회 상한을 넘겨 최신분만 남김.
+        // ②는 오래된 쪽을 버리므로 커서를 낮춰도 복구되지 않는다. 조용히 넘기면 클라이언트는 연속된
+        // 로그를 본다고 착각하므로, 두 경로 모두 dropped로 알린다.
+        boolean evicted = query.afterSeq() > 0 && buffer.oldestSeq() > query.afterSeq() + 1;
+        boolean dropped = evicted || truncated;
         long lastSeq = Math.max(query.afterSeq(), buffer.lastSeq());
 
         return new WasLogDto.Snapshot(
@@ -1001,7 +1026,7 @@ app.was-log.restore-scan-ms=30000
 cd C:/it/it_backend && ./gradlew test --tests "com.kdb.it.common.admin.waslog.service.WasLogServiceTest" --no-daemon
 ```
 
-Expected: PASS (8건)
+Expected: PASS (10건)
 
 - [ ] **Step 11: 포맷 적용 후 커밋**
 
@@ -2928,7 +2953,7 @@ cd C:/it/it_frontend && git add app/types/wasLog.ts app/composables/useWasLogFee
                 message: '메시지',
                 stackTrace: '스택트레이스',
                 empty: '표시할 로그가 없습니다.',
-                dropped: '일부 로그가 버퍼에서 밀려났습니다. 더 이른 로그는 서버 로그 파일을 확인하세요.',
+                dropped: '일부 로그를 건너뛰었습니다. 버퍼에서 밀려났거나 한 번에 표시할 수 있는 양을 넘었습니다.',
                 restarted: '서버가 재기동되어 이전 로그가 사라졌습니다.',
                 peerErrorPrefix: '다른 인스턴스 조회에 실패했습니다',
                 overrideActive: '적용 중인 임시 로그레벨',
