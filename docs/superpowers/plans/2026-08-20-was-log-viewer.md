@@ -1462,90 +1462,107 @@ cd C:/it/it_backend && git add src/main/java/com/kdb/it/common/admin/waslog src/
 
 `WasLogPeerClientTest.java`:
 
+> 이 프로젝트는 `MockWebServer`를 쓰지 않는다 — `build.gradle` 머리말이 적었듯 okhttp 계열을 폐쇄망 반입
+> 대상에서 의도적으로 뺐다. 대신 `spring-test`의 `MockRestServiceServer`를 `RestClient.Builder`에 바인딩한다
+> (`EaiServiceTest`가 쓰는 것과 같은 방식). 새 의존성이 필요 없다.
+
 ```java
 package com.kdb.it.common.admin.waslog.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import com.kdb.it.common.admin.waslog.config.WasLogProperties;
 import com.kdb.it.common.admin.waslog.dto.WasLogDto;
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 
 class WasLogPeerClientTest {
 
-    private MockWebServer server;
-    private WasLogPeerClient client;
+    private static final String PEER_URL = "http://svr2:28080";
 
-    @BeforeEach
-    void setUp() throws IOException {
-        server = new MockWebServer();
-        server.start();
-        WasLogProperties properties = new WasLogProperties(2000, Map.of(), "s3cret", 1000, 3000);
-        client = new DefaultWasLogPeerClient(RestClient.builder().build(), properties);
-    }
+    private final WasLogProperties properties =
+            new WasLogProperties(2000, Map.of(), "s3cret", 1000, 3000);
 
-    @AfterEach
-    void tearDown() throws IOException {
-        server.shutdown();
-    }
+    private final WasLogDto.Query query = new WasLogDto.Query(0L, 200, Set.of(), null, null);
 
     @Test
     @DisplayName("피어 응답을 그대로 반환하고 내부 토큰 헤더를 보낸다")
-    void fetchSnapshot_정상() throws Exception {
-        server.enqueue(
-                new MockResponse()
-                        .setHeader("Content-Type", "application/json")
-                        .setBody(
+    void fetchSnapshot_정상() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo(PEER_URL + "/internal/was-logs/snapshot"))
+                .andExpect(method(POST))
+                .andExpect(header("X-Internal-Token", "s3cret"))
+                .andRespond(
+                        withSuccess(
                                 """
                                 {"instanceId":"SVR2","bufferEpoch":"e2","entries":[],
                                  "lastSeq":5,"dropped":false,"levelOverrides":[],"peerError":null}
-                                """));
+                                """,
+                                MediaType.APPLICATION_JSON));
 
-        WasLogDto.Snapshot snapshot =
-                client.fetchSnapshot(
-                        server.url("/").toString().replaceAll("/$", ""),
-                        "SVR2",
-                        new WasLogDto.Query(0L, 200, Set.of(), null, null));
+        WasLogPeerClient client = new DefaultWasLogPeerClient(builder.build(), properties);
+        WasLogDto.Snapshot snapshot = client.fetchSnapshot(PEER_URL, "SVR2", query);
 
+        server.verify();
         assertThat(snapshot.instanceId()).isEqualTo("SVR2");
         assertThat(snapshot.lastSeq()).isEqualTo(5L);
-
-        RecordedRequest recorded = server.takeRequest();
-        assertThat(recorded.getPath()).isEqualTo("/internal/was-logs/snapshot");
-        assertThat(recorded.getHeader("X-Internal-Token")).isEqualTo("s3cret");
     }
 
     @Test
-    @DisplayName("피어가 5xx면 WasLogPeerException을 던진다")
+    @DisplayName("피어가 5xx면 WasLogPeerException을 던지고 인스턴스ID를 메시지에 담는다")
     void fetchSnapshot_서버오류() {
-        server.enqueue(new MockResponse().setResponseCode(500));
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo(PEER_URL + "/internal/was-logs/snapshot"))
+                .andRespond(withServerError());
 
-        String baseUrl = server.url("/").toString().replaceAll("/$", "");
-        WasLogDto.Query query = new WasLogDto.Query(0L, 200, Set.of(), null, null);
+        WasLogPeerClient client = new DefaultWasLogPeerClient(builder.build(), properties);
 
-        assertThatThrownBy(() -> client.fetchSnapshot(baseUrl, "SVR2", query))
-                .isInstanceOf(WasLogPeerException.class);
+        assertThatThrownBy(() -> client.fetchSnapshot(PEER_URL, "SVR2", query))
+                .isInstanceOf(WasLogPeerException.class)
+                .hasMessageContaining("SVR2");
+    }
+
+    @Test
+    @DisplayName("레벨 변경도 같은 토큰 헤더로 위임한다")
+    void applyLevel_정상() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo(PEER_URL + "/internal/was-logs/level"))
+                .andExpect(method(POST))
+                .andExpect(header("X-Internal-Token", "s3cret"))
+                .andRespond(
+                        withSuccess(
+                                """
+                                {"logger":"com.kdb.it","level":"DEBUG","previousLevel":"INFO",
+                                 "expiresAt":"2026-08-20T11:00:00"}
+                                """,
+                                MediaType.APPLICATION_JSON));
+
+        WasLogPeerClient client = new DefaultWasLogPeerClient(builder.build(), properties);
+        WasLogDto.LevelOverride override =
+                client.applyLevel(
+                        PEER_URL, new WasLogDto.LevelRequest("SVR2", "com.kdb.it", "DEBUG", 30));
+
+        server.verify();
+        assertThat(override.logger()).isEqualTo("com.kdb.it");
+        assertThat(override.previousLevel()).isEqualTo("INFO");
     }
 }
 ```
-
-> `MockWebServer` 의존이 없으면 `it_backend/build.gradle`의 `testImplementation`에 이미 있는지 먼저 확인한다.
-> ```bash
-> cd C:/it/it_backend && grep -n "mockwebserver" build.gradle
-> ```
-> 없으면 폐쇄망 반입 부담을 피하기 위해 `MockWebServer` 대신 `RestClient.builder().requestFactory(...)`에
-> 스텁 `ClientHttpRequestFactory`를 주입하는 방식으로 같은 두 시나리오(정상 JSON / 500)를 검증한다.
 
 - [ ] **Step 2: 테스트 실패 확인**
 
@@ -1696,7 +1713,7 @@ public class WasLogConfig {
 cd C:/it/it_backend && ./gradlew test --tests "com.kdb.it.common.admin.waslog.client.WasLogPeerClientTest" --no-daemon
 ```
 
-Expected: PASS (2건)
+Expected: PASS (3건)
 
 - [ ] **Step 8: 내부 컨트롤러 실패 테스트 작성**
 
