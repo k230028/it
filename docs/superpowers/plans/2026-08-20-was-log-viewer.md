@@ -1116,14 +1116,12 @@ Expected: 컴파일 실패 — `WasLogController`, `WasLogService.snapshot(...)`
         if (instanceId == null || instanceId.isBlank() || instanceId.equals(selfInstanceId)) {
             return localSnapshot(query);
         }
-        String peerUrl = properties.peers().get(instanceId);
-        if (peerUrl == null || peerUrl.isBlank()) {
-            throw new IllegalArgumentException("알 수 없는 인스턴스: " + instanceId);
-        }
-        // Task 4에서 피어 위임으로 대체한다.
+        // 다른 인스턴스 조회는 Task 4에서 피어 위임으로 구현한다. 그때까지는 알 수 없는 인스턴스와 같이 다룬다.
         throw new IllegalArgumentException("알 수 없는 인스턴스: " + instanceId);
     }
 ```
+
+`properties.peers()` 조회는 Task 4에서 위임을 붙일 때 함께 넣는다. 지금 넣으면 결과를 쓰지 않는 죽은 코드가 된다.
 
 - [ ] **Step 4: `WasLogController` 작성**
 
@@ -2410,20 +2408,17 @@ import 추가: `com.kdb.it.common.admin.waslog.dto.WasLogEntry`, `com.kdb.it.com
 
 - [ ] **Step 5: 조회·레벨변경에도 감사 호출 추가**
 
-`snapshot` 메서드 본문 첫 줄과 `applyLevel` 첫 줄에 각각 추가:
+`WasLogController.snapshot` 본문 첫 줄에 추가한다. `snapshot`은 3초마다 폴링되므로 매 호출을 남기면 감사 로그가 실제 로그를 뒤덮는다. **커서가 0인 첫 조회에서만** 남긴다.
 
 ```java
-        auditLogger.logSnapshotAccess(instanceId);
+        if (afterSeq == 0) auditLogger.logSnapshotAccess(instanceId);
 ```
+
+`WasLogController.applyLevel` 본문 첫 줄에 추가한다. 레벨 변경은 드물고 상태를 바꾸므로 매번 남긴다.
 
 ```java
         auditLogger.logLevelChange(request);
 ```
-
-> `snapshot`은 3초마다 폴링되므로 매 호출 감사는 로그 폭주다. **커서가 0인 첫 조회에서만** 남긴다:
-> ```java
->         if (afterSeq == 0) auditLogger.logSnapshotAccess(instanceId);
-> ```
 
 - [ ] **Step 6: 기존 컨트롤러 테스트에 mock 추가**
 
