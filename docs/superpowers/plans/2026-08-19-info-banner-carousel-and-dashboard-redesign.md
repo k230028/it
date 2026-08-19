@@ -213,7 +213,7 @@ SELECT '3. CLANGM 영문 메뉴명', COUNT(*)
    AND m.DEL_YN = 'N'
    AND l.DTT_LAN_C = 'en'
    AND l.TC_COL_NM = 'MNU_NM'
-   AND l.DTT_NM = 'Banners';
+   AND l.TC_DES = 'Banners'; -- 번역문은 TC_DES에 들어간다. DTT_NM은 대상 구분 상수('메뉴')다
 ```
 
 - [ ] **Step 3: 재실행 안전성 확인 (스크립트를 두 번 적용)**
