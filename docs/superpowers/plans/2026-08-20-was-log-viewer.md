@@ -1046,6 +1046,7 @@ cd C:/it/it_backend && git add src/main/java/com/kdb/it/common/admin/waslog src/
 - Create: `it_backend/src/main/java/com/kdb/it/common/admin/waslog/controller/WasLogController.java`
 - Test: `it_backend/src/test/java/com/kdb/it/common/admin/waslog/controller/WasLogControllerTest.java`
 - Test: `it_backend/src/test/java/com/kdb/it/common/admin/waslog/WasLogSecurityBoundaryTest.java`
+- Test: `it_backend/src/test/java/com/kdb/it/common/admin/waslog/controller/WasLogControllerAuthorizationTest.java`
 
 **Interfaces:**
 - Consumes: `WasLogService.localSnapshot`, `WasLogService.instances`, `WasLogDto.*`(Task 2)
@@ -1135,8 +1136,41 @@ class WasLogControllerTest {
                 .andExpect(jsonPath("$[0].self").value(true))
                 .andExpect(jsonPath("$[1].id").value("SVR2"));
     }
+
+    @Test
+    @DisplayName("질의 파라미터를 파싱해 서비스에 그대로 넘긴다")
+    void snapshot_파라미터전달() throws Exception {
+        given(service.snapshot(any(), any()))
+                .willReturn(
+                        new WasLogDto.Snapshot("SVR2", "e1", List.of(), 9L, false, List.of(), null));
+
+        mockMvc.perform(
+                        get("/api/admin/was-logs")
+                                .param("instanceId", "SVR2")
+                                .param("afterSeq", "9")
+                                .param("limit", "50")
+                                .param("levels", " ERROR , WARN ,")
+                                .param("logger", "com.kdb.it")
+                                .param("q", "실패"))
+                .andExpect(status().isOk());
+
+        ArgumentCaptor<String> instanceCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<WasLogDto.Query> queryCaptor = ArgumentCaptor.forClass(WasLogDto.Query.class);
+        verify(service).snapshot(instanceCaptor.capture(), queryCaptor.capture());
+
+        assertThat(instanceCaptor.getValue()).isEqualTo("SVR2");
+        WasLogDto.Query query = queryCaptor.getValue();
+        assertThat(query.afterSeq()).isEqualTo(9L);
+        assertThat(query.limit()).isEqualTo(50);
+        assertThat(query.levels()).containsExactlyInAnyOrder("ERROR", "WARN");
+        assertThat(query.logger()).isEqualTo("com.kdb.it");
+        assertThat(query.keyword()).isEqualTo("실패");
+    }
 }
 ```
+
+`WasLogControllerTest.java` 상단에 import를 추가한다: `static org.assertj.core.api.Assertions.assertThat`,
+`static org.mockito.Mockito.verify`, `org.mockito.ArgumentCaptor`.
 
 - [ ] **Step 2: 테스트 실패 확인**
 
@@ -1258,7 +1292,7 @@ cd C:/it/it_backend && grep -rn "IllegalArgumentException" src/main/java/com/kdb
 cd C:/it/it_backend && ./gradlew test --tests "com.kdb.it.common.admin.waslog.controller.WasLogControllerTest" --no-daemon
 ```
 
-Expected: PASS (3건)
+Expected: PASS (4건)
 
 - [ ] **Step 7: 보안 경계 테스트 작성**
 
@@ -1319,7 +1353,80 @@ cd C:/it/it_backend && ./gradlew test --tests "com.kdb.it.common.admin.waslog.Wa
 
 Expected: PASS (2건). 401/403 기대값이 다르면 기존 `AdminSecurityBoundaryTest`의 실제 응답 코드에 맞춘다.
 
-- [ ] **Step 9: 포맷 적용 후 커밋**
+- [ ] **Step 9: `@PreAuthorize` 격리 검증 테스트 작성**
+
+Step 7의 `WasLogSecurityBoundaryTest`는 실제 `SecurityConfig`를 올리므로 `/api/admin/**` URL 규칙만으로도
+통과한다 — 컨트롤러에서 `@PreAuthorize`를 지워도 초록이다. URL 규칙이 없는 `TestSecurityConfig`에 메서드
+보안만 켜서 애너테이션 자체를 증명하는 테스트를 따로 둔다(`RealtimeLogControllerTest`가 쓰는 패턴).
+
+`WasLogControllerAuthorizationTest.java`:
+
+```java
+package com.kdb.it.common.admin.waslog.controller;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.kdb.it.common.admin.waslog.service.WasLogService;
+import com.kdb.it.common.system.security.JwtUtil;
+import com.kdb.it.common.system.service.CustomUserDetailsService;
+import com.kdb.it.config.TestSecurityConfig;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+/**
+ * 컨트롤러 자신의 {@code @PreAuthorize}를 격리 검증한다.
+ *
+ * <p>URL 패턴 규칙이 없는 {@link TestSecurityConfig}에 메서드 보안만 켜므로, 애너테이션을 지우면 이 테스트가
+ * 깨진다. 엔드포인트가 나중에 {@code /api/admin/**} 밖으로 옮겨져도 권한이 유지되는지를 지키는 안전망이다.
+ */
+@WebMvcTest(WasLogController.class)
+@Import({TestSecurityConfig.class, WasLogControllerAuthorizationTest.MethodSecurityTestConfig.class})
+class WasLogControllerAuthorizationTest {
+
+    @EnableMethodSecurity
+    static class MethodSecurityTestConfig {}
+
+    @Autowired private MockMvc mvc;
+
+    @MockitoBean private WasLogService service;
+
+    @MockitoBean private JwtUtil jwtUtil;
+
+    @MockitoBean private CustomUserDetailsService customUserDetailsService;
+
+    @Test
+    @WithMockUser(roles = "USER")
+    @DisplayName("일반 사용자는 로그 조회에서 403")
+    void 일반사용자_조회_403() throws Exception {
+        mvc.perform(get("/api/admin/was-logs")).andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    @DisplayName("일반 사용자는 인스턴스 목록에서도 403")
+    void 일반사용자_인스턴스목록_403() throws Exception {
+        mvc.perform(get("/api/admin/was-logs/instances")).andExpect(status().isForbidden());
+    }
+}
+```
+
+- [ ] **Step 10: 격리 검증 테스트 통과 확인**
+
+```bash
+cd C:/it/it_backend && ./gradlew test --tests "com.kdb.it.common.admin.waslog.controller.WasLogControllerAuthorizationTest" --no-daemon
+```
+
+Expected: PASS (2건)
+
+- [ ] **Step 11: 포맷 적용 후 커밋**
 
 ```bash
 cd C:/it/it_backend && ./gradlew spotlessApply --no-daemon
