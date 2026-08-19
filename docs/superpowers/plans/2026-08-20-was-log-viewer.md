@@ -540,6 +540,15 @@ class WasLogServiceTest {
 
     private WasLogService service;
 
+    /**
+     * setUp이 넣은 첫 항목의 seq.
+     *
+     * <p>{@code WasLogBuffer.shared()}는 프로세스 공용 싱글턴이고 {@code resize()}는 항목만 비울 뿐 seq 카운터는 되돌리지
+     * 않는다(의도된 동작 — seq를 되돌리면 같은 {@code bufferEpoch} 안에서 커서가 뒤로 가 클라이언트가 신규 로그를 건너뛴다). 그래서 테스트는 절대
+     * seq 값을 박지 않고 이 기준값에서 상대적으로 단언한다.
+     */
+    private long base;
+
     @BeforeEach
     void setUp() {
         WasLogBuffer.shared().resize(10);
@@ -550,16 +559,18 @@ class WasLogServiceTest {
         WasLogBuffer.shared().add(1L, "INFO", "main", "com.kdb.it.A", "정상 처리", null);
         WasLogBuffer.shared().add(2L, "ERROR", "main", "com.kdb.it.B", "저장 실패", "stack");
         WasLogBuffer.shared().add(3L, "WARN", "http-1", "org.hibernate.C", "느린 쿼리", null);
+
+        base = WasLogBuffer.shared().snapshot().oldestSeq();
     }
 
     @Test
     @DisplayName("afterSeq 이후 항목만 돌려준다")
     void localSnapshot_커서적용() {
         WasLogDto.Snapshot snapshot =
-                service.localSnapshot(new WasLogDto.Query(2L, 200, Set.of(), null, null));
+                service.localSnapshot(new WasLogDto.Query(base + 1, 200, Set.of(), null, null));
 
-        assertThat(snapshot.entries()).extracting(WasLogEntry::seq).containsExactly(3L);
-        assertThat(snapshot.lastSeq()).isEqualTo(3L);
+        assertThat(snapshot.entries()).extracting(WasLogEntry::seq).containsExactly(base + 2);
+        assertThat(snapshot.lastSeq()).isEqualTo(base + 2);
         assertThat(snapshot.dropped()).isFalse();
         assertThat(snapshot.instanceId()).isEqualTo("SVR1");
     }
@@ -600,8 +611,11 @@ class WasLogServiceTest {
         WasLogBuffer.shared().add(2L, "INFO", "main", "com.kdb.it.A", "둘", null);
         WasLogBuffer.shared().add(3L, "INFO", "main", "com.kdb.it.A", "셋", null);
 
+        // 남은 것은 '둘'·'셋'이고 '하나'는 밀려났다. 커서가 '하나'보다 앞이어야 실제로 건너뛴 항목이 생긴다.
+        long missedSeq = WasLogBuffer.shared().snapshot().oldestSeq() - 2;
+
         WasLogDto.Snapshot snapshot =
-                service.localSnapshot(new WasLogDto.Query(1L, 200, Set.of(), null, null));
+                service.localSnapshot(new WasLogDto.Query(missedSeq, 200, Set.of(), null, null));
 
         assertThat(snapshot.dropped()).isTrue();
     }
@@ -612,7 +626,9 @@ class WasLogServiceTest {
         WasLogDto.Snapshot snapshot =
                 service.localSnapshot(new WasLogDto.Query(0L, 2, Set.of(), null, null));
 
-        assertThat(snapshot.entries()).extracting(WasLogEntry::seq).containsExactly(2L, 3L);
+        assertThat(snapshot.entries())
+                .extracting(WasLogEntry::seq)
+                .containsExactly(base + 1, base + 2);
     }
 
     @Test
