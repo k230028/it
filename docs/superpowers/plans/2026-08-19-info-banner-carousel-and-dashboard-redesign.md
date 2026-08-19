@@ -993,7 +993,7 @@ Run:
 cd C:/it/it_backend && ./gradlew test --no-daemon --tests '*BannerServiceTest'
 ```
 
-Expected: PASS (10개 테스트).
+Expected: PASS (9개 테스트 — 건수형 6개, 금액형 3개).
 
 - [ ] **Step 7: 커밋**
 
@@ -2708,6 +2708,21 @@ Expected: FAIL — 두 컴포넌트를 찾을 수 없음.
 
 - [ ] **Step 3: 건수형 카드 구현**
 
+`<script setup>`은 `export interface`를 지원하지 않으므로 `KpiSegment`는 먼저 공유 타입 파일
+`it_frontend/app/types/infoDashboard.ts`로 만들고 두 컴포넌트가 함께 import한다:
+
+```typescript
+/** /info 홈 KPI 카드의 세그먼트 막대 한 칸 */
+export interface KpiSegment {
+    /** 범례 라벨. 호출자가 t()로 번역해 넘긴다 */
+    label: string;
+    /** 표시 수치. 건수형은 실수치, 금액형은 이미 계산된 퍼센트다 */
+    value: number;
+    /** 막대·범례 점 색상 Tailwind 클래스 (예: 'bg-indigo-600') */
+    colorClass: string;
+}
+```
+
 `it_frontend/app/components/info/InfoKpiCountCard.vue`:
 
 ```vue
@@ -2728,14 +2743,8 @@ Expected: FAIL — 두 컴포넌트를 찾을 수 없음.
 -->
 <script setup lang="ts">
 import InfoDashboardScopeToggle from '~/components/info/InfoDashboardScopeToggle.vue';
+import type { KpiSegment } from '~/types/infoDashboard';
 import type { InfoDashboardScope } from '~/utils/infoDashboardScope';
-
-/** 세그먼트 막대 한 칸 */
-export interface KpiSegment {
-    label: string;
-    value: number;
-    colorClass: string;
-}
 
 const props = defineProps<{
     icon: string;
@@ -2914,7 +2923,7 @@ Run:
 cd C:/it/it_frontend && npx vitest run tests/unit/components/InfoKpiCards.test.ts
 ```
 
-Expected: PASS (10개 테스트).
+Expected: PASS (9개 테스트 — 건수형 6개, 금액형 3개).
 
 - [ ] **Step 6: 커밋**
 
