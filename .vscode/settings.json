@@ -14,7 +14,7 @@
     // ─────────────────────────────────────────────────────────────────────────
     // wrapper 배포판 자동 설치가 보안 프로그램에 막히는 환경이 있어 끕니다(README 참조).
     // 터미널의 ./gradlew는 wrapper를 그대로 쓰므로 영향이 없습니다.
-    "java.import.gradle.wrapper.enabled": false,
+    "java.import.gradle.wrapper.enabled": true,
     "files.encoding": "utf8",
     "files.autoGuessEncoding": false,
     "java.debug.settings.onBuildFailureProceed": true,

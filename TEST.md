@@ -324,7 +324,7 @@ cd it_frontend && npm run generate-report
 #### 4) Javadoc (BE)
 - `./gradlew javadoc`로 `src/main/java` 전체 Javadoc 생성을 검증한다(인코딩 UTF-8, `build.gradle`).
 - Javadoc 경고(파라미터 누락, 잘못된 `@link`, 빈 `@return` 등)는 **주석 보강으로** 해소한다. 메서드 시그니처·로직은 변경 금지.
-- 표준 양식은 `it_backend/docs/guides/comment-style.md` 기준(루트 §4.1 한글 주석 원칙 준수).
+- 표준 양식은 `it_backend/docs/guides/conventions/comment-style.md` 기준(루트 CLAUDE의 한글 주석 원칙 준수).
 
 #### 5) Compile Warning (BE)
 - `./gradlew clean compileJava`로 메인 소스 컴파일 경고를 확인한다(테스트 컴파일은 `compileTestJava`).

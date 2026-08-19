@@ -137,6 +137,23 @@ server {
 
 `java.import.gradle.home`이 필요한 이유는 워크스페이스 설정의 `java.import.gradle.wrapper.enabled: false`와 짝입니다. 어떤 환경에서는 `.gradle\wrapper\dists`의 zip rename이 보안 프로그램에 막혀 Gradle 확장(`vscjava.vscode-gradle`)이 배포판을 매번 삭제·재설치하다 실패합니다. 터미널의 `./gradlew`는 wrapper를 그대로 쓰므로 이 설정과 무관하게 동작합니다.
 
+### standalone Gradle을 직접 실행하지 않습니다
+
+빌드·테스트는 항상 저장소의 Wrapper(`./gradlew`)로 실행합니다. PATH나 IDE에 다른 버전의 Gradle 설치본이 있어도 `it_backend`에서 `gradle ...`을 직접 실행하지 않습니다.
+
+- standalone Gradle로 `wrapper` 태스크가 돌면(직접 입력했든 IDE·도구가 대신 실행했든) `gradle/wrapper/gradle-wrapper.properties`가 **그 설치본 버전으로 덮어써집니다**. `distributionSha256Sum`은 이전 값이 그대로 남아 URL과 짝이 어긋나고, 폐쇄망용 `file:///c:/maven-repo/...` 주석 블록도 함께 지워집니다.
+- 덮어쓴 버전이 구버전이면 Java 확장 임포트가 `Can't use Java 25.0.2 and Gradle 8.9 to import Gradle project it_backend`로 실패합니다. Gradle 8.9의 실행 JVM 상한은 Java 22이고 Java 25 실행 지원은 Gradle 9.1부터라, JDK 25 위에서는 동작하지 않습니다. 이 프로젝트 기준은 **Gradle 9.2.1 + JDK 25**입니다.
+- 같은 증상이 특정 PC에서만 난다면 그 PC의 사용자 설정 `java.import.gradle.home`·`java.import.gradle.version`이 옛 버전을 가리키는지도 함께 확인합니다.
+
+이미 덮어썼다면 이렇게 되돌립니다.
+
+```powershell
+git -C C:\it\it_backend checkout -- gradle/wrapper/gradle-wrapper.properties
+Remove-Item -Recurse -Force C:\it\it_backend\.gradle\8.9   # 덮어쓴 버전의 캐시 폴더
+```
+
+이후 VS Code에서 `Java: Clean Java Language Server Workspace`로 재임포트합니다. Wrapper 버전을 실제로 올릴 때는 `./gradlew wrapper --gradle-version <버전>`으로 갱신하고, `distributionUrl`·`distributionSha256Sum`·폐쇄망 주석이 모두 맞는지 확인한 뒤 커밋합니다.
+
 ### 지우면 기동이 깨지는 설정
 
 `java.import.exclusions`의 두 항목은 취향이 아니라 **장애 회피책**입니다.
@@ -227,7 +244,9 @@ Nuxt 페이지·컴포넌트
 | `CLAUDE.md`              | 반드시 지킬 공통 규칙        |
 | `it_frontend/CLAUDE.md`  | 프론트 필수 규칙             |
 | `it_backend/CLAUDE.md`   | 백엔드 필수 규칙과 보안 경계 |
+| `it_database/CLAUDE.md`  | DB 변경·마이그레이션 안전 규칙 |
 | `docs/guides`            | 주제별 상세 설명과 예제      |
+| `docs/operations`        | 배포·복구·인계 기록          |
 | `TASK.md`                | 미구현, 기술부채, 후속 검증  |
 | `it_database/migrations` | 물리 DB 변경 이력            |
 
@@ -251,28 +270,19 @@ Nuxt 페이지·컴포넌트
 - [인증과 인가](it_backend/docs/guides/security/authentication-authorization.md)
 - [Flyway 운영](it_backend/docs/guides/operations/flyway.md)
 
+### 데이터베이스
+
+- [데이터베이스 빠른 시작](it_database/README.MD)
+- [데이터베이스 필수 규칙](it_database/CLAUDE.md)
+- [데이터베이스 가이드 인덱스](it_database/docs/guides/README.md)
+- [마이그레이션 작성과 검증](it_database/docs/guides/migrations.md)
+
 ## AI 작업 흐름
 
-워크플로우 플러그인은 **Superpowers** 하나만 사용합니다. 상세는 [CLAUDE.md](CLAUDE.md) §5를 따릅니다.
-
-- 새 기능은 `/superpowers:brainstorming` → `/superpowers:writing-plans` → `/superpowers:executing-plans` 순서로 진행합니다.
-- 버그는 `/superpowers:systematic-debugging`으로 재현과 원인을 확인한 뒤 수정합니다.
-- 완료 선언 전에는 `/superpowers:verification-before-completion`으로 실제 명령 출력을 확인합니다.
-- 화면 QA는 두 서버를 실행한 뒤 `npm run test:e2e`와 Playwright MCP로 수행합니다.
-- 코드 리뷰는 diff 기준 `/code-review`, 보안 검토는 `/security-review`를 사용합니다.
-- 품질 점검은 위 「품질 확인」 절의 명령을 직접 실행합니다.
-
-프레임워크 패턴은 `.claude/skills/`에 선별해 둔 참조 스킬로 확인합니다.
-
-| 영역          | 스킬                                                                                                    |
-| ------------- | ------------------------------------------------------------------------------------------------------- |
-| `it_backend`  | `/springboot-patterns`, `/java-coding-standards`, `/jpa-patterns`, `/springboot-security`, `/springboot-tdd`, `/springboot-verification` |
-| `it_frontend` | `/vue-patterns`                                                                                          |
-
-이 스킬들은 일반 프레임워크 관례를 담은 참고 자료입니다. 본 프로젝트는 CSR 전용 프론트, `useApiFetch`/`$apiFetch` 래퍼, Flyway 전용 스키마 변경을 사용하므로 스킬의 SSR·`ddl-auto` 전제와 어긋나는 부분이 있습니다. 충돌 시 항상 코드와 저장소 문서의 SoT를 우선하며, 예외 목록은 [CLAUDE.md](CLAUDE.md) §5.4에 정리했습니다.
+에이전트의 필수 작업 순서, 스킬 우선순위와 검증 진입점은 [CLAUDE.md](CLAUDE.md) §4~5를 따릅니다. 사람은 위 「품질 확인」 명령과 각 저장소 README의 개발·배포 절차로 동일한 검증을 수행할 수 있습니다.
 
 ## 변경 이력
 
-새 개발자가 최근 흐름을 파악할 수 있도록 주요 변경을 최신순으로 기록합니다. 시점성 정보(파일 수·테스트 건수 등)는 [CLAUDE.md](CLAUDE.md) §4.3에 따라 여기 또는 `TASK.md`에만 남기고 `CLAUDE.md`에는 남기지 않습니다.
+새 개발자가 최근 흐름을 파악할 수 있도록 주요 변경을 최신순으로 기록합니다. 시점성 정보(파일 수·테스트 건수 등)는 여기 또는 `TASK.md`에만 남기고 `CLAUDE.md`에는 남기지 않습니다.
 
 - 2026-08-18: 다국어 번역 변경로그(TPRMPP_CLANGL) 추가와 관리자 다국어 관리 화면(/admin/translations) 신설
