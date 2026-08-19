@@ -16,7 +16,7 @@
 - 공유 워킹트리다. `git add -A`·`git add .`·`git commit -a`를 **사용하지 않는다**. 경로를 명시해 스테이징하고, 커밋 전 `git diff --cached --stat`과 `git rev-parse --abbrev-ref HEAD`를 확인한다. 다른 작업의 변경을 되돌리거나 정리하지 않는다.
 - 신규 JavaDoc·TSDoc·인라인 주석은 **한글**로 작성한다. 공개 API·서비스 메서드·composable 반환 함수에는 입력과 실패 조건을 기록한다. 단순 대입이나 자명한 메서드에는 주석을 달지 않는다.
 - `app/` 아래 운영 `.ts`·`.vue` 파일은 **800줄**을 넘을 수 없다 (`MAX_NEW_FILE_LINES`, `tests/unit/architecture/max-lines-ratchet.test.ts`). `OVERSIZED_FILE_BASELINES`는 현재 비어 있으므로 예외 등재는 허용되지 않는다.
-- `app/` 아래 사용자 노출 문구는 **고정 리터럴 금지**. `USER_FACING_COPY_BASELINES`는 비어 있다. 모든 표시 문구는 `i18n/messages/*.ts`의 ko·en 양쪽에 키를 추가하고 `t()`로 참조한다. 검증: `node scripts/check-user-facing-copy.mjs --scope app`
+- `app/` 아래 사용자 노출 문구는 **고정 리터럴 금지**. `USER_FACING_COPY_BASELINES`는 비어 있다. 모든 표시 문구는 `i18n/messages/*.ts`의 ko·en 양쪽에 키를 추가하고 `t()`로 참조한다. 검증: `npm run check:copy`
 - 배너 규약 상수: `PK_COL_NM = '배너'`, `PK_CONE = '/info'`, `FL_TP_CONE = '이미지'`, `DEL_YN` `'N'`=활성 / `'Y'`=비활성.
 - 배너 허용 확장자: `jpg`, `jpeg`, `png`, `gif` (소문자 비교, 대소문자 무시).
 - 캐러셀 자동 전환 주기: **5000ms**.
@@ -323,8 +323,8 @@ import org.junit.jupiter.api.Test;
 
 class BannerFileTargetWriteAuthorizerTest {
 
-    private static final String ADMIN_ATH = "ITPZZ000";
-    private static final String USER_ATH = "ITPZZ001";
+    private static final String ADMIN_ATH = "ITPAD001"; // CustomUserDetails.ATH_ADMIN
+    private static final String USER_ATH = "ITPZZ001"; // CustomUserDetails.ATH_USER
 
     private final BannerFileTargetWriteAuthorizer authorizer = new BannerFileTargetWriteAuthorizer();
 
@@ -370,7 +370,7 @@ class BannerFileTargetWriteAuthorizerTest {
 }
 ```
 
-**주의:** `ADMIN_ATH` 상수 값은 `CustomUserDetails.isAdmin()`이 참조하는 실제 관리자 권한 ID여야 한다. 구현 전에 `CustomUserDetails.java`의 `isAdmin()`과 관리자 권한 상수를 읽고 값을 맞춘다. 기존 테스트(`BoardFileTargetWriteAuthorizerTest`)가 쓰는 값을 그대로 재사용하는 것이 가장 안전하다.
+**확인 완료:** 관리자 자격등급 ID는 `ITPAD001`(`CustomUserDetails.ATH_ADMIN`), 일반사용자는 `ITPZZ001`(`ATH_USER`)이다. `isAdmin()`은 `athIds.contains(ATH_ADMIN)`이다. 위 상수 값을 그대로 쓴다.
 
 - [ ] **Step 3: 테스트 실행해 실패 확인**
 
@@ -736,7 +736,7 @@ class BannerServiceTest {
 }
 ```
 
-**주의:** `Cfilem`은 `@SuperBuilder`이고 `BaseEntity`의 `delYn`에는 setter가 없다. 위 헬퍼는 `delete()`/`restore()`로 상태를 만든다. `Cfilem.getDelYn()`이 `BaseEntity`의 `@Getter`로 노출되는지 구현 전에 확인하고, 노출되지 않으면 테스트에서 `result.isActive()`만 검증하도록 단언을 조정한다.
+**확인 완료:** `BaseEntity`에 클래스 레벨 `@Getter`가 있으므로 `Cfilem.getDelYn()`은 존재한다. `delYn`에 setter는 없으므로 위 헬퍼처럼 `delete()`/`restore()`로 상태를 만든다.
 
 - [ ] **Step 3: 테스트 실행해 실패 확인**
 
@@ -1054,6 +1054,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -1064,8 +1065,16 @@ import org.springframework.test.web.servlet.MockMvc;
  * <p>배너 API의 권한 경계와 응답 구조를 검증합니다.
  */
 @WebMvcTest(BannerController.class)
-@Import({TestSecurityConfig.class, JacksonConfig.class})
+@Import({
+    TestSecurityConfig.class,
+    JacksonConfig.class,
+    BannerControllerTest.MethodSecurityTestConfig.class
+})
 class BannerControllerTest {
+
+    /** TestSecurityConfig에는 @EnableMethodSecurity가 없어 @PreAuthorize가 꺼진다. 여기서 켠다. */
+    @EnableMethodSecurity
+    static class MethodSecurityTestConfig {}
 
     @Autowired private MockMvc mockMvc;
 
@@ -1188,7 +1197,7 @@ class BannerControllerTest {
 }
 ```
 
-**주의:** `TestSecurityConfig`가 CSRF를 어떻게 다루는지 확인한다. 기존 `FileControllerTest`의 `multipart`·`put` 테스트가 CSRF 토큰 없이 통과한다면 그대로 두고, `with(csrf())`가 필요하면 동일하게 붙인다. 또한 `@PreAuthorize`가 `@WebMvcTest`에서 활성화되지 않으면 403 테스트가 실패한다 — 그 경우 `TestSecurityConfig`에 `@EnableMethodSecurity`가 있는지 확인하고, 없으면 테스트 클래스에 `@Import`로 메서드 보안 설정을 추가한다.
+**확인 완료:** `TestSecurityConfig`는 `csrf().disable()`이므로 `with(csrf())`가 필요 없다. 또한 `@EnableMethodSecurity`가 없어 `@PreAuthorize`가 꺼져 있으므로, 위처럼 중첩 `MethodSecurityTestConfig`를 `@Import`해야 403 테스트가 성립한다 (`RealtimeLogControllerTest`와 같은 패턴). `CustomGeneralException`은 `GlobalExceptionHandler`가 400으로, `AccessDeniedException`은 403으로 매핑한다.
 
 - [ ] **Step 2: 범용 파일 API의 배너 차단 회귀 테스트 추가**
 
@@ -1205,12 +1214,11 @@ class BannerControllerTest {
                 .when(fileService)
                 .deleteFile(anyString());
 
-        mockMvc.perform(delete("/api/files/" + FL_MNG_NO).with(csrf()))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(delete("/api/files/" + FL_MNG_NO)).andExpect(status().isForbidden());
     }
 ```
 
-**주의:** `with(csrf())`는 기존 `FileControllerTest`의 다른 DELETE 테스트가 쓰는 형태에 맞춘다. 쓰지 않는다면 제거한다. `csrf()` static import가 필요하면 추가한다.
+**확인 완료:** `TestSecurityConfig`가 CSRF를 끄므로 `with(csrf())`는 쓰지 않는다.
 
 - [ ] **Step 3: 테스트 실행해 실패 확인**
 
@@ -1347,7 +1355,7 @@ public class BannerController {
 }
 ```
 
-**주의:** `active` 누락 시 400을 내려면 `CustomGeneralException`이 전역 예외 핸들러에서 400으로 매핑되어야 한다. `GlobalExceptionHandler`(또는 동등 클래스)를 확인하고, 400이 아니라면 테스트의 기대 상태 코드를 실제 매핑에 맞춰 조정하거나 `@Valid` + `@NotNull` 검증으로 바꾼다.
+**확인 완료:** `GlobalExceptionHandler`가 `CustomGeneralException`을 400으로 매핑하므로 위 구현대로 `active` 누락 시 400이 나온다.
 
 - [ ] **Step 5: 테스트 실행해 통과 확인**
 
@@ -1882,7 +1890,7 @@ Expected: PASS (5개 테스트).
 
 Run:
 ```bash
-cd C:/it/it_frontend && node scripts/check-user-facing-copy.mjs --scope app/components/info
+cd C:/it/it_frontend && npm run check:copy
 ```
 
 Expected: 출력 없음 (위반 0건).
@@ -2100,7 +2108,7 @@ const handleToggleActive = async (banner: BannerRecord, active: boolean) => {
     <div class="space-y-6">
         <PageHeader
             :title="t('admin.banners.title')"
-            :description="t('admin.banners.description')"
+            :subtitle="t('admin.banners.description')"
         >
             <template #actions>
                 <Button
@@ -2185,7 +2193,12 @@ const handleToggleActive = async (banner: BannerRecord, active: boolean) => {
 </template>
 ```
 
-**주의:** `PageHeader`의 props(`title`·`description`)와 액션 슬롯 이름, `TableCard`·`StyledDataTable`의 props는 실제 정의를 반드시 확인하고 맞춘다. `it_frontend/docs/guides/components/`와 `app/components/common/README.md`가 사용법 SoT다. `formatFileSize`가 `app/utils/common.ts`에 있는지 확인한다 (`DocumentAttachmentEditor.vue`가 같은 이름으로 import한다).
+**확인 완료:**
+- `PageHeader` props는 `title?`·`subtitle?`이며 `description`은 없다. 액션 슬롯 이름은 `actions`가 맞다.
+- `TableCard` props는 `title?`·`subtitle?`·`icon?`·`count?`·`fill?`이다. 위 코드처럼 props 없이 감싸도 된다.
+- `formatFileSize`는 `app/utils/common.ts:410`에 있다 (`bytes: number | null | undefined` → `string`).
+- `StyledDataTable`은 PrimeVue `DataTable` 속성을 그대로 전달받는다. `value`·`loading`·`data-key`는 통과한다.
+- 그 밖의 사용법은 `it_frontend/docs/guides/components/`와 `app/components/common/README.md`를 따른다.
 
 - [ ] **Step 4: 타입 검사·린트·포맷 확인**
 
@@ -2200,7 +2213,7 @@ Expected: 오류 없음. `Column`·`Dialog`·`Button`·`ToggleSwitch`는 PrimeVu
 
 Run:
 ```bash
-cd C:/it/it_frontend && node scripts/check-user-facing-copy.mjs --scope app/pages/admin
+cd C:/it/it_frontend && npm run check:copy
 ```
 
 Expected: 출력 없음.
@@ -2357,7 +2370,7 @@ describe('useInfoDashboardYear', () => {
 });
 ```
 
-**주의:** `useProjects`·`useCost` mock은 `vi.mock` 호이스팅 때문에 `useInfoDashboardYear`를 동적 `await import`로 불러온다. 기존 테스트 중 같은 패턴을 쓰는 파일이 있으면 그쪽 형태에 맞춘다. `filterDashboardItemsByScope`가 비관리자에게 `scope:'all'`을 어떻게 처리하는지 `app/utils/infoDashboardScope.ts`를 읽고, 세 번째 테스트의 기대값이 실제 동작과 맞는지 확인한다.
+**주의:** `useProjects`·`useCost` mock은 `vi.mock` 호이스팅 때문에 `useInfoDashboardYear`를 동적 `await import`로 불러온다. 기존 테스트 중 같은 패턴을 쓰는 파일이 있으면 그쪽 형태에 맞춘다. `filterDashboardItemsByScope`는 `isAdmin && scope==='all'`일 때만 전체를 돌려주고 그 외에는 부서로 거르므로, 위 두 번째·세 번째 테스트의 기대값은 실제 동작과 맞다 (확인 완료).
 
 - [ ] **Step 2: 테스트 실행해 실패 확인**
 
@@ -2815,8 +2828,8 @@ const widthOf = (value: number) =>
 <script setup lang="ts">
 import InfoDashboardScopeToggle from '~/components/info/InfoDashboardScopeToggle.vue';
 import { formatBudget } from '~/utils/common';
+import type { KpiSegment } from '~/types/infoDashboard';
 import type { InfoDashboardScope } from '~/utils/infoDashboardScope';
-import type { KpiSegment } from '~/components/info/InfoKpiCountCard.vue';
 
 defineProps<{
     icon: string;
@@ -2892,7 +2905,7 @@ const BUDGET_UNIT = '억원';
 </template>
 ```
 
-**주의:** `<script setup>`에서 `export interface`는 지원되지 않는다. `KpiSegment` 타입은 `app/types/` 아래 별도 파일(예: `app/types/infoDashboard.ts`)로 옮기고 두 컴포넌트가 함께 import하도록 조정한다. `defineModel`은 Vue 3.4+ 기능이므로 프로젝트 Vue 버전을 확인하고, 미지원이면 `props.scope` + `emit('update:scope')` 형태로 바꾼다.
+**확인 완료:** Vue 3.5.35이므로 `defineModel`을 쓸 수 있고, 이미 `CodeSelect.vue`·`IoeCategorySelect.vue` 등이 사용 중이다. `KpiSegment`는 위와 같이 `app/types/infoDashboard.ts`로 분리한다.
 
 - [ ] **Step 5: 테스트 실행해 통과 확인**
 
@@ -2908,8 +2921,6 @@ Expected: PASS (10개 테스트).
 ```bash
 cd C:/it/it_frontend && git add app/components/info/InfoKpiCountCard.vue app/components/info/InfoKpiBudgetCard.vue app/types/infoDashboard.ts tests/unit/components/InfoKpiCards.test.ts && git diff --cached --stat
 ```
-
-(`app/types/infoDashboard.ts`를 만들지 않았다면 경로에서 제외한다.)
 
 ```bash
 cd C:/it/it_frontend && git commit -m "refactor: /info KPI 카드를 건수형·금액형 컴포넌트로 추출"
@@ -2955,7 +2966,7 @@ cd C:/it/it_frontend && git commit -m "refactor: /info KPI 카드를 건수형·
                     capital: '자본예산',
                     general: '일반관리비',
                 },
-                quickLinks2: {
+                links: {
                     projectBudget: '정보화사업 예산 작성',
                     ordinaryBudget: '경상사업 예산 작성',
                     costBudget: '전산업무비 예산 작성',
@@ -2976,7 +2987,7 @@ en `info.dashboard` 블록에 같은 구조로 추가:
                     capital: 'Capital Budget',
                     general: 'General Admin',
                 },
-                quickLinks2: {
+                links: {
                     projectBudget: 'IT Project Budget Entry',
                     ordinaryBudget: 'Recurring Project Budget Entry',
                     costBudget: 'IT Operating Cost Budget Entry',
@@ -2992,7 +3003,7 @@ en 쪽에서도 대응하는 키를 동일하게 제거한다.
 cd C:/it/it_frontend && grep -rn "activeProjects\|completedBudget\|executionComplete\|dashboard.remaining\|requirementWriter\|preDiagnosis\|dashboard.priority\|dashboard.requestedBudget" app tests
 ```
 
-`app/pages/info/index.vue` 외의 참조가 있으면 그 화면도 함께 조정하거나 키를 남긴다. `quickLinks2` 대신 기존 `quickLinks`(패널 제목)와 구분되는 이름이면 무엇이든 좋다 — 실제 키 이름은 구현 시 확정하고 코드와 일치시킨다.
+`app/pages/info/index.vue` 외의 참조가 있으면 그 화면도 함께 조정하거나 키를 남긴다. 기존 `quickLinks`는 패널 제목이므로 그대로 두고, 항목들은 `info.dashboard.links.*`에 넣는다.
 
 - [ ] **Step 2: script 블록 교체**
 
@@ -3097,20 +3108,20 @@ const budgetSegments = (summary: InfoDashboardSummary) => [
 const QUICK_LINKS = [
     {
         to: '/info/projects/form',
-        labelKey: 'info.dashboard.quickLinks2.projectBudget',
+        labelKey: 'info.dashboard.links.projectBudget',
         icon: 'pi pi-briefcase',
     },
     {
         to: '/info/projects/form?ordinary=true',
-        labelKey: 'info.dashboard.quickLinks2.ordinaryBudget',
+        labelKey: 'info.dashboard.links.ordinaryBudget',
         icon: 'pi pi-sync',
     },
     {
         to: '/info/cost/form',
-        labelKey: 'info.dashboard.quickLinks2.costBudget',
+        labelKey: 'info.dashboard.links.costBudget',
         icon: 'pi pi-desktop',
     },
-    { to: '/budget/list', labelKey: 'info.dashboard.quickLinks2.budgetList', icon: 'pi pi-list' },
+    { to: '/budget/list', labelKey: 'info.dashboard.links.budgetList', icon: 'pi pi-list' },
 ] as const;
 ```
 
@@ -3242,7 +3253,7 @@ Expected: PASS. 실패하면 `info/index.vue`가 여전히 800줄을 넘는 것�
 
 Run:
 ```bash
-cd C:/it/it_frontend && node scripts/check-user-facing-copy.mjs --scope app
+cd C:/it/it_frontend && npm run check:copy
 ```
 
 Expected: 출력 없음.
@@ -3418,7 +3429,7 @@ test('관리자는 배너 목록을 보고 활성 상태를 전환한다', async
     await setLoggedIn(page, {
         eno: 'E001',
         empNm: '관리자',
-        athIds: ['ITPZZ000'],
+        athIds: ['ITPAD001'], // ROLE.ADMIN — middleware/admin.ts가 이 값을 본다
         bbrC: 'D001',
         temC: 'T001',
     });
@@ -3463,12 +3474,14 @@ test('일반 사용자는 배너 관리 화면에 접근할 수 없다', async (
 
     await page.goto('/admin/banners');
 
-    // admin 미들웨어가 접근을 막는다 (리다이렉트 또는 접근 거부 화면)
-    await expect(page).not.toHaveURL(/\/admin\/banners$/);
+    // middleware/admin.ts가 ITPAD001 미보유 사용자를 메인('/')으로 리다이렉트한다
+    await expect(page).toHaveURL(/\/$/);
 });
 ```
 
-**주의:** `ITPZZ000`이 실제 관리자 권한 ID인지 Task 2에서 확인한 값으로 맞춘다. `getByRole('switch')`가 PrimeVue `ToggleSwitch`의 실제 role과 맞는지 확인하고, 아니면 `data-testid`를 컴포넌트에 추가해 셀렉터를 안정화한다. `admin` 미들웨어의 거부 동작(리다이렉트 경로 또는 에러 화면)을 `app/middleware/admin.ts`에서 읽고 마지막 단언을 실제 동작에 맞춘다. 기존 `tests/e2e/access-control.spec.ts`에 같은 패턴이 있으면 그대로 재사용한다.
+**확인 완료:** 관리자 자격등급 ID는 `ITPAD001`(`~/types/auth`의 `ROLE.ADMIN`)이고, `app/middleware/admin.ts`는 미보유 시 `navigateTo('/')`로 메인에 보낸다.
+
+**남은 확인:** `getByRole('switch')`가 PrimeVue `ToggleSwitch`의 실제 ARIA role과 맞는지 확인하고, 아니면 `ToggleSwitch`에 `data-testid`를 붙여 셀렉터를 안정화한다. 기존 `tests/e2e/access-control.spec.ts`에 리다이렉트 검증 패턴이 있으면 그대로 재사용한다.
 
 - [ ] **Step 4: e2e 실행**
 
