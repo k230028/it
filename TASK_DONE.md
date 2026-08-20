@@ -30,7 +30,7 @@
 | ✅ Done | SEC-13 | 테이블 2건, Jpa 저장소 2건, 정리 배치, 설정 토글, 운영 강제 | it_database `4732a9d`, it_backend `455ee70c` | `./gradlew test` BUILD SUCCESSFUL, `./gradlew integrationTest --tests '*Mfa*IT'` BUILD SUCCESSFUL(로컬 Oracle) |
 
 **범위 밖으로 남긴 것**: `FidoMfaProvider`의 인스턴스 로컬 `svcTrId` 맵과 `MfaService`의 로컬
-만료·취소 추적 맵은 저장소 인터페이스 밖에 있어 이번 교체로 해소되지 않는다. `TASK.md` SEC-14로
+만료·취소 추적 맵은 저장소 인터페이스 밖에 있어 이번 교체로 해소되지 않는다. `TASK.md` SEC-16으로
 후속 등록.
 
 ### ✅ 2026-08-19 BE-49 다국어 변경로그·관리자 메뉴 시드 마이그레이션 복원
