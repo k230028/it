@@ -207,7 +207,7 @@ GET /api/admin/was-logs/download?instanceId=&levels=&logger=&q=
 
 ### 6.4 메뉴 등록
 
-`it_database/migrations/V20260820_001__SeedWasLogAdminMenu.sql`로 관리자 메뉴를 추가하면서
+`it_database/migrations/V20260820_002__SeedWasLogAdminMenu.sql`로 관리자 메뉴를 추가하면서
 **`TPRMPP_CMENUA` 권한 매핑 행을 함께 넣는다**. `MenuQueryService.isAllowed()`가 매핑 0건을 전체 공개로
 판정하므로, 매핑을 빠뜨리면 비관리자 사이드바에 노출된다(BE-45가 지적한 최근 3개 시드의 공통 결함).
 
