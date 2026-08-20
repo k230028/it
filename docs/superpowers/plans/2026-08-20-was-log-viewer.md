@@ -955,6 +955,11 @@ public class LevelOverrideRegistry {
         overrides.put(override.logger(), override);
     }
 
+    /** 로거의 현재 오버라이드. 없으면 null. */
+    public WasLogDto.LevelOverride find(String logger) {
+        return overrides.get(logger);
+    }
+
     /** 로거명 오름차순 목록. */
     public List<WasLogDto.LevelOverride> list() {
         List<WasLogDto.LevelOverride> result = new ArrayList<>(overrides.values());
@@ -962,12 +967,16 @@ public class LevelOverrideRegistry {
         return result;
     }
 
-    /** 만료된 항목을 꺼내며 제거한다. */
+    /**
+     * 만료된 항목을 꺼내며 제거한다.
+     *
+     * <p>제거는 값까지 일치할 때만 한다. 스캔 도중 같은 로거에 새 오버라이드가 들어오면 그것까지 지워버려,
+     * 스케줄러가 새 설정을 되돌리고 화면에는 살아 있는 것처럼 보이는 어긋남이 생기기 때문이다.
+     */
     public List<WasLogDto.LevelOverride> removeExpired(LocalDateTime now) {
         List<WasLogDto.LevelOverride> expired = new ArrayList<>();
         for (WasLogDto.LevelOverride override : list()) {
-            if (!override.expiresAt().isAfter(now)) {
-                overrides.remove(override.logger());
+            if (!override.expiresAt().isAfter(now) && overrides.remove(override.logger(), override)) {
                 expired.add(override);
             }
         }
@@ -1074,16 +1083,21 @@ import com.kdb.it.common.admin.waslog.dto.WasLogDto;
 import com.kdb.it.common.admin.waslog.dto.WasLogEntry;
 import com.kdb.it.common.admin.waslog.service.WasLogService;
 import com.kdb.it.common.system.security.JwtUtil;
+import com.kdb.it.config.TestSecurityConfig;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+// 운영 SecurityConfig는 CSRF를 끈다. 슬라이스 기본값(CSRF 켜짐)을 그대로 쓰면 POST 테스트가
+// .with(csrf())를 붙여야 통과하는데, 그러면 운영에 없는 설정에서만 초록인 테스트가 된다.
 @WebMvcTest(WasLogController.class)
+@Import(TestSecurityConfig.class)
 @WithMockUser(roles = "ADMIN")
 class WasLogControllerTest {
 
@@ -1266,6 +1280,17 @@ public class WasLogController {
     @Operation(summary = "인스턴스 목록", description = "설정에 등록된 WAS 인스턴스를 반환합니다.")
     public List<WasLogDto.InstanceInfo> instances() {
         return service.instances();
+    }
+
+    /**
+     * 피어 위임 실패를 502로 구분해 돌려준다.
+     *
+     * <p>기본 처리(400)로 두면 관리자가 "피어가 죽었다"와 "로거명을 잘못 적었다"를 구분할 수 없다. 레벨 변경은
+     * 실패를 삼키면 "적용됐다"로 읽히는 경로라 상태 코드로도 갈라준다.
+     */
+    @ExceptionHandler(WasLogPeerException.class)
+    public ResponseEntity<String> handlePeerFailure(WasLogPeerException e) {
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(e.getMessage());
     }
 
     private Set<String> splitLevels(String csv) {
@@ -2091,8 +2116,10 @@ package com.kdb.it.common.admin.waslog.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.kdb.it.common.admin.waslog.dto.WasLogDto;
@@ -2140,27 +2167,72 @@ class LevelOverrideServiceTest {
     }
 
     @Test
-    @DisplayName("화이트리스트 밖 로거는 거부한다")
+    @DisplayName("같은 로거에 다시 적용해도 최초 레벨을 previousLevel로 유지한다")
+    void apply_재적용_최초레벨보존() {
+        given(loggingSystem.getLoggerConfiguration("com.kdb.it.domain"))
+                .willReturn(new LoggerConfiguration("com.kdb.it.domain", LogLevel.INFO, LogLevel.INFO));
+        service.apply("com.kdb.it.domain", "DEBUG", 30);
+
+        // 두 번째 호출 시점의 "현재 설정 레벨"은 이미 첫 번째가 써 넣은 DEBUG다.
+        given(loggingSystem.getLoggerConfiguration("com.kdb.it.domain"))
+                .willReturn(new LoggerConfiguration("com.kdb.it.domain", LogLevel.DEBUG, LogLevel.DEBUG));
+        WasLogDto.LevelOverride second = service.apply("com.kdb.it.domain", "TRACE", 30);
+
+        assertThat(second.previousLevel()).isEqualTo("INFO");
+    }
+
+    @Test
+    @DisplayName("화이트리스트 밖 로거는 거부하고 레벨을 건드리지 않는다")
     void apply_허용되지않은로거() {
         assertThatThrownBy(() -> service.apply("com.evil.Thing", "DEBUG", 30))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("com.evil.Thing");
+        verify(loggingSystem, never()).setLogLevel(any(), any());
     }
 
     @Test
-    @DisplayName("TTL이 범위를 벗어나면 거부한다")
+    @DisplayName("접두사만 같고 패키지 경계를 넘는 이름은 거부한다")
+    void apply_접두사경계() {
+        assertThatThrownBy(() -> service.apply("com.kdb.itX", "DEBUG", 30))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.apply("", "DEBUG", 30))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(loggingSystem, never()).setLogLevel(any(), any());
+    }
+
+    @Test
+    @DisplayName("TTL이 범위를 벗어나면 거부하고 레벨을 건드리지 않는다")
     void apply_TTL범위밖() {
         assertThatThrownBy(() -> service.apply("com.kdb.it.domain", "DEBUG", 0))
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> service.apply("com.kdb.it.domain", "DEBUG", 121))
                 .isInstanceOf(IllegalArgumentException.class);
+        // 검증이 setLogLevel보다 먼저여야 한다 — 레벨만 바뀌고 만료 등록에 실패하면 영구 오버라이드가 된다.
+        verify(loggingSystem, never()).setLogLevel(any(), any());
     }
 
     @Test
-    @DisplayName("허용되지 않은 레벨은 거부한다")
+    @DisplayName("허용되지 않은 레벨은 거부하고 레벨을 건드리지 않는다")
     void apply_잘못된레벨() {
         assertThatThrownBy(() -> service.apply("com.kdb.it.domain", "FATAL", 30))
                 .isInstanceOf(IllegalArgumentException.class);
+        verify(loggingSystem, never()).setLogLevel(any(), any());
+    }
+
+    @Test
+    @DisplayName("원래 설정이 없던 로거는 null로 되돌려 상위 상속으로 복원한다")
+    void restoreExpired_설정없음_null복원() {
+        given(loggingSystem.getLoggerConfiguration("com.kdb.it.c")).willReturn(null);
+        service.apply("com.kdb.it.c", "DEBUG", 1);
+
+        LevelOverrideService later =
+                new LevelOverrideService(
+                        loggingSystem,
+                        registry,
+                        Clock.fixed(NOW.plusSeconds(120), ZoneId.of("Asia/Seoul")));
+        later.restoreExpired();
+
+        verify(loggingSystem).setLogLevel("com.kdb.it.c", null);
     }
 
     @Test
@@ -2210,6 +2282,7 @@ import org.springframework.boot.logging.LogLevel;
 import org.springframework.boot.logging.LoggerConfiguration;
 import org.springframework.boot.logging.LoggingSystem;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 런타임 로그레벨 변경 서비스.
@@ -2218,6 +2291,7 @@ import org.springframework.stereotype.Service;
  * LevelOverrideRestoreScheduler}가 만료 시 직전 레벨로 되돌린다. 재기동 시에는 설정 파일 레벨로 자연 복원된다.
  */
 @Service
+@Slf4j
 public class LevelOverrideService {
 
     /** TTL 상한(분). 끄는 것을 잊어 운영 서버가 느려지는 사고를 막는다. */
@@ -2250,7 +2324,7 @@ public class LevelOverrideService {
      * @throws IllegalArgumentException 로거·레벨·TTL이 규칙을 벗어난 경우
      */
     public WasLogDto.LevelOverride apply(String logger, String level, int ttlMinutes) {
-        if (logger == null || ALLOWED_LOGGER_PREFIXES.stream().noneMatch(logger::startsWith)) {
+        if (!allowedLogger(logger)) {
             throw new IllegalArgumentException("변경이 허용되지 않은 로거: " + logger);
         }
         if (level == null || !ALLOWED_LEVELS.contains(level)) {
@@ -2260,7 +2334,12 @@ public class LevelOverrideService {
             throw new IllegalArgumentException("TTL은 1~" + MAX_TTL_MINUTES + "분이어야 합니다: " + ttlMinutes);
         }
 
-        String previous = configuredLevel(logger);
+        // 같은 로거에 두 번 적용하면 두 번째가 읽는 "현재 레벨"은 첫 번째가 써 넣은 임시 레벨이다.
+        // 그대로 previousLevel로 저장하면 TTL 만료 후 임시 레벨로 되돌아가 영구 고정된다
+        // (예: INFO → DEBUG 적용 → 시끄러워서 INFO 재적용 → 만료 시 DEBUG로 복원되어 그대로 굳음).
+        // 이미 오버라이드가 있으면 최초에 잡아둔 원래 레벨을 그대로 물려받는다.
+        WasLogDto.LevelOverride existing = registry.find(logger);
+        String previous = existing != null ? existing.previousLevel() : configuredLevel(logger);
         loggingSystem.setLogLevel(logger, LogLevel.valueOf(level));
 
         WasLogDto.LevelOverride override =
@@ -2273,16 +2352,40 @@ public class LevelOverrideService {
     /**
      * 만료된 오버라이드를 직전 레벨로 되돌린다.
      *
+     * <p>{@code previousLevel}이 null이면 null을 그대로 넘겨 설정을 지우고 상위 로거 상속으로 되돌린다.
+     *
+     * <p>이 메서드는 레벨을 바꾸는 주체가 이 기능뿐이라고 가정한다. Actuator {@code loggers} 엔드포인트를
+     * 열거나 logback 설정 자동 재로딩을 켜면 그 가정이 깨져 남의 변경을 덮어쓸 수 있다.
+     *
      * @return 복원한 건수
      */
     public int restoreExpired() {
         List<WasLogDto.LevelOverride> expired = registry.removeExpired(LocalDateTime.now(clock));
+        int restored = 0;
         for (WasLogDto.LevelOverride override : expired) {
             LogLevel restore =
                     override.previousLevel() == null ? null : LogLevel.valueOf(override.previousLevel());
-            loggingSystem.setLogLevel(override.logger(), restore);
+            try {
+                loggingSystem.setLogLevel(override.logger(), restore);
+                restored++;
+            } catch (RuntimeException e) {
+                // 한 건이 실패해도 나머지는 되돌린다 — 이미 레지스트리에서 빠졌으므로 여기서 멈추면 영구 고정된다.
+                log.warn("[WAS로그] 로그레벨 복원 실패 logger={} level={}", override.logger(), restore, e);
+            }
         }
-        return expired.size();
+        return restored;
+    }
+
+    /**
+     * 화이트리스트 판정.
+     *
+     * <p>단순 {@code startsWith}는 {@code com.kdb.itX}처럼 패키지 경계를 넘는 이름까지 통과시키므로, 접두사와
+     * 정확히 같거나 그 아래 패키지({@code 접두사 + "."})인 경우만 허용한다.
+     */
+    private boolean allowedLogger(String logger) {
+        if (logger == null || logger.isBlank()) return false;
+        return ALLOWED_LOGGER_PREFIXES.stream()
+                .anyMatch(prefix -> logger.equals(prefix) || logger.startsWith(prefix + "."));
     }
 
     private String configuredLevel(String logger) {
@@ -2471,6 +2574,128 @@ import 추가: `org.springframework.web.bind.annotation.PostMapping`, `org.sprin
                                         """))
                 .andExpect(status().isBadRequest());
     }
+```
+
+- [ ] **Step 9a: `WasLogService.applyLevel` 테스트 추가**
+
+레벨 변경 경로에 서비스 테스트가 하나도 없어서, `peerClient.applyLevel`을 try/catch로 감싸 실패를 삼켜도
+전체 스위트가 통과한다. 브리프가 굵게 강조한 실패 비대칭이 무방비다.
+
+`WasLogServiceTest.java`에 추가(상단에 `static org.mockito.Mockito.mock`, `static org.mockito.BDDMockito.given`,
+`java.time.LocalDateTime` import 필요):
+
+```java
+    @Test
+    @DisplayName("자기 인스턴스면 로컬 레벨 서비스에 적용한다")
+    void applyLevel_로컬적용() {
+        LevelOverrideService levelService = mock(LevelOverrideService.class);
+        WasLogDto.LevelOverride expected =
+                new WasLogDto.LevelOverride(
+                        "com.kdb.it", "DEBUG", "INFO", LocalDateTime.of(2026, 8, 20, 11, 0));
+        given(levelService.apply("com.kdb.it", "DEBUG", 30)).willReturn(expected);
+        WasLogProperties properties = new WasLogProperties(10, Map.of(), "", 1000, 3000);
+        WasLogService routing = new WasLogService(properties, "SVR1", null, null, levelService);
+
+        WasLogDto.LevelOverride actual =
+                routing.applyLevel(new WasLogDto.LevelRequest("SVR1", "com.kdb.it", "DEBUG", 30));
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    @DisplayName("설정에 없는 인스턴스면 IllegalArgumentException")
+    void applyLevel_알수없는인스턴스() {
+        WasLogProperties properties = new WasLogProperties(10, Map.of(), "", 1000, 3000);
+        WasLogService routing =
+                new WasLogService(properties, "SVR1", null, null, mock(LevelOverrideService.class));
+        WasLogDto.LevelRequest request =
+                new WasLogDto.LevelRequest("SVR9", "com.kdb.it", "DEBUG", 30);
+
+        assertThatThrownBy(() -> routing.applyLevel(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("SVR9");
+    }
+
+    @Test
+    @DisplayName("피어 레벨 변경 실패는 삼키지 않고 그대로 전파한다")
+    void applyLevel_피어실패_전파() {
+        WasLogProperties properties =
+                new WasLogProperties(10, Map.of("SVR2", "http://svr2:28080"), "s", 1000, 3000);
+        WasLogPeerClient failing =
+                new WasLogPeerClient() {
+                    @Override
+                    public WasLogDto.Snapshot fetchSnapshot(
+                            String baseUrl, String instanceId, WasLogDto.Query query) {
+                        throw new WasLogPeerException("미사용", null);
+                    }
+
+                    @Override
+                    public WasLogDto.LevelOverride applyLevel(
+                            String baseUrl, WasLogDto.LevelRequest request) {
+                        throw new WasLogPeerException("SVR2 인스턴스 레벨 변경 실패: timeout", null);
+                    }
+                };
+        WasLogService routing =
+                new WasLogService(
+                        properties, "SVR1", failing, null, mock(LevelOverrideService.class));
+        WasLogDto.LevelRequest request =
+                new WasLogDto.LevelRequest("SVR2", "com.kdb.it", "DEBUG", 30);
+
+        // 조회와 달리 여기서 예외를 삼키면 관리자에게 "적용됨"으로 보인다.
+        assertThatThrownBy(() -> routing.applyLevel(request))
+                .isInstanceOf(WasLogPeerException.class)
+                .hasMessageContaining("timeout");
+    }
+```
+
+- [ ] **Step 9b: 내부 `/level` 엔드포인트의 토큰 가드 테스트 추가**
+
+이 엔드포인트는 `SecurityConfig`가 permitAll로 열어둔 경로에 있고 서버 상태를 바꾼다. 그런데 토큰 가드를
+지워도 전체 스위트가 통과한다 — 조회 쪽만 테스트가 있기 때문이다.
+
+`WasLogInternalControllerTest.java`에 추가(`static org.mockito.Mockito.verifyNoInteractions` import 필요):
+
+```java
+    private static final String LEVEL_BODY =
+            """
+            {"instanceId":"SVR2","logger":"com.kdb.it","level":"DEBUG","ttlMinutes":30}
+            """;
+
+    @Test
+    @DisplayName("레벨 변경은 토큰이 없으면 401이고 아무것도 적용하지 않는다")
+    void level_토큰없음_401() throws Exception {
+        mockMvc.perform(
+                        post("/internal/was-logs/level")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(LEVEL_BODY))
+                .andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(levelOverrideService);
+    }
+
+    @Test
+    @DisplayName("레벨 변경은 토큰이 틀리면 401이고 아무것도 적용하지 않는다")
+    void level_토큰불일치_401() throws Exception {
+        mockMvc.perform(
+                        post("/internal/was-logs/level")
+                                .header("X-Internal-Token", "wrong")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(LEVEL_BODY))
+                .andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(levelOverrideService);
+    }
+```
+
+- [ ] **Step 9c: 스케줄러 스레드 풀 확보**
+
+`application.properties`에 추가한다.
+
+```properties
+# @Scheduled 기본 풀 크기는 1이다. 알림 재시도 작업(NotificationRetryScheduler)이 외부 전송에서 막히면
+# 같은 스레드를 쓰는 로그레벨 복원이 영영 돌지 않아 임시 레벨이 TTL을 넘겨 남는다. 현재 스케줄 작업이
+# 둘이므로 2로 둔다.
+spring.task.scheduling.pool.size=2
 ```
 
 - [ ] **Step 9: 피어 레벨 변경의 빈 본문 처리 테스트 추가**
