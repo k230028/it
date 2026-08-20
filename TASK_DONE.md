@@ -33,6 +33,20 @@
 만료·취소 추적 맵은 저장소 인터페이스 밖에 있어 이번 교체로 해소되지 않는다. `TASK.md` SEC-16으로
 후속 등록.
 
+### ✅ 2026-08-20 SEC-16 FIDO 인스턴스 로컬 상태 제거
+
+`FidoMfaProvider`의 `svcTrId` 로컬 맵(LRU 축출 포함)과 `MfaService`의 만료·취소 추적 로컬 맵
+2개를 모두 제거했다. `svcTrId`는 `MfaChallengeData`·`MfaVerifyContext`의 새 필드
+`providerTransactionId`로 컨텍스트를 통해 주고받고, SEC-13에서 이미 마련해둔
+`TPRMPP_CMFATM.APN_CER_SVC_TR_NO`에 실제로 영속·조회한다. 만료 판정은
+`MfaTransactionStore.isExpired()` 조회 메서드로 대체했다 — Jpa 구현은 DB를 근거로 다른
+인스턴스에서 시작된 거래도 정확히 판별하고, InMemory 구현은 자체 보조 맵으로 단일 인스턴스
+dev 용도를 그대로 지원한다.
+
+| 상태 | 항목 | 조치 | 저장소 커밋 | 검증 증거 |
+| :--: | --- | --- | --- | --- |
+| ✅ Done | SEC-16 | svcTrId 컨텍스트 경유, 로컬 맵 2종 제거, FidoMfaProvider·OnePassClient 단순화 | it_backend `5cf27940` | `./gradlew test` BUILD SUCCESSFUL, `./gradlew integrationTest --tests '*JpaMfaTransactionStoreIT*'` BUILD SUCCESSFUL(로컬 Oracle) |
+
 ### ✅ 2026-08-19 BE-49 다국어 변경로그·관리자 메뉴 시드 마이그레이션 복원
 
 2026-08-18 다국어 배치가 계획한 `V20260818_001__CreateClangmChangeLog.sql`(TPRMPP_CLANGL +
