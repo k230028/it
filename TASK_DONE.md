@@ -16,6 +16,23 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-20 SEC-13 MFA 거래·로그인 대기 저장소를 Oracle 공유 테이블로 교체
+
+`InMemoryMfaTransactionStore`/`InMemoryLoginPendingTransactionStore`만 있던 저장소에
+`JpaMfaTransactionStore`/`JpaLoginPendingTransactionStore`를 추가해 `app.mfa.store`(기본
+`jpa`)로 전환했다. `TPRMPP_CMFATM`/`TPRMPP_CMFADM` 두 테이블 모두 `BaseEntity`를 상속해
+감사 컬럼을 남기며, 상태 전이는 조건부 `UPDATE`(TPRMPP_CMFATM) 또는 조건부 `DELETE`
+(TPRMPP_CMFADM, 상태 컬럼 없음) 한 문장으로 원자성을 얻는다. `EnvironmentValidator`가 운영
+프로파일에서 `app.mfa.store=memory`를 기동 실패로 막는다.
+
+| 상태 | 항목 | 조치 | 저장소 커밋 | 검증 증거 |
+| :--: | --- | --- | --- | --- |
+| ✅ Done | SEC-13 | 테이블 2건, Jpa 저장소 2건, 정리 배치, 설정 토글, 운영 강제 | it_database `4732a9d`, it_backend `455ee70c` | `./gradlew test` BUILD SUCCESSFUL, `./gradlew integrationTest --tests '*Mfa*IT'` BUILD SUCCESSFUL(로컬 Oracle) |
+
+**범위 밖으로 남긴 것**: `FidoMfaProvider`의 인스턴스 로컬 `svcTrId` 맵과 `MfaService`의 로컬
+만료·취소 추적 맵은 저장소 인터페이스 밖에 있어 이번 교체로 해소되지 않는다. `TASK.md` SEC-14로
+후속 등록.
+
 ### ✅ 2026-08-19 BE-49 다국어 변경로그·관리자 메뉴 시드 마이그레이션 복원
 
 2026-08-18 다국어 배치가 계획한 `V20260818_001__CreateClangmChangeLog.sql`(TPRMPP_CLANGL +
