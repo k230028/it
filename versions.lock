@@ -2,5 +2,5 @@
 # 형식: <레포>  <origin URL>  <브랜치>  <HEAD SHA>  (갱신시각은 마지막 줄 주석)
 it_frontend  https://github.com/gonnabe88/it_frontend      codex/request-form-source-tree  7aaff52ef847d8b3106aff042002e8c6e29e2061
 it_backend   https://github.com/gonnabe88/it_backend       codex/request-form-source-tree  a1e207794fa48908948a17562b67abe94751bdb5
-it_database  https://github.com/gonnabe88/it_database      codex/request-form-source-tree  d9d1edd64fac0cecb86fb610971a986a2c14122c
-# 갱신시각: 2026-08-20 18:24:13
+it_database  https://github.com/gonnabe88/it_database      codex/request-form-source-tree  e1d782877e474bf5c0689b3ee88e536775d2de08
+# 갱신시각: 2026-08-20 18:43:00
