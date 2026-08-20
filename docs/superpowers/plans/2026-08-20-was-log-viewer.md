@@ -4345,6 +4345,9 @@ import WasLogToolbar from '~/components/admin/waslog/WasLogToolbar.vue';
 import { useWasLogFeed } from '~/composables/useWasLogFeed';
 import type { WasLogEntry, WasLogFilters } from '~/types/wasLog';
 
+// 관리자 라우트 가드. 메뉴를 숨기는 것만으로는 URL 직접 진입을 막지 못한다.
+definePageMeta({ middleware: 'admin' });
+
 const feed = useWasLogFeed();
 const config = useRuntimeConfig();
 
