@@ -3841,6 +3841,10 @@ cd C:/it/it_frontend && git add app/types/wasLog.ts app/composables/useWasLogFee
 
 ### Task 8: 화면 컴포넌트와 페이지
 
+> **i18n 호출 규약**: 이 코드베이스의 컴포넌트는 템플릿에서 `$t(...)`를 쓰지 않는다. `<script setup>`에서
+> `const { t } = useI18n();`을 선언하고 템플릿에서 `t(...)`를 부른다. 전역 `$t`는 타입 선언이 없어
+> `npm run typecheck`가 깨진다. 아래 컴포넌트 네 개와 페이지 모두 이 선언을 포함한다.
+
 **Files:**
 - Create: `it_frontend/app/components/admin/waslog/WasLogToolbar.vue`
 - Create: `it_frontend/app/components/admin/waslog/WasLogTable.vue`
@@ -4016,7 +4020,7 @@ function formatTime(timestamp: number): string {
 <template>
     <div class="was-log-table">
         <p v-if="props.rows.length === 0" class="was-log-table__empty">
-            {{ $t('admin.wasLogs.empty') }}
+            {{ t('admin.wasLogs.empty') }}
         </p>
         <ul v-else class="was-log-table__list">
             <li
@@ -4100,7 +4104,7 @@ const props = defineProps<{ entry: WasLogEntry | null }>();
         <h3 class="was-log-detail__title">{{ props.entry.logger }}</h3>
         <p class="was-log-detail__message">{{ props.entry.message }}</p>
         <template v-if="props.entry.throwable">
-            <h4 class="was-log-detail__subtitle">{{ $t('admin.wasLogs.stackTrace') }}</h4>
+            <h4 class="was-log-detail__subtitle">{{ t('admin.wasLogs.stackTrace') }}</h4>
             <pre class="was-log-detail__stack">{{ props.entry.throwable }}</pre>
         </template>
     </section>
@@ -4183,37 +4187,37 @@ function formatExpiry(expiresAt: string): string {
             :options="props.instances"
             option-label="id"
             option-value="id"
-            :placeholder="$t('admin.wasLogs.instance')"
+            :placeholder="t('admin.wasLogs.instance')"
             @update:model-value="emit('update:instanceId', $event)"
         />
         <MultiSelect
             :model-value="props.filters.levels"
             :options="LEVELS"
-            :placeholder="$t('admin.wasLogs.level')"
+            :placeholder="t('admin.wasLogs.level')"
             @update:model-value="updateFilters({ levels: $event })"
         />
         <InputText
             :model-value="props.filters.logger"
-            :placeholder="$t('admin.wasLogs.loggerPlaceholder')"
+            :placeholder="t('admin.wasLogs.loggerPlaceholder')"
             @update:model-value="updateFilters({ logger: $event ?? '' })"
         />
         <InputText
             :model-value="props.filters.keyword"
-            :placeholder="$t('admin.wasLogs.keywordPlaceholder')"
+            :placeholder="t('admin.wasLogs.keywordPlaceholder')"
             @update:model-value="updateFilters({ keyword: $event ?? '' })"
         />
         <ToggleButton
             :model-value="props.paused"
-            :on-label="$t('admin.wasLogs.resume')"
-            :off-label="$t('admin.wasLogs.pause')"
+            :on-label="t('admin.wasLogs.resume')"
+            :off-label="t('admin.wasLogs.pause')"
             @update:model-value="emit('update:paused', $event)"
         />
         <Button
-            :label="$t('admin.wasLogs.changeLevel')"
+            :label="t('admin.wasLogs.changeLevel')"
             severity="secondary"
             @click="emit('openLevelDialog')"
         />
-        <Button :label="$t('admin.wasLogs.download')" severity="secondary" @click="emit('download')" />
+        <Button :label="t('admin.wasLogs.download')" severity="secondary" @click="emit('download')" />
 
         <Message v-if="props.levelOverrides.length > 0" severity="warn" :closable="false">
             {{ t('admin.wasLogs.overrideActive') }}:
@@ -4308,29 +4312,29 @@ async function apply(): Promise<void> {
     <Dialog
         :visible="props.visible"
         modal
-        :header="$t('admin.wasLogs.dialog.title')"
+        :header="t('admin.wasLogs.dialog.title')"
         :style="{ width: '28rem' }"
         @update:visible="emit('update:visible', $event)"
     >
         <div class="was-log-level-dialog">
-            <label for="waslog-logger">{{ $t('admin.wasLogs.logger') }}</label>
+            <label for="waslog-logger">{{ t('admin.wasLogs.logger') }}</label>
             <InputText id="waslog-logger" v-model="logger" />
 
-            <label for="waslog-level">{{ $t('admin.wasLogs.level') }}</label>
+            <label for="waslog-level">{{ t('admin.wasLogs.level') }}</label>
             <Select id="waslog-level" v-model="level" :options="LEVELS" />
 
-            <label for="waslog-ttl">{{ $t('admin.wasLogs.dialog.ttl') }}</label>
+            <label for="waslog-ttl">{{ t('admin.wasLogs.dialog.ttl') }}</label>
             <InputNumber id="waslog-ttl" v-model="ttlMinutes" :min="1" :max="120" />
-            <small>{{ $t('admin.wasLogs.dialog.ttlHint') }}</small>
+            <small>{{ t('admin.wasLogs.dialog.ttlHint') }}</small>
         </div>
         <template #footer>
             <Button
-                :label="$t('admin.wasLogs.dialog.cancel')"
+                :label="t('admin.wasLogs.dialog.cancel')"
                 severity="secondary"
                 @click="emit('update:visible', false)"
             />
             <Button
-                :label="$t('admin.wasLogs.dialog.apply')"
+                :label="t('admin.wasLogs.dialog.apply')"
                 :loading="submitting"
                 @click="apply"
             />
@@ -4430,7 +4434,7 @@ onBeforeUnmount(() => {
 
 <template>
     <div class="was-logs-page">
-        <h1 class="was-logs-page__title">{{ $t('admin.wasLogs.title') }}</h1>
+        <h1 class="was-logs-page__title">{{ t('admin.wasLogs.title') }}</h1>
 
         <WasLogToolbar
             :instances="feed.instances.value"
@@ -4446,7 +4450,7 @@ onBeforeUnmount(() => {
         />
 
         <Message v-if="feed.peerError.value" severity="error" :closable="false">
-            {{ $t('admin.wasLogs.peerErrorPrefix') }}: {{ feed.peerError.value }}
+            {{ t('admin.wasLogs.peerErrorPrefix') }}: {{ feed.peerError.value }}
         </Message>
         <!-- 재기동은 일회성 사건이라 자동으로 지우지 않는다. 사용자가 닫을 때까지 남긴다. -->
         <Message
@@ -4455,10 +4459,10 @@ onBeforeUnmount(() => {
             :closable="true"
             @close="feed.dismissRestarted()"
         >
-            {{ $t('admin.wasLogs.restarted') }}
+            {{ t('admin.wasLogs.restarted') }}
         </Message>
         <Message v-if="feed.dropped.value" severity="warn" :closable="false">
-            {{ $t('admin.wasLogs.dropped') }}
+            {{ t('admin.wasLogs.dropped') }}
         </Message>
 
         <div ref="scrollArea" class="was-logs-page__scroll" @scroll="onScroll">
