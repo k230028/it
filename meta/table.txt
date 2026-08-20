@@ -617,7 +617,9 @@ TPRMPP_BPROJM	프로젝트관리_정보화사업기본	SVN_DPM_NM	주관부서�
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	SVN_TEM_C	주관팀코드		Y		VARCHAR2	5	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	SVN_TEM_NM	주관팀명		Y		VARCHAR2	100	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	TLR_USID	팀장사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	TLR_NM	팀장명		Y		VARCHAR2	100	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	USID	사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	USR_NM	사용자명		Y		VARCHAR2	100	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	DVM_DPM_C	개발부서코드		Y		VARCHAR2	20	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	DVM_TEM_C	개발팀코드		Y		VARCHAR2	5	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	DVM_TLR_USID	개발팀장사용자ID		Y		VARCHAR2	14	
@@ -670,6 +672,7 @@ TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	SNO	
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	BG_NO	예산번호		Y		VARCHAR2	15	
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	BG_SNO	예산일련번호		Y		NUMBER	9	
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	CGPR_ID	담당자ID		Y		VARCHAR2	14	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	CGPR_NM	담당자명		Y		VARCHAR2	100	
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	DFR_CLE_C	지급주기코드		N		VARCHAR2	1	
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	IND_RSN	증감사유		Y		VARCHAR2	200	
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	NSF_USG_CONE	소요자금용도내용		Y		VARCHAR2	200	
@@ -722,7 +725,9 @@ TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	SVN_DPM_NM	�
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	SVN_TEM_C	주관팀코드		Y		VARCHAR2	5	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	SVN_TEM_NM	주관팀명		Y		VARCHAR2	100	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	TLR_USID	팀장사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	TLR_NM	팀장명		Y		VARCHAR2	100	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	USID	사용자ID		Y		VARCHAR2	14	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	USR_NM	사용자명		Y		VARCHAR2	100	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	DVM_DPM_C	개발부서코드		Y		VARCHAR2	20	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	DVM_TEM_C	개발팀코드		Y		VARCHAR2	5	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	DVM_TLR_USID	개발팀장사용자ID		Y		VARCHAR2	14	
@@ -1525,6 +1530,7 @@ TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	BG_UNT_ABUS_C	예산단�
 TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	BSE_YY	기준연도		Y		VARCHAR2	4	
 TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	TMN_YN	단말여부		Y		VARCHAR2	1	
 TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	CGPR_ID	담당자ID		Y		VARCHAR2	14	
+TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	CGPR_NM	담당자명		Y		VARCHAR2	100	
 TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	CNCD_RFR_NO	관련참조번호		Y		VARCHAR2	30	
 TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	CTT_NM	계약명		Y		VARCHAR2	100	
 TPRMPP_BCOSTM	프로젝트관리_전산업무비기본	CTT_OPP_NM	계약상대처명		Y		VARCHAR2	100	
@@ -1556,6 +1562,7 @@ TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	SNO	일련번호
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	BG_NO	예산번호		Y		VARCHAR2	15	
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	BG_SNO	예산일련번호		Y		NUMBER	9	
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	CGPR_ID	담당자ID		Y		VARCHAR2	14	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	CGPR_NM	담당자명		Y		VARCHAR2	100	
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	DFR_CLE_C	지급주기코드		N		VARCHAR2	1	
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	IND_RSN	증감사유		Y		VARCHAR2	200	
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	NSF_USG_CONE	소요자금용도내용		Y		VARCHAR2	200	
@@ -1585,6 +1592,7 @@ TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	BG_UNT_ABUS_C
 TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	BSE_YY	기준연도		Y		VARCHAR2	4	
 TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	TMN_YN	단말여부		Y		VARCHAR2	1	
 TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	CGPR_ID	담당자ID		Y		VARCHAR2	14	
+TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	CGPR_NM	담당자명		Y		VARCHAR2	100	
 TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	CNCD_RFR_NO	관련참조번호		Y		VARCHAR2	30	
 TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	CTT_NM	계약명		Y		VARCHAR2	100	
 TPRMPP_BCOSTL	프로젝트관리_전산업무비기본변경로그	CTT_OPP_NM	계약상대처명		Y		VARCHAR2	100	
@@ -1642,3 +1650,31 @@ TPRMPP_CLANGL	프로젝트관리_공통언어기본변경로그	GUID	GUID		N	'00
 TPRMPP_CLANGL	프로젝트관리_공통언어기본변경로그	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
 TPRMPP_CLANGL	프로젝트관리_공통언어기본변경로그	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
 TPRMPP_CLANGL	프로젝트관리_공통언어기본변경로그	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CMFATM	프로젝트관리_공통추가인증거래기본	APN_CER_TR_TOK_CONE	추가인증거래토큰내용	Y	N		VARCHAR2	300	
+TPRMPP_CMFATM	프로젝트관리_공통추가인증거래기본	APN_CER_CRTT_TOK_CONE	추가인증증표토큰내용		Y		VARCHAR2	300	
+TPRMPP_CMFATM	프로젝트관리_공통추가인증거래기본	APN_CER_TRY_TOK_CONE	추가인증시도토큰내용		Y		VARCHAR2	300	
+TPRMPP_CMFATM	프로젝트관리_공통추가인증거래기본	APN_CER_SVC_TR_NO	추가인증서비스거래번호		Y		VARCHAR2	20	
+TPRMPP_CMFATM	프로젝트관리_공통추가인증거래기본	APN_CER_USG_TC	추가인증용도구분코드		Y		VARCHAR2	2	
+TPRMPP_CMFATM	프로젝트관리_공통추가인증거래기본	APN_CER_MNS_TC	추가인증수단구분코드		Y		VARCHAR2	2	
+TPRMPP_CMFATM	프로젝트관리_공통추가인증거래기본	APN_CER_STS_TC	추가인증상태구분코드		Y		VARCHAR2	2	
+TPRMPP_CMFATM	프로젝트관리_공통추가인증거래기본	ENO	사원번호		Y		VARCHAR2	32	
+TPRMPP_CMFATM	프로젝트관리_공통추가인증거래기본	END_DTM	종료일시		Y		DATE		
+TPRMPP_CMFATM	프로젝트관리_공통추가인증거래기본	VRF_DTM	검증일시		Y		DATE		
+TPRMPP_CMFATM	프로젝트관리_공통추가인증거래기본	FLUR_NOT	실패횟수		Y		NUMBER	5	
+TPRMPP_CMFATM	프로젝트관리_공통추가인증거래기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CMFATM	프로젝트관리_공통추가인증거래기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CMFATM	프로젝트관리_공통추가인증거래기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CMFATM	프로젝트관리_공통추가인증거래기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CMFATM	프로젝트관리_공통추가인증거래기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CMFATM	프로젝트관리_공통추가인증거래기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CMFATM	프로젝트관리_공통추가인증거래기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
+TPRMPP_CMFADM	프로젝트관리_공통추가인증대기기본	APN_CER_TR_TOK_CONE	추가인증거래토큰내용	Y	N		VARCHAR2	300	
+TPRMPP_CMFADM	프로젝트관리_공통추가인증대기기본	ENO	사원번호		Y		VARCHAR2	32	
+TPRMPP_CMFADM	프로젝트관리_공통추가인증대기기본	END_DTM	종료일시		Y		DATE		
+TPRMPP_CMFADM	프로젝트관리_공통추가인증대기기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CMFADM	프로젝트관리_공통추가인증대기기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
+TPRMPP_CMFADM	프로젝트관리_공통추가인증대기기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
+TPRMPP_CMFADM	프로젝트관리_공통추가인증대기기본	GUID	GUID		N	'00000000000000000000000000000000000000'	VARCHAR2	38	
+TPRMPP_CMFADM	프로젝트관리_공통추가인증대기기본	GUID_PRG_SNO	GUID진행일련번호		N	0	NUMBER	4	
+TPRMPP_CMFADM	프로젝트관리_공통추가인증대기기본	LST_CHG_USID	최종변경사용자ID		N	'00000000000000'	VARCHAR2	14	
+TPRMPP_CMFADM	프로젝트관리_공통추가인증대기기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		

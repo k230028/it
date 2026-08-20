@@ -234,3 +234,5 @@ CO_C_NM	CO_C_ID_NM	길이	CDVA_ID	CDVA_NM
 메뉴유형코드	MNU_TP_C	코드VC3	GRP	메뉴그룹
 메뉴유형코드	MNU_TP_C	코드VC3	LNK	링크메뉴
 메뉴유형코드	MNU_TP_C	코드VC3	PGE	페이지화면
+구분언어코드	DTT_LAN_C	코드VC2	2	EN	영어
+구분언어코드	DTT_LAN_C	코드VC2	2	KR	한국어
