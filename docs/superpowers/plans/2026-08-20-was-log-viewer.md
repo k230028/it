@@ -3648,8 +3648,14 @@ export function useWasLogFeed() {
     let timer: ReturnType<typeof setInterval> | null = null;
     let cursor = 0;
     let epoch: string | null = null;
-    /** 진행 중인 조회가 있는지. 수동 새로고침과 타이머 tick이 겹쳐 행이 중복되는 것을 막는다. */
-    let inFlight = false;
+    /**
+     * 진행 중인 조회의 세대. 없으면 null.
+     *
+     * <p>같은 세대의 중복 호출(수동 새로고침 + 타이머 tick)만 막는다. 인스턴스·필터를 바꿔 세대가 올라간
+     * 직후의 호출은 통과시켜야 한다 — 막으면 `resetCursor`가 목록을 비운 뒤 다음 tick까지 최대 3초간
+     * 빈 화면이 남는다. 앞선 세대의 응답은 어차피 세대 비교에서 버려지므로 겹쳐도 안전하다.
+     */
+    let inFlightGeneration: number | null = null;
     /**
      * 조회 세대. resetCursor·stop이 증가시킨다.
      *
@@ -3679,11 +3685,11 @@ export function useWasLogFeed() {
         restarted.value = false;
     }
 
-    /** 1회 조회. 이미 진행 중이면 아무것도 하지 않는다. */
+    /** 1회 조회. 같은 세대의 조회가 이미 진행 중이면 아무것도 하지 않는다. */
     async function fetchOnce(): Promise<void> {
-        if (inFlight) return;
-        inFlight = true;
+        if (inFlightGeneration === generation) return;
         const myGeneration = generation;
+        inFlightGeneration = myGeneration;
         loading.value = true;
         try {
             const snapshot = await $apiFetch<WasLogSnapshot>(API_URL, {
@@ -3732,7 +3738,7 @@ export function useWasLogFeed() {
         } catch (e) {
             if (myGeneration === generation) error.value = e;
         } finally {
-            inFlight = false;
+            if (inFlightGeneration === myGeneration) inFlightGeneration = null;
             loading.value = false;
         }
     }
@@ -3870,9 +3876,6 @@ cd C:/it/it_frontend && git add app/types/wasLog.ts app/composables/useWasLogFee
                 resume: '재개',
                 download: '다운로드',
                 changeLevel: '로그레벨 변경',
-                time: '시각',
-                thread: '스레드',
-                message: '메시지',
                 stackTrace: '스택트레이스',
                 empty: '표시할 로그가 없습니다.',
                 dropped: '일부 로그를 건너뛰었습니다. 버퍼에서 밀려났거나 한 번에 표시할 수 있는 양을 넘었습니다.',
@@ -4158,6 +4161,19 @@ const LEVELS: WasLogLevel[] = ['ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE'];
 function updateFilters(patch: Partial<WasLogFilters>): void {
     emit('update:filters', { ...props.filters, ...patch });
 }
+
+/**
+ * 임시 로그레벨의 자동 복원 시각을 표시용으로 다듬는다.
+ *
+ * <p>TTL은 이 기능의 안전장치라 "언제 원래대로 돌아오는지"가 화면에 보여야 한다. 값이 비었거나 파싱되지
+ * 않으면 원문을 그대로 보여준다 — 임의로 감추면 만료 정보를 잃는다.
+ */
+function formatExpiry(expiresAt: string): string {
+    const parsed = new Date(expiresAt);
+    if (Number.isNaN(parsed.getTime())) return expiresAt;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(parsed.getHours())}:${pad(parsed.getMinutes())}`;
+}
 </script>
 
 <template>
@@ -4200,9 +4216,14 @@ function updateFilters(patch: Partial<WasLogFilters>): void {
         <Button :label="$t('admin.wasLogs.download')" severity="secondary" @click="emit('download')" />
 
         <Message v-if="props.levelOverrides.length > 0" severity="warn" :closable="false">
-            {{ $t('admin.wasLogs.overrideActive') }}:
-            <span v-for="override in props.levelOverrides" :key="override.logger">
+            {{ t('admin.wasLogs.overrideActive') }}:
+            <span
+                v-for="override in props.levelOverrides"
+                :key="override.logger"
+                class="was-log-toolbar__override"
+            >
                 {{ override.logger }}={{ override.level }}
+                ({{ t('admin.wasLogs.overrideExpires', { time: formatExpiry(override.expiresAt) }) }})
             </span>
         </Message>
     </div>
@@ -4502,7 +4523,8 @@ function mountToolbar() {
             stubs: {
                 Select: { template: '<div />' },
                 MultiSelect: { template: '<div />' },
-                InputText: { template: '<div />' },
+                // 이름을 주어 테스트가 두 InputText를 순서로 구분할 수 있게 한다.
+                InputText: { name: 'InputTextStub', template: '<div />' },
                 ToggleButton: { template: '<div />' },
                 Message: { template: '<div><slot /></div>' },
                 Button: {
@@ -4531,17 +4553,31 @@ describe('WasLogToolbar', () => {
         expect(wrapper.emitted('openLevelDialog')).toHaveLength(1);
     });
 
-    it('필터 일부만 바꿔도 나머지 필터 값을 보존해 올린다', () => {
+    it('키워드 입력은 나머지 필터 값을 보존한 채 올라간다', async () => {
         const wrapper = mountToolbar();
 
-        (wrapper.vm as unknown as { updateFilters: (p: Partial<WasLogFilters>) => void }).updateFilters(
-            { keyword: '실패' },
-        );
+        // 실제 템플릿 바인딩을 태운다 — updateFilters를 직접 부르면 어느 입력이 어느 필드에
+        // 연결됐는지(예: 키워드 입력이 logger에 잘못 물린 경우)를 잡지 못한다.
+        const inputs = wrapper.findAllComponents({ name: 'InputTextStub' });
+        await inputs[1]!.vm.$emit('update:model-value', '실패');
 
         expect(wrapper.emitted('update:filters')?.[0]?.[0]).toEqual({
             levels: ['ERROR'],
             logger: 'com.kdb.it',
             keyword: '실패',
+        });
+    });
+
+    it('로거 입력은 키워드를 덮어쓰지 않는다', async () => {
+        const wrapper = mountToolbar();
+
+        const inputs = wrapper.findAllComponents({ name: 'InputTextStub' });
+        await inputs[0]!.vm.$emit('update:model-value', 'org.hibernate');
+
+        expect(wrapper.emitted('update:filters')?.[0]?.[0]).toEqual({
+            levels: ['ERROR'],
+            logger: 'org.hibernate',
+            keyword: '',
         });
     });
 });
@@ -4599,6 +4635,38 @@ Task 7의 `inFlight` 가드가 실제로 두 번째 호출을 막는지 여기�
             await first;
 
             expect(feed.rows.value.map((r) => r.seq)).toEqual([1]);
+        });
+        scope.stop();
+    });
+
+    it('진행 중이어도 세대가 바뀐 뒤의 조회는 곧바로 나간다', async () => {
+        let resolveFirst: (value: unknown) => void = () => {};
+        apiFetch
+            .mockImplementationOnce(
+                () =>
+                    new Promise((resolve) => {
+                        resolveFirst = resolve;
+                    }),
+            )
+            .mockResolvedValueOnce(snapshot({ entries: [entry(7)], lastSeq: 7 }));
+
+        const scope = effectScope();
+        await scope.run(async () => {
+            const feed = useWasLogFeed();
+            const first = feed.fetchOnce();
+
+            // 필터를 바꾼 상황 — 목록이 비워지므로 재조회가 즉시 나가야 화면이 비어 있지 않다.
+            feed.resetCursor();
+            await feed.fetchOnce();
+
+            expect(apiFetch).toHaveBeenCalledTimes(2);
+            expect(feed.rows.value.map((r) => r.seq)).toEqual([7]);
+
+            resolveFirst(snapshot({ entries: [entry(1)], lastSeq: 1 }));
+            await first;
+
+            // 이전 세대 응답은 버려야 한다.
+            expect(feed.rows.value.map((r) => r.seq)).toEqual([7]);
         });
         scope.stop();
     });
