@@ -1013,6 +1013,8 @@ app.was-log.buffer-capacity=2000
 app.was-log.peers.SVR1=${WAS_LOG_PEER_SVR1:}
 app.was-log.peers.SVR2=${WAS_LOG_PEER_SVR2:}
 # 피어 내부 엔드포인트 공유 비밀값. 비어 있으면 내부 컨트롤러를 등록하지 않는다
+# 값에 작은따옴표(')를 넣지 않는다 — 이 값은 @ConditionalOnExpression의 SpEL 리터럴에 치환되므로
+# 따옴표가 들어가면 파싱이 깨져 기동이 실패한다(실패는 닫히는 방향이라 안전하지만 원인 파악이 어렵다).
 app.was-log.internal-secret=${WAS_LOG_INTERNAL_SECRET:}
 app.was-log.connect-timeout-ms=1000
 app.was-log.read-timeout-ms=3000
@@ -1301,27 +1303,44 @@ Expected: PASS (4건)
 ```java
 package com.kdb.it.common.admin.waslog;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.kdb.it.common.admin.waslog.config.WasLogProperties;
 import com.kdb.it.common.admin.waslog.controller.WasLogController;
+import com.kdb.it.common.admin.waslog.controller.WasLogInternalController;
+import com.kdb.it.common.admin.waslog.dto.WasLogDto;
 import com.kdb.it.common.admin.waslog.service.WasLogService;
 import com.kdb.it.common.system.security.JwtAuthenticationFilter;
 import com.kdb.it.common.system.security.JwtUtil;
 import com.kdb.it.common.util.CookieUtil;
 import com.kdb.it.config.JacksonConfig;
 import com.kdb.it.config.SecurityConfig;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-/** WAS 로그 API의 인증·인가 경계 검증. 실제 {@link SecurityConfig}를 그대로 적용한다. */
-@WebMvcTest(WasLogController.class)
+/**
+ * WAS 로그 API의 인증·인가 경계 검증. 실제 {@link SecurityConfig}를 그대로 적용한다.
+ *
+ * <p>내부 컨트롤러도 함께 올려 {@code SecurityConfig}의 {@code /internal/was-logs/**} permitAll 매처가
+ * 실제로 존재하는지 검증한다 — 그 4줄을 지워도 나머지 테스트는 전부 통과하므로 여기서만 잡을 수 있다.
+ */
+@WebMvcTest({WasLogController.class, WasLogInternalController.class})
+@EnableConfigurationProperties(WasLogProperties.class)
+@TestPropertySource(properties = "app.was-log.internal-secret=s3cret")
 @Import({SecurityConfig.class, JwtAuthenticationFilter.class, CookieUtil.class, JacksonConfig.class})
 class WasLogSecurityBoundaryTest {
 
@@ -1342,6 +1361,38 @@ class WasLogSecurityBoundaryTest {
     void 일반사용자_403() throws Exception {
         mockMvc.perform(get("/api/admin/was-logs")).andExpect(status().isForbidden());
     }
+
+    @Test
+    @DisplayName("피어 내부 경로는 미인증이어도 올바른 토큰이면 통과한다")
+    void 내부경로_미인증_토큰일치_200() throws Exception {
+        given(service.localSnapshot(any()))
+                .willReturn(
+                        new WasLogDto.Snapshot("SVR1", "e1", List.of(), 0L, false, List.of(), null));
+
+        mockMvc.perform(
+                        post("/internal/was-logs/snapshot")
+                                .header("X-Internal-Token", "s3cret")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
+                                        {"afterSeq":0,"limit":200,"levels":[],"logger":null,"keyword":null}
+                                        """))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("피어 내부 경로도 토큰이 틀리면 401")
+    void 내부경로_토큰불일치_401() throws Exception {
+        mockMvc.perform(
+                        post("/internal/was-logs/snapshot")
+                                .header("X-Internal-Token", "wrong")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
+                                        {"afterSeq":0,"limit":200,"levels":[],"logger":null,"keyword":null}
+                                        """))
+                .andExpect(status().isUnauthorized());
+    }
 }
 ```
 
@@ -1351,7 +1402,10 @@ class WasLogSecurityBoundaryTest {
 cd C:/it/it_backend && ./gradlew test --tests "com.kdb.it.common.admin.waslog.WasLogSecurityBoundaryTest" --no-daemon
 ```
 
-Expected: PASS (2건). 401/403 기대값이 다르면 기존 `AdminSecurityBoundaryTest`의 실제 응답 코드에 맞춘다.
+Expected: PASS (4건). 401/403 기대값이 다르면 기존 `AdminSecurityBoundaryTest`의 실제 응답 코드에 맞춘다.
+
+내부 경로 테스트 두 건은 Task 4에서 `WasLogInternalController`와 `SecurityConfig` 매처가 들어온 뒤에야
+통과한다. Task 3 시점에는 이 두 건을 넣지 않고, Task 4의 Step 10에서 함께 추가한다.
 
 - [ ] **Step 9: `@PreAuthorize` 격리 검증 테스트 작성**
 
@@ -1476,6 +1530,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import com.kdb.it.common.admin.waslog.config.WasLogProperties;
@@ -1484,6 +1539,7 @@ import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
@@ -1534,6 +1590,21 @@ class WasLogPeerClientTest {
         assertThatThrownBy(() -> client.fetchSnapshot(PEER_URL, "SVR2", query))
                 .isInstanceOf(WasLogPeerException.class)
                 .hasMessageContaining("SVR2");
+    }
+
+    @Test
+    @DisplayName("2xx인데 본문이 비면 WasLogPeerException을 던진다")
+    void fetchSnapshot_빈본문() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo(PEER_URL + "/internal/was-logs/snapshot"))
+                .andRespond(withStatus(HttpStatus.NO_CONTENT));
+
+        WasLogPeerClient client = new DefaultWasLogPeerClient(builder.build(), properties);
+
+        assertThatThrownBy(() -> client.fetchSnapshot(PEER_URL, "SVR2", query))
+                .isInstanceOf(WasLogPeerException.class)
+                .hasMessageContaining("본문");
     }
 
     @Test
@@ -1602,15 +1673,20 @@ public interface WasLogPeerClient {
      * 피어의 로그 스냅샷을 가져온다.
      *
      * @param baseUrl 피어 base URL(끝에 슬래시 없음)
-     * @param instanceId 대상 인스턴스ID. 응답 검증용
-     * @throws WasLogPeerException 연결·타임아웃·5xx 등 모든 호출 실패
+     * @param instanceId 대상 인스턴스ID. 예외 메시지에만 쓴다
+     * @param query 피어에 그대로 전달할 조회 조건
+     * @return 피어가 돌려준 스냅샷. null을 반환하지 않는다
+     * @throws WasLogPeerException 연결·타임아웃·4xx·5xx, 그리고 2xx인데 본문이 비어 있는 경우
      */
     WasLogDto.Snapshot fetchSnapshot(String baseUrl, String instanceId, WasLogDto.Query query);
 
     /**
      * 피어에 런타임 레벨 변경을 적용한다.
      *
-     * @throws WasLogPeerException 호출 실패
+     * @param baseUrl 피어 base URL(끝에 슬래시 없음)
+     * @param request 적용할 로거·레벨·TTL
+     * @return 피어가 적용한 오버라이드. null을 반환하지 않는다
+     * @throws WasLogPeerException 연결·타임아웃·4xx·5xx, 그리고 2xx인데 본문이 비어 있는 경우
      */
     WasLogDto.LevelOverride applyLevel(String baseUrl, WasLogDto.LevelRequest request);
 }
@@ -1623,6 +1699,7 @@ package com.kdb.it.common.admin.waslog.client;
 
 import com.kdb.it.common.admin.waslog.config.WasLogProperties;
 import com.kdb.it.common.admin.waslog.dto.WasLogDto;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -1636,7 +1713,9 @@ public class DefaultWasLogPeerClient implements WasLogPeerClient {
     private final RestClient restClient;
     private final WasLogProperties properties;
 
-    public DefaultWasLogPeerClient(RestClient wasLogPeerRestClient, WasLogProperties properties) {
+    public DefaultWasLogPeerClient(
+            @Qualifier("wasLogPeerRestClient") RestClient wasLogPeerRestClient,
+            WasLogProperties properties) {
         this.restClient = wasLogPeerRestClient;
         this.properties = properties;
     }
@@ -1644,33 +1723,48 @@ public class DefaultWasLogPeerClient implements WasLogPeerClient {
     @Override
     public WasLogDto.Snapshot fetchSnapshot(
             String baseUrl, String instanceId, WasLogDto.Query query) {
+        WasLogDto.Snapshot body;
         try {
-            return restClient
-                    .post()
-                    .uri(baseUrl + "/internal/was-logs/snapshot")
-                    .header(TOKEN_HEADER, properties.internalSecret())
-                    .body(query)
-                    .retrieve()
-                    .body(WasLogDto.Snapshot.class);
+            body =
+                    restClient
+                            .post()
+                            .uri(baseUrl + "/internal/was-logs/snapshot")
+                            .header(TOKEN_HEADER, properties.internalSecret())
+                            .body(query)
+                            .retrieve()
+                            .body(WasLogDto.Snapshot.class);
         } catch (RestClientException e) {
             throw new WasLogPeerException(instanceId + " 인스턴스 조회 실패: " + e.getMessage(), e);
         }
+        // 2xx인데 본문이 비면 body()가 예외 없이 null을 준다. 그대로 흘리면 화면이 "로그 없음"으로
+        // 읽어 실패가 감춰지므로, 호출 실패로 승격해 peerError 경로를 타게 한다.
+        if (body == null) {
+            throw new WasLogPeerException(instanceId + " 인스턴스 응답 본문이 비어 있습니다.", null);
+        }
+        return body;
     }
 
     @Override
     public WasLogDto.LevelOverride applyLevel(String baseUrl, WasLogDto.LevelRequest request) {
+        WasLogDto.LevelOverride body;
         try {
-            return restClient
-                    .post()
-                    .uri(baseUrl + "/internal/was-logs/level")
-                    .header(TOKEN_HEADER, properties.internalSecret())
-                    .body(request)
-                    .retrieve()
-                    .body(WasLogDto.LevelOverride.class);
+            body =
+                    restClient
+                            .post()
+                            .uri(baseUrl + "/internal/was-logs/level")
+                            .header(TOKEN_HEADER, properties.internalSecret())
+                            .body(request)
+                            .retrieve()
+                            .body(WasLogDto.LevelOverride.class);
         } catch (RestClientException e) {
             throw new WasLogPeerException(
                     request.instanceId() + " 인스턴스 레벨 변경 실패: " + e.getMessage(), e);
         }
+        if (body == null) {
+            throw new WasLogPeerException(
+                    request.instanceId() + " 인스턴스 레벨 변경 응답 본문이 비어 있습니다.", null);
+        }
+        return body;
     }
 }
 ```
@@ -1713,7 +1807,7 @@ public class WasLogConfig {
 cd C:/it/it_backend && ./gradlew test --tests "com.kdb.it.common.admin.waslog.client.WasLogPeerClientTest" --no-daemon
 ```
 
-Expected: PASS (3건)
+Expected: PASS (4건)
 
 - [ ] **Step 8: 내부 컨트롤러 실패 테스트 작성**
 
@@ -1835,7 +1929,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/internal/was-logs")
 @RequiredArgsConstructor
-@ConditionalOnExpression("!'${app.was-log.internal-secret:}'.isEmpty()")
+@ConditionalOnExpression("!'${app.was-log.internal-secret:}'.isBlank()")
 public class WasLogInternalController {
 
     private final WasLogService service;
@@ -1851,7 +1945,11 @@ public class WasLogInternalController {
     }
 
     private boolean matches(String token) {
-        if (token == null) return false;
+        // 조건식과 이 검사는 같은 값을 서로 다른 경로로 읽는다 — 조건식은 Environment 키를 직접,
+        // 이 필드는 @ConfigurationProperties 완화 바인딩(빈 값을 ""로 보정)을 거친다. 두 경로가
+        // 어긋나 빈 비밀값으로 빈이 등록되면 MessageDigest.isEqual("", "")가 true라 무인증이 된다.
+        // 보안 불변식을 한 경로에만 의존시키지 않는다.
+        if (token == null || properties.internalSecret().isBlank()) return false;
         return MessageDigest.isEqual(
                 token.getBytes(StandardCharsets.UTF_8),
                 properties.internalSecret().getBytes(StandardCharsets.UTF_8));
@@ -1871,6 +1969,11 @@ public class WasLogInternalController {
 ```
 
 > 이 경로는 L4 외부에 노출하지 않도록 방화벽에서 사내 서버 대역으로 제한할 것을 운영 인계 시 함께 요청한다.
+
+Task 3에서 만든 `WasLogSecurityBoundaryTest`에 내부 경로 검증 두 건을 이제 추가한다 — 계획 §Task 3의
+해당 코드 블록에 이미 반영돼 있으니 그대로 옮겨 넣고, 클래스 애너테이션(`@WebMvcTest`에 내부 컨트롤러 추가,
+`@EnableConfigurationProperties`, `@TestPropertySource`)과 import도 함께 맞춘다. 이 두 건이 없으면
+`SecurityConfig`의 permitAll 4줄을 지워도 전체 스위트가 초록이다.
 
 - [ ] **Step 11: 내부 컨트롤러 테스트 통과 확인**
 
