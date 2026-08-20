@@ -2861,6 +2861,14 @@ public class WasLogAuditLogger {
     /** 같은 행위자·인스턴스 조합의 조회를 다시 기록하기까지의 최소 간격(분). */
     private static final long THROTTLE_MINUTES = 10;
 
+    /**
+     * 스로틀 추적 키 상한.
+     *
+     * <p>키의 인스턴스ID는 검증 전 값이라 관리자가 서로 다른 문자열을 계속 보내면 맵이 무한히 자란다.
+     * 상한에 닿으면 통째로 비운다 — 최악의 결과는 감사 줄이 한 번 더 남는 것뿐이라 안전한 방향이다.
+     */
+    private static final int MAX_TRACKED_KEYS = 1000;
+
     private final Map<String, LocalDateTime> lastAccessLog = new ConcurrentHashMap<>();
     private final Clock clock;
 
@@ -2902,6 +2910,11 @@ public class WasLogAuditLogger {
                 lineCount);
     }
 
+    /** 스로틀 추적 중인 키 개수. 상한 동작 검증용. */
+    int trackedKeyCount() {
+        return lastAccessLog.size();
+    }
+
     /** 행위자+인스턴스별 스로틀 판정. 창을 벗어났으면 기록 시각을 갱신하고 true. */
     private boolean shouldLogAccess(String actor, String instanceId) {
         LocalDateTime now = LocalDateTime.now(clock);
@@ -2909,6 +2922,7 @@ public class WasLogAuditLogger {
         String key = actor + "|" + instanceId;
         LocalDateTime previous = lastAccessLog.get(key);
         if (previous != null && previous.isAfter(cutoff)) return false;
+        if (lastAccessLog.size() >= MAX_TRACKED_KEYS) lastAccessLog.clear();
         lastAccessLog.put(key, now);
         return true;
     }
@@ -3084,6 +3098,34 @@ cd C:/it/it_backend && grep -rln "WebMvcTest" src/test/java/com/kdb/it/common/ad
 
 ```java
     @Test
+    @DisplayName("레벨 변경은 감사기를 호출한다")
+    void applyLevel_감사호출() throws Exception {
+        given(service.applyLevel(any()))
+                .willReturn(
+                        new WasLogDto.LevelOverride(
+                                "com.kdb.it.domain",
+                                "DEBUG",
+                                "INFO",
+                                java.time.LocalDateTime.of(2026, 8, 20, 11, 0)));
+
+        mockMvc.perform(
+                        post("/api/admin/was-logs/level")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
+                                        {"instanceId":"SVR1","logger":"com.kdb.it.domain",
+                                         "level":"DEBUG","ttlMinutes":30}
+                                        """))
+                .andExpect(status().isOk());
+
+        ArgumentCaptor<WasLogDto.LevelRequest> captor =
+                ArgumentCaptor.forClass(WasLogDto.LevelRequest.class);
+        verify(auditLogger).logLevelChange(captor.capture());
+        assertThat(captor.getValue().logger()).isEqualTo("com.kdb.it.domain");
+        assertThat(captor.getValue().ttlMinutes()).isEqualTo(30);
+    }
+
+    @Test
     @DisplayName("조회는 커서 값과 무관하게 감사기를 호출한다 — 폭주 억제는 감사기가 한다")
     void snapshot_감사호출() throws Exception {
         given(service.snapshot(any(), any()))
@@ -3116,6 +3158,18 @@ cd C:/it/it_backend && grep -rln "WebMvcTest" src/test/java/com/kdb/it/common/ad
         logger.logSnapshotAccess("SVR2");
 
         assertThat(appender.list).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("서로 다른 인스턴스ID를 계속 보내도 추적 맵이 무한히 자라지 않는다")
+    void logSnapshotAccess_추적맵상한() {
+        for (int i = 0; i < 1500; i++) {
+            logger.logSnapshotAccess("SVR" + i);
+        }
+
+        // 상한에 닿으면 비우므로 기록은 남되 맵 크기는 상한 아래로 유지된다.
+        assertThat(appender.list).hasSize(1500);
+        assertThat(logger.trackedKeyCount()).isLessThan(1000);
     }
 
     @Test
