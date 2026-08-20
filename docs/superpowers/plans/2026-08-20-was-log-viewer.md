@@ -4424,7 +4424,13 @@ onBeforeUnmount(() => {
         <Message v-if="feed.peerError.value" severity="error" :closable="false">
             {{ $t('admin.wasLogs.peerErrorPrefix') }}: {{ feed.peerError.value }}
         </Message>
-        <Message v-if="feed.restarted.value" severity="warn" :closable="false">
+        <!-- 재기동은 일회성 사건이라 자동으로 지우지 않는다. 사용자가 닫을 때까지 남긴다. -->
+        <Message
+            v-if="feed.restarted.value"
+            severity="warn"
+            :closable="true"
+            @close="feed.dismissRestarted()"
+        >
             {{ $t('admin.wasLogs.restarted') }}
         </Message>
         <Message v-if="feed.dropped.value" severity="warn" :closable="false">
@@ -4559,6 +4565,61 @@ cd C:/it/it_frontend && grep -n "MENU_ICON_OPTIONS" -A 30 app/utils/menuPresenta
 ```
 
 없으면 `MENU_ICON_OPTIONS` 배열에 `'pi pi-server'`를 추가한다.
+
+- [ ] **Step 11b: 진행 중 재호출 가드 테스트 추가**
+
+Task 8이 수동 새로고침·인스턴스 전환·필터 변경을 붙이면서 `fetchOnce`가 타이머 tick과 겹칠 통로가 생겼다.
+Task 7의 `inFlight` 가드가 실제로 두 번째 호출을 막는지 여기서 잠근다.
+
+`tests/unit/composables/useWasLogFeed.test.ts`에 추가:
+
+```typescript
+    it('진행 중인 조회가 있으면 두 번째 호출은 요청을 보내지 않는다', async () => {
+        let resolveFirst: (value: unknown) => void = () => {};
+        apiFetch.mockImplementationOnce(
+            () =>
+                new Promise((resolve) => {
+                    resolveFirst = resolve;
+                }),
+        );
+
+        const scope = effectScope();
+        await scope.run(async () => {
+            const feed = useWasLogFeed();
+            const first = feed.fetchOnce();
+
+            // 응답이 오기 전에 수동 새로고침이 겹친 상황.
+            await feed.fetchOnce();
+            expect(apiFetch).toHaveBeenCalledTimes(1);
+
+            resolveFirst(snapshot({ entries: [entry(1)], lastSeq: 1 }));
+            await first;
+
+            expect(feed.rows.value.map((r) => r.seq)).toEqual([1]);
+        });
+        scope.stop();
+    });
+
+    it('dismissRestarted는 재기동 배너만 내린다', async () => {
+        apiFetch
+            .mockResolvedValueOnce(snapshot({ entries: [entry(1)], lastSeq: 1, bufferEpoch: 'e1' }))
+            .mockResolvedValueOnce(snapshot({ entries: [entry(1)], lastSeq: 1, bufferEpoch: 'e2' }));
+
+        const scope = effectScope();
+        await scope.run(async () => {
+            const feed = useWasLogFeed();
+            await feed.fetchOnce();
+            await feed.fetchOnce();
+            expect(feed.restarted.value).toBe(true);
+
+            feed.dismissRestarted();
+
+            expect(feed.restarted.value).toBe(false);
+            expect(feed.rows.value).toHaveLength(1);
+        });
+        scope.stop();
+    });
+```
 
 - [ ] **Step 12: 검증 명령 전체 실행**
 
