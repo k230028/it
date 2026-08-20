@@ -69,7 +69,7 @@
 | `app/pages/admin/was-logs.vue` | 페이지 조립 | 8 |
 | `i18n/messages/admin.ts` | `admin.wasLogs.*` 키 | 8 |
 
-**DB** — `it_database/migrations/V20260820_002__SeedWasLogAdminMenu.sql` (Task 9)
+**DB** — `it_database/migrations/V20260820_005__SeedWasLogAdminMenu.sql` (Task 9)
 
 ---
 
@@ -4717,7 +4717,7 @@ cd C:/it/it_frontend && git add app/components/admin/waslog app/pages/admin/was-
 ### Task 9: 관리자 메뉴 시드
 
 **Files:**
-- Create: `it_database/migrations/V20260820_002__SeedWasLogAdminMenu.sql`
+- Create: `it_database/migrations/V20260820_005__SeedWasLogAdminMenu.sql`
 
 **Interfaces:**
 - Consumes: 화면 경로 `/admin/was-logs`(Task 8)
@@ -4862,7 +4862,7 @@ cd C:/it/it_backend && ./gradlew bootRun --no-daemon
 - [ ] **Step 5: 커밋**
 
 ```bash
-cd C:/it/it_database && git add migrations/V20260820_002__SeedWasLogAdminMenu.sql && git diff --cached --stat && git commit -m "feat: WAS 로그 관리자 메뉴 시드 추가 (권한 매핑 포함)"
+cd C:/it/it_database && git add migrations/V20260820_005__SeedWasLogAdminMenu.sql && git diff --cached --stat && git commit -m "feat: WAS 로그 관리자 메뉴 시드 추가 (권한 매핑 포함)"
 ```
 
 ---

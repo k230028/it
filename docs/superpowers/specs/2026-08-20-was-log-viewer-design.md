@@ -70,7 +70,7 @@ DB 적재가 필요해지면 후속 과제로 분리한다(§10).
 | 클래스 | 책임 |
 | --- | --- |
 | `appender/RingBufferAppender` | `AppenderBase<ILoggingEvent>` 구현. 이벤트를 `WasLogBuffer`에 적재 |
-| `appender/WasLogBuffer` | 정적 싱글턴 링버퍼. 적재·스냅샷 두 연산만 노출 |
+| `appender/WasLogBuffer` | logback `Context`에 얹은 공용 링버퍼. 적재·스냅샷 두 연산만 노출 |
 | `dto/WasLogEntry` | `record(seq, timestamp, level, thread, logger, message, throwable)` |
 | `dto/WasLogDto` | 요청 조건·응답 스냅샷·레벨 변경 요청/응답 |
 | `service/WasLogService` | 필터링·커서·인스턴스 라우팅 |
@@ -81,12 +81,20 @@ DB 적재가 필요해지면 후속 과제로 분리한다(§10).
 | `controller/WasLogController` | `/api/admin/was-logs/**` |
 | `controller/WasLogInternalController` | 피어 전용 `/internal/was-logs/**` |
 
-`RingBufferAppender`는 Spring 컨텍스트보다 먼저 뜨므로 빈이 아니다. 그래서 버퍼를 정적 싱글턴으로 두고
-서비스는 그 스냅샷만 읽는다. 버퍼 크기는 logback XML의 `<capacity>`로 주입하고 기본 2000건.
+`RingBufferAppender`는 Spring 컨텍스트보다 먼저 뜨므로 빈이 아니다. 그래서 적재 측과 조회 측이 프로세스 공용
+저장소를 통해 만나고, 서비스는 그 스냅샷만 읽는다. 버퍼 크기는 logback XML의 `<capacity>`로 주입하고 기본 2000건.
+
+공용 저장소는 **`static` 필드가 아니라 logback `Context`의 object map**에 둔다. logback은 appender 클래스를
+logback 자신을 로드한 클래스로더로 찾으므로, `spring-boot-devtools`가 붙은 IDE 기동처럼 애플리케이션 클래스가
+`RestartClassLoader`로 다시 로드되는 환경에서는 `WasLogBuffer`가 **두 클래스로 로드된다**. `static` 필드였을 때
+appender는 A 쪽 버퍼에 쌓고 서비스는 B 쪽의 영원히 빈 버퍼를 읽어, 화면이 오류 하나 없이 "로그 0건"만 보여주는
+결함이 실제로 발생했다(2026-08-20 실행 중인 JVM의 클래스로더 덤프로 확인). 저장소는 양쪽 클래스로더가 같은 클래스로
+보는 **JDK 타입만**으로 구성하고(`ArrayDeque`·`AtomicLong`·`Object[]`), 항목도 `Object[]`로 담아 조회 시점에 각자의
+`WasLogEntry`로 되살린다. 회귀 방지는 `WasLogBufferClassLoaderIsolationTest`가 실제 자식 우선 클래스로더로 덮는다.
 
 ### 5.2 링버퍼
 
-- 고정 크기 배열 + 쓰기 인덱스. 가득 차면 가장 오래된 항목을 덮어쓴다.
+- 용량 상한을 가진 `ArrayDeque`. 가득 차면 가장 오래된 항목을 앞에서 버린다.
 - `AtomicLong` 단조 증가 `seq`가 커서 역할을 한다.
 - 적재는 짧은 `synchronized` 블록. 로깅 경로이므로 O(1) 이상의 작업을 하지 않는다.
 - 예외는 `ThrowableProxyUtil.asString`으로 문자열화하되 **8KB**에서 절단, 메시지는 **4KB**에서 절단해
@@ -207,7 +215,7 @@ GET /api/admin/was-logs/download?instanceId=&levels=&logger=&q=
 
 ### 6.4 메뉴 등록
 
-`it_database/migrations/V20260820_002__SeedWasLogAdminMenu.sql`로 관리자 메뉴를 추가하면서
+`it_database/migrations/V20260820_005__SeedWasLogAdminMenu.sql`로 관리자 메뉴를 추가하면서
 **`TPRMPP_CMENUA` 권한 매핑 행을 함께 넣는다**. `MenuQueryService.isAllowed()`가 매핑 0건을 전체 공개로
 판정하므로, 매핑을 빠뜨리면 비관리자 사이드바에 노출된다(BE-45가 지적한 최근 3개 시드의 공통 결함).
 
