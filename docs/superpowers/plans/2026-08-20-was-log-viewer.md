@@ -2775,6 +2775,7 @@ import com.kdb.it.common.admin.waslog.dto.WasLogDto;
 import com.kdb.it.common.admin.waslog.dto.WasLogEntry;
 import com.kdb.it.common.admin.waslog.service.WasLogAuditLogger;
 import com.kdb.it.common.admin.waslog.service.WasLogService;
+import com.kdb.it.common.system.security.JwtUtil;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -2789,6 +2790,9 @@ import org.springframework.test.web.servlet.MockMvc;
 class WasLogDownloadTest {
 
     @Autowired private MockMvc mockMvc;
+
+    // JwtAuthenticationFilter는 @Component Filter라 @WebMvcTest가 자동 포함한다. 그 생성자 의존을 채운다.
+    @MockitoBean private JwtUtil jwtUtil;
 
     @MockitoBean private WasLogService service;
     @MockitoBean private WasLogAuditLogger auditLogger;
@@ -2950,7 +2954,11 @@ import 추가: `com.kdb.it.common.admin.waslog.dto.WasLogEntry`, `com.kdb.it.com
 
 - [ ] **Step 6: 기존 컨트롤러 테스트에 mock 추가**
 
-`WasLogControllerTest`와 `WasLogSecurityBoundaryTest`에 `@MockitoBean private WasLogAuditLogger auditLogger;`를 추가한다(추가하지 않으면 컨텍스트 로딩 실패).
+`WasLogController`를 슬라이스로 올리는 **모든** 테스트 클래스에 `@MockitoBean private WasLogAuditLogger auditLogger;`를 추가한다 — 추가하지 않으면 컨텍스트 로딩이 실패한다. 현재 대상은 `WasLogControllerTest`, `WasLogControllerAuthorizationTest`, `WasLogSecurityBoundaryTest` 셋이다(Task 3·4에서 늘었다). 실제 목록은 다음으로 확인한다.
+
+```bash
+cd C:/it/it_backend && grep -rln "WebMvcTest" src/test/java/com/kdb/it/common/admin/waslog
+```
 
 - [ ] **Step 7: 테스트 통과 확인**
 
