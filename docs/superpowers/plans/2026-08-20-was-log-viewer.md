@@ -3218,7 +3218,7 @@ cd C:/it/it_backend && git add src/main/java/com/kdb/it/common/admin/waslog src/
 - Consumes: `GET /api/admin/was-logs`, `GET /api/admin/was-logs/instances`(Task 3)
 - Produces:
   - `WasLogEntry`, `WasLogSnapshot`, `WasLogInstance`, `WasLogLevel`, `WasLogFilters` 타입
-  - `useWasLogFeed()` → `{ rows, instances, instanceId, filters, paused, loading, error, peerError, dropped, restarted, start, stop, fetchOnce, resetCursor, loadInstances }`
+  - `useWasLogFeed()` → `{ rows, instances, instanceId, filters, levelOverrides, paused, loading, error, peerError, dropped, restarted, start, stop, tick, fetchOnce, resetCursor, dismissRestarted, loadInstances }`
 
 - [ ] **Step 1: 타입 작성**
 
@@ -3418,6 +3418,153 @@ describe('useWasLogFeed', () => {
         scope.stop();
     });
 
+    it('보관 상한을 넘으면 오래된 행부터 버린다', async () => {
+        const many = Array.from({ length: 2500 }, (_, i) => entry(i + 1));
+        apiFetch.mockResolvedValueOnce(snapshot({ entries: many, lastSeq: 2500 }));
+
+        const scope = effectScope();
+        await scope.run(async () => {
+            const feed = useWasLogFeed();
+            await feed.fetchOnce();
+
+            expect(feed.rows.value).toHaveLength(2000);
+            // 최신이 남고 오래된 쪽이 잘려야 한다.
+            expect(feed.rows.value[0]!.seq).toBe(501);
+            expect(feed.rows.value.at(-1)!.seq).toBe(2500);
+        });
+        scope.stop();
+    });
+
+    it('조회 실패는 커서·목록을 건드리지 않고 다음 성공에서 지워진다', async () => {
+        apiFetch
+            .mockResolvedValueOnce(snapshot({ entries: [entry(1)], lastSeq: 1 }))
+            .mockRejectedValueOnce(new Error('network'))
+            .mockResolvedValueOnce(snapshot({ entries: [entry(2)], lastSeq: 2 }));
+
+        const scope = effectScope();
+        await scope.run(async () => {
+            const feed = useWasLogFeed();
+            await feed.fetchOnce();
+            await feed.fetchOnce();
+
+            expect(feed.error.value).toBeInstanceOf(Error);
+            expect(feed.rows.value).toHaveLength(1);
+
+            await feed.fetchOnce();
+            expect(feed.error.value).toBeNull();
+            expect(apiFetch.mock.calls[2]![1].query.afterSeq).toBe(1);
+            expect(feed.rows.value.map((r) => r.seq)).toEqual([1, 2]);
+        });
+        scope.stop();
+    });
+
+    it('dropped와 levelOverrides를 응답 그대로 반영한다', async () => {
+        apiFetch.mockResolvedValueOnce(
+            snapshot({
+                dropped: true,
+                levelOverrides: [
+                    {
+                        logger: 'com.kdb.it',
+                        level: 'DEBUG',
+                        previousLevel: 'INFO',
+                        expiresAt: '2026-08-20T11:00:00',
+                    },
+                ],
+            }),
+        );
+
+        const scope = effectScope();
+        await scope.run(async () => {
+            const feed = useWasLogFeed();
+            await feed.fetchOnce();
+
+            expect(feed.dropped.value).toBe(true);
+            expect(feed.levelOverrides.value).toHaveLength(1);
+        });
+        scope.stop();
+    });
+
+    it('인스턴스 목록은 self를 기본 선택한다', async () => {
+        apiFetch.mockResolvedValueOnce([
+            { id: 'SVR2', self: false, reachable: true },
+            { id: 'SVR1', self: true, reachable: true },
+        ]);
+
+        const scope = effectScope();
+        await scope.run(async () => {
+            const feed = useWasLogFeed();
+            await feed.loadInstances();
+
+            expect(feed.instanceId.value).toBe('SVR1');
+        });
+        scope.stop();
+    });
+
+    it('resetCursor는 레벨 오버라이드와 오류 배너까지 지운다', async () => {
+        apiFetch
+            .mockResolvedValueOnce(
+                snapshot({
+                    entries: [entry(1)],
+                    lastSeq: 1,
+                    levelOverrides: [
+                        {
+                            logger: 'com.kdb.it',
+                            level: 'DEBUG',
+                            previousLevel: 'INFO',
+                            expiresAt: '2026-08-20T11:00:00',
+                        },
+                    ],
+                }),
+            )
+            .mockResolvedValueOnce(snapshot({ peerError: 'SVR2 인스턴스 조회 실패: timeout' }));
+
+        const scope = effectScope();
+        await scope.run(async () => {
+            const feed = useWasLogFeed();
+            await feed.fetchOnce();
+            await feed.fetchOnce();
+            expect(feed.levelOverrides.value).toHaveLength(1);
+            expect(feed.peerError.value).not.toBeNull();
+
+            feed.resetCursor();
+
+            expect(feed.levelOverrides.value).toHaveLength(0);
+            expect(feed.peerError.value).toBeNull();
+            expect(feed.rows.value).toHaveLength(0);
+        });
+        scope.stop();
+    });
+
+    it('세대가 바뀐 뒤 도착한 응답은 반영하지 않는다', async () => {
+        let resolveFirst: (value: unknown) => void = () => {};
+        apiFetch
+            .mockImplementationOnce(
+                () =>
+                    new Promise((resolve) => {
+                        resolveFirst = resolve;
+                    }),
+            )
+            .mockResolvedValueOnce(snapshot({ entries: [entry(9)], lastSeq: 9 }));
+
+        const scope = effectScope();
+        await scope.run(async () => {
+            const feed = useWasLogFeed();
+            const pending = feed.fetchOnce();
+
+            // 응답이 도착하기 전에 인스턴스를 바꾼다.
+            feed.resetCursor();
+            resolveFirst(snapshot({ entries: [entry(1)], lastSeq: 1 }));
+            await pending;
+
+            expect(feed.rows.value).toHaveLength(0);
+
+            await feed.fetchOnce();
+            expect(apiFetch.mock.calls[1]![1].query.afterSeq).toBe(0);
+            expect(feed.rows.value.map((r) => r.seq)).toEqual([9]);
+        });
+        scope.stop();
+    });
+
     it('필터를 바꾸면 커서와 목록을 비운다', async () => {
         apiFetch.mockResolvedValue(snapshot({ entries: [entry(1)], lastSeq: 1 }));
 
@@ -3501,18 +3648,42 @@ export function useWasLogFeed() {
     let timer: ReturnType<typeof setInterval> | null = null;
     let cursor = 0;
     let epoch: string | null = null;
+    /** 진행 중인 조회가 있는지. 수동 새로고침과 타이머 tick이 겹쳐 행이 중복되는 것을 막는다. */
+    let inFlight = false;
+    /**
+     * 조회 세대. resetCursor·stop이 증가시킨다.
+     *
+     * <p>인스턴스를 바꾼 직후 도착한 이전 인스턴스의 응답이 새 커서·목록을 덮어쓰지 못하게 한다.
+     */
+    let generation = 0;
 
-    /** 커서와 목록을 비운다. 인스턴스·필터 변경 시 호출한다. */
+    /**
+     * 커서와 화면 상태를 비운다. 인스턴스·필터 변경 시 호출한다.
+     *
+     * <p>레벨 오버라이드와 오류도 함께 지운다 — 남겨두면 이전 인스턴스의 값이 새 인스턴스의 것처럼 보인다.
+     */
     function resetCursor(): void {
+        generation += 1;
         cursor = 0;
         epoch = null;
         rows.value = [];
+        levelOverrides.value = [];
         dropped.value = false;
+        restarted.value = false;
+        peerError.value = null;
+        error.value = null;
+    }
+
+    /** 재기동 안내를 닫는다. 사용자가 확인하기 전까지 배너를 유지하기 위해 자동으로 지우지 않는다. */
+    function dismissRestarted(): void {
         restarted.value = false;
     }
 
-    /** 1회 조회. */
+    /** 1회 조회. 이미 진행 중이면 아무것도 하지 않는다. */
     async function fetchOnce(): Promise<void> {
+        if (inFlight) return;
+        inFlight = true;
+        const myGeneration = generation;
         loading.value = true;
         try {
             const snapshot = await $apiFetch<WasLogSnapshot>(API_URL, {
@@ -3527,6 +3698,9 @@ export function useWasLogFeed() {
                     q: filters.value.keyword || undefined,
                 },
             });
+
+            // 인스턴스·필터가 바뀐 뒤 도착한 응답은 이미 남의 것이다. 반영하면 커서가 되살아난다.
+            if (myGeneration !== generation) return;
 
             // 피어 위임이 실패한 응답은 메타 필드가 비어 있다(bufferEpoch=null, lastSeq=보낸 커서,
             // levelOverrides=[]). 그대로 반영하면 epoch이 두 번 바뀐 것처럼 보여 목록이 중복되고,
@@ -3556,8 +3730,9 @@ export function useWasLogFeed() {
             dropped.value = snapshot.dropped;
             error.value = null;
         } catch (e) {
-            error.value = e;
+            if (myGeneration === generation) error.value = e;
         } finally {
+            inFlight = false;
             loading.value = false;
         }
     }
@@ -3604,8 +3779,9 @@ export function useWasLogFeed() {
         }
     }
 
-    /** 폴링을 멈춘다. */
+    /** 폴링을 멈춘다. 진행 중이던 응답은 도착해도 반영하지 않는다. */
     function stop(): void {
+        generation += 1;
         stopTimer();
         if (typeof document !== 'undefined') {
             document.removeEventListener('visibilitychange', onVisibilityChange);
@@ -3629,6 +3805,7 @@ export function useWasLogFeed() {
         tick,
         fetchOnce,
         resetCursor,
+        dismissRestarted,
         loadInstances,
     };
 }
