@@ -2407,6 +2407,11 @@ import 추가: `org.springframework.web.bind.annotation.PostMapping`, `org.sprin
 
 `WasLogInternalController`에도 같은 동작의 내부 엔드포인트를 추가한다(라우팅 없이 로컬 적용).
 
+> **이 엔드포인트의 유일한 인증 수단은 토큰 검사다.** Task 4가 넣은 `SecurityConfig`의
+> `/internal/was-logs/**` permitAll 매처가 와일드카드라 `/level`도 자동으로 익명 허용 대상이 된다.
+> 조회와 달리 이 경로는 **서버 상태를 바꾸므로**, `matches(token)` 호출을 빠뜨리면 누구나 운영 서버의
+> 로그 레벨을 바꿀 수 있다. 조회 엔드포인트와 완전히 같은 가드를 본문 첫 줄에 둔다.
+
 ```java
     /** 로컬 인스턴스에 레벨을 적용한다. 라우팅하지 않는다. */
     @PostMapping("/level")
@@ -2468,7 +2473,33 @@ import 추가: `org.springframework.web.bind.annotation.PostMapping`, `org.sprin
     }
 ```
 
-- [ ] **Step 9: 전체 waslog 테스트 통과 확인**
+- [ ] **Step 9: 피어 레벨 변경의 빈 본문 처리 테스트 추가**
+
+Task 4에서 `fetchSnapshot`만 커버했고 `applyLevel`의 같은 분기는 비어 있었다. 레벨 변경은 실패를 삼키면
+"적용됐다"는 착시를 주는 경로이므로 대칭으로 채운다.
+
+`WasLogPeerClientTest.java`에 추가:
+
+```java
+    @Test
+    @DisplayName("레벨 변경이 2xx인데 본문이 비면 WasLogPeerException을 던진다")
+    void applyLevel_빈본문() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo(PEER_URL + "/internal/was-logs/level"))
+                .andRespond(withStatus(HttpStatus.NO_CONTENT));
+
+        WasLogPeerClient client = new DefaultWasLogPeerClient(builder.build(), properties);
+        WasLogDto.LevelRequest request =
+                new WasLogDto.LevelRequest("SVR2", "com.kdb.it", "DEBUG", 30);
+
+        assertThatThrownBy(() -> client.applyLevel(PEER_URL, request))
+                .isInstanceOf(WasLogPeerException.class)
+                .hasMessageContaining("본문");
+    }
+```
+
+- [ ] **Step 10: 전체 waslog 테스트 통과 확인**
 
 ```bash
 cd C:/it/it_backend && ./gradlew test --tests "com.kdb.it.common.admin.waslog.*" --no-daemon
@@ -2476,7 +2507,7 @@ cd C:/it/it_backend && ./gradlew test --tests "com.kdb.it.common.admin.waslog.*"
 
 Expected: PASS
 
-- [ ] **Step 10: 포맷 적용 후 커밋**
+- [ ] **Step 11: 포맷 적용 후 커밋**
 
 ```bash
 cd C:/it/it_backend && ./gradlew spotlessApply --no-daemon
@@ -2896,10 +2927,17 @@ describe('useWasLogFeed', () => {
         scope.stop();
     });
 
-    it('peerError를 그대로 노출하고 목록을 지우지 않는다', async () => {
+    it('peerError를 그대로 노출하고 목록·커서를 건드리지 않는다', async () => {
         apiFetch
             .mockResolvedValueOnce(snapshot({ entries: [entry(1)], lastSeq: 1 }))
-            .mockResolvedValueOnce(snapshot({ peerError: 'SVR2 인스턴스 조회 실패: timeout' }));
+            .mockResolvedValueOnce(
+                snapshot({
+                    peerError: 'SVR2 인스턴스 조회 실패: timeout',
+                    bufferEpoch: null,
+                    lastSeq: 0,
+                }),
+            )
+            .mockResolvedValueOnce(snapshot({ entries: [entry(2)], lastSeq: 2 }));
 
         const scope = effectScope();
         await scope.run(async () => {
@@ -2909,6 +2947,13 @@ describe('useWasLogFeed', () => {
 
             expect(feed.peerError.value).toContain('timeout');
             expect(feed.rows.value).toHaveLength(1);
+            // 실패 응답의 bufferEpoch=null·lastSeq=0을 반영하지 않았는지 — 다음 요청이 커서 1을 쓰고
+            // 재기동으로 오인해 목록을 비우지 않아야 한다.
+            await feed.fetchOnce();
+            expect(apiFetch.mock.calls[2]![1].query.afterSeq).toBe(1);
+            expect(feed.restarted.value).toBe(false);
+            expect(feed.rows.value.map((r) => r.seq)).toEqual([1, 2]);
+            expect(feed.peerError.value).toBeNull();
         });
         scope.stop();
     });
@@ -3023,6 +3068,15 @@ export function useWasLogFeed() {
                 },
             });
 
+            // 피어 위임이 실패한 응답은 메타 필드가 비어 있다(bufferEpoch=null, lastSeq=보낸 커서,
+            // levelOverrides=[]). 그대로 반영하면 epoch이 두 번 바뀐 것처럼 보여 목록이 중복되고,
+            // 살아 있는 임시 로그레벨이 화면에서 사라진다. 배너만 띄우고 나머지는 건드리지 않는다.
+            if (snapshot.peerError !== null) {
+                peerError.value = snapshot.peerError;
+                error.value = null;
+                return;
+            }
+
             if (epoch !== null && snapshot.bufferEpoch !== null && snapshot.bufferEpoch !== epoch) {
                 // 서버 재기동 — seq가 리셋되므로 이전 커서와 목록은 의미가 없다.
                 cursor = 0;
@@ -3038,7 +3092,7 @@ export function useWasLogFeed() {
             }
             cursor = snapshot.lastSeq;
             levelOverrides.value = snapshot.levelOverrides;
-            peerError.value = snapshot.peerError;
+            peerError.value = null;
             dropped.value = snapshot.dropped;
             error.value = null;
         } catch (e) {
