@@ -861,7 +861,10 @@ public class WasLogService {
             }
         }
 
-        int limit = query.limit() <= 0 ? MAX_LIMIT : Math.min(query.limit(), MAX_LIMIT);
+        // 상한은 버퍼 용량이다. 폴링 API는 컨트롤러가 MAX_LIMIT(200)으로 따로 조이고, 다운로드는
+        // 버퍼 전체를 내보내야 하므로(설계 §5.6) 여기서 200으로 막으면 파일이 조용히 잘린다.
+        int cap = Math.max(1, properties.bufferCapacity());
+        int limit = query.limit() <= 0 ? Math.min(MAX_LIMIT, cap) : Math.min(query.limit(), cap);
         WasLogBuffer.BufferSnapshot buffer = WasLogBuffer.shared().snapshot();
 
         List<WasLogEntry> filtered = new ArrayList<>();
@@ -892,6 +895,11 @@ public class WasLogService {
                 dropped,
                 overrideRegistry == null ? List.of() : overrideRegistry.list(),
                 null);
+    }
+
+    /** 다운로드가 버퍼 전체를 받기 위해 쓰는 상한. */
+    public int exportLimit() {
+        return Math.max(1, properties.bufferCapacity());
     }
 
     /** 설정에 등록된 인스턴스 목록. */
@@ -2831,6 +2839,10 @@ Expected: 컴파일 실패 — `WasLogAuditLogger` 없음, 다운로드 엔드�
 package com.kdb.it.common.admin.waslog.service;
 
 import com.kdb.it.common.admin.waslog.dto.WasLogDto;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -2846,25 +2858,70 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class WasLogAuditLogger {
 
-    /** 로그 조회 진입. */
-    public void logSnapshotAccess(String instanceId) {
-        log.warn("[WAS로그감사] 조회 actor={} instance={}", actor(), instanceId);
+    /** 같은 행위자·인스턴스 조합의 조회를 다시 기록하기까지의 최소 간격(분). */
+    private static final long THROTTLE_MINUTES = 10;
+
+    private final Map<String, LocalDateTime> lastAccessLog = new ConcurrentHashMap<>();
+    private final Clock clock;
+
+    public WasLogAuditLogger(Clock clock) {
+        this.clock = clock;
     }
 
-    /** 런타임 레벨 변경. */
+    /**
+     * 로그 조회 진입.
+     *
+     * <p>조회는 3초마다 폴링되므로 매 호출을 남기면 감사 기록이 정작 보려던 로그를 뒤덮는다. 그렇다고
+     * 클라이언트가 보낸 커서(`afterSeq==0`)로 first-call을 판정하면, 항상 0이 아닌 값을 보내는 호출자는
+     * 흔적을 하나도 남기지 않고 로그를 다 읽어갈 수 있다. 그래서 **서버가** 행위자+인스턴스별로
+     * {@value #THROTTLE_MINUTES}분에 한 번만 기록한다 — 클라이언트가 회피할 수 없다.
+     */
+    public void logSnapshotAccess(String instanceId) {
+        String actor = actor();
+        if (!shouldLogAccess(actor, instanceId)) return;
+        log.warn("[WAS로그감사] 조회 actor={} instance={}", sanitize(actor), sanitize(instanceId));
+    }
+
+    /** 런타임 레벨 변경. 드물고 상태를 바꾸므로 스로틀 없이 매번 남긴다. */
     public void logLevelChange(WasLogDto.LevelRequest request) {
         log.warn(
                 "[WAS로그감사] 레벨변경 actor={} instance={} logger={} level={} ttl={}분",
-                actor(),
-                request.instanceId(),
-                request.logger(),
-                request.level(),
+                sanitize(actor()),
+                sanitize(request.instanceId()),
+                sanitize(request.logger()),
+                sanitize(request.level()),
                 request.ttlMinutes());
     }
 
-    /** 로그 파일 다운로드. */
+    /** 로그 파일 다운로드. 스로틀 없이 매번 남긴다. */
     public void logDownload(String instanceId, int lineCount) {
-        log.warn("[WAS로그감사] 다운로드 actor={} instance={} lines={}", actor(), instanceId, lineCount);
+        log.warn(
+                "[WAS로그감사] 다운로드 actor={} instance={} lines={}",
+                sanitize(actor()),
+                sanitize(instanceId),
+                lineCount);
+    }
+
+    /** 행위자+인스턴스별 스로틀 판정. 창을 벗어났으면 기록 시각을 갱신하고 true. */
+    private boolean shouldLogAccess(String actor, String instanceId) {
+        LocalDateTime now = LocalDateTime.now(clock);
+        LocalDateTime cutoff = now.minusMinutes(THROTTLE_MINUTES);
+        String key = actor + "|" + instanceId;
+        LocalDateTime previous = lastAccessLog.get(key);
+        if (previous != null && previous.isAfter(cutoff)) return false;
+        lastAccessLog.put(key, now);
+        return true;
+    }
+
+    /**
+     * 감사 값 정화.
+     *
+     * <p>감사 기록은 이 기능의 유일한 보상 통제다. 값이 검증 전에 기록되는 경로가 있어, 개행이 들어가면
+     * 로그 파일에 가짜 감사 줄을 심을 수 있다. 개행·캐리지리턴을 눈에 보이는 기호로 바꾼다.
+     */
+    private String sanitize(String value) {
+        if (value == null) return null;
+        return value.replace("\r", "\\r").replace("\n", "\\n");
     }
 
     private String actor() {
@@ -2892,13 +2949,20 @@ public class WasLogAuditLogger {
             @RequestParam(name = "levels", required = false) String levels,
             @RequestParam(name = "logger", required = false) String logger,
             @RequestParam(name = "q", required = false) String q) {
+        // 설계 §5.6은 "버퍼 전체"를 요구한다. 폴링용 상한(MAX_LIMIT=200)을 그대로 쓰면 2000건 버퍼에서
+        // 최신 200건만 담긴 파일이 아무 표시 없이 내려가 관리자가 완전한 로그로 오해한다.
         WasLogDto.Snapshot snapshot =
                 service.snapshot(
                         instanceId,
                         new WasLogDto.Query(
-                                0L, WasLogService.MAX_LIMIT, splitLevels(levels), logger, q));
+                                0L, service.exportLimit(), splitLevels(levels), logger, q));
 
         StringBuilder body = new StringBuilder();
+        // 그래도 잘렸다면(버퍼 용량보다 필터 결과가 많을 수는 없으나 방어적으로) 파일에 사실을 적는다.
+        if (snapshot.dropped()) {
+            body.append("# 일부 로그가 생략되었습니다 — 버퍼에서 밀려났거나 조회 상한에 걸렸습니다.
+");
+        }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
         for (WasLogEntry entry : snapshot.entries()) {
             body.append(
@@ -2925,7 +2989,8 @@ public class WasLogAuditLogger {
                 "was-log_"
                         + resolvedInstance
                         + "_"
-                        + DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss").format(LocalDateTime.now())
+                        + DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")
+                                .format(LocalDateTime.now(clock))
                         + ".log";
         auditLogger.logDownload(resolvedInstance, snapshot.entries().size());
 
@@ -2936,14 +3001,20 @@ public class WasLogAuditLogger {
     }
 ```
 
-import 추가: `com.kdb.it.common.admin.waslog.dto.WasLogEntry`, `com.kdb.it.common.admin.waslog.service.WasLogAuditLogger`, `java.nio.charset.StandardCharsets`, `java.time.Instant`, `java.time.LocalDateTime`, `java.time.ZoneId`, `java.time.format.DateTimeFormatter`, `org.springframework.http.HttpHeaders`, `org.springframework.http.MediaType`, `org.springframework.http.ResponseEntity`.
+`WasLogController`에 `private final Clock clock;` 필드도 추가한다(`@RequiredArgsConstructor`이므로 선언만 하면 된다). 파일명 시각을 `LocalDateTime.now()` 직접 호출로 두면 테스트가 시각을 고정할 수 없고, 같은 기능의 `LevelOverrideService`가 이미 주입된 `Clock`을 쓴다.
+
+import 추가: `com.kdb.it.common.admin.waslog.dto.WasLogEntry`, `com.kdb.it.common.admin.waslog.service.WasLogAuditLogger`, `java.nio.charset.StandardCharsets`, `java.time.Clock`, `java.time.Instant`, `java.time.LocalDateTime`, `java.time.ZoneId`, `java.time.format.DateTimeFormatter`, `org.springframework.http.HttpHeaders`, `org.springframework.http.MediaType`, `org.springframework.http.ResponseEntity`.
+
+폴링 엔드포인트는 컨트롤러가 상한을 조인다 — `snapshot` 메서드에서 Query를 만들 때 `Math.min(limit, WasLogService.MAX_LIMIT)`를 적용한다. 서비스 상한이 버퍼 용량으로 올라갔으므로 이 조임이 없으면 화면이 한 번에 2000건을 받을 수 있다.
 
 - [ ] **Step 5: 조회·레벨변경에도 감사 호출 추가**
 
-`WasLogController.snapshot` 본문 첫 줄에 추가한다. `snapshot`은 3초마다 폴링되므로 매 호출을 남기면 감사 로그가 실제 로그를 뒤덮는다. **커서가 0인 첫 조회에서만** 남긴다.
+`WasLogController.snapshot` 본문 첫 줄에 추가한다. 폭주 억제는 `WasLogAuditLogger`가 행위자+인스턴스별
+10분 스로틀로 처리하므로 컨트롤러는 조건 없이 부른다 — 클라이언트가 보낸 커서로 판정하면 항상 0이 아닌
+값을 보내는 호출자가 감사를 통째로 회피한다.
 
 ```java
-        if (afterSeq == 0) auditLogger.logSnapshotAccess(instanceId);
+        auditLogger.logSnapshotAccess(instanceId);
 ```
 
 `WasLogController.applyLevel` 본문 첫 줄에 추가한다. 레벨 변경은 드물고 상태를 바꾸므로 매번 남긴다.
@@ -2960,7 +3031,109 @@ import 추가: `com.kdb.it.common.admin.waslog.dto.WasLogEntry`, `com.kdb.it.com
 cd C:/it/it_backend && grep -rln "WebMvcTest" src/test/java/com/kdb/it/common/admin/waslog
 ```
 
-- [ ] **Step 7: 테스트 통과 확인**
+- [ ] **Step 7: 감사 배선과 다운로드 완전성 테스트 추가**
+
+감사 호출은 이 기능의 유일한 보상 통제인데, 컨트롤러가 실제로 부르는지 검증하는 테스트가 없으면 호출을
+지워도 스위트가 초록이다. 다운로드 완전성도 같다.
+
+`WasLogDownloadTest.java`에 추가:
+
+```java
+    @Test
+    @DisplayName("다운로드는 폴링 상한이 아니라 버퍼 전체를 요청한다")
+    void download_버퍼전체요청() throws Exception {
+        given(service.exportLimit()).willReturn(2000);
+        given(service.snapshot(any(), any()))
+                .willReturn(new WasLogDto.Snapshot("SVR1", "e1", List.of(), 0L, false, List.of(), null));
+
+        mockMvc.perform(get("/api/admin/was-logs/download")).andExpect(status().isOk());
+
+        ArgumentCaptor<WasLogDto.Query> captor = ArgumentCaptor.forClass(WasLogDto.Query.class);
+        verify(service).snapshot(any(), captor.capture());
+        assertThat(captor.getValue().limit()).isEqualTo(2000);
+    }
+
+    @Test
+    @DisplayName("다운로드는 감사 기록을 남기고 text/plain으로 응답한다")
+    void download_감사기록_컨텐츠타입() throws Exception {
+        given(service.exportLimit()).willReturn(2000);
+        given(service.snapshot(any(), any()))
+                .willReturn(new WasLogDto.Snapshot("SVR1", "e1", List.of(), 0L, false, List.of(), null));
+
+        mockMvc.perform(get("/api/admin/was-logs/download").param("instanceId", "SVR1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN));
+
+        verify(auditLogger).logDownload("SVR1", 0);
+    }
+
+    @Test
+    @DisplayName("잘린 응답이면 파일 첫 줄에 생략 사실을 적는다")
+    void download_생략표시() throws Exception {
+        given(service.exportLimit()).willReturn(2000);
+        given(service.snapshot(any(), any()))
+                .willReturn(new WasLogDto.Snapshot("SVR1", "e1", List.of(), 0L, true, List.of(), null));
+
+        mockMvc.perform(get("/api/admin/was-logs/download"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("일부 로그가 생략")));
+    }
+```
+
+`WasLogControllerTest.java`에 추가:
+
+```java
+    @Test
+    @DisplayName("조회는 커서 값과 무관하게 감사기를 호출한다 — 폭주 억제는 감사기가 한다")
+    void snapshot_감사호출() throws Exception {
+        given(service.snapshot(any(), any()))
+                .willReturn(new WasLogDto.Snapshot("SVR1", "e1", List.of(), 0L, false, List.of(), null));
+
+        mockMvc.perform(get("/api/admin/was-logs").param("afterSeq", "42"))
+                .andExpect(status().isOk());
+
+        verify(auditLogger).logSnapshotAccess(null);
+    }
+```
+
+`WasLogAuditLoggerTest.java`에 추가:
+
+```java
+    @Test
+    @DisplayName("같은 행위자·인스턴스의 연속 조회는 한 번만 기록한다")
+    void logSnapshotAccess_스로틀() {
+        logger.logSnapshotAccess("SVR1");
+        logger.logSnapshotAccess("SVR1");
+        logger.logSnapshotAccess("SVR1");
+
+        assertThat(appender.list).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("다른 인스턴스는 따로 기록한다")
+    void logSnapshotAccess_인스턴스별() {
+        logger.logSnapshotAccess("SVR1");
+        logger.logSnapshotAccess("SVR2");
+
+        assertThat(appender.list).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("개행이 든 값은 가짜 감사 줄을 만들지 못하게 이스케이프한다")
+    void 감사값_개행이스케이프() {
+        logger.logDownload("SVR1
+[WAS로그감사] 조회 actor=victim", 0);
+
+        assertThat(appender.list.getFirst().getFormattedMessage()).doesNotContain("
+");
+    }
+```
+
+기존 `WasLogAuditLoggerTest`는 고정 `Clock`으로 `WasLogAuditLogger`를 만들어야 스로틀이 결정적으로 동작한다.
+`Clock.fixed(...)`를 주입하고, 필요한 import(`java.time.Clock`, `java.time.Instant`, `java.time.ZoneId`,
+`org.mockito.ArgumentCaptor`, `static org.mockito.Mockito.verify`, `MockMvcResultMatchers.content`)를 각 파일에 맞춰 추가한다.
+
+- [ ] **Step 8: 테스트 통과 확인**
 
 ```bash
 cd C:/it/it_backend && ./gradlew test --tests "com.kdb.it.common.admin.waslog.*" --no-daemon
@@ -2968,7 +3141,7 @@ cd C:/it/it_backend && ./gradlew test --tests "com.kdb.it.common.admin.waslog.*"
 
 Expected: PASS
 
-- [ ] **Step 8: 포맷 적용 후 커밋**
+- [ ] **Step 9: 포맷 적용 후 커밋**
 
 ```bash
 cd C:/it/it_backend && ./gradlew spotlessApply --no-daemon
