@@ -69,7 +69,7 @@
 | `app/pages/admin/was-logs.vue` | 페이지 조립 | 8 |
 | `i18n/messages/admin.ts` | `admin.wasLogs.*` 키 | 8 |
 
-**DB** — `it_database/migrations/V20260820_001__SeedWasLogAdminMenu.sql` (Task 9)
+**DB** — `it_database/migrations/V20260820_002__SeedWasLogAdminMenu.sql` (Task 9)
 
 ---
 
@@ -861,7 +861,10 @@ public class WasLogService {
             }
         }
 
-        int limit = query.limit() <= 0 ? MAX_LIMIT : Math.min(query.limit(), MAX_LIMIT);
+        // 상한은 버퍼 용량이다. 폴링 API는 컨트롤러가 MAX_LIMIT(200)으로 따로 조이고, 다운로드는
+        // 버퍼 전체를 내보내야 하므로(설계 §5.6) 여기서 200으로 막으면 파일이 조용히 잘린다.
+        int cap = Math.max(1, properties.bufferCapacity());
+        int limit = query.limit() <= 0 ? Math.min(MAX_LIMIT, cap) : Math.min(query.limit(), cap);
         WasLogBuffer.BufferSnapshot buffer = WasLogBuffer.shared().snapshot();
 
         List<WasLogEntry> filtered = new ArrayList<>();
@@ -892,6 +895,11 @@ public class WasLogService {
                 dropped,
                 overrideRegistry == null ? List.of() : overrideRegistry.list(),
                 null);
+    }
+
+    /** 다운로드가 버퍼 전체를 받기 위해 쓰는 상한. */
+    public int exportLimit() {
+        return Math.max(1, properties.bufferCapacity());
     }
 
     /** 설정에 등록된 인스턴스 목록. */
@@ -955,6 +963,11 @@ public class LevelOverrideRegistry {
         overrides.put(override.logger(), override);
     }
 
+    /** 로거의 현재 오버라이드. 없으면 null. */
+    public WasLogDto.LevelOverride find(String logger) {
+        return overrides.get(logger);
+    }
+
     /** 로거명 오름차순 목록. */
     public List<WasLogDto.LevelOverride> list() {
         List<WasLogDto.LevelOverride> result = new ArrayList<>(overrides.values());
@@ -962,12 +975,16 @@ public class LevelOverrideRegistry {
         return result;
     }
 
-    /** 만료된 항목을 꺼내며 제거한다. */
+    /**
+     * 만료된 항목을 꺼내며 제거한다.
+     *
+     * <p>제거는 값까지 일치할 때만 한다. 스캔 도중 같은 로거에 새 오버라이드가 들어오면 그것까지 지워버려,
+     * 스케줄러가 새 설정을 되돌리고 화면에는 살아 있는 것처럼 보이는 어긋남이 생기기 때문이다.
+     */
     public List<WasLogDto.LevelOverride> removeExpired(LocalDateTime now) {
         List<WasLogDto.LevelOverride> expired = new ArrayList<>();
         for (WasLogDto.LevelOverride override : list()) {
-            if (!override.expiresAt().isAfter(now)) {
-                overrides.remove(override.logger());
+            if (!override.expiresAt().isAfter(now) && overrides.remove(override.logger(), override)) {
                 expired.add(override);
             }
         }
@@ -1013,6 +1030,8 @@ app.was-log.buffer-capacity=2000
 app.was-log.peers.SVR1=${WAS_LOG_PEER_SVR1:}
 app.was-log.peers.SVR2=${WAS_LOG_PEER_SVR2:}
 # 피어 내부 엔드포인트 공유 비밀값. 비어 있으면 내부 컨트롤러를 등록하지 않는다
+# 값에 작은따옴표(')를 넣지 않는다 — 이 값은 @ConditionalOnExpression의 SpEL 리터럴에 치환되므로
+# 따옴표가 들어가면 파싱이 깨져 기동이 실패한다(실패는 닫히는 방향이라 안전하지만 원인 파악이 어렵다).
 app.was-log.internal-secret=${WAS_LOG_INTERNAL_SECRET:}
 app.was-log.connect-timeout-ms=1000
 app.was-log.read-timeout-ms=3000
@@ -1072,16 +1091,21 @@ import com.kdb.it.common.admin.waslog.dto.WasLogDto;
 import com.kdb.it.common.admin.waslog.dto.WasLogEntry;
 import com.kdb.it.common.admin.waslog.service.WasLogService;
 import com.kdb.it.common.system.security.JwtUtil;
+import com.kdb.it.config.TestSecurityConfig;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+// 운영 SecurityConfig는 CSRF를 끈다. 슬라이스 기본값(CSRF 켜짐)을 그대로 쓰면 POST 테스트가
+// .with(csrf())를 붙여야 통과하는데, 그러면 운영에 없는 설정에서만 초록인 테스트가 된다.
 @WebMvcTest(WasLogController.class)
+@Import(TestSecurityConfig.class)
 @WithMockUser(roles = "ADMIN")
 class WasLogControllerTest {
 
@@ -1266,6 +1290,17 @@ public class WasLogController {
         return service.instances();
     }
 
+    /**
+     * 피어 위임 실패를 502로 구분해 돌려준다.
+     *
+     * <p>기본 처리(400)로 두면 관리자가 "피어가 죽었다"와 "로거명을 잘못 적었다"를 구분할 수 없다. 레벨 변경은
+     * 실패를 삼키면 "적용됐다"로 읽히는 경로라 상태 코드로도 갈라준다.
+     */
+    @ExceptionHandler(WasLogPeerException.class)
+    public ResponseEntity<String> handlePeerFailure(WasLogPeerException e) {
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(e.getMessage());
+    }
+
     private Set<String> splitLevels(String csv) {
         if (csv == null || csv.isBlank()) return Set.of();
         return Arrays.stream(csv.split(","))
@@ -1301,27 +1336,44 @@ Expected: PASS (4건)
 ```java
 package com.kdb.it.common.admin.waslog;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.kdb.it.common.admin.waslog.config.WasLogProperties;
 import com.kdb.it.common.admin.waslog.controller.WasLogController;
+import com.kdb.it.common.admin.waslog.controller.WasLogInternalController;
+import com.kdb.it.common.admin.waslog.dto.WasLogDto;
 import com.kdb.it.common.admin.waslog.service.WasLogService;
 import com.kdb.it.common.system.security.JwtAuthenticationFilter;
 import com.kdb.it.common.system.security.JwtUtil;
 import com.kdb.it.common.util.CookieUtil;
 import com.kdb.it.config.JacksonConfig;
 import com.kdb.it.config.SecurityConfig;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-/** WAS 로그 API의 인증·인가 경계 검증. 실제 {@link SecurityConfig}를 그대로 적용한다. */
-@WebMvcTest(WasLogController.class)
+/**
+ * WAS 로그 API의 인증·인가 경계 검증. 실제 {@link SecurityConfig}를 그대로 적용한다.
+ *
+ * <p>내부 컨트롤러도 함께 올려 {@code SecurityConfig}의 {@code /internal/was-logs/**} permitAll 매처가
+ * 실제로 존재하는지 검증한다 — 그 4줄을 지워도 나머지 테스트는 전부 통과하므로 여기서만 잡을 수 있다.
+ */
+@WebMvcTest({WasLogController.class, WasLogInternalController.class})
+@EnableConfigurationProperties(WasLogProperties.class)
+@TestPropertySource(properties = "app.was-log.internal-secret=s3cret")
 @Import({SecurityConfig.class, JwtAuthenticationFilter.class, CookieUtil.class, JacksonConfig.class})
 class WasLogSecurityBoundaryTest {
 
@@ -1342,6 +1394,38 @@ class WasLogSecurityBoundaryTest {
     void 일반사용자_403() throws Exception {
         mockMvc.perform(get("/api/admin/was-logs")).andExpect(status().isForbidden());
     }
+
+    @Test
+    @DisplayName("피어 내부 경로는 미인증이어도 올바른 토큰이면 통과한다")
+    void 내부경로_미인증_토큰일치_200() throws Exception {
+        given(service.localSnapshot(any()))
+                .willReturn(
+                        new WasLogDto.Snapshot("SVR1", "e1", List.of(), 0L, false, List.of(), null));
+
+        mockMvc.perform(
+                        post("/internal/was-logs/snapshot")
+                                .header("X-Internal-Token", "s3cret")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
+                                        {"afterSeq":0,"limit":200,"levels":[],"logger":null,"keyword":null}
+                                        """))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("피어 내부 경로도 토큰이 틀리면 401")
+    void 내부경로_토큰불일치_401() throws Exception {
+        mockMvc.perform(
+                        post("/internal/was-logs/snapshot")
+                                .header("X-Internal-Token", "wrong")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
+                                        {"afterSeq":0,"limit":200,"levels":[],"logger":null,"keyword":null}
+                                        """))
+                .andExpect(status().isUnauthorized());
+    }
 }
 ```
 
@@ -1351,7 +1435,10 @@ class WasLogSecurityBoundaryTest {
 cd C:/it/it_backend && ./gradlew test --tests "com.kdb.it.common.admin.waslog.WasLogSecurityBoundaryTest" --no-daemon
 ```
 
-Expected: PASS (2건). 401/403 기대값이 다르면 기존 `AdminSecurityBoundaryTest`의 실제 응답 코드에 맞춘다.
+Expected: PASS (4건). 401/403 기대값이 다르면 기존 `AdminSecurityBoundaryTest`의 실제 응답 코드에 맞춘다.
+
+내부 경로 테스트 두 건은 Task 4에서 `WasLogInternalController`와 `SecurityConfig` 매처가 들어온 뒤에야
+통과한다. Task 3 시점에는 이 두 건을 넣지 않고, Task 4의 Step 10에서 함께 추가한다.
 
 - [ ] **Step 9: `@PreAuthorize` 격리 검증 테스트 작성**
 
@@ -1462,90 +1549,124 @@ cd C:/it/it_backend && git add src/main/java/com/kdb/it/common/admin/waslog src/
 
 `WasLogPeerClientTest.java`:
 
+> 이 프로젝트는 `MockWebServer`를 쓰지 않는다 — `build.gradle` 머리말이 적었듯 okhttp 계열을 폐쇄망 반입
+> 대상에서 의도적으로 뺐다. 대신 `spring-test`의 `MockRestServiceServer`를 `RestClient.Builder`에 바인딩한다
+> (`EaiServiceTest`가 쓰는 것과 같은 방식). 새 의존성이 필요 없다.
+
 ```java
 package com.kdb.it.common.admin.waslog.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import com.kdb.it.common.admin.waslog.config.WasLogProperties;
 import com.kdb.it.common.admin.waslog.dto.WasLogDto;
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 
 class WasLogPeerClientTest {
 
-    private MockWebServer server;
-    private WasLogPeerClient client;
+    private static final String PEER_URL = "http://svr2:28080";
 
-    @BeforeEach
-    void setUp() throws IOException {
-        server = new MockWebServer();
-        server.start();
-        WasLogProperties properties = new WasLogProperties(2000, Map.of(), "s3cret", 1000, 3000);
-        client = new DefaultWasLogPeerClient(RestClient.builder().build(), properties);
-    }
+    private final WasLogProperties properties =
+            new WasLogProperties(2000, Map.of(), "s3cret", 1000, 3000);
 
-    @AfterEach
-    void tearDown() throws IOException {
-        server.shutdown();
-    }
+    private final WasLogDto.Query query = new WasLogDto.Query(0L, 200, Set.of(), null, null);
 
     @Test
     @DisplayName("피어 응답을 그대로 반환하고 내부 토큰 헤더를 보낸다")
-    void fetchSnapshot_정상() throws Exception {
-        server.enqueue(
-                new MockResponse()
-                        .setHeader("Content-Type", "application/json")
-                        .setBody(
+    void fetchSnapshot_정상() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo(PEER_URL + "/internal/was-logs/snapshot"))
+                .andExpect(method(POST))
+                .andExpect(header("X-Internal-Token", "s3cret"))
+                .andRespond(
+                        withSuccess(
                                 """
                                 {"instanceId":"SVR2","bufferEpoch":"e2","entries":[],
                                  "lastSeq":5,"dropped":false,"levelOverrides":[],"peerError":null}
-                                """));
+                                """,
+                                MediaType.APPLICATION_JSON));
 
-        WasLogDto.Snapshot snapshot =
-                client.fetchSnapshot(
-                        server.url("/").toString().replaceAll("/$", ""),
-                        "SVR2",
-                        new WasLogDto.Query(0L, 200, Set.of(), null, null));
+        WasLogPeerClient client = new DefaultWasLogPeerClient(builder.build(), properties);
+        WasLogDto.Snapshot snapshot = client.fetchSnapshot(PEER_URL, "SVR2", query);
 
+        server.verify();
         assertThat(snapshot.instanceId()).isEqualTo("SVR2");
         assertThat(snapshot.lastSeq()).isEqualTo(5L);
-
-        RecordedRequest recorded = server.takeRequest();
-        assertThat(recorded.getPath()).isEqualTo("/internal/was-logs/snapshot");
-        assertThat(recorded.getHeader("X-Internal-Token")).isEqualTo("s3cret");
     }
 
     @Test
-    @DisplayName("피어가 5xx면 WasLogPeerException을 던진다")
+    @DisplayName("피어가 5xx면 WasLogPeerException을 던지고 인스턴스ID를 메시지에 담는다")
     void fetchSnapshot_서버오류() {
-        server.enqueue(new MockResponse().setResponseCode(500));
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo(PEER_URL + "/internal/was-logs/snapshot"))
+                .andRespond(withServerError());
 
-        String baseUrl = server.url("/").toString().replaceAll("/$", "");
-        WasLogDto.Query query = new WasLogDto.Query(0L, 200, Set.of(), null, null);
+        WasLogPeerClient client = new DefaultWasLogPeerClient(builder.build(), properties);
 
-        assertThatThrownBy(() -> client.fetchSnapshot(baseUrl, "SVR2", query))
-                .isInstanceOf(WasLogPeerException.class);
+        assertThatThrownBy(() -> client.fetchSnapshot(PEER_URL, "SVR2", query))
+                .isInstanceOf(WasLogPeerException.class)
+                .hasMessageContaining("SVR2");
+    }
+
+    @Test
+    @DisplayName("2xx인데 본문이 비면 WasLogPeerException을 던진다")
+    void fetchSnapshot_빈본문() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo(PEER_URL + "/internal/was-logs/snapshot"))
+                .andRespond(withStatus(HttpStatus.NO_CONTENT));
+
+        WasLogPeerClient client = new DefaultWasLogPeerClient(builder.build(), properties);
+
+        assertThatThrownBy(() -> client.fetchSnapshot(PEER_URL, "SVR2", query))
+                .isInstanceOf(WasLogPeerException.class)
+                .hasMessageContaining("본문");
+    }
+
+    @Test
+    @DisplayName("레벨 변경도 같은 토큰 헤더로 위임한다")
+    void applyLevel_정상() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo(PEER_URL + "/internal/was-logs/level"))
+                .andExpect(method(POST))
+                .andExpect(header("X-Internal-Token", "s3cret"))
+                .andRespond(
+                        withSuccess(
+                                """
+                                {"logger":"com.kdb.it","level":"DEBUG","previousLevel":"INFO",
+                                 "expiresAt":"2026-08-20T11:00:00"}
+                                """,
+                                MediaType.APPLICATION_JSON));
+
+        WasLogPeerClient client = new DefaultWasLogPeerClient(builder.build(), properties);
+        WasLogDto.LevelOverride override =
+                client.applyLevel(
+                        PEER_URL, new WasLogDto.LevelRequest("SVR2", "com.kdb.it", "DEBUG", 30));
+
+        server.verify();
+        assertThat(override.logger()).isEqualTo("com.kdb.it");
+        assertThat(override.previousLevel()).isEqualTo("INFO");
     }
 }
 ```
-
-> `MockWebServer` 의존이 없으면 `it_backend/build.gradle`의 `testImplementation`에 이미 있는지 먼저 확인한다.
-> ```bash
-> cd C:/it/it_backend && grep -n "mockwebserver" build.gradle
-> ```
-> 없으면 폐쇄망 반입 부담을 피하기 위해 `MockWebServer` 대신 `RestClient.builder().requestFactory(...)`에
-> 스텁 `ClientHttpRequestFactory`를 주입하는 방식으로 같은 두 시나리오(정상 JSON / 500)를 검증한다.
 
 - [ ] **Step 2: 테스트 실패 확인**
 
@@ -1585,15 +1706,20 @@ public interface WasLogPeerClient {
      * 피어의 로그 스냅샷을 가져온다.
      *
      * @param baseUrl 피어 base URL(끝에 슬래시 없음)
-     * @param instanceId 대상 인스턴스ID. 응답 검증용
-     * @throws WasLogPeerException 연결·타임아웃·5xx 등 모든 호출 실패
+     * @param instanceId 대상 인스턴스ID. 예외 메시지에만 쓴다
+     * @param query 피어에 그대로 전달할 조회 조건
+     * @return 피어가 돌려준 스냅샷. null을 반환하지 않는다
+     * @throws WasLogPeerException 연결·타임아웃·4xx·5xx, 그리고 2xx인데 본문이 비어 있는 경우
      */
     WasLogDto.Snapshot fetchSnapshot(String baseUrl, String instanceId, WasLogDto.Query query);
 
     /**
      * 피어에 런타임 레벨 변경을 적용한다.
      *
-     * @throws WasLogPeerException 호출 실패
+     * @param baseUrl 피어 base URL(끝에 슬래시 없음)
+     * @param request 적용할 로거·레벨·TTL
+     * @return 피어가 적용한 오버라이드. null을 반환하지 않는다
+     * @throws WasLogPeerException 연결·타임아웃·4xx·5xx, 그리고 2xx인데 본문이 비어 있는 경우
      */
     WasLogDto.LevelOverride applyLevel(String baseUrl, WasLogDto.LevelRequest request);
 }
@@ -1606,6 +1732,7 @@ package com.kdb.it.common.admin.waslog.client;
 
 import com.kdb.it.common.admin.waslog.config.WasLogProperties;
 import com.kdb.it.common.admin.waslog.dto.WasLogDto;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -1619,7 +1746,9 @@ public class DefaultWasLogPeerClient implements WasLogPeerClient {
     private final RestClient restClient;
     private final WasLogProperties properties;
 
-    public DefaultWasLogPeerClient(RestClient wasLogPeerRestClient, WasLogProperties properties) {
+    public DefaultWasLogPeerClient(
+            @Qualifier("wasLogPeerRestClient") RestClient wasLogPeerRestClient,
+            WasLogProperties properties) {
         this.restClient = wasLogPeerRestClient;
         this.properties = properties;
     }
@@ -1627,33 +1756,48 @@ public class DefaultWasLogPeerClient implements WasLogPeerClient {
     @Override
     public WasLogDto.Snapshot fetchSnapshot(
             String baseUrl, String instanceId, WasLogDto.Query query) {
+        WasLogDto.Snapshot body;
         try {
-            return restClient
-                    .post()
-                    .uri(baseUrl + "/internal/was-logs/snapshot")
-                    .header(TOKEN_HEADER, properties.internalSecret())
-                    .body(query)
-                    .retrieve()
-                    .body(WasLogDto.Snapshot.class);
+            body =
+                    restClient
+                            .post()
+                            .uri(baseUrl + "/internal/was-logs/snapshot")
+                            .header(TOKEN_HEADER, properties.internalSecret())
+                            .body(query)
+                            .retrieve()
+                            .body(WasLogDto.Snapshot.class);
         } catch (RestClientException e) {
             throw new WasLogPeerException(instanceId + " 인스턴스 조회 실패: " + e.getMessage(), e);
         }
+        // 2xx인데 본문이 비면 body()가 예외 없이 null을 준다. 그대로 흘리면 화면이 "로그 없음"으로
+        // 읽어 실패가 감춰지므로, 호출 실패로 승격해 peerError 경로를 타게 한다.
+        if (body == null) {
+            throw new WasLogPeerException(instanceId + " 인스턴스 응답 본문이 비어 있습니다.", null);
+        }
+        return body;
     }
 
     @Override
     public WasLogDto.LevelOverride applyLevel(String baseUrl, WasLogDto.LevelRequest request) {
+        WasLogDto.LevelOverride body;
         try {
-            return restClient
-                    .post()
-                    .uri(baseUrl + "/internal/was-logs/level")
-                    .header(TOKEN_HEADER, properties.internalSecret())
-                    .body(request)
-                    .retrieve()
-                    .body(WasLogDto.LevelOverride.class);
+            body =
+                    restClient
+                            .post()
+                            .uri(baseUrl + "/internal/was-logs/level")
+                            .header(TOKEN_HEADER, properties.internalSecret())
+                            .body(request)
+                            .retrieve()
+                            .body(WasLogDto.LevelOverride.class);
         } catch (RestClientException e) {
             throw new WasLogPeerException(
                     request.instanceId() + " 인스턴스 레벨 변경 실패: " + e.getMessage(), e);
         }
+        if (body == null) {
+            throw new WasLogPeerException(
+                    request.instanceId() + " 인스턴스 레벨 변경 응답 본문이 비어 있습니다.", null);
+        }
+        return body;
     }
 }
 ```
@@ -1696,7 +1840,7 @@ public class WasLogConfig {
 cd C:/it/it_backend && ./gradlew test --tests "com.kdb.it.common.admin.waslog.client.WasLogPeerClientTest" --no-daemon
 ```
 
-Expected: PASS (2건)
+Expected: PASS (4건)
 
 - [ ] **Step 8: 내부 컨트롤러 실패 테스트 작성**
 
@@ -1818,7 +1962,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/internal/was-logs")
 @RequiredArgsConstructor
-@ConditionalOnExpression("!'${app.was-log.internal-secret:}'.isEmpty()")
+@ConditionalOnExpression("!'${app.was-log.internal-secret:}'.isBlank()")
 public class WasLogInternalController {
 
     private final WasLogService service;
@@ -1834,7 +1978,11 @@ public class WasLogInternalController {
     }
 
     private boolean matches(String token) {
-        if (token == null) return false;
+        // 조건식과 이 검사는 같은 값을 서로 다른 경로로 읽는다 — 조건식은 Environment 키를 직접,
+        // 이 필드는 @ConfigurationProperties 완화 바인딩(빈 값을 ""로 보정)을 거친다. 두 경로가
+        // 어긋나 빈 비밀값으로 빈이 등록되면 MessageDigest.isEqual("", "")가 true라 무인증이 된다.
+        // 보안 불변식을 한 경로에만 의존시키지 않는다.
+        if (token == null || properties.internalSecret().isBlank()) return false;
         return MessageDigest.isEqual(
                 token.getBytes(StandardCharsets.UTF_8),
                 properties.internalSecret().getBytes(StandardCharsets.UTF_8));
@@ -1854,6 +2002,11 @@ public class WasLogInternalController {
 ```
 
 > 이 경로는 L4 외부에 노출하지 않도록 방화벽에서 사내 서버 대역으로 제한할 것을 운영 인계 시 함께 요청한다.
+
+Task 3에서 만든 `WasLogSecurityBoundaryTest`에 내부 경로 검증 두 건을 이제 추가한다 — 계획 §Task 3의
+해당 코드 블록에 이미 반영돼 있으니 그대로 옮겨 넣고, 클래스 애너테이션(`@WebMvcTest`에 내부 컨트롤러 추가,
+`@EnableConfigurationProperties`, `@TestPropertySource`)과 import도 함께 맞춘다. 이 두 건이 없으면
+`SecurityConfig`의 permitAll 4줄을 지워도 전체 스위트가 초록이다.
 
 - [ ] **Step 11: 내부 컨트롤러 테스트 통과 확인**
 
@@ -1971,8 +2124,10 @@ package com.kdb.it.common.admin.waslog.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.kdb.it.common.admin.waslog.dto.WasLogDto;
@@ -2020,27 +2175,72 @@ class LevelOverrideServiceTest {
     }
 
     @Test
-    @DisplayName("화이트리스트 밖 로거는 거부한다")
+    @DisplayName("같은 로거에 다시 적용해도 최초 레벨을 previousLevel로 유지한다")
+    void apply_재적용_최초레벨보존() {
+        given(loggingSystem.getLoggerConfiguration("com.kdb.it.domain"))
+                .willReturn(new LoggerConfiguration("com.kdb.it.domain", LogLevel.INFO, LogLevel.INFO));
+        service.apply("com.kdb.it.domain", "DEBUG", 30);
+
+        // 두 번째 호출 시점의 "현재 설정 레벨"은 이미 첫 번째가 써 넣은 DEBUG다.
+        given(loggingSystem.getLoggerConfiguration("com.kdb.it.domain"))
+                .willReturn(new LoggerConfiguration("com.kdb.it.domain", LogLevel.DEBUG, LogLevel.DEBUG));
+        WasLogDto.LevelOverride second = service.apply("com.kdb.it.domain", "TRACE", 30);
+
+        assertThat(second.previousLevel()).isEqualTo("INFO");
+    }
+
+    @Test
+    @DisplayName("화이트리스트 밖 로거는 거부하고 레벨을 건드리지 않는다")
     void apply_허용되지않은로거() {
         assertThatThrownBy(() -> service.apply("com.evil.Thing", "DEBUG", 30))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("com.evil.Thing");
+        verify(loggingSystem, never()).setLogLevel(any(), any());
     }
 
     @Test
-    @DisplayName("TTL이 범위를 벗어나면 거부한다")
+    @DisplayName("접두사만 같고 패키지 경계를 넘는 이름은 거부한다")
+    void apply_접두사경계() {
+        assertThatThrownBy(() -> service.apply("com.kdb.itX", "DEBUG", 30))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.apply("", "DEBUG", 30))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(loggingSystem, never()).setLogLevel(any(), any());
+    }
+
+    @Test
+    @DisplayName("TTL이 범위를 벗어나면 거부하고 레벨을 건드리지 않는다")
     void apply_TTL범위밖() {
         assertThatThrownBy(() -> service.apply("com.kdb.it.domain", "DEBUG", 0))
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> service.apply("com.kdb.it.domain", "DEBUG", 121))
                 .isInstanceOf(IllegalArgumentException.class);
+        // 검증이 setLogLevel보다 먼저여야 한다 — 레벨만 바뀌고 만료 등록에 실패하면 영구 오버라이드가 된다.
+        verify(loggingSystem, never()).setLogLevel(any(), any());
     }
 
     @Test
-    @DisplayName("허용되지 않은 레벨은 거부한다")
+    @DisplayName("허용되지 않은 레벨은 거부하고 레벨을 건드리지 않는다")
     void apply_잘못된레벨() {
         assertThatThrownBy(() -> service.apply("com.kdb.it.domain", "FATAL", 30))
                 .isInstanceOf(IllegalArgumentException.class);
+        verify(loggingSystem, never()).setLogLevel(any(), any());
+    }
+
+    @Test
+    @DisplayName("원래 설정이 없던 로거는 null로 되돌려 상위 상속으로 복원한다")
+    void restoreExpired_설정없음_null복원() {
+        given(loggingSystem.getLoggerConfiguration("com.kdb.it.c")).willReturn(null);
+        service.apply("com.kdb.it.c", "DEBUG", 1);
+
+        LevelOverrideService later =
+                new LevelOverrideService(
+                        loggingSystem,
+                        registry,
+                        Clock.fixed(NOW.plusSeconds(120), ZoneId.of("Asia/Seoul")));
+        later.restoreExpired();
+
+        verify(loggingSystem).setLogLevel("com.kdb.it.c", null);
     }
 
     @Test
@@ -2090,6 +2290,7 @@ import org.springframework.boot.logging.LogLevel;
 import org.springframework.boot.logging.LoggerConfiguration;
 import org.springframework.boot.logging.LoggingSystem;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 런타임 로그레벨 변경 서비스.
@@ -2098,6 +2299,7 @@ import org.springframework.stereotype.Service;
  * LevelOverrideRestoreScheduler}가 만료 시 직전 레벨로 되돌린다. 재기동 시에는 설정 파일 레벨로 자연 복원된다.
  */
 @Service
+@Slf4j
 public class LevelOverrideService {
 
     /** TTL 상한(분). 끄는 것을 잊어 운영 서버가 느려지는 사고를 막는다. */
@@ -2130,7 +2332,7 @@ public class LevelOverrideService {
      * @throws IllegalArgumentException 로거·레벨·TTL이 규칙을 벗어난 경우
      */
     public WasLogDto.LevelOverride apply(String logger, String level, int ttlMinutes) {
-        if (logger == null || ALLOWED_LOGGER_PREFIXES.stream().noneMatch(logger::startsWith)) {
+        if (!allowedLogger(logger)) {
             throw new IllegalArgumentException("변경이 허용되지 않은 로거: " + logger);
         }
         if (level == null || !ALLOWED_LEVELS.contains(level)) {
@@ -2140,7 +2342,12 @@ public class LevelOverrideService {
             throw new IllegalArgumentException("TTL은 1~" + MAX_TTL_MINUTES + "분이어야 합니다: " + ttlMinutes);
         }
 
-        String previous = configuredLevel(logger);
+        // 같은 로거에 두 번 적용하면 두 번째가 읽는 "현재 레벨"은 첫 번째가 써 넣은 임시 레벨이다.
+        // 그대로 previousLevel로 저장하면 TTL 만료 후 임시 레벨로 되돌아가 영구 고정된다
+        // (예: INFO → DEBUG 적용 → 시끄러워서 INFO 재적용 → 만료 시 DEBUG로 복원되어 그대로 굳음).
+        // 이미 오버라이드가 있으면 최초에 잡아둔 원래 레벨을 그대로 물려받는다.
+        WasLogDto.LevelOverride existing = registry.find(logger);
+        String previous = existing != null ? existing.previousLevel() : configuredLevel(logger);
         loggingSystem.setLogLevel(logger, LogLevel.valueOf(level));
 
         WasLogDto.LevelOverride override =
@@ -2153,16 +2360,40 @@ public class LevelOverrideService {
     /**
      * 만료된 오버라이드를 직전 레벨로 되돌린다.
      *
+     * <p>{@code previousLevel}이 null이면 null을 그대로 넘겨 설정을 지우고 상위 로거 상속으로 되돌린다.
+     *
+     * <p>이 메서드는 레벨을 바꾸는 주체가 이 기능뿐이라고 가정한다. Actuator {@code loggers} 엔드포인트를
+     * 열거나 logback 설정 자동 재로딩을 켜면 그 가정이 깨져 남의 변경을 덮어쓸 수 있다.
+     *
      * @return 복원한 건수
      */
     public int restoreExpired() {
         List<WasLogDto.LevelOverride> expired = registry.removeExpired(LocalDateTime.now(clock));
+        int restored = 0;
         for (WasLogDto.LevelOverride override : expired) {
             LogLevel restore =
                     override.previousLevel() == null ? null : LogLevel.valueOf(override.previousLevel());
-            loggingSystem.setLogLevel(override.logger(), restore);
+            try {
+                loggingSystem.setLogLevel(override.logger(), restore);
+                restored++;
+            } catch (RuntimeException e) {
+                // 한 건이 실패해도 나머지는 되돌린다 — 이미 레지스트리에서 빠졌으므로 여기서 멈추면 영구 고정된다.
+                log.warn("[WAS로그] 로그레벨 복원 실패 logger={} level={}", override.logger(), restore, e);
+            }
         }
-        return expired.size();
+        return restored;
+    }
+
+    /**
+     * 화이트리스트 판정.
+     *
+     * <p>단순 {@code startsWith}는 {@code com.kdb.itX}처럼 패키지 경계를 넘는 이름까지 통과시키므로, 접두사와
+     * 정확히 같거나 그 아래 패키지({@code 접두사 + "."})인 경우만 허용한다.
+     */
+    private boolean allowedLogger(String logger) {
+        if (logger == null || logger.isBlank()) return false;
+        return ALLOWED_LOGGER_PREFIXES.stream()
+                .anyMatch(prefix -> logger.equals(prefix) || logger.startsWith(prefix + "."));
     }
 
     private String configuredLevel(String logger) {
@@ -2287,6 +2518,11 @@ import 추가: `org.springframework.web.bind.annotation.PostMapping`, `org.sprin
 
 `WasLogInternalController`에도 같은 동작의 내부 엔드포인트를 추가한다(라우팅 없이 로컬 적용).
 
+> **이 엔드포인트의 유일한 인증 수단은 토큰 검사다.** Task 4가 넣은 `SecurityConfig`의
+> `/internal/was-logs/**` permitAll 매처가 와일드카드라 `/level`도 자동으로 익명 허용 대상이 된다.
+> 조회와 달리 이 경로는 **서버 상태를 바꾸므로**, `matches(token)` 호출을 빠뜨리면 누구나 운영 서버의
+> 로그 레벨을 바꿀 수 있다. 조회 엔드포인트와 완전히 같은 가드를 본문 첫 줄에 둔다.
+
 ```java
     /** 로컬 인스턴스에 레벨을 적용한다. 라우팅하지 않는다. */
     @PostMapping("/level")
@@ -2348,7 +2584,155 @@ import 추가: `org.springframework.web.bind.annotation.PostMapping`, `org.sprin
     }
 ```
 
-- [ ] **Step 9: 전체 waslog 테스트 통과 확인**
+- [ ] **Step 9a: `WasLogService.applyLevel` 테스트 추가**
+
+레벨 변경 경로에 서비스 테스트가 하나도 없어서, `peerClient.applyLevel`을 try/catch로 감싸 실패를 삼켜도
+전체 스위트가 통과한다. 브리프가 굵게 강조한 실패 비대칭이 무방비다.
+
+`WasLogServiceTest.java`에 추가(상단에 `static org.mockito.Mockito.mock`, `static org.mockito.BDDMockito.given`,
+`java.time.LocalDateTime` import 필요):
+
+```java
+    @Test
+    @DisplayName("자기 인스턴스면 로컬 레벨 서비스에 적용한다")
+    void applyLevel_로컬적용() {
+        LevelOverrideService levelService = mock(LevelOverrideService.class);
+        WasLogDto.LevelOverride expected =
+                new WasLogDto.LevelOverride(
+                        "com.kdb.it", "DEBUG", "INFO", LocalDateTime.of(2026, 8, 20, 11, 0));
+        given(levelService.apply("com.kdb.it", "DEBUG", 30)).willReturn(expected);
+        WasLogProperties properties = new WasLogProperties(10, Map.of(), "", 1000, 3000);
+        WasLogService routing = new WasLogService(properties, "SVR1", null, null, levelService);
+
+        WasLogDto.LevelOverride actual =
+                routing.applyLevel(new WasLogDto.LevelRequest("SVR1", "com.kdb.it", "DEBUG", 30));
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    @DisplayName("설정에 없는 인스턴스면 IllegalArgumentException")
+    void applyLevel_알수없는인스턴스() {
+        WasLogProperties properties = new WasLogProperties(10, Map.of(), "", 1000, 3000);
+        WasLogService routing =
+                new WasLogService(properties, "SVR1", null, null, mock(LevelOverrideService.class));
+        WasLogDto.LevelRequest request =
+                new WasLogDto.LevelRequest("SVR9", "com.kdb.it", "DEBUG", 30);
+
+        assertThatThrownBy(() -> routing.applyLevel(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("SVR9");
+    }
+
+    @Test
+    @DisplayName("피어 레벨 변경 실패는 삼키지 않고 그대로 전파한다")
+    void applyLevel_피어실패_전파() {
+        WasLogProperties properties =
+                new WasLogProperties(10, Map.of("SVR2", "http://svr2:28080"), "s", 1000, 3000);
+        WasLogPeerClient failing =
+                new WasLogPeerClient() {
+                    @Override
+                    public WasLogDto.Snapshot fetchSnapshot(
+                            String baseUrl, String instanceId, WasLogDto.Query query) {
+                        throw new WasLogPeerException("미사용", null);
+                    }
+
+                    @Override
+                    public WasLogDto.LevelOverride applyLevel(
+                            String baseUrl, WasLogDto.LevelRequest request) {
+                        throw new WasLogPeerException("SVR2 인스턴스 레벨 변경 실패: timeout", null);
+                    }
+                };
+        WasLogService routing =
+                new WasLogService(
+                        properties, "SVR1", failing, null, mock(LevelOverrideService.class));
+        WasLogDto.LevelRequest request =
+                new WasLogDto.LevelRequest("SVR2", "com.kdb.it", "DEBUG", 30);
+
+        // 조회와 달리 여기서 예외를 삼키면 관리자에게 "적용됨"으로 보인다.
+        assertThatThrownBy(() -> routing.applyLevel(request))
+                .isInstanceOf(WasLogPeerException.class)
+                .hasMessageContaining("timeout");
+    }
+```
+
+- [ ] **Step 9b: 내부 `/level` 엔드포인트의 토큰 가드 테스트 추가**
+
+이 엔드포인트는 `SecurityConfig`가 permitAll로 열어둔 경로에 있고 서버 상태를 바꾼다. 그런데 토큰 가드를
+지워도 전체 스위트가 통과한다 — 조회 쪽만 테스트가 있기 때문이다.
+
+`WasLogInternalControllerTest.java`에 추가(`static org.mockito.Mockito.verifyNoInteractions` import 필요):
+
+```java
+    private static final String LEVEL_BODY =
+            """
+            {"instanceId":"SVR2","logger":"com.kdb.it","level":"DEBUG","ttlMinutes":30}
+            """;
+
+    @Test
+    @DisplayName("레벨 변경은 토큰이 없으면 401이고 아무것도 적용하지 않는다")
+    void level_토큰없음_401() throws Exception {
+        mockMvc.perform(
+                        post("/internal/was-logs/level")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(LEVEL_BODY))
+                .andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(levelOverrideService);
+    }
+
+    @Test
+    @DisplayName("레벨 변경은 토큰이 틀리면 401이고 아무것도 적용하지 않는다")
+    void level_토큰불일치_401() throws Exception {
+        mockMvc.perform(
+                        post("/internal/was-logs/level")
+                                .header("X-Internal-Token", "wrong")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(LEVEL_BODY))
+                .andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(levelOverrideService);
+    }
+```
+
+- [ ] **Step 9c: 스케줄러 스레드 풀 확보**
+
+`application.properties`에 추가한다.
+
+```properties
+# @Scheduled 기본 풀 크기는 1이다. 알림 재시도 작업(NotificationRetryScheduler)이 외부 전송에서 막히면
+# 같은 스레드를 쓰는 로그레벨 복원이 영영 돌지 않아 임시 레벨이 TTL을 넘겨 남는다. 현재 스케줄 작업이
+# 둘이므로 2로 둔다.
+spring.task.scheduling.pool.size=2
+```
+
+- [ ] **Step 9: 피어 레벨 변경의 빈 본문 처리 테스트 추가**
+
+Task 4에서 `fetchSnapshot`만 커버했고 `applyLevel`의 같은 분기는 비어 있었다. 레벨 변경은 실패를 삼키면
+"적용됐다"는 착시를 주는 경로이므로 대칭으로 채운다.
+
+`WasLogPeerClientTest.java`에 추가:
+
+```java
+    @Test
+    @DisplayName("레벨 변경이 2xx인데 본문이 비면 WasLogPeerException을 던진다")
+    void applyLevel_빈본문() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        server.expect(requestTo(PEER_URL + "/internal/was-logs/level"))
+                .andRespond(withStatus(HttpStatus.NO_CONTENT));
+
+        WasLogPeerClient client = new DefaultWasLogPeerClient(builder.build(), properties);
+        WasLogDto.LevelRequest request =
+                new WasLogDto.LevelRequest("SVR2", "com.kdb.it", "DEBUG", 30);
+
+        assertThatThrownBy(() -> client.applyLevel(PEER_URL, request))
+                .isInstanceOf(WasLogPeerException.class)
+                .hasMessageContaining("본문");
+    }
+```
+
+- [ ] **Step 10: 전체 waslog 테스트 통과 확인**
 
 ```bash
 cd C:/it/it_backend && ./gradlew test --tests "com.kdb.it.common.admin.waslog.*" --no-daemon
@@ -2356,7 +2740,7 @@ cd C:/it/it_backend && ./gradlew test --tests "com.kdb.it.common.admin.waslog.*"
 
 Expected: PASS
 
-- [ ] **Step 10: 포맷 적용 후 커밋**
+- [ ] **Step 11: 포맷 적용 후 커밋**
 
 ```bash
 cd C:/it/it_backend && ./gradlew spotlessApply --no-daemon
@@ -2399,6 +2783,7 @@ import com.kdb.it.common.admin.waslog.dto.WasLogDto;
 import com.kdb.it.common.admin.waslog.dto.WasLogEntry;
 import com.kdb.it.common.admin.waslog.service.WasLogAuditLogger;
 import com.kdb.it.common.admin.waslog.service.WasLogService;
+import com.kdb.it.common.system.security.JwtUtil;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -2413,6 +2798,9 @@ import org.springframework.test.web.servlet.MockMvc;
 class WasLogDownloadTest {
 
     @Autowired private MockMvc mockMvc;
+
+    // JwtAuthenticationFilter는 @Component Filter라 @WebMvcTest가 자동 포함한다. 그 생성자 의존을 채운다.
+    @MockitoBean private JwtUtil jwtUtil;
 
     @MockitoBean private WasLogService service;
     @MockitoBean private WasLogAuditLogger auditLogger;
@@ -2451,6 +2839,10 @@ Expected: 컴파일 실패 — `WasLogAuditLogger` 없음, 다운로드 엔드�
 package com.kdb.it.common.admin.waslog.service;
 
 import com.kdb.it.common.admin.waslog.dto.WasLogDto;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -2466,25 +2858,84 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class WasLogAuditLogger {
 
-    /** 로그 조회 진입. */
-    public void logSnapshotAccess(String instanceId) {
-        log.warn("[WAS로그감사] 조회 actor={} instance={}", actor(), instanceId);
+    /** 같은 행위자·인스턴스 조합의 조회를 다시 기록하기까지의 최소 간격(분). */
+    private static final long THROTTLE_MINUTES = 10;
+
+    /**
+     * 스로틀 추적 키 상한.
+     *
+     * <p>키의 인스턴스ID는 검증 전 값이라 관리자가 서로 다른 문자열을 계속 보내면 맵이 무한히 자란다.
+     * 상한에 닿으면 통째로 비운다 — 최악의 결과는 감사 줄이 한 번 더 남는 것뿐이라 안전한 방향이다.
+     */
+    private static final int MAX_TRACKED_KEYS = 1000;
+
+    private final Map<String, LocalDateTime> lastAccessLog = new ConcurrentHashMap<>();
+    private final Clock clock;
+
+    public WasLogAuditLogger(Clock clock) {
+        this.clock = clock;
     }
 
-    /** 런타임 레벨 변경. */
+    /**
+     * 로그 조회 진입.
+     *
+     * <p>조회는 3초마다 폴링되므로 매 호출을 남기면 감사 기록이 정작 보려던 로그를 뒤덮는다. 그렇다고
+     * 클라이언트가 보낸 커서(`afterSeq==0`)로 first-call을 판정하면, 항상 0이 아닌 값을 보내는 호출자는
+     * 흔적을 하나도 남기지 않고 로그를 다 읽어갈 수 있다. 그래서 **서버가** 행위자+인스턴스별로
+     * {@value #THROTTLE_MINUTES}분에 한 번만 기록한다 — 클라이언트가 회피할 수 없다.
+     */
+    public void logSnapshotAccess(String instanceId) {
+        String actor = actor();
+        if (!shouldLogAccess(actor, instanceId)) return;
+        log.warn("[WAS로그감사] 조회 actor={} instance={}", sanitize(actor), sanitize(instanceId));
+    }
+
+    /** 런타임 레벨 변경. 드물고 상태를 바꾸므로 스로틀 없이 매번 남긴다. */
     public void logLevelChange(WasLogDto.LevelRequest request) {
         log.warn(
                 "[WAS로그감사] 레벨변경 actor={} instance={} logger={} level={} ttl={}분",
-                actor(),
-                request.instanceId(),
-                request.logger(),
-                request.level(),
+                sanitize(actor()),
+                sanitize(request.instanceId()),
+                sanitize(request.logger()),
+                sanitize(request.level()),
                 request.ttlMinutes());
     }
 
-    /** 로그 파일 다운로드. */
+    /** 로그 파일 다운로드. 스로틀 없이 매번 남긴다. */
     public void logDownload(String instanceId, int lineCount) {
-        log.warn("[WAS로그감사] 다운로드 actor={} instance={} lines={}", actor(), instanceId, lineCount);
+        log.warn(
+                "[WAS로그감사] 다운로드 actor={} instance={} lines={}",
+                sanitize(actor()),
+                sanitize(instanceId),
+                lineCount);
+    }
+
+    /** 스로틀 추적 중인 키 개수. 상한 동작 검증용. */
+    int trackedKeyCount() {
+        return lastAccessLog.size();
+    }
+
+    /** 행위자+인스턴스별 스로틀 판정. 창을 벗어났으면 기록 시각을 갱신하고 true. */
+    private boolean shouldLogAccess(String actor, String instanceId) {
+        LocalDateTime now = LocalDateTime.now(clock);
+        LocalDateTime cutoff = now.minusMinutes(THROTTLE_MINUTES);
+        String key = actor + "|" + instanceId;
+        LocalDateTime previous = lastAccessLog.get(key);
+        if (previous != null && previous.isAfter(cutoff)) return false;
+        if (lastAccessLog.size() >= MAX_TRACKED_KEYS) lastAccessLog.clear();
+        lastAccessLog.put(key, now);
+        return true;
+    }
+
+    /**
+     * 감사 값 정화.
+     *
+     * <p>감사 기록은 이 기능의 유일한 보상 통제다. 값이 검증 전에 기록되는 경로가 있어, 개행이 들어가면
+     * 로그 파일에 가짜 감사 줄을 심을 수 있다. 개행·캐리지리턴을 눈에 보이는 기호로 바꾼다.
+     */
+    private String sanitize(String value) {
+        if (value == null) return null;
+        return value.replace("\r", "\\r").replace("\n", "\\n");
     }
 
     private String actor() {
@@ -2512,13 +2963,20 @@ public class WasLogAuditLogger {
             @RequestParam(name = "levels", required = false) String levels,
             @RequestParam(name = "logger", required = false) String logger,
             @RequestParam(name = "q", required = false) String q) {
+        // 설계 §5.6은 "버퍼 전체"를 요구한다. 폴링용 상한(MAX_LIMIT=200)을 그대로 쓰면 2000건 버퍼에서
+        // 최신 200건만 담긴 파일이 아무 표시 없이 내려가 관리자가 완전한 로그로 오해한다.
         WasLogDto.Snapshot snapshot =
                 service.snapshot(
                         instanceId,
                         new WasLogDto.Query(
-                                0L, WasLogService.MAX_LIMIT, splitLevels(levels), logger, q));
+                                0L, service.exportLimit(), splitLevels(levels), logger, q));
 
         StringBuilder body = new StringBuilder();
+        // 그래도 잘렸다면(버퍼 용량보다 필터 결과가 많을 수는 없으나 방어적으로) 파일에 사실을 적는다.
+        if (snapshot.dropped()) {
+            body.append("# 일부 로그가 생략되었습니다 — 버퍼에서 밀려났거나 조회 상한에 걸렸습니다.
+");
+        }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
         for (WasLogEntry entry : snapshot.entries()) {
             body.append(
@@ -2545,7 +3003,8 @@ public class WasLogAuditLogger {
                 "was-log_"
                         + resolvedInstance
                         + "_"
-                        + DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss").format(LocalDateTime.now())
+                        + DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")
+                                .format(LocalDateTime.now(clock))
                         + ".log";
         auditLogger.logDownload(resolvedInstance, snapshot.entries().size());
 
@@ -2556,14 +3015,20 @@ public class WasLogAuditLogger {
     }
 ```
 
-import 추가: `com.kdb.it.common.admin.waslog.dto.WasLogEntry`, `com.kdb.it.common.admin.waslog.service.WasLogAuditLogger`, `java.nio.charset.StandardCharsets`, `java.time.Instant`, `java.time.LocalDateTime`, `java.time.ZoneId`, `java.time.format.DateTimeFormatter`, `org.springframework.http.HttpHeaders`, `org.springframework.http.MediaType`, `org.springframework.http.ResponseEntity`.
+`WasLogController`에 `private final Clock clock;` 필드도 추가한다(`@RequiredArgsConstructor`이므로 선언만 하면 된다). 파일명 시각을 `LocalDateTime.now()` 직접 호출로 두면 테스트가 시각을 고정할 수 없고, 같은 기능의 `LevelOverrideService`가 이미 주입된 `Clock`을 쓴다.
+
+import 추가: `com.kdb.it.common.admin.waslog.dto.WasLogEntry`, `com.kdb.it.common.admin.waslog.service.WasLogAuditLogger`, `java.nio.charset.StandardCharsets`, `java.time.Clock`, `java.time.Instant`, `java.time.LocalDateTime`, `java.time.ZoneId`, `java.time.format.DateTimeFormatter`, `org.springframework.http.HttpHeaders`, `org.springframework.http.MediaType`, `org.springframework.http.ResponseEntity`.
+
+폴링 엔드포인트는 컨트롤러가 상한을 조인다 — `snapshot` 메서드에서 Query를 만들 때 `Math.min(limit, WasLogService.MAX_LIMIT)`를 적용한다. 서비스 상한이 버퍼 용량으로 올라갔으므로 이 조임이 없으면 화면이 한 번에 2000건을 받을 수 있다.
 
 - [ ] **Step 5: 조회·레벨변경에도 감사 호출 추가**
 
-`WasLogController.snapshot` 본문 첫 줄에 추가한다. `snapshot`은 3초마다 폴링되므로 매 호출을 남기면 감사 로그가 실제 로그를 뒤덮는다. **커서가 0인 첫 조회에서만** 남긴다.
+`WasLogController.snapshot` 본문 첫 줄에 추가한다. 폭주 억제는 `WasLogAuditLogger`가 행위자+인스턴스별
+10분 스로틀로 처리하므로 컨트롤러는 조건 없이 부른다 — 클라이언트가 보낸 커서로 판정하면 항상 0이 아닌
+값을 보내는 호출자가 감사를 통째로 회피한다.
 
 ```java
-        if (afterSeq == 0) auditLogger.logSnapshotAccess(instanceId);
+        auditLogger.logSnapshotAccess(instanceId);
 ```
 
 `WasLogController.applyLevel` 본문 첫 줄에 추가한다. 레벨 변경은 드물고 상태를 바꾸므로 매번 남긴다.
@@ -2574,9 +3039,155 @@ import 추가: `com.kdb.it.common.admin.waslog.dto.WasLogEntry`, `com.kdb.it.com
 
 - [ ] **Step 6: 기존 컨트롤러 테스트에 mock 추가**
 
-`WasLogControllerTest`와 `WasLogSecurityBoundaryTest`에 `@MockitoBean private WasLogAuditLogger auditLogger;`를 추가한다(추가하지 않으면 컨텍스트 로딩 실패).
+`WasLogController`를 슬라이스로 올리는 **모든** 테스트 클래스에 `@MockitoBean private WasLogAuditLogger auditLogger;`를 추가한다 — 추가하지 않으면 컨텍스트 로딩이 실패한다. 현재 대상은 `WasLogControllerTest`, `WasLogControllerAuthorizationTest`, `WasLogSecurityBoundaryTest` 셋이다(Task 3·4에서 늘었다). 실제 목록은 다음으로 확인한다.
 
-- [ ] **Step 7: 테스트 통과 확인**
+```bash
+cd C:/it/it_backend && grep -rln "WebMvcTest" src/test/java/com/kdb/it/common/admin/waslog
+```
+
+- [ ] **Step 7: 감사 배선과 다운로드 완전성 테스트 추가**
+
+감사 호출은 이 기능의 유일한 보상 통제인데, 컨트롤러가 실제로 부르는지 검증하는 테스트가 없으면 호출을
+지워도 스위트가 초록이다. 다운로드 완전성도 같다.
+
+`WasLogDownloadTest.java`에 추가:
+
+```java
+    @Test
+    @DisplayName("다운로드는 폴링 상한이 아니라 버퍼 전체를 요청한다")
+    void download_버퍼전체요청() throws Exception {
+        given(service.exportLimit()).willReturn(2000);
+        given(service.snapshot(any(), any()))
+                .willReturn(new WasLogDto.Snapshot("SVR1", "e1", List.of(), 0L, false, List.of(), null));
+
+        mockMvc.perform(get("/api/admin/was-logs/download")).andExpect(status().isOk());
+
+        ArgumentCaptor<WasLogDto.Query> captor = ArgumentCaptor.forClass(WasLogDto.Query.class);
+        verify(service).snapshot(any(), captor.capture());
+        assertThat(captor.getValue().limit()).isEqualTo(2000);
+    }
+
+    @Test
+    @DisplayName("다운로드는 감사 기록을 남기고 text/plain으로 응답한다")
+    void download_감사기록_컨텐츠타입() throws Exception {
+        given(service.exportLimit()).willReturn(2000);
+        given(service.snapshot(any(), any()))
+                .willReturn(new WasLogDto.Snapshot("SVR1", "e1", List.of(), 0L, false, List.of(), null));
+
+        mockMvc.perform(get("/api/admin/was-logs/download").param("instanceId", "SVR1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN));
+
+        verify(auditLogger).logDownload("SVR1", 0);
+    }
+
+    @Test
+    @DisplayName("잘린 응답이면 파일 첫 줄에 생략 사실을 적는다")
+    void download_생략표시() throws Exception {
+        given(service.exportLimit()).willReturn(2000);
+        given(service.snapshot(any(), any()))
+                .willReturn(new WasLogDto.Snapshot("SVR1", "e1", List.of(), 0L, true, List.of(), null));
+
+        mockMvc.perform(get("/api/admin/was-logs/download"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("일부 로그가 생략")));
+    }
+```
+
+`WasLogControllerTest.java`에 추가:
+
+```java
+    @Test
+    @DisplayName("레벨 변경은 감사기를 호출한다")
+    void applyLevel_감사호출() throws Exception {
+        given(service.applyLevel(any()))
+                .willReturn(
+                        new WasLogDto.LevelOverride(
+                                "com.kdb.it.domain",
+                                "DEBUG",
+                                "INFO",
+                                java.time.LocalDateTime.of(2026, 8, 20, 11, 0)));
+
+        mockMvc.perform(
+                        post("/api/admin/was-logs/level")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
+                                        {"instanceId":"SVR1","logger":"com.kdb.it.domain",
+                                         "level":"DEBUG","ttlMinutes":30}
+                                        """))
+                .andExpect(status().isOk());
+
+        ArgumentCaptor<WasLogDto.LevelRequest> captor =
+                ArgumentCaptor.forClass(WasLogDto.LevelRequest.class);
+        verify(auditLogger).logLevelChange(captor.capture());
+        assertThat(captor.getValue().logger()).isEqualTo("com.kdb.it.domain");
+        assertThat(captor.getValue().ttlMinutes()).isEqualTo(30);
+    }
+
+    @Test
+    @DisplayName("조회는 커서 값과 무관하게 감사기를 호출한다 — 폭주 억제는 감사기가 한다")
+    void snapshot_감사호출() throws Exception {
+        given(service.snapshot(any(), any()))
+                .willReturn(new WasLogDto.Snapshot("SVR1", "e1", List.of(), 0L, false, List.of(), null));
+
+        mockMvc.perform(get("/api/admin/was-logs").param("afterSeq", "42"))
+                .andExpect(status().isOk());
+
+        verify(auditLogger).logSnapshotAccess(null);
+    }
+```
+
+`WasLogAuditLoggerTest.java`에 추가:
+
+```java
+    @Test
+    @DisplayName("같은 행위자·인스턴스의 연속 조회는 한 번만 기록한다")
+    void logSnapshotAccess_스로틀() {
+        logger.logSnapshotAccess("SVR1");
+        logger.logSnapshotAccess("SVR1");
+        logger.logSnapshotAccess("SVR1");
+
+        assertThat(appender.list).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("다른 인스턴스는 따로 기록한다")
+    void logSnapshotAccess_인스턴스별() {
+        logger.logSnapshotAccess("SVR1");
+        logger.logSnapshotAccess("SVR2");
+
+        assertThat(appender.list).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("서로 다른 인스턴스ID를 계속 보내도 추적 맵이 무한히 자라지 않는다")
+    void logSnapshotAccess_추적맵상한() {
+        for (int i = 0; i < 1500; i++) {
+            logger.logSnapshotAccess("SVR" + i);
+        }
+
+        // 상한에 닿으면 비우므로 기록은 남되 맵 크기는 상한 아래로 유지된다.
+        assertThat(appender.list).hasSize(1500);
+        assertThat(logger.trackedKeyCount()).isLessThan(1000);
+    }
+
+    @Test
+    @DisplayName("개행이 든 값은 가짜 감사 줄을 만들지 못하게 이스케이프한다")
+    void 감사값_개행이스케이프() {
+        logger.logDownload("SVR1
+[WAS로그감사] 조회 actor=victim", 0);
+
+        assertThat(appender.list.getFirst().getFormattedMessage()).doesNotContain("
+");
+    }
+```
+
+기존 `WasLogAuditLoggerTest`는 고정 `Clock`으로 `WasLogAuditLogger`를 만들어야 스로틀이 결정적으로 동작한다.
+`Clock.fixed(...)`를 주입하고, 필요한 import(`java.time.Clock`, `java.time.Instant`, `java.time.ZoneId`,
+`org.mockito.ArgumentCaptor`, `static org.mockito.Mockito.verify`, `MockMvcResultMatchers.content`)를 각 파일에 맞춰 추가한다.
+
+- [ ] **Step 8: 테스트 통과 확인**
 
 ```bash
 cd C:/it/it_backend && ./gradlew test --tests "com.kdb.it.common.admin.waslog.*" --no-daemon
@@ -2584,7 +3195,7 @@ cd C:/it/it_backend && ./gradlew test --tests "com.kdb.it.common.admin.waslog.*"
 
 Expected: PASS
 
-- [ ] **Step 8: 포맷 적용 후 커밋**
+- [ ] **Step 9: 포맷 적용 후 커밋**
 
 ```bash
 cd C:/it/it_backend && ./gradlew spotlessApply --no-daemon
@@ -2607,7 +3218,7 @@ cd C:/it/it_backend && git add src/main/java/com/kdb/it/common/admin/waslog src/
 - Consumes: `GET /api/admin/was-logs`, `GET /api/admin/was-logs/instances`(Task 3)
 - Produces:
   - `WasLogEntry`, `WasLogSnapshot`, `WasLogInstance`, `WasLogLevel`, `WasLogFilters` 타입
-  - `useWasLogFeed()` → `{ rows, instances, instanceId, filters, paused, loading, error, peerError, dropped, restarted, start, stop, fetchOnce, resetCursor, loadInstances }`
+  - `useWasLogFeed()` → `{ rows, instances, instanceId, filters, levelOverrides, paused, loading, error, peerError, dropped, restarted, start, stop, tick, fetchOnce, resetCursor, dismissRestarted, loadInstances }`
 
 - [ ] **Step 1: 타입 작성**
 
@@ -2776,10 +3387,17 @@ describe('useWasLogFeed', () => {
         scope.stop();
     });
 
-    it('peerError를 그대로 노출하고 목록을 지우지 않는다', async () => {
+    it('peerError를 그대로 노출하고 목록·커서를 건드리지 않는다', async () => {
         apiFetch
             .mockResolvedValueOnce(snapshot({ entries: [entry(1)], lastSeq: 1 }))
-            .mockResolvedValueOnce(snapshot({ peerError: 'SVR2 인스턴스 조회 실패: timeout' }));
+            .mockResolvedValueOnce(
+                snapshot({
+                    peerError: 'SVR2 인스턴스 조회 실패: timeout',
+                    bufferEpoch: null,
+                    lastSeq: 0,
+                }),
+            )
+            .mockResolvedValueOnce(snapshot({ entries: [entry(2)], lastSeq: 2 }));
 
         const scope = effectScope();
         await scope.run(async () => {
@@ -2789,6 +3407,160 @@ describe('useWasLogFeed', () => {
 
             expect(feed.peerError.value).toContain('timeout');
             expect(feed.rows.value).toHaveLength(1);
+            // 실패 응답의 bufferEpoch=null·lastSeq=0을 반영하지 않았는지 — 다음 요청이 커서 1을 쓰고
+            // 재기동으로 오인해 목록을 비우지 않아야 한다.
+            await feed.fetchOnce();
+            expect(apiFetch.mock.calls[2]![1].query.afterSeq).toBe(1);
+            expect(feed.restarted.value).toBe(false);
+            expect(feed.rows.value.map((r) => r.seq)).toEqual([1, 2]);
+            expect(feed.peerError.value).toBeNull();
+        });
+        scope.stop();
+    });
+
+    it('보관 상한을 넘으면 오래된 행부터 버린다', async () => {
+        const many = Array.from({ length: 2500 }, (_, i) => entry(i + 1));
+        apiFetch.mockResolvedValueOnce(snapshot({ entries: many, lastSeq: 2500 }));
+
+        const scope = effectScope();
+        await scope.run(async () => {
+            const feed = useWasLogFeed();
+            await feed.fetchOnce();
+
+            expect(feed.rows.value).toHaveLength(2000);
+            // 최신이 남고 오래된 쪽이 잘려야 한다.
+            expect(feed.rows.value[0]!.seq).toBe(501);
+            expect(feed.rows.value.at(-1)!.seq).toBe(2500);
+        });
+        scope.stop();
+    });
+
+    it('조회 실패는 커서·목록을 건드리지 않고 다음 성공에서 지워진다', async () => {
+        apiFetch
+            .mockResolvedValueOnce(snapshot({ entries: [entry(1)], lastSeq: 1 }))
+            .mockRejectedValueOnce(new Error('network'))
+            .mockResolvedValueOnce(snapshot({ entries: [entry(2)], lastSeq: 2 }));
+
+        const scope = effectScope();
+        await scope.run(async () => {
+            const feed = useWasLogFeed();
+            await feed.fetchOnce();
+            await feed.fetchOnce();
+
+            expect(feed.error.value).toBeInstanceOf(Error);
+            expect(feed.rows.value).toHaveLength(1);
+
+            await feed.fetchOnce();
+            expect(feed.error.value).toBeNull();
+            expect(apiFetch.mock.calls[2]![1].query.afterSeq).toBe(1);
+            expect(feed.rows.value.map((r) => r.seq)).toEqual([1, 2]);
+        });
+        scope.stop();
+    });
+
+    it('dropped와 levelOverrides를 응답 그대로 반영한다', async () => {
+        apiFetch.mockResolvedValueOnce(
+            snapshot({
+                dropped: true,
+                levelOverrides: [
+                    {
+                        logger: 'com.kdb.it',
+                        level: 'DEBUG',
+                        previousLevel: 'INFO',
+                        expiresAt: '2026-08-20T11:00:00',
+                    },
+                ],
+            }),
+        );
+
+        const scope = effectScope();
+        await scope.run(async () => {
+            const feed = useWasLogFeed();
+            await feed.fetchOnce();
+
+            expect(feed.dropped.value).toBe(true);
+            expect(feed.levelOverrides.value).toHaveLength(1);
+        });
+        scope.stop();
+    });
+
+    it('인스턴스 목록은 self를 기본 선택한다', async () => {
+        apiFetch.mockResolvedValueOnce([
+            { id: 'SVR2', self: false, reachable: true },
+            { id: 'SVR1', self: true, reachable: true },
+        ]);
+
+        const scope = effectScope();
+        await scope.run(async () => {
+            const feed = useWasLogFeed();
+            await feed.loadInstances();
+
+            expect(feed.instanceId.value).toBe('SVR1');
+        });
+        scope.stop();
+    });
+
+    it('resetCursor는 레벨 오버라이드와 오류 배너까지 지운다', async () => {
+        apiFetch
+            .mockResolvedValueOnce(
+                snapshot({
+                    entries: [entry(1)],
+                    lastSeq: 1,
+                    levelOverrides: [
+                        {
+                            logger: 'com.kdb.it',
+                            level: 'DEBUG',
+                            previousLevel: 'INFO',
+                            expiresAt: '2026-08-20T11:00:00',
+                        },
+                    ],
+                }),
+            )
+            .mockResolvedValueOnce(snapshot({ peerError: 'SVR2 인스턴스 조회 실패: timeout' }));
+
+        const scope = effectScope();
+        await scope.run(async () => {
+            const feed = useWasLogFeed();
+            await feed.fetchOnce();
+            await feed.fetchOnce();
+            expect(feed.levelOverrides.value).toHaveLength(1);
+            expect(feed.peerError.value).not.toBeNull();
+
+            feed.resetCursor();
+
+            expect(feed.levelOverrides.value).toHaveLength(0);
+            expect(feed.peerError.value).toBeNull();
+            expect(feed.rows.value).toHaveLength(0);
+        });
+        scope.stop();
+    });
+
+    it('세대가 바뀐 뒤 도착한 응답은 반영하지 않는다', async () => {
+        let resolveFirst: (value: unknown) => void = () => {};
+        apiFetch
+            .mockImplementationOnce(
+                () =>
+                    new Promise((resolve) => {
+                        resolveFirst = resolve;
+                    }),
+            )
+            .mockResolvedValueOnce(snapshot({ entries: [entry(9)], lastSeq: 9 }));
+
+        const scope = effectScope();
+        await scope.run(async () => {
+            const feed = useWasLogFeed();
+            const pending = feed.fetchOnce();
+
+            // 응답이 도착하기 전에 인스턴스를 바꾼다.
+            feed.resetCursor();
+            resolveFirst(snapshot({ entries: [entry(1)], lastSeq: 1 }));
+            await pending;
+
+            expect(feed.rows.value).toHaveLength(0);
+
+            await feed.fetchOnce();
+            expect(apiFetch.mock.calls[1]![1].query.afterSeq).toBe(0);
+            expect(feed.rows.value.map((r) => r.seq)).toEqual([9]);
         });
         scope.stop();
     });
@@ -2876,18 +3648,48 @@ export function useWasLogFeed() {
     let timer: ReturnType<typeof setInterval> | null = null;
     let cursor = 0;
     let epoch: string | null = null;
+    /**
+     * 진행 중인 조회의 세대. 없으면 null.
+     *
+     * <p>같은 세대의 중복 호출(수동 새로고침 + 타이머 tick)만 막는다. 인스턴스·필터를 바꿔 세대가 올라간
+     * 직후의 호출은 통과시켜야 한다 — 막으면 `resetCursor`가 목록을 비운 뒤 다음 tick까지 최대 3초간
+     * 빈 화면이 남는다. 앞선 세대의 응답은 어차피 세대 비교에서 버려지므로 겹쳐도 안전하다.
+     */
+    let inFlightGeneration: number | null = null;
+    /**
+     * 조회 세대. resetCursor·stop이 증가시킨다.
+     *
+     * <p>인스턴스를 바꾼 직후 도착한 이전 인스턴스의 응답이 새 커서·목록을 덮어쓰지 못하게 한다.
+     */
+    let generation = 0;
 
-    /** 커서와 목록을 비운다. 인스턴스·필터 변경 시 호출한다. */
+    /**
+     * 커서와 화면 상태를 비운다. 인스턴스·필터 변경 시 호출한다.
+     *
+     * <p>레벨 오버라이드와 오류도 함께 지운다 — 남겨두면 이전 인스턴스의 값이 새 인스턴스의 것처럼 보인다.
+     */
     function resetCursor(): void {
+        generation += 1;
         cursor = 0;
         epoch = null;
         rows.value = [];
+        levelOverrides.value = [];
         dropped.value = false;
+        restarted.value = false;
+        peerError.value = null;
+        error.value = null;
+    }
+
+    /** 재기동 안내를 닫는다. 사용자가 확인하기 전까지 배너를 유지하기 위해 자동으로 지우지 않는다. */
+    function dismissRestarted(): void {
         restarted.value = false;
     }
 
-    /** 1회 조회. */
+    /** 1회 조회. 같은 세대의 조회가 이미 진행 중이면 아무것도 하지 않는다. */
     async function fetchOnce(): Promise<void> {
+        if (inFlightGeneration === generation) return;
+        const myGeneration = generation;
+        inFlightGeneration = myGeneration;
         loading.value = true;
         try {
             const snapshot = await $apiFetch<WasLogSnapshot>(API_URL, {
@@ -2902,6 +3704,18 @@ export function useWasLogFeed() {
                     q: filters.value.keyword || undefined,
                 },
             });
+
+            // 인스턴스·필터가 바뀐 뒤 도착한 응답은 이미 남의 것이다. 반영하면 커서가 되살아난다.
+            if (myGeneration !== generation) return;
+
+            // 피어 위임이 실패한 응답은 메타 필드가 비어 있다(bufferEpoch=null, lastSeq=보낸 커서,
+            // levelOverrides=[]). 그대로 반영하면 epoch이 두 번 바뀐 것처럼 보여 목록이 중복되고,
+            // 살아 있는 임시 로그레벨이 화면에서 사라진다. 배너만 띄우고 나머지는 건드리지 않는다.
+            if (snapshot.peerError !== null) {
+                peerError.value = snapshot.peerError;
+                error.value = null;
+                return;
+            }
 
             if (epoch !== null && snapshot.bufferEpoch !== null && snapshot.bufferEpoch !== epoch) {
                 // 서버 재기동 — seq가 리셋되므로 이전 커서와 목록은 의미가 없다.
@@ -2918,12 +3732,13 @@ export function useWasLogFeed() {
             }
             cursor = snapshot.lastSeq;
             levelOverrides.value = snapshot.levelOverrides;
-            peerError.value = snapshot.peerError;
+            peerError.value = null;
             dropped.value = snapshot.dropped;
             error.value = null;
         } catch (e) {
-            error.value = e;
+            if (myGeneration === generation) error.value = e;
         } finally {
+            if (inFlightGeneration === myGeneration) inFlightGeneration = null;
             loading.value = false;
         }
     }
@@ -2970,8 +3785,9 @@ export function useWasLogFeed() {
         }
     }
 
-    /** 폴링을 멈춘다. */
+    /** 폴링을 멈춘다. 진행 중이던 응답은 도착해도 반영하지 않는다. */
     function stop(): void {
+        generation += 1;
         stopTimer();
         if (typeof document !== 'undefined') {
             document.removeEventListener('visibilitychange', onVisibilityChange);
@@ -2995,6 +3811,7 @@ export function useWasLogFeed() {
         tick,
         fetchOnce,
         resetCursor,
+        dismissRestarted,
         loadInstances,
     };
 }
@@ -3023,6 +3840,10 @@ cd C:/it/it_frontend && git add app/types/wasLog.ts app/composables/useWasLogFee
 ---
 
 ### Task 8: 화면 컴포넌트와 페이지
+
+> **i18n 호출 규약**: 이 코드베이스의 컴포넌트는 템플릿에서 `$t(...)`를 쓰지 않는다. `<script setup>`에서
+> `const { t } = useI18n();`을 선언하고 템플릿에서 `t(...)`를 부른다. 전역 `$t`는 타입 선언이 없어
+> `npm run typecheck`가 깨진다. 아래 컴포넌트 네 개와 페이지 모두 이 선언을 포함한다.
 
 **Files:**
 - Create: `it_frontend/app/components/admin/waslog/WasLogToolbar.vue`
@@ -3059,9 +3880,6 @@ cd C:/it/it_frontend && git add app/types/wasLog.ts app/composables/useWasLogFee
                 resume: '재개',
                 download: '다운로드',
                 changeLevel: '로그레벨 변경',
-                time: '시각',
-                thread: '스레드',
-                message: '메시지',
                 stackTrace: '스택트레이스',
                 empty: '표시할 로그가 없습니다.',
                 dropped: '일부 로그를 건너뛰었습니다. 버퍼에서 밀려났거나 한 번에 표시할 수 있는 양을 넘었습니다.',
@@ -3202,7 +4020,7 @@ function formatTime(timestamp: number): string {
 <template>
     <div class="was-log-table">
         <p v-if="props.rows.length === 0" class="was-log-table__empty">
-            {{ $t('admin.wasLogs.empty') }}
+            {{ t('admin.wasLogs.empty') }}
         </p>
         <ul v-else class="was-log-table__list">
             <li
@@ -3286,7 +4104,7 @@ const props = defineProps<{ entry: WasLogEntry | null }>();
         <h3 class="was-log-detail__title">{{ props.entry.logger }}</h3>
         <p class="was-log-detail__message">{{ props.entry.message }}</p>
         <template v-if="props.entry.throwable">
-            <h4 class="was-log-detail__subtitle">{{ $t('admin.wasLogs.stackTrace') }}</h4>
+            <h4 class="was-log-detail__subtitle">{{ t('admin.wasLogs.stackTrace') }}</h4>
             <pre class="was-log-detail__stack">{{ props.entry.throwable }}</pre>
         </template>
     </section>
@@ -3347,6 +4165,19 @@ const LEVELS: WasLogLevel[] = ['ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE'];
 function updateFilters(patch: Partial<WasLogFilters>): void {
     emit('update:filters', { ...props.filters, ...patch });
 }
+
+/**
+ * 임시 로그레벨의 자동 복원 시각을 표시용으로 다듬는다.
+ *
+ * <p>TTL은 이 기능의 안전장치라 "언제 원래대로 돌아오는지"가 화면에 보여야 한다. 값이 비었거나 파싱되지
+ * 않으면 원문을 그대로 보여준다 — 임의로 감추면 만료 정보를 잃는다.
+ */
+function formatExpiry(expiresAt: string): string {
+    const parsed = new Date(expiresAt);
+    if (Number.isNaN(parsed.getTime())) return expiresAt;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(parsed.getHours())}:${pad(parsed.getMinutes())}`;
+}
 </script>
 
 <template>
@@ -3356,42 +4187,47 @@ function updateFilters(patch: Partial<WasLogFilters>): void {
             :options="props.instances"
             option-label="id"
             option-value="id"
-            :placeholder="$t('admin.wasLogs.instance')"
+            :placeholder="t('admin.wasLogs.instance')"
             @update:model-value="emit('update:instanceId', $event)"
         />
         <MultiSelect
             :model-value="props.filters.levels"
             :options="LEVELS"
-            :placeholder="$t('admin.wasLogs.level')"
+            :placeholder="t('admin.wasLogs.level')"
             @update:model-value="updateFilters({ levels: $event })"
         />
         <InputText
             :model-value="props.filters.logger"
-            :placeholder="$t('admin.wasLogs.loggerPlaceholder')"
+            :placeholder="t('admin.wasLogs.loggerPlaceholder')"
             @update:model-value="updateFilters({ logger: $event ?? '' })"
         />
         <InputText
             :model-value="props.filters.keyword"
-            :placeholder="$t('admin.wasLogs.keywordPlaceholder')"
+            :placeholder="t('admin.wasLogs.keywordPlaceholder')"
             @update:model-value="updateFilters({ keyword: $event ?? '' })"
         />
         <ToggleButton
             :model-value="props.paused"
-            :on-label="$t('admin.wasLogs.resume')"
-            :off-label="$t('admin.wasLogs.pause')"
+            :on-label="t('admin.wasLogs.resume')"
+            :off-label="t('admin.wasLogs.pause')"
             @update:model-value="emit('update:paused', $event)"
         />
         <Button
-            :label="$t('admin.wasLogs.changeLevel')"
+            :label="t('admin.wasLogs.changeLevel')"
             severity="secondary"
             @click="emit('openLevelDialog')"
         />
-        <Button :label="$t('admin.wasLogs.download')" severity="secondary" @click="emit('download')" />
+        <Button :label="t('admin.wasLogs.download')" severity="secondary" @click="emit('download')" />
 
         <Message v-if="props.levelOverrides.length > 0" severity="warn" :closable="false">
-            {{ $t('admin.wasLogs.overrideActive') }}:
-            <span v-for="override in props.levelOverrides" :key="override.logger">
+            {{ t('admin.wasLogs.overrideActive') }}:
+            <span
+                v-for="override in props.levelOverrides"
+                :key="override.logger"
+                class="was-log-toolbar__override"
+            >
                 {{ override.logger }}={{ override.level }}
+                ({{ t('admin.wasLogs.overrideExpires', { time: formatExpiry(override.expiresAt) }) }})
             </span>
         </Message>
     </div>
@@ -3476,29 +4312,29 @@ async function apply(): Promise<void> {
     <Dialog
         :visible="props.visible"
         modal
-        :header="$t('admin.wasLogs.dialog.title')"
+        :header="t('admin.wasLogs.dialog.title')"
         :style="{ width: '28rem' }"
         @update:visible="emit('update:visible', $event)"
     >
         <div class="was-log-level-dialog">
-            <label for="waslog-logger">{{ $t('admin.wasLogs.logger') }}</label>
+            <label for="waslog-logger">{{ t('admin.wasLogs.logger') }}</label>
             <InputText id="waslog-logger" v-model="logger" />
 
-            <label for="waslog-level">{{ $t('admin.wasLogs.level') }}</label>
+            <label for="waslog-level">{{ t('admin.wasLogs.level') }}</label>
             <Select id="waslog-level" v-model="level" :options="LEVELS" />
 
-            <label for="waslog-ttl">{{ $t('admin.wasLogs.dialog.ttl') }}</label>
+            <label for="waslog-ttl">{{ t('admin.wasLogs.dialog.ttl') }}</label>
             <InputNumber id="waslog-ttl" v-model="ttlMinutes" :min="1" :max="120" />
-            <small>{{ $t('admin.wasLogs.dialog.ttlHint') }}</small>
+            <small>{{ t('admin.wasLogs.dialog.ttlHint') }}</small>
         </div>
         <template #footer>
             <Button
-                :label="$t('admin.wasLogs.dialog.cancel')"
+                :label="t('admin.wasLogs.dialog.cancel')"
                 severity="secondary"
                 @click="emit('update:visible', false)"
             />
             <Button
-                :label="$t('admin.wasLogs.dialog.apply')"
+                :label="t('admin.wasLogs.dialog.apply')"
                 :loading="submitting"
                 @click="apply"
             />
@@ -3533,6 +4369,9 @@ import WasLogTable from '~/components/admin/waslog/WasLogTable.vue';
 import WasLogToolbar from '~/components/admin/waslog/WasLogToolbar.vue';
 import { useWasLogFeed } from '~/composables/useWasLogFeed';
 import type { WasLogEntry, WasLogFilters } from '~/types/wasLog';
+
+// 관리자 라우트 가드. 메뉴를 숨기는 것만으로는 URL 직접 진입을 막지 못한다.
+definePageMeta({ middleware: 'admin' });
 
 const feed = useWasLogFeed();
 const config = useRuntimeConfig();
@@ -3595,7 +4434,7 @@ onBeforeUnmount(() => {
 
 <template>
     <div class="was-logs-page">
-        <h1 class="was-logs-page__title">{{ $t('admin.wasLogs.title') }}</h1>
+        <h1 class="was-logs-page__title">{{ t('admin.wasLogs.title') }}</h1>
 
         <WasLogToolbar
             :instances="feed.instances.value"
@@ -3611,13 +4450,19 @@ onBeforeUnmount(() => {
         />
 
         <Message v-if="feed.peerError.value" severity="error" :closable="false">
-            {{ $t('admin.wasLogs.peerErrorPrefix') }}: {{ feed.peerError.value }}
+            {{ t('admin.wasLogs.peerErrorPrefix') }}: {{ feed.peerError.value }}
         </Message>
-        <Message v-if="feed.restarted.value" severity="warn" :closable="false">
-            {{ $t('admin.wasLogs.restarted') }}
+        <!-- 재기동은 일회성 사건이라 자동으로 지우지 않는다. 사용자가 닫을 때까지 남긴다. -->
+        <Message
+            v-if="feed.restarted.value"
+            severity="warn"
+            :closable="true"
+            @close="feed.dismissRestarted()"
+        >
+            {{ t('admin.wasLogs.restarted') }}
         </Message>
         <Message v-if="feed.dropped.value" severity="warn" :closable="false">
-            {{ $t('admin.wasLogs.dropped') }}
+            {{ t('admin.wasLogs.dropped') }}
         </Message>
 
         <div ref="scrollArea" class="was-logs-page__scroll" @scroll="onScroll">
@@ -3682,7 +4527,8 @@ function mountToolbar() {
             stubs: {
                 Select: { template: '<div />' },
                 MultiSelect: { template: '<div />' },
-                InputText: { template: '<div />' },
+                // 이름을 주어 테스트가 두 InputText를 순서로 구분할 수 있게 한다.
+                InputText: { name: 'InputTextStub', template: '<div />' },
                 ToggleButton: { template: '<div />' },
                 Message: { template: '<div><slot /></div>' },
                 Button: {
@@ -3711,17 +4557,31 @@ describe('WasLogToolbar', () => {
         expect(wrapper.emitted('openLevelDialog')).toHaveLength(1);
     });
 
-    it('필터 일부만 바꿔도 나머지 필터 값을 보존해 올린다', () => {
+    it('키워드 입력은 나머지 필터 값을 보존한 채 올라간다', async () => {
         const wrapper = mountToolbar();
 
-        (wrapper.vm as unknown as { updateFilters: (p: Partial<WasLogFilters>) => void }).updateFilters(
-            { keyword: '실패' },
-        );
+        // 실제 템플릿 바인딩을 태운다 — updateFilters를 직접 부르면 어느 입력이 어느 필드에
+        // 연결됐는지(예: 키워드 입력이 logger에 잘못 물린 경우)를 잡지 못한다.
+        const inputs = wrapper.findAllComponents({ name: 'InputTextStub' });
+        await inputs[1]!.vm.$emit('update:model-value', '실패');
 
         expect(wrapper.emitted('update:filters')?.[0]?.[0]).toEqual({
             levels: ['ERROR'],
             logger: 'com.kdb.it',
             keyword: '실패',
+        });
+    });
+
+    it('로거 입력은 키워드를 덮어쓰지 않는다', async () => {
+        const wrapper = mountToolbar();
+
+        const inputs = wrapper.findAllComponents({ name: 'InputTextStub' });
+        await inputs[0]!.vm.$emit('update:model-value', 'org.hibernate');
+
+        expect(wrapper.emitted('update:filters')?.[0]?.[0]).toEqual({
+            levels: ['ERROR'],
+            logger: 'org.hibernate',
+            keyword: '',
         });
     });
 });
@@ -3749,6 +4609,93 @@ cd C:/it/it_frontend && grep -n "MENU_ICON_OPTIONS" -A 30 app/utils/menuPresenta
 
 없으면 `MENU_ICON_OPTIONS` 배열에 `'pi pi-server'`를 추가한다.
 
+- [ ] **Step 11b: 진행 중 재호출 가드 테스트 추가**
+
+Task 8이 수동 새로고침·인스턴스 전환·필터 변경을 붙이면서 `fetchOnce`가 타이머 tick과 겹칠 통로가 생겼다.
+Task 7의 `inFlight` 가드가 실제로 두 번째 호출을 막는지 여기서 잠근다.
+
+`tests/unit/composables/useWasLogFeed.test.ts`에 추가:
+
+```typescript
+    it('진행 중인 조회가 있으면 두 번째 호출은 요청을 보내지 않는다', async () => {
+        let resolveFirst: (value: unknown) => void = () => {};
+        apiFetch.mockImplementationOnce(
+            () =>
+                new Promise((resolve) => {
+                    resolveFirst = resolve;
+                }),
+        );
+
+        const scope = effectScope();
+        await scope.run(async () => {
+            const feed = useWasLogFeed();
+            const first = feed.fetchOnce();
+
+            // 응답이 오기 전에 수동 새로고침이 겹친 상황.
+            await feed.fetchOnce();
+            expect(apiFetch).toHaveBeenCalledTimes(1);
+
+            resolveFirst(snapshot({ entries: [entry(1)], lastSeq: 1 }));
+            await first;
+
+            expect(feed.rows.value.map((r) => r.seq)).toEqual([1]);
+        });
+        scope.stop();
+    });
+
+    it('진행 중이어도 세대가 바뀐 뒤의 조회는 곧바로 나간다', async () => {
+        let resolveFirst: (value: unknown) => void = () => {};
+        apiFetch
+            .mockImplementationOnce(
+                () =>
+                    new Promise((resolve) => {
+                        resolveFirst = resolve;
+                    }),
+            )
+            .mockResolvedValueOnce(snapshot({ entries: [entry(7)], lastSeq: 7 }));
+
+        const scope = effectScope();
+        await scope.run(async () => {
+            const feed = useWasLogFeed();
+            const first = feed.fetchOnce();
+
+            // 필터를 바꾼 상황 — 목록이 비워지므로 재조회가 즉시 나가야 화면이 비어 있지 않다.
+            feed.resetCursor();
+            await feed.fetchOnce();
+
+            expect(apiFetch).toHaveBeenCalledTimes(2);
+            expect(feed.rows.value.map((r) => r.seq)).toEqual([7]);
+
+            resolveFirst(snapshot({ entries: [entry(1)], lastSeq: 1 }));
+            await first;
+
+            // 이전 세대 응답은 버려야 한다.
+            expect(feed.rows.value.map((r) => r.seq)).toEqual([7]);
+        });
+        scope.stop();
+    });
+
+    it('dismissRestarted는 재기동 배너만 내린다', async () => {
+        apiFetch
+            .mockResolvedValueOnce(snapshot({ entries: [entry(1)], lastSeq: 1, bufferEpoch: 'e1' }))
+            .mockResolvedValueOnce(snapshot({ entries: [entry(1)], lastSeq: 1, bufferEpoch: 'e2' }));
+
+        const scope = effectScope();
+        await scope.run(async () => {
+            const feed = useWasLogFeed();
+            await feed.fetchOnce();
+            await feed.fetchOnce();
+            expect(feed.restarted.value).toBe(true);
+
+            feed.dismissRestarted();
+
+            expect(feed.restarted.value).toBe(false);
+            expect(feed.rows.value).toHaveLength(1);
+        });
+        scope.stop();
+    });
+```
+
 - [ ] **Step 12: 검증 명령 전체 실행**
 
 ```bash
@@ -3770,7 +4717,7 @@ cd C:/it/it_frontend && git add app/components/admin/waslog app/pages/admin/was-
 ### Task 9: 관리자 메뉴 시드
 
 **Files:**
-- Create: `it_database/migrations/V20260820_001__SeedWasLogAdminMenu.sql`
+- Create: `it_database/migrations/V20260820_002__SeedWasLogAdminMenu.sql`
 
 **Interfaces:**
 - Consumes: 화면 경로 `/admin/was-logs`(Task 8)
@@ -3915,7 +4862,7 @@ cd C:/it/it_backend && ./gradlew bootRun --no-daemon
 - [ ] **Step 5: 커밋**
 
 ```bash
-cd C:/it/it_database && git add migrations/V20260820_001__SeedWasLogAdminMenu.sql && git diff --cached --stat && git commit -m "feat: WAS 로그 관리자 메뉴 시드 추가 (권한 매핑 포함)"
+cd C:/it/it_database && git add migrations/V20260820_002__SeedWasLogAdminMenu.sql && git diff --cached --stat && git commit -m "feat: WAS 로그 관리자 메뉴 시드 추가 (권한 매핑 포함)"
 ```
 
 ---
@@ -3940,35 +4887,53 @@ Expected: 전체 PASS. 실패가 있으면 이번 변경과 무관한 기존 실
 cd C:/it/it_frontend && npm run format:check && npm run check && npm test
 ```
 
-- [ ] **Step 3: 수동 확인 — 다중 인스턴스**
+- [ ] **Step 3: 수동 확인 — 이번 범위에서 제외**
 
-로컬에서 두 인스턴스를 흉내 내 피어 팜아웃을 확인한다. 서로 다른 포트·`SERVER_INSTANCE_ID`로 두 번 기동하고, 두 프로세스 모두에 같은 `WAS_LOG_INTERNAL_SECRET`과 peers 목록을 준다.
+다중 인스턴스 피어 팜아웃의 수동 확인은 **하지 않는다.** 백엔드 기동은 로컬 Oracle 스키마를 잡고 Flyway가
+미적용 마이그레이션을 적용하는데, 그 스키마를 다른 세션이 함께 쓰고 있어 사용자가 DB 적용을 보류하기로
+했다(Task 9도 같은 이유로 파일만 만든다).
 
-확인 항목:
+그래서 다음 네 가지는 **이번 작업에서 검증되지 않은 채 남는다.** Step 4에서 잔여과제로 등록해 추적한다.
+
 1. 인스턴스 선택을 SVR2로 바꾸면 SVR2의 로그가 뜬다.
 2. SVR2를 내리면 목록이 비는 대신 `peerError` 배너가 뜬다.
 3. SVR2에 레벨 변경을 걸면 SVR2 로그에만 DEBUG가 나타난다.
 4. `WAS_LOG_INTERNAL_SECRET`을 비우고 기동하면 `/internal/was-logs/snapshot` 호출이 404다.
+
+단위·슬라이스 테스트는 각 동작을 개별로 덮고 있으나(피어 실패 표면화, 토큰 401, 조건부 빈 등록), 두 프로세스가
+실제로 HTTP로 대화하는 경로는 어떤 테스트도 밟지 않았다.
 
 - [ ] **Step 4: 후속 과제 등록**
 
 `C:\it\TASK.md`의 「⚙️ 백엔드」 표에 행을 추가한다.
 
 ```markdown
-| BE-54 | 🟡 Medium | 보안 | WAS 로그 뷰어 본문 마스킹 | `/admin/was-logs`가 링버퍼 원문을 그대로 화면·다운로드로 노출한다. 토큰·사번·개인정보가 로그에 찍히면 ADMIN 권한과 감사 로그 외에 통제 수단이 없고, 다운로드 파일은 개인 PC로 나가면 추적이 끊긴다. 설계(`docs/superpowers/specs/2026-08-20-was-log-viewer-design.md` §9)에서 수용된 리스크로 명시하고 범위에서 제외했다. 해소는 `RingBufferAppender.append` 적재 직전 한 곳에 마스킹 필터를 끼우면 된다 — 적재 경로가 단일이라 삽입 지점이 명확하다. |
-| BE-55 | 🟢 Low | 감사 | WAS 로그 관리자 행위 감사의 DB 적재 | `WasLogAuditLogger`가 조회·레벨변경·다운로드를 애플리케이션 WARN 로그로만 남긴다(파일 appender 12개월 보관). 범용 관리자 행위 감사 테이블이 없어 신규 DDL을 피한 선택이다. 감사 요건이 조회 가능한 테이블을 요구하면 전용 테이블과 Flyway 마이그레이션을 추가한다. |
+| BE-55 | 🟡 Medium | 보안 | WAS 로그 뷰어 본문 마스킹 | `/admin/was-logs`가 링버퍼 원문을 그대로 화면·다운로드로 노출한다. 토큰·사번·개인정보가 로그에 찍히면 ADMIN 권한과 감사 로그 외에 통제 수단이 없고, 다운로드 파일은 개인 PC로 나가면 추적이 끊긴다. 설계(`docs/superpowers/specs/2026-08-20-was-log-viewer-design.md` §9)에서 수용된 리스크로 명시하고 범위에서 제외했다. 해소는 `RingBufferAppender.append` 적재 직전 한 곳에 마스킹 필터를 끼우면 된다 — 적재 경로가 단일이라 삽입 지점이 명확하다. |
+| BE-56 | 🟢 Low | 감사 | WAS 로그 관리자 행위 감사의 DB 적재 | `WasLogAuditLogger`가 조회·레벨변경·다운로드를 애플리케이션 WARN 로그로만 남긴다(파일 appender 12개월 보관, 조회는 행위자+인스턴스별 10분 스로틀). 범용 관리자 행위 감사 테이블이 없어 신규 DDL을 피한 선택이다. 감사 요건이 조회 가능한 테이블을 요구하면 전용 테이블과 Flyway 마이그레이션을 추가한다. |
+| BE-57 | 🟠 High | 검증 | WAS 로그 피어 팜아웃의 실환경 미검증 | 두 인스턴스가 실제로 `/internal/was-logs/**`로 통신하는 경로를 밟은 테스트가 없다. 단위·슬라이스 테스트가 피어 실패 표면화·토큰 401·비밀값 미설정 시 빈 미등록을 각각 덮지만, 두 프로세스를 띄워 인스턴스 선택·레벨 변경·다운로드가 원격 인스턴스에 도달하는지는 확인되지 않았다(공유 로컬 스키마 때문에 이번 작업에서 기동을 보류). 배포 전 서로 다른 포트·`SERVER_INSTANCE_ID`·동일 `WAS_LOG_INTERNAL_SECRET`으로 두 번 기동해 계획 문서 Task 10 Step 3의 네 항목을 확인한다. |
+| BE-58 | 🏛️ External | 운영 | `/internal/was-logs/**` 망 제한과 피어 설정 주입 | 이 경로는 `SecurityConfig`에서 `permitAll`이고 공유 비밀 헤더가 유일한 관문이다(비밀값이 비면 컨트롤러 자체가 등록되지 않아 404). 운영 적용 시 ① 두 인스턴스에 **같은** `WAS_LOG_INTERNAL_SECRET` 주입 ② `WAS_LOG_PEER_SVR1`·`WAS_LOG_PEER_SVR2`에 내부 base URL 주입 ③ 방화벽에서 이 경로를 사내 서버 대역으로 제한 ④ 각 서버 `SERVER_INSTANCE_ID`가 서로 다른지 확인이 필요하다. 비밀값에 작은따옴표를 넣으면 SpEL 조건식이 깨져 기동이 실패한다. 피어 URL이 평문 HTTP면 공유 비밀이 매 폴링마다 사내망을 평문으로 오간다 — HTTPS 권장. |
 ```
 
-- [ ] **Step 5: 버전 조합 기록**
+「🎨 프론트엔드」 표에도 한 행을 추가한다.
 
-```bash
-cd C:/it && ./scripts/update-versions-lock.ps1
+```markdown
+| FE-53 | 🟢 Low | 테스트 | `pages/admin/was-logs.vue` 페이지 단위 테스트 부재 | 자동 스크롤 고정(`stickToBottom` 임계값), 인스턴스·필터 변경 시 `resetCursor()`+`fetchOnce()` 배선, `onMounted`/`onBeforeUnmount`의 폴링 시작·정지가 어떤 테스트로도 덮이지 않는다. 컴포넌트 테스트는 잎 컴포넌트(`WasLogTable`·`WasLogToolbar`)만 있고, composable 테스트는 페이지 배선을 모른다. 순서를 바꾸거나 임계값을 깨는 회귀가 조용히 통과한다. |
 ```
+
+- [ ] **Step 5: 버전 조합 기록 — 이번 범위에서 제외**
+
+`scripts/update-versions-lock.ps1`은 `it_frontend`/`it_backend`/`it_database`를 **`C:\it` 바로 아래에서**
+찾도록 하드코딩돼 있다(경로 인자 없음). 이번 작업의 커밋은 `C:\it\.worktrees\was-log\...`의
+`feature/was-log-viewer`에 있으므로, 지금 실행하면 우리 작업이 아니라 **다른 세션이 쓰고 있는 워킹트리의
+HEAD**가 기록된다.
+
+게다가 `versions.lock`은 "호환되는 커밋 조합"을 남기는 파일이라, 아직 병합되지 않은 기능 브랜치의 SHA를
+넣는 것 자체가 이르다. **각 저장소에 병합한 뒤** 원래 경로에서 스크립트를 돌리는 것이 맞다.
 
 - [ ] **Step 6: 루트 커밋**
 
 ```bash
-cd C:/it && git add TASK.md versions.lock && git diff --cached --stat && git commit -m "docs: WAS 로그 뷰어 후속 과제 등록과 호환 버전 기록"
+cd C:/it && git add TASK.md && git diff --cached --stat && git commit -m "docs: WAS 로그 뷰어 후속 과제 등록"
 ```
 
 ---
