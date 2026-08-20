@@ -4887,15 +4887,21 @@ Expected: 전체 PASS. 실패가 있으면 이번 변경과 무관한 기존 실
 cd C:/it/it_frontend && npm run format:check && npm run check && npm test
 ```
 
-- [ ] **Step 3: 수동 확인 — 다중 인스턴스**
+- [ ] **Step 3: 수동 확인 — 이번 범위에서 제외**
 
-로컬에서 두 인스턴스를 흉내 내 피어 팜아웃을 확인한다. 서로 다른 포트·`SERVER_INSTANCE_ID`로 두 번 기동하고, 두 프로세스 모두에 같은 `WAS_LOG_INTERNAL_SECRET`과 peers 목록을 준다.
+다중 인스턴스 피어 팜아웃의 수동 확인은 **하지 않는다.** 백엔드 기동은 로컬 Oracle 스키마를 잡고 Flyway가
+미적용 마이그레이션을 적용하는데, 그 스키마를 다른 세션이 함께 쓰고 있어 사용자가 DB 적용을 보류하기로
+했다(Task 9도 같은 이유로 파일만 만든다).
 
-확인 항목:
+그래서 다음 네 가지는 **이번 작업에서 검증되지 않은 채 남는다.** Step 4에서 잔여과제로 등록해 추적한다.
+
 1. 인스턴스 선택을 SVR2로 바꾸면 SVR2의 로그가 뜬다.
 2. SVR2를 내리면 목록이 비는 대신 `peerError` 배너가 뜬다.
 3. SVR2에 레벨 변경을 걸면 SVR2 로그에만 DEBUG가 나타난다.
 4. `WAS_LOG_INTERNAL_SECRET`을 비우고 기동하면 `/internal/was-logs/snapshot` 호출이 404다.
+
+단위·슬라이스 테스트는 각 동작을 개별로 덮고 있으나(피어 실패 표면화, 토큰 401, 조건부 빈 등록), 두 프로세스가
+실제로 HTTP로 대화하는 경로는 어떤 테스트도 밟지 않았다.
 
 - [ ] **Step 4: 후속 과제 등록**
 
@@ -4903,7 +4909,15 @@ cd C:/it/it_frontend && npm run format:check && npm run check && npm test
 
 ```markdown
 | BE-54 | 🟡 Medium | 보안 | WAS 로그 뷰어 본문 마스킹 | `/admin/was-logs`가 링버퍼 원문을 그대로 화면·다운로드로 노출한다. 토큰·사번·개인정보가 로그에 찍히면 ADMIN 권한과 감사 로그 외에 통제 수단이 없고, 다운로드 파일은 개인 PC로 나가면 추적이 끊긴다. 설계(`docs/superpowers/specs/2026-08-20-was-log-viewer-design.md` §9)에서 수용된 리스크로 명시하고 범위에서 제외했다. 해소는 `RingBufferAppender.append` 적재 직전 한 곳에 마스킹 필터를 끼우면 된다 — 적재 경로가 단일이라 삽입 지점이 명확하다. |
-| BE-55 | 🟢 Low | 감사 | WAS 로그 관리자 행위 감사의 DB 적재 | `WasLogAuditLogger`가 조회·레벨변경·다운로드를 애플리케이션 WARN 로그로만 남긴다(파일 appender 12개월 보관). 범용 관리자 행위 감사 테이블이 없어 신규 DDL을 피한 선택이다. 감사 요건이 조회 가능한 테이블을 요구하면 전용 테이블과 Flyway 마이그레이션을 추가한다. |
+| BE-55 | 🟢 Low | 감사 | WAS 로그 관리자 행위 감사의 DB 적재 | `WasLogAuditLogger`가 조회·레벨변경·다운로드를 애플리케이션 WARN 로그로만 남긴다(파일 appender 12개월 보관, 조회는 행위자+인스턴스별 10분 스로틀). 범용 관리자 행위 감사 테이블이 없어 신규 DDL을 피한 선택이다. 감사 요건이 조회 가능한 테이블을 요구하면 전용 테이블과 Flyway 마이그레이션을 추가한다. |
+| BE-56 | 🟠 High | 검증 | WAS 로그 피어 팜아웃의 실환경 미검증 | 두 인스턴스가 실제로 `/internal/was-logs/**`로 통신하는 경로를 밟은 테스트가 없다. 단위·슬라이스 테스트가 피어 실패 표면화·토큰 401·비밀값 미설정 시 빈 미등록을 각각 덮지만, 두 프로세스를 띄워 인스턴스 선택·레벨 변경·다운로드가 원격 인스턴스에 도달하는지는 확인되지 않았다(공유 로컬 스키마 때문에 이번 작업에서 기동을 보류). 배포 전 서로 다른 포트·`SERVER_INSTANCE_ID`·동일 `WAS_LOG_INTERNAL_SECRET`으로 두 번 기동해 계획 문서 Task 10 Step 3의 네 항목을 확인한다. |
+| BE-57 | 🏛️ External | 운영 | `/internal/was-logs/**` 망 제한과 피어 설정 주입 | 이 경로는 `SecurityConfig`에서 `permitAll`이고 공유 비밀 헤더가 유일한 관문이다(비밀값이 비면 컨트롤러 자체가 등록되지 않아 404). 운영 적용 시 ① 두 인스턴스에 **같은** `WAS_LOG_INTERNAL_SECRET` 주입 ② `WAS_LOG_PEER_SVR1`·`WAS_LOG_PEER_SVR2`에 내부 base URL 주입 ③ 방화벽에서 이 경로를 사내 서버 대역으로 제한 ④ 각 서버 `SERVER_INSTANCE_ID`가 서로 다른지 확인이 필요하다. 비밀값에 작은따옴표를 넣으면 SpEL 조건식이 깨져 기동이 실패한다. 피어 URL이 평문 HTTP면 공유 비밀이 매 폴링마다 사내망을 평문으로 오간다 — HTTPS 권장. |
+```
+
+「🎨 프론트엔드」 표에도 한 행을 추가한다.
+
+```markdown
+| FE-52 | 🟢 Low | 테스트 | `pages/admin/was-logs.vue` 페이지 단위 테스트 부재 | 자동 스크롤 고정(`stickToBottom` 임계값), 인스턴스·필터 변경 시 `resetCursor()`+`fetchOnce()` 배선, `onMounted`/`onBeforeUnmount`의 폴링 시작·정지가 어떤 테스트로도 덮이지 않는다. 컴포넌트 테스트는 잎 컴포넌트(`WasLogTable`·`WasLogToolbar`)만 있고, composable 테스트는 페이지 배선을 모른다. 순서를 바꾸거나 임계값을 깨는 회귀가 조용히 통과한다. |
 ```
 
 - [ ] **Step 5: 버전 조합 기록**
