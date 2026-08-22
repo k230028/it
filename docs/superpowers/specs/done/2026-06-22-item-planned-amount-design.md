@@ -140,7 +140,7 @@ totRqmAmt (파생, 당해예산) = max(0, ∑ AMT − ∑ MPL_AMT)
 
 - `it_backend/docs/guides/data-model.md` — `Bitemm`/`Bprojm` 컬럼 매핑.
 - `it_backend/docs/guides/colname-collision-map.md` — `TOT_RQM_AMT` 등 항목 정리.
-- `it_backend/src/main/resources/sql/plan_ddl.sql` — DDL 동기화.
+- `it_database/migrations` — 물리 DDL과 데이터 변경의 단일 SoT.
 - 양 `CLAUDE.md`의 관련 참조(있을 경우).
 
 ## 9. 리스크 / 메모

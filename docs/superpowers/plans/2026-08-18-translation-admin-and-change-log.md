@@ -29,7 +29,6 @@
 **Files:**
 - Create: `it_database/migrations/V20260818_001__CreateClangmChangeLog.sql`
 - Create: `it_database/docs/verification/V20260818_001__CreateClangmChangeLog.verify.sql`
-- Modify: `it_backend/src/main/resources/sql/audit_log_sequences_ddl.sql:95` (파일 끝 `COMMIT;` 직전)
 
 **Interfaces:**
 - Consumes: 없음(첫 태스크)
@@ -97,15 +96,10 @@ COMMENT ON COLUMN ITPOWN.TPRMPP_CLANGL.LST_CHG_USID IS '최종변경사용자ID'
 COMMENT ON COLUMN ITPOWN.TPRMPP_CLANGL.LST_CHG_DTM IS '최종변경일시';
 ```
 
-- [ ] **Step 2: 참조용 시퀀스 DDL 갱신**
+- [ ] **Step 2: Flyway SoT 확인**
 
-`it_backend/src/main/resources/sql/audit_log_sequences_ddl.sql`의 마지막 `COMMIT;` 바로 앞에 추가:
-
-```sql
--- 구분언어마스터 변경 로그 (TPRMPP_CLANGL)
-CREATE SEQUENCE SQ_TPRMPP_CLANGL_1
-    START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-```
+테이블과 시퀀스 정의는 `it_database/migrations/V20260818_001__CreateClangmChangeLog.sql`에서만 관리한다.
+백엔드 리소스에 별도 DDL 사본을 만들지 않는다.
 
 - [ ] **Step 3: 검증 스크립트 작성**
 
@@ -192,9 +186,6 @@ Expected: [1]에 16개 컬럼, [2]에 `PK_CLANGL` / position 1 / `LOG_HIS_TGR_SN
 git -C it_database add migrations/V20260818_001__CreateClangmChangeLog.sql docs/verification/V20260818_001__CreateClangmChangeLog.verify.sql
 git -C it_database diff --cached --stat
 git -C it_database commit -m "feat: 구분언어마스터 변경로그 테이블 TPRMPP_CLANGL 생성"
-git -C it_backend add src/main/resources/sql/audit_log_sequences_ddl.sql
-git -C it_backend diff --cached --stat
-git -C it_backend commit -m "chore: 감사로그 시퀀스 참조 DDL에 SQ_TPRMPP_CLANGL_1 추가"
 ```
 
 ---

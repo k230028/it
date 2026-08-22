@@ -14,7 +14,7 @@
 
 | 작업 | 파일 | 유형 |
 |------|------|------|
-| 신규 | `it_backend/src/main/resources/sql/audit_log_ddl.sql` | DDL |
+| 신규 | `it_database/migrations/V{YYYYMMDD_NNN}__{Description}.sql` | Flyway DDL |
 | 신규 | `...domain/audit/annotation/LogTarget.java` | 어노테이션 |
 | 신규 | `...domain/audit/entity/BaseLogEntity.java` | 추상 엔티티 |
 | 신규 | `...domain/audit/listener/ApplicationContextHolder.java` | Spring Bean |
@@ -32,7 +32,7 @@
 ## Task 1: DDL — 시퀀스 및 로그 테이블 생성
 
 **Files:**
-- Create: `it_backend/src/main/resources/sql/audit_log_ddl.sql`
+- Create: `it_database/migrations/V{YYYYMMDD_NNN}__{Description}.sql`
 
 - [ ] **Step 1: DDL 파일 생성**
 
@@ -318,12 +318,9 @@ ALTER TABLE TPRMPP_CAPPLML MODIFY (APF_MNG_NO NULL);
 ALTER TABLE TPRMPP_CAPPLML ADD CONSTRAINT PK_CAPPLML PRIMARY KEY (LOG_SNO);
 ```
 
-- [ ] **Step 2: SQL Developer 또는 sqlplus로 DDL 실행**
+- [ ] **Step 2: Flyway 절차로 DDL 적용**
 
-```bash
-# sqlplus 사용 시 (it_backend 디렉토리에서)
-sqlplus ITPAPP/[비밀번호]@localhost:1521/XEPDB1 @src/main/resources/sql/audit_log_ddl.sql
-```
+`it_database/CLAUDE.md`의 실행 절차에 따라 새 마이그레이션을 적용한다.
 
 예상 결과: `Sequence created.` 19회, `Table created.` 19회, `Table altered.` 각 테이블당 3회
 
@@ -339,8 +336,8 @@ ORDER BY table_name;
 - [ ] **Step 4: 커밋**
 
 ```bash
-git add it_backend/src/main/resources/sql/audit_log_ddl.sql
-git commit -m "feat: add audit log DDL (19 sequences + 19 log tables)"
+git -C it_database add migrations/
+git -C it_database commit -m "feat: add audit log DDL (19 sequences + 19 log tables)"
 ```
 
 ---

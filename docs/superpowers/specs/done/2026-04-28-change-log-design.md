@@ -555,8 +555,8 @@ src/main/java/com/kdb/it/domain/audit/
     ├── BrdocmL.java                  ← 신규
     └── BrivgmL.java                  ← 신규
 
-src/main/resources/sql/
-└── audit_log_ddl.sql                 (22개 시퀀스 + 22개 로그 테이블)
+../it_database/migrations/
+└── V{YYYYMMDD_NNN}__{Description}.sql (22개 시퀀스 + 22개 로그 테이블의 Flyway 이력)
 ```
 
 ---

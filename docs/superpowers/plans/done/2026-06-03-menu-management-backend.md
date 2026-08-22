@@ -32,9 +32,6 @@ it_database/migrations/
   V20260603_007__CreateMenuTables.sql        ★ DDL: 4 tables + indexes + sequences
   V20260603_008__SeedRouteCatalogAndMenuTree.sql  ★ DML seed (MERGE INTO)
 
-it_backend/src/main/resources/sql/
-  audit_log_sequences_ddl.sql                ◇ append SEQ_CMENUL
-
 it_backend/src/main/java/com/kdb/it/domain/menu/
   entity/Cmenud.java                         ★ route catalog (PK SRE_PTH)
   entity/Cmenum.java                         ★ menu master (@LogTarget)
@@ -203,21 +200,15 @@ CREATE SEQUENCE SEQ_CMENUM START WITH 1000 INCREMENT BY 1 NOCACHE NOCYCLE;
 CREATE SEQUENCE SEQ_CMENUL START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 ```
 
-- [ ] **Step 3: Append the log sequence to the canonical sequence DDL too**
+- [ ] **Step 3: Flyway SoT 확인**
 
-Edit `it_backend/src/main/resources/sql/audit_log_sequences_ddl.sql`, add at the end:
-
-```sql
--- 메뉴 변경 로그 (TPRMPP_CMENUL) — AuditLogIdGenerator는 SEQ_ 접두사를 호출함(기존 S_* 불일치는 별도 추적)
-CREATE SEQUENCE SEQ_CMENUL
-    START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-```
+로그 시퀀스 정의는 `it_database/migrations`에서만 관리한다. 백엔드 리소스에 별도 DDL 사본을 두지 않는다.
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add it_database/migrations/V20260603_007__CreateMenuTables.sql it_backend/src/main/resources/sql/audit_log_sequences_ddl.sql
-git commit -m "feat(menu): add DDL for menu management tables and sequences"
+git -C it_database add migrations/V20260603_007__CreateMenuTables.sql
+git -C it_database commit -m "feat(menu): add DDL for menu management tables and sequences"
 ```
 
 ---

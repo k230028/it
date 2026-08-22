@@ -951,7 +951,7 @@ git commit -m "test: update e2e fixtures for item MPL_AMT"
 **Files:**
 - Modify: `it_backend/docs/guides/data-model.md`
 - Modify: `it_backend/docs/guides/colname-collision-map.md`
-- Modify: `it_backend/src/main/resources/sql/plan_ddl.sql`
+- Add: `it_database/migrations/V{YYYYMMDD_NNN}__{Description}.sql`
 
 - [ ] **Step 1: data-model.md 갱신**
 
@@ -961,15 +961,18 @@ git commit -m "test: update e2e fixtures for item MPL_AMT"
 
 `TOT_RQM_AMT`/`totRqmAmt` 항목(라인 22 부근)을 "삭제됨(2026-06-22, 품목 MPL_AMT 파생으로 대체)"로 갱신.
 
-- [ ] **Step 3: plan_ddl.sql 동기화**
+- [ ] **Step 3: Flyway 마이그레이션 동기화**
 
-`plan_ddl.sql`에 `TPRMPP_BITEMM`/`TPRMPP_BITEML` DDL이 있으면 `MPL_AMT NUMBER(18,3) DEFAULT 0` 추가, `TPRMPP_BPROJM`/`TPRMPP_BPROJL` DDL이 있으면 3개 컬럼 제거.
+`it_database/migrations`에 `TPRMPP_BITEMM`/`TPRMPP_BITEML`의 `MPL_AMT` 추가와
+`TPRMPP_BPROJM`/`TPRMPP_BPROJL`의 대상 컬럼 제거를 새 Flyway 이력으로 작성한다.
 
 - [ ] **Step 4: 커밋**
 
 ```bash
-git add it_backend/docs/guides/data-model.md it_backend/docs/guides/colname-collision-map.md it_backend/src/main/resources/sql/plan_ddl.sql
-git commit -m "docs: sync data-model/colname-map/plan_ddl for MPL_AMT change"
+git -C it_backend add docs/guides/data-model.md docs/guides/colname-collision-map.md
+git -C it_backend commit -m "docs: sync data model for MPL_AMT change"
+git -C it_database add migrations/
+git -C it_database commit -m "feat: add Flyway migration for MPL_AMT change"
 ```
 
 ---

@@ -211,7 +211,7 @@ ATH_ID         VARCHAR2(32)   PK            -- 권한ID (ITPAD001/ITPZZ001/ITPZZ
 - `CmenumL` 엔티티가 `BaseLogEntity` 상속 → PK `LOG_HIS_TGR_SNO`, 변경구분 `CHG_DTT_YN`(C/U/D), `CHG_DTM`, `CHG_USID`, BaseEntity 스냅샷 6필드 자동 포함
 - 마스터 `Cmenum`에 `@EntityListeners(ChangeLogEntityListener.class)` 부착 → JPA `@PrePersist`/`@PreUpdate` 시점에 `AuditLogPersister`가 자동 INSERT
 - **별도의 `chg_tp`, `bf_json`, `af_json` 컬럼 불필요** — 스냅샷 방식(마스터 비즈니스 컬럼을 그대로 복제)
-- 시퀀스 `SEQ_CMENUL` 등록 (`it_backend/src/main/resources/sql/audit_log_sequences_ddl.sql`)
+- 시퀀스 `SQ_TPRMPP_CMENUL_1`은 `it_database/migrations`의 Flyway 이력에서 관리
 - `ADMIN_LOG_TABLES`(`it_frontend/app/utils/adminLogs.ts`)에 추가: `{ key: 'cmenum', title: '메뉴 변경 로그', menuLabel: '메뉴 관리', tableName: 'TPRMPP_CMENUL' }`
 - 관리자 로그 화면 `/admin/logs/cmenum`에서 자동 조회
 
@@ -463,7 +463,7 @@ Flyway 파일 3개 (CLAUDE.md §4.4 명명 규칙 준수).
 ### 6.1 `V20260530_001__CreateMenuTables.sql`
 
 - `TPRMPP_CMENUD`, `TPRMPP_CMENUM`, `TPRMPP_CMENUA`, `TPRMPP_CMENUL` 테이블 + 인덱스 + FK + CHECK 제약
-- 시퀀스: `SEQ_CMENUL` (BaseLogEntity PK 채번용, `audit_log_sequences_ddl.sql`에 추가)
+- 시퀀스: `SQ_TPRMPP_CMENUL_1` (BaseLogEntity PK 채번용, `it_database/migrations`에서 관리)
 
 ### 6.2 `V20260530_002__SeedRouteCatalog.sql`
 

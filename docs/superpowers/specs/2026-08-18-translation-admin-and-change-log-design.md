@@ -114,8 +114,8 @@ CREATE SEQUENCE ITPOWN.SQ_TPRMPP_CLANGL_1
 ```
 
 `MAXVALUE`는 `V20260730_003__NormalizeSequenceMaxValues.sql`이 통일한 기준값이다.
-참조용 `it_backend/src/main/resources/sql/audit_log_sequences_ddl.sql`에도 같은 항목을
-추가해 두 파일이 어긋나지 않게 한다.
+스키마와 시퀀스 정의의 SoT는 `it_database/migrations`의 Flyway 이력이며,
+백엔드 리소스에는 별도 참조용 DDL 사본을 두지 않는다.
 
 검증 스크립트는 `it_database/docs/verification/V20260818_001__CreateClangmChangeLog.verify.sql`에
 둔다(기존 `V20260815_001` 검증 스크립트와 같은 위치·형식).
