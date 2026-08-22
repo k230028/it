@@ -16,6 +16,423 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-22 BE-63 이름 스냅샷 컬럼 8개 적재
+
+**결정: 채운다. 규칙은 "생성·수정 시 갱신, 조인 값이 없으면(퇴사자) 기존 값 유지".**
+이 규칙은 곧 목적이 **퇴사자 이름 보존**임을 뜻한다 — 조인이 비면 덮지 않고 남기므로 스냅샷이
+유일한 보존 수단이 된다.
+
+| 계층 | 변경 |
+| --- | --- |
+| 엔티티 | `Bprojm`에 `tlrNm`·`usrNm` + `assignPersonNames`, `Bcostm`·`Btermm`에 `cgprNm` + `assignCgprName` |
+| 변경로그 엔티티 | `BprojmL`(2)·`BcostmL`(1)·`BtermmL`(1) — 리스너가 이름이 같은 필드를 반사로 복사하므로 필드만 추가하면 이력에도 따라 남는다 |
+| 저장 경로 | `ProjectService` 생성·수정 2곳, `CostService` 생성·수정 2곳, 단말 생성 2곳·수정 1곳 — 기존 `assignSvnOrgNames` 스냅샷과 같은 자리 |
+| 마이그레이션 | `V20260822_002__BackfillPersonNameSnapshots.sql` — 기존 8개 컬럼을 한 번 채운다 |
+
+**핵심 설계 — 덮어쓰지 않는다.** `assignPersonNames`/`assignCgprName`은 인자가 null이거나 공백이면
+**기존 값을 그대로 둔다.** 담당자가 퇴사하면 `TPRMPP_CUSERI` 조인이 비는데 그때 null로 덮으면 이
+컬럼을 둔 이유가 사라진다. 조인으로는 되살릴 수 없는 값이라 한 번 채운 뒤에는 지키는 쪽이 맞다.
+
+**담당자 컬럼이 사번 또는 이름을 담는다는 사정을 반영했다.** `USID`·`TLR_USID`·`CGPR_ID`에는 사번이
+아니라 이름이 그대로 저장된 행이 있어(`UserNameResolver` 주석), 애플리케이션은 그 판정기를 그대로
+쓰고 백필 SQL도 같은 규칙을 재현한다 — ① CUSERI 조인 성공 시 조회된 이름, ② 조인 실패 + 저장값에
+한글이 섞였으면 저장값 자체가 이름. **조인 실패 + ASCII는 건드리지 않는다**(퇴직·미등록 사번을
+이름처럼 노출하면 안 된다).
+
+**검증**: `./gradlew test` **BUILD SUCCESSFUL**(전체). 백필 SQL은 실제 로컬 Oracle에서 롤백
+트랜잭션으로 **8문 전부 실행**해 문법을 확인했고, 값이 실제로 채워지는 것도 확인했다 —
+`TPRMPP_BTERML`의 `K140024 → 박차장`. 로컬은 사업·전산업무비 마스터가 0행이라 그쪽은 대상이 없었다.
+
+**남는 것 — 운영 적용 시 확인**: 이미 퇴사한 담당자의 이름은 조인으로 되살릴 수 없어 백필 후에도
+NULL로 남는다. 이 컬럼을 둔 목적이 그 보존이므로 **앞으로 생성·수정되는 행부터** 채워진다.
+과거분 복원이 필요하면 인사 원장 등 다른 출처가 있어야 하며 이 작업 범위가 아니다. 운영 적용 전
+DBA와 대상 행 수를 함께 확인하는 것이 좋다.
+
+### ✅ 2026-08-22 FE-49 감사기 Record 값 탐지 도입 + 기준선 등재
+
+**결정: 규칙을 켜고 기준선에 등재한다(1번).** 신규 유입만 막고 기존 분량은 감소 전용 부채로
+전환한다.
+
+| 파일 | 변경 |
+| --- | --- |
+| `scripts/lib/user-facing-copy-audit.mjs` | `object-copy` 규칙 추가 — 객체 리터럴 속성값이 한글을 담은 문자열이면 화면 문구로 본다 |
+| `scripts/user-facing-copy-baselines.mjs` | 빈 객체 → **86개 파일 397건** 등재. 도입 배경과 재생성 절차를 주석에 명시 |
+
+**착수 조건을 실제로 확인했다.** FE-49는 "다른 작업의 미커밋 변경이 없는 시점에 등재해야 남의
+위반까지 흡수하지 않는다"를 조건으로 달아 두었다. 위반 파일 86개와 워킹트리 수정 파일의 교집합을
+구하니 **12개가 나왔고 전부 이번 세션에서 내가 고친 파일**이었다 — 다른 작업의 파일은 하나도
+포함되지 않아 흡수 위험이 없음을 확인하고 진행했다.
+
+**FE-37의 "기준선 0건"은 이 사각지대를 포함한 착시였다.** 속성 이름이 `DISPLAY_KEYS`에 없고
+export도 아니면 어느 규칙에도 걸리지 않아, `{ curC: '통화', ioeC: '비목' }` 같은 Record가 그대로
+통과했다. 상위 오염원은 `composables/migration/columns.ts` 48건, `useCouncilCodes.ts` 36건,
+`approval/forms/itBudget/pdf/projectSection.ts` 35건이다.
+
+**규칙이 실제로 막는지 확인했다** — 임의 파일에 `const PROBE = { label: '새로 들어온 하드코딩
+문구' }`를 넣자 ratchet이 `app/utils/breadcrumb.ts (1건)`으로 정확히 실패했고, 되돌리자 통과했다.
+
+**ESLint 게이트가 두 번 잡았다**: `regexp/no-obscure-range`(한글 범위를 문자 그대로 쓰지 말 것),
+`unicorn/escape-case`(이스케이프는 대문자). 최종 형태는 `/[가-힣]/`이다.
+
+**검증**: `npm run check`(typecheck+lint+check:copy) 무오류, `npm test` **330파일 3,732건 전건
+통과**. 중간에 `useInfoDashboardYear`·`infoHomeFeed` 2건이 실패했으나 공유 워킹트리에서 다른
+작업이 편집 중이던 순간의 것이었고(그 사이 테스트 수가 3,730 → 3,732로 늘었다), 재실행에서 전건
+통과했다. 해당 파일은 이번 작업이 건드리지 않았다.
+
+### ✅ 2026-08-22 BE-36 `totRqmAmt` → `tyyBgAmt` 개명
+
+**결정: 필드명을 정리한다. 이름은 `tyyBgAmt`(당년예산금액, `TYY_BG_AMT`).**
+`meta/meta.txt` 형태소 기준 — 당년 `TYY`, 예산 `BG`, 금액 `AMT`. 형제 `prjBgAmt`도 meta에 통째
+항목이 없는 조합어라 같은 방식으로 만든 선례다.
+
+의미가 이름에 드러난다: `prjBgAmt`(총 예산) = `tyyBgAmt`(당해예산) + `mplAmt`(익년 이후 예산).
+
+**동명이의를 가른 것이 이 작업의 전부였다.** 같은 이름이 두 도메인에 있고 한쪽만 틀렸다.
+
+| 위치 | 의미 | 처리 |
+| --- | --- | --- |
+| `ProjectDto.Response.totRqmAmt` | 당해예산 | **개명** |
+| `Bprojm`·`BprojmL`·`ProjectAmounts`·`ApprovalMailSnapshot` | DB `TOT_RQM_AMT` = 총 예산 | 그대로(컬럼명과 일치) |
+| `Bbizpm`·`BizplanDto` | 사업계획 **총소요금액** | 그대로(컬럼명과 일치) |
+
+**앞서 세운 가정 하나가 틀렸다 — 정정한다.** "프론트 전수 조사는 컴파일러가 대신한다"고 적었으나
+사실이 아니었다. 프론트는 생성 타입 `ProjectResponse`가 아니라 `useProjects.ts`의 **손으로 쓴
+`Project` 인터페이스**를 쓴다. 생성 타입만 바꾸면 `npm run typecheck`가 **오류 0으로 통과한다** —
+잡아 주지 않는다. 그래서 32곳을 수동으로 분류해 옮겼고, 사업계획 문맥 5곳은 그대로 두었다.
+
+| 저장소 | 변경 |
+| --- | --- |
+| `it_backend` | `ProjectDto.Response` 필드 + `ProjectBudgetSummaryService` setter. 소비처 5곳(`PlanService` 2·`CouncilService` 2, 나머지 1) + 테스트 15줄. 계약 테스트는 **사업 응답만** 갱신 |
+| `it_frontend` | 앱 32곳 + 테스트 32곳. `api.d.ts`의 `ProjectResponse` 속성 |
+
+**주의해서 되돌린 실수 하나**: 계약 테스트에서 `"totRqmAmt"`를 일괄 치환했더니 `BizplanDetail`·
+`BizplanListItem` 계약까지 바뀌어 실패했다. 그 넷은 되돌리고 사업 응답 것만 남겼다. 동명이의
+함정이 실제로 작동한 사례다.
+
+**파일 크기 동결선에 걸려 주석을 줄였다**: 새 필드에 붙인 JavaDoc이 `ProjectDto.java`를 1,016 →
+1,025줄로 늘려 `MaxLinesRatchetTest`가 실패했다. 기준값 상향은 허용된 해소 수단이 아니므로
+한 줄 주석으로 압축했다(상세 근거는 이 기록에 남긴다).
+
+**검증**: `./gradlew test` **BUILD SUCCESSFUL**(전체), 프론트 `format:check`·`check`·
+`npm test` **330파일 3,730건 전건 통과**.
+
+**남은 확인 하나**: `npm run codegen`을 실행하지 못했다 — 포트 28080이 OS 예약 대역이라 백엔드를
+띄울 수 없었다. 생성물은 규칙(알파벳 정렬)상 위치가 같아 손으로 동일하게 반영했으나
+(`tlrUsidPtCNm` < `totRqmAmt` < `tyyBgAmt` < `usid`), 백엔드를 띄울 수 있는 환경에서
+`npm run codegen:check`로 한 번 확인해야 한다.
+
+**함께 관찰**: `PlanDto.ProjectSnapshot.prjBg`가 당해예산(`tyyBgAmt`)으로 채워진다. 이름은 총예산을
+가리키는데 값은 당해예산이라 BE-36과 같은 부류의 불일치일 수 있으나, `PlanDto`의 자체 의미일
+가능성도 있어 범위를 넓히지 않았다.
+
+### ✅ 2026-08-22 BE-55 WAS 로그 본문 마스킹
+
+**결정: 마스킹 필터 도입. 대상은 토큰류(JWT·Bearer)와 주민등록번호 둘뿐, 사번은 제외.**
+설계 §9의 '수용한 리스크'를 철회하고 문서를 개정했다.
+
+| 파일 | 내용 |
+| --- | --- |
+| `WasLogMasker.java`(신규) | JWT(base64url 3분절)·`Bearer`/`Basic` 토큰 값·주민등록번호를 표시로 치환 |
+| `RingBufferAppender.java` | `append`에서 메시지와 스택트레이스를 가린 뒤 담는다 |
+| 설계 §9 | 수용 리스크 → 마스킹 도입으로 개정, 남는 리스크 명시 |
+
+**설계에서 신경 쓴 것 넷**
+
+1. **사번은 남긴다.** 어느 사용자의 요청에서 난 오류인지가 추적의 출발점이다. 이것을 지키는 음성
+   테스트를 뒀다 — 범위를 넓히려면 그 테스트를 먼저 고쳐야 한다.
+2. **파일 로그는 가리지 않는다.** 마스킹은 링버퍼 사본에만 적용된다. 화면·다운로드로 나가는
+   경로만 막는 것이 목적이고, 서버 로그로 조사하는 경로는 그대로 둔다.
+3. **자르기 전에 가린다.** 순서를 뒤집으면 12,000자 상한에서 잘린 자리의 토큰이 반쪽만 남아
+   정규식에 걸리지 않는다.
+4. **적재 경로 비용.** 모든 로그 이벤트가 지나는 자리라 평시 비용이 곧 처리량이다. 정규식 전에
+   값싼 사전 검사(`.` 포함, `bearer`/`basic` 포함, 숫자 6자 연속)로 거르고, 가릴 것이 없으면
+   **새 문자열을 만들지 않고 원본 인스턴스를 그대로 돌려준다**(테스트가 `isSameAs`로 고정).
+
+**오탐을 줄인 패턴 선택**: JWT는 각 분절 길이 하한 8자를 둬서 `com.kdb.it` 같은 점 표기를 잡지
+않고, 주민번호는 뒷자리 첫 숫자를 1~8로 제한해 전화번호·금액 같은 13자리 조합을 덜 잡는다.
+`APF-2026-00000001 금액 1234567 전화 02-1234-5678`이 그대로 남는 것을 테스트로 지킨다.
+
+**검증**: `WasLogMaskerTest` 7건 + `RingBufferAppenderTest`에 적재 경로 마스킹 1건 추가.
+메시지뿐 아니라 **스택트레이스**도 가려지는지 함께 본다.
+
+### ✅ 2026-08-22 SEC-14 파일 종류 화이트리스트
+
+**결정: 등록된 종류만 받는다.** 클라이언트가 임의의 새 종류 이름으로 첨부를 만들고 그 종류에는
+부모 자원 쓰기 권한 검사가 붙지 않던 경로를 닫았다.
+
+**설계를 바꾼 실측 하나**: "registry에 등록된 종류만"을 **쓰기 판정기 기준으로 좁히면 안 된다.**
+등록된 쓰기 판정기는 넷(배너·공통게시판·편성요청서반입·검토의견)뿐이라, 그대로 적용하면
+요구사항정의서·타당성검토표·가이드문서·사업계획서·협의회관련자료 업로드가 전부 막힌다.
+
+전수 조사로 실제 사용 종류를 확정했다 — 프론트 업로드 호출부 **14곳**의 `pkColNm` 인자(네 번째
+인자다. 두 번째는 `flTpCone`이라 헷갈리기 쉽다)와 백엔드 내부 업로드를 모두 훑으면 **9종**이고,
+이는 **읽기·쓰기 판정기가 선언한 종류의 합집합과 정확히 일치한다**.
+
+| 파일 | 내용 |
+| --- | --- |
+| `FileKindRegistry.java`(신규) | 아는 종류 = 읽기·쓰기 판정기가 선언한 종류의 합집합. 손으로 목록을 관리하지 않으므로 **새 종류를 쓰려면 판정기를 먼저 등록**해야 한다 — 권한 규칙 없는 종류가 조용히 생기는 경로가 구조적으로 막힌다 |
+| `FileTargetWriteAuthorizerRegistry.java` | `verifyTargetWriteAccess`가 부모 권한 검사에 앞서 **아는 종류인지**부터 본다. 세 진입점(단건 업로드·다건 업로드·메타 수정)이 모두 이 메서드를 지나므로 한 곳으로 전부 덮인다 |
+
+**두 가지를 일부러 구분했다**: ① 아는 종류인가 ② 부모 권한을 누가 판정하는가. 쓰기 판정기가 없는
+종류도 **알기만 하면 통과**시킨다 — 이 목록의 목적은 종류를 아는지 묻는 것이지 부모 권한 검사를
+대신하는 것이 아니다.
+
+**`pkColNm`이 null이면 종류 검사를 건너뛴다** — 메타 수정에서 "종류를 바꾸지 않음"을 뜻하기
+때문이다. 업로드 경로는 `@RequestPart`가 필수로 강제하고, 저장경로 정화(2026-08-22)가 null을
+이미 업무 예외로 거부한다.
+
+**기존 행은 영향 없음**: 판정은 신규 업로드 경로에서만 한다. 그래서 착수 전 확인 대상이던
+`PK_COL_NM`이 NULL인 2행도 조회·삭제가 그대로 되며, 이 변경으로 접근이 막히지 않는다.
+
+**검증**: `./gradlew test` **BUILD SUCCESSFUL**(전체). 레지스트리 테스트에 3건 추가 — 아는 종류인데
+쓰기 판정기가 없으면 통과(기존 동작 보존), 모르는 종류는 거부, null은 검사 생략. 기존 테스트
+1건("미등록 레거시 종류는 검증을 생략한다")은 새 규칙과 어긋나 신규 테스트가 대체했다.
+`RequestFormFileControllerProtectionTest`의 `@WebMvcTest` 슬라이스에 새 빈을 함께 올렸다.
+
+### ✅ 2026-08-22 FE-55 WAS 로그 다운로드 본문을 파일 로그 형식으로
+
+**결정: 변형 패턴(2번).** 자리와 구분자는 `FILE_LOG_PATTERN` 그대로 두고 **PID 자리에만
+인스턴스ID**를 넣는다. 형식이 다르다는 사실은 파일 첫 줄 `#` 주석으로 밝힌다.
+
+**형식을 추측하지 않았다** — `spring-boot-4.0.5.jar`의 `logback/defaults.xml`에서 실제 정의를 읽어
+맞췄다.
+
+```
+FILE_LOG_PATTERN = %d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %5p ${PID:-} --- %esb(){APPLICATION_NAME}[%t] %-40.40logger{39} : %m%n
+다운로드      = 2025-08-20T18:00:00.000+09:00  INFO SVR2 --- [it] [http-1] com.kdb.it.A       : 메시지
+                                                    └ PID 자리에 인스턴스ID
+```
+
+| 칸 | 구현 |
+| --- | --- |
+| `%d` | `DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")` + `ZonedDateTime` |
+| `%5p` | `String.format(" %5s ", level)` |
+| `${PID:-}` | **인스턴스ID**(`snapshot.instanceId()`) |
+| `%esb(){APPLICATION_NAME}` | `spring.application.name`을 `[이름] `로. 비면 그 자리를 통째로 비운다 |
+| `%-40.40logger{39}` | logback의 `TargetLengthBasedClassNameAbbreviator(39)` + `String.format("%-40.40s", …)` |
+
+**축약기를 직접 만들지 않은 것이 핵심이었다.** 테스트가 두 번 내 기대를 반박했다 —
+① `com.kdb.it.A`(12자)는 39자 안에 들어 **축약하지 않는다**(내 기대 `c.k.i.A`는 틀렸다),
+② `com.kdb.it.common.admin.waslog.controller.WasLogController`는 39자에 맞는 순간 멈춰
+`c.k.i.c.a.w.controller.WasLogController`가 된다(내 기대 `c.k.i.c.a.w.c.WasLogController`는 틀렸다).
+손으로 구현했다면 두 경우 모두 파일 로그와 어긋났을 것이다.
+
+| 파일 | 변경 |
+| --- | --- |
+| `WasLogController.java` | `streamOf`가 인스턴스ID·애플리케이션명을 받아 파일 로그 형식으로 출력. `applicationName` 주입 |
+| `WasLogDownloadTest.java` | 형식 계약 2건 신규 — 칸 순서·구분자 전체 일치, 긴 로거명 축약과 40칸 고정 |
+| `2026-08-20-was-log-viewer-design.md` | §5.6에 변형 사유 개정 각주 |
+
+**검증**: `./gradlew test` **BUILD SUCCESSFUL**(전체). `WasLogDownloadTest` 7건 통과.
+타임스탬프는 정규식 대신 `OffsetDateTime.parse`로 실제 파싱해 ISO8601+오프셋임을 확인한다.
+로거 칸은 ` : ` 앞이 정확히 40칸인지 재어 고정폭 파서가 깨지지 않게 지킨다.
+
+### ✅ 2026-08-22 FE-51 지정맥 손가락 선택 고아 코드 정리
+
+**결정: 선택 UI는 불필요.** 기본값(`DEFAULT_BIO_AGENT_FINGER_TYPE = '10'`, 오른손 검지)으로
+충분하다고 확정하고, 그리는 화면이 없어 고아가 된 것들을 정리했다.
+
+**이력 확인**: 2026-08-12 계획서
+[`docs/superpowers/plans/2026-08-12-mfa-vein-finger-field-removal.md`](docs/superpowers/plans/2026-08-12-mfa-vein-finger-field-removal.md)가
+`MfaDialog`의 `인증할 손가락` 선택 항목을 이미 제거했고, 그때는 "**`useMfa`의 공개 인터페이스는
+변경하지 않는다**"를 제약으로 두어 상태와 제어 함수를 일부러 남겼다. 이번 결정은 그 후속이다 —
+UI가 불필요함이 확정됐으므로 남겨 둔 인터페이스까지 정리한다. 종전 TASK 문면이 걱정한 "다른
+손가락 등록자의 인증 실패" 위험은 그 계획에서 이미 감내로 판단한 사안이다.
+
+| 대상 | 조치 | 파일 |
+| --- | --- | --- |
+| `useMfa.selectFingerType` | 제거(함수 + 반환 export). 호출하는 컴포넌트가 0곳이었다 | `useMfa.ts` |
+| `useMfa.fingerType` ref | 제거. 바뀔 경로가 없어져 상수와 같아졌으므로, 전송부가 `DEFAULT_BIO_AGENT_FINGER_TYPE`을 직접 쓰게 했다 | 〃 |
+| `isBioAgentFingerType` | 제거. 유일한 호출부가 `selectFingerType` 안이었다 | `types/mfa.ts` |
+| `BIO_AGENT_FINGER_TYPES`의 `labelKey` | 제거하고 값 배열로 단순화(`['9','17','33','10','18','34']`) | 〃 |
+| `common.fingerTypes.*` 12개 키 | ko·en 모두 제거 | `i18n/messages/common.ts` |
+
+**남긴 것과 이유**: `BIO_AGENT_FINGER_TYPES`(값 목록)·`BioAgentFingerType`·
+`DEFAULT_BIO_AGENT_FINGER_TYPE`은 유지했다. 목록은 외부 규격(`mfa.md`)이 정한 값 집합이라 나중에
+다시 필요해질 때 규격을 되찾는 출처이고, 타입이 여기서 파생된다. 왜 UI가 없는지도 주석에 남겼다.
+
+**검증**: `npm run format:check`·`npm run check`(typecheck+lint+check:copy) 무오류,
+`npm test` **330파일 3,730건 전건 통과**. `useMfa.test.ts` 22건·`MfaDialog.test.ts` 23건 포함.
+제거된 동작을 검증하던 테스트 1건("손가락 종류를 바꾸면 다음 identify에 그 값을 보낸다")은 함께
+삭제하고, 기본값이 나가는 것을 지키는 테스트는 이름과 주석을 정리해 남겼다 — 이 값이 바뀌면
+BioAgent 연계 규격과 어긋나므로 상수를 고정하는 회귀 방지선이다.
+
+**참고 — 알려진 flake**: `npm test` 첫 실행에서
+`requestFormMigrationPageBoundary.test.ts` 1건이 실패했으나 단독 실행(3.0초) 통과, 재실행 전건
+통과로 FE-48이 적어 둔 부하 의존 flake임을 확인했다(해당 파일은 MFA를 쓰지 않는다).
+
+### ☑️ 2026-08-22 판단 대기 11건 결정 — 종결 2건
+
+6차까지 정리한 판단 대기 11건에 사용자가 결정을 내렸다. 그중 **코드 변경 없이 종결되는 2건**을
+여기로 옮긴다. 나머지 9건(조치 7 · 보류 2)은 결정 내용을 `TASK.md` 각 항목에 반영했다.
+
+| 상태 | 항목 | 결정 | 근거 |
+| :--: | --- | --- | --- |
+| ☑️ Accepted | BE-56 | **현행 유지** — 관리자 행위 감사를 별도 테이블로 남기지 않는다 | `WasLogAuditLogger`의 애플리케이션 WARN 로그(파일 appender 12개월 보관, 조회는 행위자+인스턴스별 10분 스로틀)로 충분하다고 판단했다. 감사 요건이 조회 가능한 테이블을 요구하는 것으로 바뀌면 전용 테이블과 Flyway 마이그레이션을 그때 추가한다 — 삽입 지점은 `WasLogAuditLogger` 한 곳이라 재개 비용이 낮다 |
+| ⛔ Discarded | MIG-30 | **불필요** — 반입 배치의 공통코드 조회 최적화를 하지 않는다 | 반입 배치는 **오픈 초기에 한정해 쓰는 기능**이라 누적 조회가 문제 되는 규모에 이르지 않는다. 최적화 비용(어댑터 계약 변경 — `FormAdapterContext` 생성 지점 19곳 + 어댑터 테스트 리더 스텁 전면 재작성)이 얻는 것보다 크다. 사실관계는 확인해 두었다 — `MigrationIoeCatalogReader`가 `CodeService`를 우회해 `CodeRepository`를 직접 부르므로 `codesByCid` 캐시를 타지 않는 것은 맞다(파일당 자본 8회 + 통화 1회) |
+
+**결정 전체 요약** (7건 조치 · 2건 보류 · 2건 종결)
+
+| 항목 | 결정 |
+| --- | --- |
+| SEC-14 | 화이트리스트 — registry 등록 종류만 허용 |
+| BE-55 | 마스킹 필터 도입 (마스킹 대상 목록은 확정 대기) |
+| BE-63 | 채운다 — 생성·수정 시 갱신, 조인 값 없으면(퇴사자) 기존 값 유지 |
+| FE-51 | 선택 UI 불필요 → 고아 코드·i18n 키 정리 |
+| BE-36 | 필드명 정리 (세 저장소 동시 변경) |
+| FE-49 | 규칙 켜고 기준선 등재 |
+| FE-55 | 변형 패턴 — PID 자리에 인스턴스ID |
+| MIG-01 | 보류 — 전반적인 상태 코드 개편과 함께 |
+| BE-51 | 보류 — 컬럼 폭 개편과 함께 |
+| BE-56 | 현행 유지 (종결) |
+| MIG-30 | 불필요 (종결) |
+
+**함께 신설**: BE-64(옵티마이저 통계) — BE-51 실측 중 `ITPOWN` 93개 테이블 전부 통계가 없음을
+발견해 별도 항목으로 세웠다. 로컬이 `impdp` DATA_ONLY로 만들어진 탓일 수 있어, 먼저 dev/prod의
+실제 상태 확인이 필요하다.
+
+### ✅ 2026-08-22 `main`에 남아 있던 붉은 테스트 2건 해소 (6차)
+
+여섯 번째 배치. `TASK.md`에서 조치 가능한 항목이 사실상 소진돼(아래 분류) **1~5차 내내
+"다른 작업의 미커밋 파일 탓"으로 넘겨온 프론트엔드 실패 2건을 다시 확인했다.** 귀속이
+틀렸다 — `app/pages/info/cost/[id].vue`는 미커밋이 아니라 **커밋된 `main`의 파일**이었고,
+두 실패 모두 `main` 자체의 결함이었다. 4차의 감사기 오탐에 이어 두 번째 자기 정정이다.
+
+이로써 **프론트엔드 전체 스위트가 처음으로 완전히 초록이 됐다**(330파일 / 3729건).
+
+| 상태 | 항목 | 조치 | 파일 | 검증 증거 |
+| :--: | --- | --- | --- | --- |
+| ✅ Done | `max-lines-ratchet` 실패 | `app/pages/info/cost/[id].vue`가 830줄로 상한 800을 넘고 있었다(기준선은 FE-38 이후 빈 객체라 예외가 없다). 순수 표시 변환을 `utils/costDetailDisplay.ts`로, 연관사업 다이얼로그 상태를 `composables/cost/useRelatedCostDialog.ts`로 분리해 **781줄**로 낮췄다 | `it_frontend` `app/pages/info/cost/[id].vue`, `app/utils/costDetailDisplay.ts`, `app/composables/cost/useRelatedCostDialog.ts` | `npm test` 330파일 3729건 **전건 통과**, `npm run check`(typecheck+lint+check:copy) 무오류 |
+| ✅ Done | `costDetailBudgetItemCard` 실패 | 표시 규칙을 템플릿 **원문 정규식**으로 훑던 테스트가, 표시 로직을 computed로 정리하는 무해한 변경에 걸려 깨져 있었다(동작은 멀쩡했다). 규칙을 순수 함수로 꺼내 **동작으로** 검증하고, 원문 검사는 원문으로만 볼 수 있는 것(단말 여부에 따른 카드 노출·열 수)에만 남겼다 | `it_frontend` `tests/unit/utils/costDetailDisplay.test.ts`(9건 신규), `tests/unit/pages/costDetailBudgetItemCard.test.ts`(재작성) | 비목 표시 규칙 9건: 이름+상세코드 결합, 구 형식(`IOE_240-0200`) 재매칭, 상세코드 미발견 시 원값 노출, 한쪽만 있는 경우, 둘 다 없을 때 `-` |
+| ✅ Done | 리팩터링 중 자체 발견 | 분리한 컴포저블이 처음에는 안에서 `useToast()`를 불렀는데, 호출부가 setup에서 상세를 `await`로 조회한 **뒤에** 이 함수를 부른다 — Nuxt가 주입 컨텍스트를 잃어 라우트가 500으로 떨어지는, 이 저장소에서 이미 한 번 겪은 함정이다. 의존성(`toast`·`t`·`fetchCostOnce`)을 `await` 이전에 확보해 인자로 넘기는 형태로 바꾸고 그 이유를 컴포저블 JSDoc에 남겼다 | 〃 | `useRelatedCostDialog.test.ts` 4건 — Nuxt 컨텍스트 없이 그대로 부를 수 있다는 사실 자체가 계약이다(성공·실패·번호 없음·대체 문자) |
+
+**`TASK.md`의 조치 가능 항목은 소진됐다.** 남은 20건의 성격은 다음과 같다.
+
+| 성격 | 항목 | 왜 지금 못 하나 |
+| --- | --- | --- |
+| 외부 의존 | BE-24, BE-58, SEC-12, MIG-12 | DBA 적용·망 설정·OnePass 규격·해외점포 제출본을 기다린다 |
+| 업무·방침 판단 | SEC-14, FE-49, FE-51, FE-55, BE-36, BE-51, BE-55, BE-56, BE-63, MIG-01, MIG-30 | 선택지와 비용은 1~5차에서 실측해 각 항목에 정리했다. 고르는 일이 남았다 |
+| 실환경 필요 | BE-57, FE-47, FE-48 | 피어 2대 구성, E2E 수동 로그인(`headless:false`) |
+| 구현 규모 | FE-54, BE-52 | 가변 높이 행 가상 스크롤 / 다부모 조회 화면이 생긴 뒤 |
+
+### ✅ 2026-08-22 조치 용이 잔여과제 일괄 처리 5차 (FE-47 원인 규명)
+
+다섯 번째 배치. 남은 목록이 대부분 외부 의존·업무 판단이라 **FE-47 하나를 끝까지 팠다**.
+결과적으로 두 원인 중 하나는 테스트 문제가 아니라 **제품 접근성 회귀**였다 — 4차의 감사기
+오탐과 같은 패턴이다(테스트가 옳고 제품이 틀렸다).
+
+| 상태 | 항목 | 조치 | 파일 | 검증 증거 |
+| :--: | --- | --- | --- | --- |
+| ✅ Done | FE-47 ② (제품 결함) | `ApprovalLineSelector`의 미지정 버튼 접근성 이름을 되살렸다. 이 컴포넌트는 표시 라벨(`팀장 지정`)과 aria-label(`팀장 결재자 지정`)을 **일부러 다르게** 둔다 — 화면 낭독기는 버튼 이름만 읽으므로 무엇을 지정하는지가 이름에 있어야 한다. FE-37 이관이 둘을 `assignTeamLead` 한 키로 합치면서 접근성 이름이 `팀장 결재자 지정` → `팀장 지정`으로 바뀌었다. `assignTeamLeadAria`·`assignDepartmentHeadAria`(ko·en) 키를 되살려 분리 | `it_frontend` `ApprovalLineSelector.vue`, `i18n/messages/common.ts` | 원인 확정: `git show c5bc074f`(이관 전)에서 aria-label이 `'팀장 결재자 지정'`이었음을 대조. 셀렉터 일치 실측: E2E 정규식 `/팀장 결재자( 지정\| 변경)/`이 `팀장 지정`에는 **false**, 복원값에는 true — 90초 타임아웃의 원인이 정확히 이것이다 |
+| ✅ Done | FE-47 ② (회귀 방지) | `ApprovalLineSelector.test.ts` 신설 — 표시 라벨과 접근성 이름을 **각각** 고정해 다시 한 키로 합쳐지지 않게 한다 | `it_frontend` `tests/unit/components/approval/ApprovalLineSelector.test.ts` | 3건 통과. **돌연변이 검증**: aria-label을 FE-37 회귀 상태로 되돌리면 3건 중 2건이 실패한다 |
+| ✅ Done | FE-47 ① (테스트 격리) | 가설대로 미mock 호출이 실제 백엔드로 새는 경로였고, 누락 엔드포인트는 `/api/cost` **하나**다 — `useInfoDashboardYear`가 연도마다 `useCost().fetchCosts`로 전산업무비 전량을 조회하는데 `mockCommonApis`에 없었다. 같은 자리에 기본 빈 목록 mock을 추가했다(`/api/projects`·`/api/ccodem/`·`/api/banners`가 쓰는 것과 같은 패턴) | `it_frontend` `tests/e2e/helpers/mockApi.ts` | 커밋본 기준으로 홈이 부르는 엔드포인트를 전수 대조: `boards/meta`·`boards/{id}/posts`·`council`·`projects`는 mock 있음, `cost`만 없음. (`/api/organizations`는 다른 작업의 미커밋 변경에서 새로 생긴 호출이라 2026-08-19 실패의 원인이 아니다) |
+
+**E2E 재실행은 이 환경에서 못 했다**: `auth.setup.ts`가 수동 로그인(`headless:false`)을 요구한다.
+그래서 FE-47을 닫지 않고 "원인 조치 후 재실행 확인"으로 남겼다(🟡 → 🟢). 위 증거는 코드·git
+이력·정규식 실측이며, 실제 6건이 초록이 되는지는 실행 가능한 환경에서 확인해야 한다.
+
+**MIG-30은 실측 후 착수하지 않았다**: 캐시를 타지 않는다는 전제는 사실로 확인했지만
+(`MigrationIoeCatalogReader`가 `CodeService`를 우회해 `CodeRepository` 직접 호출), 원안대로
+`FormAdapterContext`에 스냅샷을 넘기면 **생성 지점 19곳**을 고치고 어댑터 테스트의 리더 스텁을
+전부 다시 써야 한다 — 인자 추가가 아니라 어댑터 계약 변경이다. 대안 둘(싱글턴 배치 캐시,
+`@RequestScope` 메모 빈)도 각각 동시 업로드 경합·스코프 밖 접근으로 접었다. 근거를 `TASK.md`
+MIG-30에 남겼다.
+
+### ✅ 2026-08-22 조치 용이 잔여과제 일괄 처리 4차 (4건)
+
+네 번째 배치. 가장 큰 성과는 **`npm run check`가 `main`에서 초록이 됐다**는 것이다 — 세 라운드
+동안 "다른 작업의 미커밋 파일 탓"으로 넘겨온 `user-facing-copy-ratchet` 실패가 실은 감사기의
+**오탐**이었다.
+
+| 상태 | 항목 | 조치 | 파일 | 검증 증거 |
+| :--: | --- | --- | --- | --- |
+| ✅ Done | BE-59 | `apply`와 `restoreExpired`가 `ReentrantLock` 하나를 공유한다. `apply`는 상한 판정부터 레지스트리 등록까지, `restoreExpired`는 만료 제거부터 복원까지가 한 단위다. 로거별로 쪼개지 않은 이유는 레벨 변경이 드물고 스캔은 대부분의 틱에서 아무 일도 하지 않아 실제 경합이 없기 때문이다 | `it_backend` `LevelOverrideService.java` | `./gradlew test --tests '*LevelOverride*'` 통과. **돌연변이 검증**: `restoreExpired`의 락을 떼면 실제 호출 순서가 `["apply:WARN", "restore:INFO"]`로 뒤집혀 실패한다 — 복원의 INFO가 관리자의 WARN 뒤에 도착해 새 설정을 덮어쓰는 바로 그 결과다. 락은 인스턴스 필드이므로 테스트도 한 인스턴스에서 적용·만료를 모두 재현하도록 이동 가능한 `Clock`을 쓴다(운영은 싱글턴 빈 하나) |
+| ✅ Done | FE-49(오탐) | `check-user-facing-copy`가 `t(cond ? 'a.b.c' : keyRef)`의 **카탈로그 키**를 고정 문구로 잘못 집어내고 있었다. 삼항 분기를 훑는 규칙이 번역 호출 안이라는 사실을 몰라서다. 번역 호출(`t`·`$t`·`te`·`tm`·`rt`) 안에서는 키 모양(`a.b.c`) 문자열만 건너뛰게 했다 — 키 모양이 아닌 `t('고정 문구')`는 vue-i18n이 그대로 렌더하므로 계속 잡는다 | `it_frontend` `scripts/lib/user-facing-copy-audit.mjs` | `npm run check:copy` 3/3 통과(이전에는 1건 실패). **오탐/누락 4종 대조**: `isEditing ? '편집' : doc.title` 검출 ✓, `t(cond ? 'migration.a.b' : k)` 미검출 ✓, `t(cond ? '고정 문구입니다' : k)` 검출 ✓, `doc.title \|\| '제목 없음'` 검출 ✓. `scripts-lint` 게이트도 통과(정규식 `i` 플래그 규칙 반영) |
+| ✅ Done | FE-49(라벨) | `RequestFormResultTable`의 `fieldLabel` Record 18건을 `migration.bulkImport.result.fields.*` 카탈로그(ko·en)로 이관. 컴포넌트에는 라벨을 가진 field 집합만 남기고, 집합 밖 field는 원값(코드)을 그대로 보인다 | `it_frontend` `RequestFormResultTable.vue`, `i18n/messages/migration.ts` | 마이그레이션 컴포넌트 테스트 72건 통과, `npm run typecheck`·`npm run lint` 무오류 |
+| ✅ Done | FE-54② | 설계 §6.2의 "위로 스크롤하면 자동으로 일시정지 상태가 된다"를 구현. 하단 복귀 시 자동 해제하되, **사용자가 도구모음에서 직접 누른 일시정지는 자동 해제 대상에서 뺐다**(`autoPaused` 구분) — 구분하지 않으면 직접 멈춰 둔 사용자가 하단으로 스크롤하는 순간 의사와 무관하게 다시 흐른다 | `it_frontend` `pages/admin/was-logs.vue`, `tests/unit/pages/wasLogsPageWiring.test.ts` | 페이지 배선 테스트 6건 → 8건(자동 일시정지·수동 일시정지 보존 2건 신규) |
+
+**FE-49의 남은 절반은 방침 결정이다**: 감사기에 「객체 속성값의 한글 문자열」 규칙을 넣으면
+`--scope app`에서 **60여 파일 397건**이 나온다(실측). 기준선이 FE-37로 빈 객체라 규칙을 켜려면
+397건을 등재하거나 전부 이관해야 한다. ① 켜고 등재해 신규 유입만 차단 ② 도메인별 이관 후 켜기
+③ 켜지 않기 — 세 갈래를 `TASK.md` FE-49에 정리했다(우선순위 🟡 → 🟢, 유형을 i18n → 도구로).
+
+**FE-54는 ①만 남았다**: `WasLogTable`의 가상 스크롤이다. 펼침 행(예외 스택)의 가변 높이가
+고정 `itemSize`를 전제하는 구현과 충돌하므로 그 처리를 함께 정해야 한다(우선순위 🟡 → 🟢).
+
+**세 라운드의 오해 정정**: 1~3차에서 "다른 작업의 미커밋 파일 탓"으로 보고한 실패 3건 중
+`user-facing-copy-ratchet`은 실제로는 커밋된 정상 코드(`RequestFormCommitProgressDialog.vue`의
+`t(삼항)`)에 대한 감사기 오탐이었다. 나머지 둘(`max-lines-ratchet`,
+`costDetailBudgetItemCard`)도 같은 파일 `app/pages/info/cost/[id].vue`에서 온다. **정정(2026-08-22, 6차)**: 그 파일은 미커밋이 아니라 **커밋된 `main`의 파일**이었다 — 즉 남은 둘도 다른 작업 탓이 아니라 `main` 자체의 결함이었고, 6차에서 해소했다.
+
+### ✅ 2026-08-22 조치 용이 잔여과제 일괄 처리 3차 (5건)
+
+세 번째 배치. 남은 목록이 대부분 외부 의존(`🏛️`)·업무 판단·실환경 검증이라 조치 가능한 5건을
+골랐다. 테스트를 새로 만든 두 건(FE-53·BE-48)은 **돌연변이 검증**으로 실제 회귀를 잡는지
+확인했다 — 통과만 하는 테스트를 늘리는 것이 두 과제의 문제제기였기 때문이다.
+
+| 상태 | 항목 | 조치 | 파일 | 검증 증거 |
+| :--: | --- | --- | --- | --- |
+| ✅ Done | SEC-14(본체) | `buildStorageDir`가 클라이언트 `pkColNm`을 허용 문자 집합(`[0-9A-Za-z가-힣_-]{1,100}`)으로 거른 뒤, 정규화한 절대경로가 `basePath` 안인지 다운로드(`FileService.downloadFile`)와 같은 기준으로 다시 확인한다. `null`도 NPE 대신 업무 예외로 거부한다. 저장 경로 **문자열 형태는 바꾸지 않았다** — `FL_KPN_PTH`에 그대로 들어가므로 기존 행과 같은 형태를 유지해야 한다(`toAbsolutePath()`를 반환값에 쓰면 드라이브 문자가 붙어 형태가 갈린다). 거부 메시지에 클라이언트 입력을 되돌려주지 않고 WARN 로그로만 남긴다 | `it_backend` `FileUploadUnitService.java` | `./gradlew test --tests '*FileUploadUnitServiceTest'` 통과(상위 이동·경로 구분자·드라이브 지정·공백·빈 문자열·null 거부와 한글 종류 정상 저장 4건 신규). 로컬 Oracle 실측으로 부작용 없음 확인 — `TPRMPP_CFILEM`의 실제 종류는 전부 한글이고(공통게시판·배너·요구사항정의서·타당성검토표·편성요청서반입 1,328건) 허용 집합 밖 값은 NULL뿐이다 |
+| ✅ Done | BE-48 | `ApprovalMailPayloadTransactionBoundaryIT` 신설. 상신 트랜잭션을 `TransactionTemplate`으로 재현하고 메일용 조회를 던지게 만든 뒤, `render()`가 null을 돌려주고 **바깥 트랜잭션이 rollback-only로 표시되지 않으며 커밋된다**를 실제 트랜잭션 매니저로 검증한다 | `it_backend` `ApprovalMailPayloadTransactionBoundaryIT.java` | `./gradlew integrationTest --tests '*ApprovalMailPayloadTransactionBoundaryIT'` 통과. **돌연변이 검증**: 로더에서 `REQUIRES_NEW`를 떼면 이 테스트가 `UnexpectedRollbackException: Transaction silently rolled back because it has been marked as rollback-only`로 실패한다(원래 구조 복원 후 재통과 확인) |
+| ✅ Done | FE-53 | `tests/unit/pages/wasLogsPageWiring.test.ts` 신설. 잎 컴포넌트 테스트와 composable 테스트 사이에 비어 있던 페이지 배선 셋을 덮는다 — `onMounted` 시작/`onBeforeUnmount` 정지, 인스턴스·필터 변경 시 `resetCursor()` → `fetchOnce()` **순서**, 자동 스크롤 고정 임계값(하단 24px 미만) | `it_frontend` `tests/unit/pages/wasLogsPageWiring.test.ts` | 6건 통과. **돌연변이 검증**: 호출 순서 뒤집기·임계값 24→200·`onBeforeUnmount` 본문 제거를 동시에 주입하면 해당 4건이 실패하고, 그 돌연변이와 무관한 2건만 통과한다(페이지 원복 후 6건 재통과) |
+| ✅ Done | MIG-29 | `openSourceFile`의 반환값을 버리지 않고 false면 Toast로 이유를 안내한다. 알림 책임은 화면이 지므로 페이지가 감싸고 표는 그대로 presentational로 둔다 | `it_frontend` `pages/admin/migration/requests.vue`, `i18n/messages/admin.ts` | `npm run typecheck`·`npm run lint` 무오류, `useRequestFormUpload` 37건 통과. i18n 키 ko·en 동시 추가 |
+| ✅ Done | BE-53 | `docs/guides/domains/request-form-import.md` 신설(7장) — 경로·권한, 처리 흐름과 트랜잭션 경계, 진단 심각도 표(BLOCKER/WARNING)와 `FileStatus` 4종, 공통코드 조회 기준(유효일자를 보는 것과 보지 않는 것의 이유), 원본 보관·열람 권한, 금액 단위 결정 순서, 국문·영문 대조표. 가이드 인덱스에도 등재 | `it_backend` `docs/guides/domains/request-form-import.md`, `docs/guides/README.md` | 문서의 사실관계를 코드에서 대조 확인(진단 코드 심각도 enum, `FileStatus` javadoc, `RequestFormImportService`·`RequestFormFileImporter`·`RequestFormSourceFileArchiver` 트랜잭션 주석, `OrgIdentityResolver.snapshot()`·`IoeHierarchyIndex.snapshot()` 존재, `FormLexicon` 주석). 상호 링크 3건 경로 존재 확인 |
+
+**SEC-14는 절반만 닫았다**: traversal은 해소했고, `FileTargetWriteAuthorizerRegistry`가 등록된
+writer 없는 종류를 그냥 통과시키는 레거시 정책은 업무 판단이 필요해 남겼다(우선순위 🟡 → 🟢,
+유형을 파일 → 정책으로 바꿨다).
+
+**함께 관찰**: `requestFormMigrationPageBoundary.test.ts`의 한 케이스가 `npm test` 전체 실행에서만
+간헐 실패한다(단독 2.6초 통과 → 전체 실행 실패 → 재실행 통과). E2E 쪽 같은 성격의 flake를 다루는
+FE-48에 실측을 붙여 두었다.
+
+### ✅ 2026-08-22 조치 용이 잔여과제 일괄 처리 2차 (8건)
+
+같은 기준으로 두 번째 배치를 처리했다. 착수 전 재확인에서 FE-52·MIG-31은 이미 다른 작업이
+해소해 둔 상태였고(코드 변경 없이 종결), 나머지 6건을 조치했다. BE-51은 이번에도 대상이
+아니다 — 1차에서 `ORA-01450`으로 원안 불가가 확정돼 선택지 정리만 남아 있다.
+
+| 상태 | 항목 | 조치 | 파일 | 검증 증거 |
+| :--: | --- | --- | --- | --- |
+| ✅ Done | SEC-15 | 반입 원본 열람 판정을 활성 행만 보도록 바꿨다. `findByApfDcmNo` → `findByApfDcmNoAndDelYn(no, "N")`으로 교체하고, 원장(`Bprojm`·`Bcostm`)도 `DEL_YN='N'`인 경우에만 주관부서를 읽는다. 권한 판정은 실패 시 거부여야 하므로 매핑·원장 어느 쪽이 논리 삭제돼도 거부한다 | `it_backend` `ApplicationMapRepository.java`, `RequestFormFileReadAuthorizer.java` | `./gradlew test --tests '*RequestFormFileReadAuthorizerTest'` 18건 통과(삭제된 매핑·삭제된 사업 원장·삭제된 전산업무비 원장 3건 신규) |
+| ✅ Done | BE-61 | 다운로드를 `StreamingResponseBody`로 바꿔 항목을 만드는 즉시 흘려보낸다. `StringBuilder` → `String` → UTF-8 `byte[]`의 사본 3벌(최대 24MB×3)이 사라진다 | `it_backend` `WasLogController.java` | `./gradlew test --tests '*WasLogDownloadTest'` 5건 통과. 성공 경로는 `asyncDispatch`로 본문까지 검증하고, 피어 실패 502 경로는 동기 그대로라 감사 미기록·`text/plain` 검증이 유지된다 |
+| ✅ Done | BE-62 | 런타임 레벨 변경에 상한을 세웠다 — 동시 적용 50건, **프로세스 누적 서로 다른 로거 200종**, 로거명 256자. logback이 `setLogLevel`로 만든 `Logger`를 프로세스 수명 동안 해제하지 않으므로 동시 개수만 막으면 TTL마다 새 이름으로 계속 늘릴 수 있어, 만료돼도 줄지 않는 카운터에 상한을 뒀다. 이미 건드린 로거의 재조정은 상한과 무관하게 허용한다 | `it_backend` `LevelOverrideService.java`, `LevelOverrideRegistry.java` | `./gradlew test --tests '*LevelOverride*'` 통과. "만료로 활성 슬롯이 비어도 누적 상한은 남는다"를 직접 검증하는 케이스 포함(4건 신규) |
+| ✅ Done | MIG-28 | 리더에 `currencyCandidates()`를 두고 통화 후보만 유효일자 기준(`findByCIdWithValidDate`)으로 읽게 했다. 저장 경로(`resolveXcr`)와 판정 기준이 맞아 유효기간이 닫힌 통화가 선택지에 뜨는 경로가 사라진다. 환율값 파싱 가능 여부까지 거르지는 **않는다** — `resolveXcr`이 `KRW`를 조회 없이 통과시키므로 그러면 가장 흔한 통화가 선택지에서 빠진다 | `it_backend` `MigrationIoeCatalogReader.java`, `GeneralExpenseFormAdapter.java` | `./gradlew test` 관련 3개 클래스 통과. `MigrationIoeCatalogReaderTest`에 후보 조회의 유효일자 필터·`findByCIdAndDelYn` 미사용·환율 없는 KRW 잔존 3건 추가(기존 `verify(never())`가 `xcrByCurrency()` 안에서만 걸려 새 호출부를 잡지 못하던 사각지대 해소) |
+| ✅ Done | FE-55(절반) | `dropped`를 폴링 응답으로 덮어쓰지 않고 래치한 뒤 사용자가 닫을 때만 지운다(`dismissDropped`). `restarted`와 같은 취급이다 — 일회성 유실이 3초 만에 사라지면 "로그를 조용히 잃지 않는다"는 원칙이 무너진다 | `it_frontend` `useWasLogFeed.ts`, `pages/admin/was-logs.vue` | `npx vitest run tests/unit/composables/useWasLogFeed.test.ts` 15건 통과(dropped 유지·dismiss 1건 신규) |
+| ✅ Done | CQ-29 | severity 3중 중복 중 Realtime 두 곳을 `utils/realtimeLogs.chgTypeSeverity`로 승격하고, 라벨은 `chgTypeLabel` 하나로 통일했다(`adminLogPresentation.formatChangeType`이 위임). `RealtimeFeedTable`의 하드코딩 라벨 `생성`·`수정`·`삭제`도 함께 제거됐다. **`info` vs `warn`은 의도로 판단해 합치지 않았다** — 변경이력은 지나간 기록을 훑는 조회 화면이고 실시간 피드는 지금 일어나는 변경을 주시하는 모니터링 화면이라 수정의 강조 수준이 다르다. 판단 근거를 두 곳 주석과 테스트에 남겼다 | `it_frontend` `realtimeLogs.ts`, `adminLogPresentation.ts`, `RealtimeFeedTable.vue`, `RealtimeDetailDrawer.vue` | `npx vitest run tests/unit/utils/{realtimeLogs,adminLogPresentation}.test.ts` 25건 통과(severity 매핑 1건 신규), `npm run typecheck`·`npm run lint` 무오류 |
+| ✔️ Resolved | FE-52 | 코드 변경 없음. 이관 작업이 `archiveOnly` 호출부 3곳을 갱신해 이미 해소돼 있었다 | — | `npm run typecheck` 무오류, `npm run lint` 오류 0(경고 1건은 무관한 기존 항목) |
+| ✔️ Resolved | MIG-31 | 코드 변경 없음. 요구하던 회귀 테스트가 `GeneralExpenseFormAdapterTest.asksUnitWhenCurrencyStillUnresolved`로 이미 커밋돼 있었다 — 통화 미해석 행이 남으면 `UNIT_UNCERTAIN`을 생략하지 않는다는 규칙을 직접 검증한다 | — | `./gradlew test --tests '*GeneralExpenseFormAdapterTest'` 통과 |
+
+**FE-55의 나머지 절반은 남겼다**: 다운로드 본문을 설계 §5.6이 요구한 `FILE_LOG_PATTERN`과
+같게 맞추는 일이다. 그대로 재현할 수 없다는 것이 이번에 확인됐다 — 기본 패턴은 PID와
+애플리케이션명을 포함하는데, 다운로드는 피어 인스턴스의 링버퍼를 위임 조회한 결과를 담을
+수 있고 `WasLogEntry`에는 그 피어의 PID가 없다. 로컬 PID를 적으면 남의 로그에 이 인스턴스의
+PID를 붙이는 셈이라 파서를 속인다. 선택지 3안을 `TASK.md` FE-55에 정리했다(유형을 UX →
+설계로 바꿨다).
+
+### ✅ 2026-08-22 조치 용이 잔여과제 일괄 처리 (8건)
+
+`TASK.md`에서 범위가 좁고 자체 완결적인 8건을 골라 처리했다. 가장 무거운 건은 BE-47로,
+알림 컬럼이 BYTE 시맨틱인데 `clamp`가 글자 수로 잘라 한글 알림이 `ORA-12899`로 조용히
+유실될 수 있던 결함이다. BE-45·BE-54는 대상 메뉴가 겹쳐 마이그레이션 한 건으로 묶었다.
+
+| 상태 | 항목 | 조치 | 파일 | 검증 증거 |
+| :--: | --- | --- | --- | --- |
+| ✅ Done | BE-47 | `clamp`를 글자 수 → UTF-8 바이트 기준으로 교체. `CharsetEncoder`가 출력 버퍼가 찰 때 문자 경계에서 멈추는 성질로 멀티바이트 문자를 중간에서 끊지 않는다(`EaiTextFitter` 선례와 동일 방식). TTL 100·INFM_MSG_CONE 4000·INFM_RCD_URL 300을 상수로 명시 | `it_backend` `NotificationOutboxService.java` | `./gradlew test --tests 'com.kdb.it.common.notification.*'` BUILD SUCCESSFUL. `NotificationOutboxServiceTest` 5건 → 7건(바이트 예산·문자 경계 미분할·예산 내 원본 보존 케이스 추가) |
+| ✅ Done | BE-50 | `updateTranslations`의 `@RequestBody`에 `@Valid`, `UpdateRequest.translations`에 `@NotNull` 부여. 요소 단위 공백 검증은 두지 않는다 — 빈 `text`는 논리 삭제 신호라 의도된 값이다 | `it_backend` `TranslationAdminController.java` | `./gradlew test --tests 'com.kdb.it.common.i18n.*'` BUILD SUCCESSFUL (5건) |
+| ✅ Done | BE-54 | `/admin/translations`·`/admin/migration`·`/admin/migration/requests`의 `TPRMPP_CMENUD` 경로 카탈로그 행을 MERGE로 시드 | `it_database` `V20260822_001__SeedAdminMenuCatalogPathsAndAuthMapping.sql` | 로컬 Flyway 적용 성공(`FLYWAY_SCHEMA_HISTORY` 20260822.001 `success=1`). 적용 후 대상 3경로 카탈로그 3행 |
+| ✅ Done | BE-45 | 같은 마이그레이션에서 위 3개 메뉴에 `TPRMPP_CMENUA` ITPAD001 매핑을 `NOT EXISTS` 가드로 보강. 매핑 0건을 "전체 공개"로 보는 `MenuQueryService.isAllowed()` 판정에서 비관리자 노출을 막는다. 시드 패턴 차원의 결정은 `V20260820_005`(WAS 로그)가 이미 매핑을 함께 넣는 쪽으로 정리했다 | 〃 | 적용 후 경로별 매핑 정확히 1건씩(중복 없음) |
+| ✅ Done | BE-60 | `app.was-log.buffer-capacity`를 `logback-spring.xml`의 `<springProperty>`로 배선해 링버퍼 용량의 단일 출처로 만들었다. XML 하드코딩 `2000`은 제거하고 `defaultValue`로 남겼다 | `it_backend` `logback-spring.xml`, `application.properties`, `WasLogProperties.java`, `RingBufferAppender.java` | 프로퍼티를 1234로 임시 변경하고 Spring 부팅 후 `WasLogBuffer.shared().capacity()`를 실측 → `1234`(배선 전이면 2000). 확인 후 2000으로 복원 |
+| ✅ Done | MIG-27 | `CodeRepository.findByCIdAndDelYn` JPQL에 `ORDER BY c.cSqn ASC NULLS LAST, c.cdva ASC` 추가 — `CodeRepositoryImpl.findByCIdWithValidDate`와 같은 정렬이라 반입 선택 상자 후보 순서가 다른 조회 경로와 일치한다 | `it_backend` `CodeRepository.java` | `./gradlew integrationTest --tests '*UserRepositoryTemCInIt'` BUILD SUCCESSFUL — `@DataJpaTest`가 전체 리포지토리를 로드하므로 Hibernate가 새 JPQL을 부팅 시점에 파싱한다 |
+| ✅ Done | FE-46 | `ColumnSpec.groupKey`를 필수로 바꾸고 `localize`의 `groupKey ? … : undefined` 삼항 제거. 실제로 모든 spec이 groupKey를 넘기고 있어 `undefined` 쪽은 진입 통로가 없는 죽은 분기였다(이 파일 branches 50% 고정의 유일한 원인) | `it_frontend` `useBudgetStatusColumns.ts` | `npm run typecheck`·`npm run lint` 통과, `npm test` 해당 스위트 통과 |
+| ✅ Done | FE-50 | 소비처 0곳인 `MFA_METHOD_LABEL`·`qrImageSource`(`types/mfa.ts`)와 고아 i18n 키 `common.messages.warning`(ko·en) 삭제 | `it_frontend` `app/types/mfa.ts`, `i18n/messages/common.ts` | 전수 grep으로 정적·동적 참조 0건 확인, `npm run check` typecheck·lint 통과 |
+
+**미처리로 남긴 것 — BE-51**: `TPRMPP_CFILEM (PK_COL_NM, PK_CONE)` 보조 인덱스는 원안대로
+만들 수 없다. 로컬 Oracle 실측에서 `ORA-01450: 키의 최대 길이(6397)를 초과했습니다`가 나며,
+두 컬럼이 모두 `VARCHAR2(4000 BYTE)`라 선언 키 길이 8000바이트가 8K 블록 상한을 넘는다.
+컬럼 폭 축소·선행 컬럼 단독·함수기반 인덱스 세 갈래로 선택지를 정리해 `TASK.md` BE-51에
+남겼다(우선순위 🟢 Low → 🟡 Medium).
+
 ### ✅ 2026-08-20 SEC-13 MFA 거래·로그인 대기 저장소를 Oracle 공유 테이블로 교체
 
 `InMemoryMfaTransactionStore`/`InMemoryLoginPendingTransactionStore`만 있던 저장소에
