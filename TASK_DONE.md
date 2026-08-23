@@ -16,6 +16,171 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-23 완료 — 세션 만료 시 수동 로그인 대신 SSO 재진입 (프론트)
+
+**원인.** 화면용 `it-portal-user` 쿠키(7일)는 남고 httpOnly JWT 쿠키만 사라진 상태에서, `auth.global.ts`는 쿠키 존재만으로 인증으로 판정해 SSO를 건너뛰고 페이지를 렌더링했다. 이어지는 API 401 → 갱신 실패 시 `plugins/auth.ts`와 `useApiFetch`의 세션 종료 처리가 `navigateTo('/login')`으로 수동 로그인 페이지에 보냈다. 백엔드 재기동 직후 최초 접속이 항상 이 경로를 타 "SSO 대신 수동 로그인" 증상이 됐다(e2e `session.spec.ts` 케이스 4 주석의 의도는 SSO 리다이렉트였으나 단언이 `/login` 도달도 통과로 인정해 불일치를 못 잡았다).
+
+**조치.** `app/utils/sessionExpiryRedirect.ts` 신설 — 세션 만료 확정 시 현재 경로를 `next`로 담아 `/sso/business`로 재진입한다. 무한 루프 차단: 재진입 시각을 sessionStorage(`it-portal-sso-reentry-at`)에 기록하고 60초 안에 다시 만료가 확정되면 SSO 대신 `/login?error=sso`로 폴백한다(로그인 경로·sessionStorage 사용 불가 시에도 동일 폴백). 두 401 처리기는 이 유틸을 호출하도록 교체했고, `useApiFetch`는 800줄 상한 준수를 위해 조정자 배선을 `composables/api/useSessionRefreshCoordinator.ts`로 분리했다(803→760줄).
+
+**회귀 방지.** 단위: `sessionExpiryRedirect.test.ts`(6건 — SSO 재진입 URL·기록·60초 루프 가드·로그인 경로·storage 불가 폴백), `useSessionRefreshCoordinator.test.ts`(3건 — 배선·로그아웃 후 순서·로그아웃 실패 시 미호출). e2e: 케이스 4 단언을 SSO 요청 필수·`/login` 불허로 강화하고, 케이스 4b(재진입 직후 재만료 → `/login?error=sso` 폴백·SSO 요청 0건)를 추가했다.
+
+**검증.** `npm test` 3,844건 통과, `npm run check`·`format:check` 통과, `session.spec.ts` e2e 6건 통과. 라이브: mock SSO 환경에서 JWT 쿠키만 삭제 + `it-portal-user` 재주입 후 리로드 → SSO 재진입을 거쳐 원래 페이지(`/info`)로 인증 복귀함을 브라우저에서 확인.
+
+### ✅ 2026-08-23 BE-57 완료 — 원격 WAS 로그 다운로드 복구
+
+**원인.** `WasLogController.download`는 최대 약 24MB 링버퍼를 여러 사본으로 만들지 않기 위해 `StreamingResponseBody`로 한 줄씩 내보낸다(BE-61). 최초 `REQUEST`는 관리자 JWT와 `/api/admin/**` 인가를 통과했지만, 스트림 완료 과정에서 같은 URL로 발생하는 `ASYNC` 재디스패치는 stateless 보안 체인에서 인증 컨텍스트 없이 다시 평가됐다. 그 결과 응답이 시작된 뒤 `AuthorizationDeniedException`이 발생해 `response is already committed`만 남고 파일은 내려오지 않았다.
+
+**조치.** `SecurityConfig`에서 `DispatcherType.ASYNC` 재디스패치를 URL 규칙보다 먼저 `permitAll`로 두었다. 외부 요청이 이 타입을 지정할 수 있는 것이 아니라, 최초 `REQUEST`가 URL 인가와 `@PreAuthorize`를 이미 통과한 뒤 컨테이너가 이어서 수행하는 내부 디스패치만 허용한다. 따라서 비인증·일반 사용자의 최초 관리자 요청은 종전처럼 각각 401·403 경계에 남고, BE-61의 스트리밍 메모리 특성도 보존된다.
+
+**회귀 방지.** `SecurityConfigTest`에 실제 `SecurityConfig`·`JwtAuthenticationFilter`·`JwtUtil`과 브라우저 방식의 `accessToken` 쿠키를 쓰는 스트리밍 probe를 추가했다. 수정 전에는 관리자 `asyncDispatch`가 실제 장애와 같은 `AuthorizationDeniedException`으로 실패하는 것을 먼저 확인했다. 수정 후에는 관리자가 본문까지 200으로 완료되고 일반 사용자는 비동기 시작 전 403으로 차단됨을 함께 고정했다. MockMvc 응답 헤더 Map은 실제 컨테이너와 달리 thread-safe하지 않아, 테스트 스트림은 최초 필터 체인이 헤더를 마친 뒤 latch로 풀도록 해 전체 스위트 부하에서도 안정화했다.
+
+**2-WAS 실환경 재검증.** 사용자의 기존 3000(PID 28276)·28080(PID 53508)과 별도 Nuxt 3002(PID 16276)는 유지하고, 새 JAR로 3001/28081(SVR1)/28082(SVR2)를 격리 기동했다. 모의 SSO 관리자 로그인 후 WAS 로그 화면에서 SVR2를 선택해 원격 28082 로그가 표시되는 것을 확인하고 다운로드를 눌렀다. 28081에는 `actor=K140024 instance=SVR2 lines=43` 성공 감사가 남고 종전 보안 예외는 재발하지 않았다. 같은 SSO 세션으로 첨부 응답을 직접 저장한 결과는 **HTTP 200**, `text/plain; charset=UTF-8`, `attachment; filename="was-log_SVR2_20260823_213341.log"`, **9,567바이트**였으며 본문에 `SVR2`와 원격 포트 `28082` 로그가 모두 포함됐다. 검증 뒤 3001/28081/28082와 임시 로그·다운로드 파일을 제거했고 기존 세 포트의 PID가 그대로임을 재확인했다.
+
+**검증.** `WasLogDownloadTest`·`FileControllerTest`·`SecurityConfigTest` 대상 테스트 통과, 백엔드 전체 `./gradlew test` **4,009건(1건 skip) 통과**, `./gradlew spotlessCheck bootJar` 통과.
+
+### ✅ 2026-08-23 MIG-01 완료 — 부문계획 `사업진행` 이관 배선
+
+코드 체계 개편으로 기록 위치를 만든 데 이어 **이관 어댑터 배선까지 마쳤다.** 조정 시트의 `사업진행` 값이 이제 계획 스냅샷뿐 아니라 원장(`BPROJA`)에도 상태코드로 남는다.
+
+**매핑(2026-08-23 사용자 결정).** 시트가 갖는 값은 세 가지뿐이다(설계 `2026-08-11-excel-bulk-migration-design.md` §5.4).
+
+| 시트 값 | 상태코드 | 비고 |
+| --- | --- | --- |
+| `진행(품의)` | `71` 입찰/계약 요청 | |
+| `진행(계약)` | `75` 입찰/계약 진행 | 시트에 체결 전·후 구분이 없어 진행중으로 고정 — `79`(완료)로 보면 체결 전 건까지 완료로 읽힌다 |
+| `취소(연기)` | `00` 취소(연기) | 대응값이 없어 `V20260823_005`로 신설 |
+
+신설한 `00`은 진행률 0, 정렬 순번 31(마지막)이다. 코드값은 앞자리가 단계를 뜻하는 체계에서 "어느 단계도 아닌 예외 상태"로 읽히고, 순번을 마지막에 둔 것은 종료·보류 상태가 선택 목록 맨 앞에 오면 진행 흐름을 읽는 데 방해가 되기 때문이다. 영문은 `Cancelled / Postponed`.
+
+**기록 위치.** `BprojaSyncService.upsert(사업번호, "ADJ-" + 사업번호, 코드)`로 **전용 key**를 쓴다. 사업 자신의 행(`CNCD_RFR_NO = ABUS_MNG_NO`)에 쓰면 예산편성 요청 상태를 덮고, 부문계획 문서 행에 쓰면 부문계획 자체의 상태(11·19)와 뒤섞인다. 단계 서비스마다 자기 문서 key를 쓰는 기존 관례(사업계획은 `BIZ-`)를 그대로 따랐다. BE-33 이후 대표상태는 사업 자신의 행만 보므로 이 새 key는 **대표상태를 흔들지 않고**, `bprojaStsCodes`를 통해 진행현황 카드에만 반영된다(의도한 효과).
+
+**모르는 값은 접지 않는다.** 매핑에 없는 문구나 빈 값이면 아무것도 쓰지 않고 `log.warn`만 남긴다 — 임의 코드로 접으면 화면에 사실과 다른 단계가 켜진다. 원문은 종전대로 계획 스냅샷(`BPLANM.REDT_CONE_INF`)에 남아 정보가 사라지지 않는다.
+
+**관심사 분리.** 처음에는 `MigrationImportService`에 직접 넣었는데 파일이 843줄이 되어 `MaxLinesRatchetTest`가 막았다(800줄 상한, 기준선 추가는 허용된 해소 수단이 아니다). 매핑표와 기록 판정을 `PlanAdjustmentProgressRecorder`로 분리해 오케스트레이션 서비스는 790줄로 돌아왔다 — "시트 문구를 상태코드로 옮긴다"는 판정이 매핑표와 한 덩어리로 움직이므로 분리 경계가 자연스럽다.
+
+**프론트 보강.** `00`은 어느 타임라인 단계에도 속하지 않는데 앞자리 폴백이 `0`을 예산편성과 겹쳐 읽어 **취소된 사업이 '예산편성'으로 보이는** 문제가 있었다. `NON_STAGE_STATUS_CODES`로 먼저 걸러 단계 없음(-1) → 회색 태그가 되게 했다.
+
+**회귀 방지.** `MigrationImportServiceTest`에 매핑 3건을 `@ParameterizedTest`로 고정하고(전용 key까지 함께 검증), 모르는 값·빈 값에서 `upsert`가 호출되지 않는 것을 2건 추가했다. 프론트는 `00`의 밴드 폴백 차단과 회색 태그를 고정했다.
+
+**검증.** 백엔드 `./gradlew check` BUILD SUCCESSFUL. 프론트 `format:check`·`check`·`npm test` **3,835건 전부 통과**. `V20260823_005`는 로컬에 적용해 확인했다(`success=1`, 112ms) — 코드 `00`이 이름·진행률 0·순번 31로 자리 잡았고 영문 번역도 들어갔다. **dev/prod 적용은 DBA 몫이다.**
+
+### ✅ 2026-08-23 FE-47·FE-48 E2E 재검증·안정화
+
+**FE-47.** 기존 조치(`/api/cost` 공통 mock, 결재선 미지정 버튼의 접근성 이름 복원)를 수동 로그인 setup이 없는 `chromium` 프로젝트로 직접 재검증했다. `info-home.spec.ts` 7건과 `report-pdf-latest.spec.ts` 4건, 총 **11건이 재시도 없이 통과**했다. `ApprovalLineSelector.test.ts` 3건도 통과해 표시 라벨과 aria-label 계약을 단위 경계에서 다시 확인했다.
+
+**FE-48.** 간헐 실패의 경계는 알림 버튼 렌더와 `useNotifications.refresh()` 완료가 동기화되지 않은 데 있었다. `notifications.spec.ts`가 버튼 가시성만 기다리지 않고, `/api/notifications`·`/api/notifications/unread-count` GET 응답 두 건과 기대 뱃지 DOM 상태까지 조건 기반으로 기다린다. 고정 timeout은 늘리지 않았다.
+
+이 단언을 추가하며 별도의 mock 충돌도 드러났다. 넓은 `/api/notifications` 정규식이 `/api/notifications/unread-count`까지 매칭하는데, Playwright가 나중에 등록한 route를 먼저 검사해 넓은 mock이 미읽음 응답을 가로채고 있었다. 구체적인 `unread-count` mock을 마지막에 등록해 우선순위를 바로잡고, 이전에는 이름과 달리 종 아이콘만 검사하던 첫 테스트가 실제 `3` 뱃지를 검증하게 했다.
+
+**검증.** `notifications.spec.ts` 4건 단일 실행 통과 후 `--repeat-each=10 --retries=0`으로 **40/40 통과**했다. 알림 composable·결재선 접근성·편성요청서 이관 페이지 선별 단위 테스트도 **26/26 통과**했다. FE-48에 함께 기록된 이관 페이지 케이스는 FE-58에서 파일 단위 60초 한도를 적용한 현재 상태로 통과했다(해당 케이스 약 8.0초). 전체 `npm test`도 **337개 파일·3,835건 전부 통과**했다.
+
+### ✅ 2026-08-23 V20260823_004 — 공통첨부파일 CHAR semantics 재적용 + 비대칭 마무리
+
+`V20260823_001~003`을 로컬에 적용한 뒤 후속으로 확인하다 **`V20260820_011`이 남아 있지 않다는 것**을 발견해 재적용했다.
+
+**발견.** `V20260820_011__WidenCommonFileNameAndPathToCharSemantics`는 이력에 `success=1`인데 `TPRMPP_CFILEM.FL_NM`·`APG_FL_PTH`가 **여전히 BYTE**였다. 그 스크립트는 전환 실패 시 `ORA-20004`로 중단하는 검증 블록까지 갖고 있었으므로 적용 당시엔 성공했고 **그 뒤에 되돌아간 것**으로 본다. 가장 그럴듯한 경로는 `ITPOWN_DDL_live.sql`을 쓰는 부트스트랩 재생성(`tools/apply-ddl-live.ps1`)이나 덤프 복원이다 — 그 스냅샷은 두 컬럼을 BYTE로 담고 있고, Flyway 이력 테이블도 같은 스키마에 있어 함께 복원되면 "적용됨"으로 남는다.
+
+**감사 방법을 바꿨다.** `V20260823_002`가 2건을 놓친 원인이 스냅샷을 출처로 삼은 것이었으므로, 이번에는 `ALL_TAB_COLUMNS` + **실데이터**로 확인했다. BYTE 컬럼 200개를 전부 훑어 `LENGTHB(col) <> LENGTH(col)`인 행을 세니 **비ASCII를 실제로 담은 컬럼은 딱 둘**이었다.
+
+| 컬럼 | 비ASCII 행 | 최대 바이트 / 한도 |
+| --- | ---: | --- |
+| `TPRMPP_CFILEM.APG_FL_PTH` | 294 | **254 / 255** — 1바이트 남음 |
+| `TPRMPP_CFILEM.FL_NM` | 296 | 93 / 100 |
+
+**즉 지금 실재하는 결함이었다.** 값이 전부 한글 부서명·사업명 폴더라 조금만 긴 편성요청서를 올리면 `ORA-12899`로 업로드가 실패한다. 이 발견이 `_004`의 주된 이유이고, 비대칭 3건 마무리는 부수적이다.
+
+**대상 5건.** `CFILEM.FL_NM(100)`·`APG_FL_PTH(255)` 재적용, 그리고 `V20260823_002`가 놓친 마스터↔로그 비대칭 `CAPPLM.APF_DCM_NO(64)`·`CCODEM.CO_C_ID_NM(100)`과 형제 일관성 `CORGNI.PRLM_OGZ_C_CONE(100)`. `CAPPLA.FNT_TB_NM`은 주석이 '…명'으로 끝나지만 값이 테이블 이름(ASCII)이고 로그 짝도 없어 제외했다.
+
+**적용·검증(로컬).** 별도 포트(28099)로 백엔드를 띄워 Flyway가 적용하게 하고 즉시 내렸다 — 28080의 기존 인스턴스는 건드리지 않았다. `20260823.004` `success=1`(269ms). 확인 결과: 대상 5개 모두 `CHAR_USED='C'`, **마스터↔로그 비대칭 잔존 0건**, BYTE varchar 컬럼 200 → 195, 여유가 `FL_NM` 54자·`APG_FL_PTH` 124자로 돌아왔다. 검증 블록에는 목록 재확인에 더해 **마스터↔로그 비대칭 전수 0건**을 넣어, 이번 목록 밖에서 새로 생겨도 걸리게 했다.
+
+**dev/prod 적용은 DBA 몫이다.** 운영에도 `V20260820_011`이 되돌아가 있을 수 있으므로, 적용 전 `ALL_TAB_COLUMNS`에서 두 컬럼의 `CHAR_USED`를 먼저 확인한다.
+
+### ✅ 2026-08-23 FE-54 가상 스크롤 도입 · MIG-01 프로젝트상태 코드 체계 개편
+
+**사용자 결정(2026-08-23)**: FE-54는 선택지 A(도입), MIG-01은 프로젝트 단계를 신설하는 코드 체계 개편으로 진행한다.
+
+#### FE-54 — `WasLogTable` 가상 스크롤 (설계 §6.1)
+
+등재된 블로커("펼침 행의 가변 높이가 고정 `itemSize`와 충돌")는 **실재하지 않았다.** 모든 행이 `white-space: nowrap` 한 줄이고 예외 스택은 이 목록이 아니라 형제 컴포넌트 `WasLogDetailPanel`이 그린다(설계 §6.1·§6.3도 "펼침 **아이콘**"이라고만 적고 있다). 고정 `itemSize` 전제가 그대로 성립해 `VirtualScroller`를 그대로 넣었다.
+
+실제 비용은 다른 곳이었다 — **스크롤 컨테이너 소유권 이동**이다. 종전에는 페이지의 `.was-logs-page__scroll` div가 스크롤을 소유하고 거기에 §6.2의 자동 일시정지·하단 고정이 걸려 있었다. 이제 스크롤은 `VirtualScroller`의 viewport가 소유하므로 배선을 다음처럼 옮겼다.
+
+| 종전 | 현재 |
+| --- | --- |
+| 페이지가 `scrollArea` DOM ref로 `scrollHeight`·`scrollTop`·`clientHeight`를 직접 읽음 | `WasLogTable`이 `scroll` 이벤트를 올려보내고 페이지는 `event.target`에서 읽음 |
+| 페이지가 `el.scrollTop = el.scrollHeight`로 하단 고정 | `WasLogTable`이 노출한 `scrollToBottom()` 호출 (`scrollToIndex(마지막, 'auto')`) |
+| `.was-logs-page__scroll { overflow: auto }` | `overflow: hidden` — 크기·테두리만 담당 |
+
+임계값 24px, 자동 일시정지와 수동 일시정지 구분은 그대로다. 페이지가 DOM을 직접 만지지 않게 해서 스크롤 구현이 또 바뀌어도 배선이 깨지지 않는다.
+
+**회귀 방지.** `WasLogTable.test.ts`에 스크롤 소유권 계약 5건을 새로 고정했다 — `scroll` 재발행, `scrollToBottom`이 마지막 인덱스로 이동, 빈 목록에서 무해, 빈 목록이면 스크롤러 대신 안내 문구, 그리고 **`itemSize`와 CSS 행 높이가 같은 값(28px)인지**를 소스에서 대조한다(둘이 어긋나면 스크롤 위치가 밀리는데 화면에서만 드러난다). `wasLogsPageWiring.test.ts`의 스크롤 6건은 관측 지점을 DOM에서 계약으로 바꿔 다시 썼다 — 하단 고정을 `scrollToBottom()` 호출 횟수로 센다. 그 과정에서 **테스트가 페이지를 한 번도 unmount하지 않아** 모듈 전역 `feed`의 변경에 앞 테스트의 watch가 함께 반응하던 것을 발견해 `afterEach` 정리를 추가했다.
+
+**남은 확인.** 이 화면은 `admin` 미들웨어가 걸려 있고 E2E 인증이 수동 로그인을 요구해(FE-47·48) **실제 브라우저 렌더는 확인하지 못했다.** 행 높이(28px)와 태그 축소가 실제로 맞아떨어지는지는 화면에서 한 번 봐야 한다.
+
+#### MIG-01 — 프로젝트상태(`IT_PTL_STS_TC`) 코드 체계 개편
+
+8번대를 신설 '프로젝트' 단계에 배정하고 기존 8·9번대를 9번대 안으로 밀었다.
+
+| 신코드 | 구코드 | 코드명 | 진행률 | 순번 |
+| --- | --- | --- | ---: | ---: |
+| 81 | — | 프로젝트 착수 | 10 | 23 |
+| 85 | — | 프로젝트 진행 | 50 | 24 |
+| 89 | — | 프로젝트 완료 | 100 | 25 |
+| 91 | 81 | 대금지급 요청 작성중 | 10 | 26 |
+| 93 | 85 | 대금지급 진행중 | 50 | 27 |
+| 95 | 89 | 대금지급 완료 | 100 | 28 |
+| 98 | 91 | 성과평가 작성중 | 10 | 29 |
+| 99 | 99 | 성과평가 완료 | 100 | 30 |
+
+**마이그레이션** `V20260823_003__ReorganizeProjectStatusCodesForProjectStage.sql`. 이동 대상이 서로의 목적지를 쓰고 있어(81의 목적지 91은 성과평가가 쓰던 값) **뒤에서부터** 옮긴다 — 91→98, 89→95, 85→93, 81→91. 순서를 바꾸면 한 코드가 두 번 옮겨져 성과평가가 대금지급으로 둔갑한다. `IT_PTL_STS_TC` 값을 담는 컬럼 전부(BPROJA·BPROJM/L의 대표상태·BPAYMM/L·BCONTM/L·BDELIM/L·BESTIM/L)와 **번역 키**(`13:IT_PTL_STS_TC2:{코드}8:20260101`에 코드가 박혀 있다)를 같은 순서로 옮긴다. 코드 81의 이름이 아직 '대금지급 요청 작성중'일 때만 실행하는 가드를 둬 재실행 안전하다 — 가드가 없으면 재실행 시 새 대금지급 91을 다시 98로 밀어 버린다. 끝에 8개 코드의 이름·순번과 `BPAYMM`의 구 코드 잔존 0건을 확인하고 어긋나면 `ORA-20006`으로 실패한다.
+
+**백엔드.** `PaymentService`의 `STS_DRAFT`·`STS_IN_PROGRESS`·`STS_DONE`을 81/85/89 → 91/93/95로 옮겼다. 다른 단계 서비스(`ContractService` 71/75/79, `DeliberationService` 61/65/69, `BizplanService` 21/29)는 영향이 없다. `CouncilService.STS_COUNCIL_SKIPPED = "99"`는 협의회 코드군(`IT_PTL_ASCT_PRG_STS_TC`)이라 무관하다.
+
+**프론트엔드 — 개편이 깨뜨린 규칙 셋을 함께 고쳤다.**
+
+1. **"끝자리 9 = 단계 완료"** — 대금지급 완료가 `95`, 성과평가 작성중이 `98`이 되어 깨졌다. `getStageProgress`가 `codes.at(-1)`(단계 정의의 마지막 코드)을 완료코드로 쓰도록 바꿨다. `stageCompletionCode`로 노출해 대시보드도 같은 출처를 쓴다.
+2. **"코드 앞자리 = 단계"** — 9번대에 대금지급(91·93·95)과 성과평가(98·99)가 함께 들어와 깨졌다. `IT_PTL_STS_PHASE_TAG_CLASS`(앞자리 → 색) 를 `IT_PTL_STS_STAGE_TAG_CLASS`(단계 순서 → 색)로 바꾸고 `getProjectStatusBandIndex`로 단계를 찾는다. 프로젝트 단계 색은 `kdb-tag-emerald`다.
+3. **`bandOf`의 앞자리 매칭** — 같은 이유로 `98`·`99`가 대금지급으로 잡히고 있었다(배열에서 대금지급이 먼저다). **정확히 일치하는 단계를 먼저 찾고** 없을 때만 앞자리로 폴백하게 바꿨다. 앞자리 폴백은 공통코드에 없는 중간 상태코드(예: 예산편성 결재 상신 `02`)를 위해 남겼다.
+
+그 밖에 `IT_PTL_STS_TIMELINE`에 '프로젝트' 단계를 추가하고(i18n 키 `project.form.progress.stages.project`, ko/en 추가) 대금지급·성과평가의 `codes`를 옮겼다. 단계가 10개 → 11개가 되어 `buildStageOrders`의 연번도 1~11(경상사업 1~7)로 늘었다. 새 라벨 '프로젝트'는 기존 단계 라벨과 같은 사유로 `user-facing-copy-allowlist.json`에 등재했다(화면 표시가 아니라 로직이 비교하는 값이며 표시는 `labelKey`로 한다).
+
+**⚠️ 배포 순서 제약.** 백엔드가 이제 대금지급을 91/93/95로 쓰므로 **`V20260823_003`이 적용되지 않은 DB에 새 코드를 배포하면 기존 대금지급 원장(81/85/89)을 찾지 못한다.** 마이그레이션과 애플리케이션을 같은 배포 단위로 묶어야 한다. 로컬 실측 기준 영향 데이터는 0건이었다(BPAYMM·BCONTM·BDELIM은 비어 있고 BPROJA는 `01`만, `BPROJM.IT_PTL_RPR_STS_TC`의 `99`는 불변) — 운영은 DBA가 적용 전 같은 조회로 확인한다.
+
+**검증.** 백엔드 `./gradlew check` BUILD SUCCESSFUL. 프론트 `npm run format:check`·`npm run check`·`npm test` **337개 파일 3,832건 전부 통과**.
+
+**로컬 적용 완료(2026-08-23).** `V20260823_001`·`_002`·`_003`이 모두 `success=1`로 적용됐다 — 로컬 백엔드가 devtools로 재기동되며 Flyway가 실행했다(각 2,959ms·14,824ms·1,031ms). 적용 후 확인한 것: `max_string_size=EXTENDED`, 1군 대표 컬럼(`BCOSTM.CTT_OPP_NM`·`CBLBCM.NAC_CONE`·`CUSERI.USR_NM`)과 2군 대표(`BCOSTM.TMN_YN`) 모두 `CHAR_USED='C'`, 코드 8건이 이름·진행률·순번(23~30)대로, 영문 번역 8건이 새 키로 이동(`818→Project Kickoff` … `958→Payment Complete`), `BPAYMM`의 구 코드(81/85/89) 잔존 0건, `BPROJM.IT_PTL_RPR_STS_TC`의 `99`는 불변, `V20260823_001`의 비ASCII 미채움 행 0건. **dev/prod 적용은 여전히 DBA 몫이다.**
+
+### ☑️ 2026-08-23 BE-72 감내 판정 — `MAXVALUE 9999` 시퀀스 `CYCLE`
+
+**결정: 조치하지 않는다(감내).** 발동 조건이 실제 업무량으로 도달할 수 없고, 되돌리는 방향(`NOCYCLE`)이 오히려 더 나쁘다.
+
+**등재된 분석이 두 군데 틀렸다. 이 정정이 감내 판단의 근거다.**
+
+| 등재 내용 | 실제 |
+| --- | --- |
+| 상한 도달 = **누적 9,999건** | **한 해에 같은 시퀀스를 10,000번 채번**해야 한다. 관리번호가 `{연도}-{seq:04d}`이고 시퀀스는 연도와 무관한 전역 순번이라, 같은 값이 다시 나오려면 9,999회 채번이 지나야 하고 그것이 같은 연도 안에서 일어나야 한다 |
+| 충돌하면 **PK 위반** | **예외가 나지 않는다.** `Bcostm`·`Bprojm`의 PK는 `(관리번호, 일련번호)` 복합키이고 일련번호는 *버전*이다(`LST_YN='Y'`가 현재 유효 버전). `CostService.createCost`가 `getNextSnoValue(costBgNo)`로 기존 원장의 max+1을 받아 `lstYn("Y")`로 저장하고 이전 버전을 `'N'`으로 내리지 않으므로, 충돌 시 ① 무관한 남의 원장에 새 버전으로 조용히 붙고 ② 같은 관리번호에 `LST_YN='Y'`가 둘 생겨 "Y는 하나"라는 불변식이 깨진다. 오류로 드러나지 않는 데이터 오염이라 등재 내용보다 심각한 양상이다 |
+
+**실측(로컬, 개발 기간 누적).** `ALL_SEQUENCES` 기준 `CYCLE` 시퀀스 14개의 소모량이다.
+
+| 시퀀스 | `LAST_NUMBER` | 상한(9,999) 대비 |
+| --- | ---: | ---: |
+| `SQ_TPRMPP_BCOSTM_1` | 1,073 | 10.7% |
+| `SQ_TPRMPP_BITEMM_1` | 689 | 6.9% |
+| `SQ_TPRMPP_BPROJM_1` | 499 | 5.0% |
+| `SQ_TPRMPP_BBUGTM_1` | 472 | 4.7% |
+| 나머지 10개 | 21 ~ 471 | ≤ 4.7% |
+
+**이 수치는 실제 업무량보다 크게 부풀려져 있다.** 가장 빠른 `BCOSTM`이 1,073을 소모했는데 `TPRMPP_BCOSTM`의 실제 행은 **120건**(고유 `BG_NO`도 120건)이다. 차이 953은 삭제된 테스트 데이터·롤백된 트랜잭션·`CACHE 20`이 devtools 재기동마다 버리는 값이다. 운영은 재기동이 드물고 삭제가 soft delete라 이 낭비가 훨씬 적다. 즉 연 10,000건에 닿으려면 실제 업무량이 **80배 이상** 늘어야 한다.
+
+착수 전 세웠던 "자식 행 채번이라 빨리 탄다"는 가설(단말 `TER-`, 품목 `GCL-`)은 사실이 아니었다 — `SQ_TPRMPP_BTERMM_1`은 21, `SQ_TPRMPP_BITEMM_1`은 689다. 품목 채번은 신규 품목에만 일어나고 기존 품목은 `getGclMngNo()`를 재사용한다(`ProjectItemSynchronizer`).
+
+**`NOCYCLE`로 되돌리지 말 것.** 되돌리면 **누적 9,999건에서 시스템이 영구 정지**한다(`ORA-08004`, 해당 원장 생성 자체가 막힘). 현재의 `CYCLE`은 그 대안보다 명백히 낫다 — 하드 정지를 "연 10,000건에서만 발생하는 도달 불가 조건"으로 바꾼 것이다. 운영 DDL도 이미 `CYCLE`이다. 이 판단 근거가 없으면 다음 리뷰가 "`CYCLE`이 위험하다"는 표면만 보고 되돌릴 수 있어 여기에 남긴다.
+
+**재개 조건.** 어느 원장이든 **연간 생성이 수천 건대에 진입**하면 다시 본다. 그때의 선택지는 `CYCLE` 해제가 아니라 ① 자릿수 확대(`%05d` — 단 `BG_NO`가 `VARCHAR2(15)`라 `COST-2026-00001`이 정확히 15자로 여유가 없다) ② 연도별 리셋 ③ 채번 후 존재 확인·재시도다.
+
+**함께 관찰했으나 채택하지 않은 것.** `LST_YN='Y'`가 관리번호당 하나라는 불변식을 **DB가 강제하지 않는다** — 유니크 인덱스는 PK 두 개(`PK_BCOSTM_BG_NO_BG_SNO`, `PK_BPROJM`)뿐이다. 현재 데이터는 깨끗하다(중복 활성 버전 `BCOSTM` 0건·`BPROJM` 0건). 시퀀스 순환은 이 불변식을 깨는 여러 경로 중 가장 비현실적인 하나일 뿐이고 버전 승격 로직 결함이 훨씬 그럴듯한 경로이므로, BE-72의 근거로 삼지 않고 항목화도 하지 않는다. 필요해지면 별도 과제로 다룬다.
+
 ### ✅ 2026-08-23 잔여과제 저비용 배치 4 — FE-56·FE-58
 
 앞선 세 배치에서 **"백엔드를 기동할 수 없어 `api.d.ts`를 재생성하지 못한다"는 이유로 두 번 미뤘던 FE-56을 이번에 끝냈다.** `DB_PASSWORD`가 환경변수에 이미 있었고, 로컬 백엔드가 28080에서 이미 떠 있어 그 인스턴스의 `/v3/api-docs`로 타입을 재생성할 수 있었다.
@@ -42,7 +207,7 @@
 | ID | 조치 | 파일 |
 | --- | --- | --- |
 | BE-65 | `V20260823_002__AlignByteSemanticColumnsToCharSemantics.sql`를 추가했다. **전수 감사부터 했다** — `ITPOWN_DDL_live.sql`을 파싱해 VARCHAR2 컬럼 1,089개(BYTE 284 / CHAR 805)를 뽑고, 백엔드 엔티티의 `@Table`·`@Column`과 대조해 **엔티티에 매핑된 BYTE 컬럼 103개**를 확정했다. 103개 모두 엔티티 `length`가 DDL 길이와 같아 **글자 수를 전제**하고 있었다. 그중 한글이 실제로 들어가는 **46개**(1군)를 CHAR로 바꾼다 — BE-65가 지목한 후보(`BCOSTM/BCOSTL.CTT_OPP_NM`, `BTERMM/BTERML.RMK`, `CFILEM.FL_PYS_NM`·`FL_KPN_PTH`, `CMENUM/CMENUL.IMK_NM`) 8개에 더해, 같은 결함이지만 후보 목록에 없던 자리들을 찾았다. **가장 큰 것은 `CBLBCM/CBLBCL.NAC_CONE`(게시물 본문)** — `BoardPostDto`가 `@Size(max = 4000)`을 **글자 수**로 검증하는데 컬럼은 4000 BYTE라 한글 1,334자부터 `ORA-12899`가 난다. `CUSERI.USR_NM`·`CORGNI.BBR_NM`·`CCODEM.CO_CDVA_NM`·`CDECIM.DCR_OPNN_CONE`·`CINFMM.TTL`·`BPLANM/BPLANL`의 예산 비고 4종도 같은 성격이다. | `it_database/migrations/V20260823_002__AlignByteSemanticColumnsToCharSemantics.sql`(신규) |
-| BE-73 ② | 같은 스크립트의 **2군 54개**로 처리했다(BE-65에 합쳐 두었던 항목). 마스터↔로그 짝을 전수 대조해 semantics가 갈린 62쌍을 찾았고, 1군에서 이미 처리되는 8개를 뺀 54개를 정렬한다. 방향은 **마스터를 로그에 맞춘다** — 2026-08-20 재구축이 로그 쪽만 CHAR로 만들어 생긴 비대칭이라 로그가 기준이다(`BTERML.IT_PTL_TMN_SVC_TC` 하나만 반대라 로그 쪽을 고친다). 길이 문제는 없고 비대칭 해소가 목적이다. | 위와 같음 |
+| BE-73 ② | 같은 스크립트의 **2군 54개**로 처리했다(BE-65에 합쳐 두었던 항목). 마스터↔로그 짝을 전수 대조해 semantics가 갈린 62쌍을 찾았고, 1군에서 이미 처리되는 8개를 뺀 54개를 정렬한다. 방향은 **마스터를 로그에 맞춘다** — 2026-08-20 재구축이 로그 쪽만 CHAR로 만들어 생긴 비대칭이라 로그가 기준이다(`BTERML.IT_PTL_TMN_SVC_TC` 하나만 반대라 로그 쪽을 고친다). 길이 문제는 없고 비대칭 해소가 목적이다. **2026-08-23 로컬 적용 후 실측: 2건이 빠졌다.** `TPRMPP_CAPPLM.APF_DCM_NO`(마스터 BYTE/64 vs 로그 CHAR/64)와 `TPRMPP_CCODEM.CO_C_ID_NM`(BYTE/100 vs CHAR/100)이 남았다. 원인은 감사 출처가 `ITPOWN_DDL_live.sql` **스냅샷**이었다는 것이다 — 실제 DB보다 낡아 두 컬럼의 semantics를 다르게 담고 있어 짝 비교에서 걸러지지 않았다. 둘 다 ASCII만 담아(신청서문서번호·공통코드ID명) 기능 영향은 없으나 위 "54개"는 **실제로 52개**다. 같은 감사를 다시 할 때는 스냅샷이 아니라 `ALL_TAB_COLUMNS`를 출처로 삼는다. | 위와 같음 |
 | CQ-32 ③ | **실측 결과 "통합하지 않는다"로 결정하고, 대신 basename 헬퍼만 합쳤다.** 두 트리 빌더는 겉모습만 닮았고 계약이 다르다 — 노드 필드(`SourceTreeFolder{id,name,folders,files}` vs `RequestFormAnalysisFolder{id,path,name,depth,childFolders,files,descendantFileCount,descendantBlockerCount}`), 파일 payload(서버 `FileRecord` vs 진단이 붙은 클라이언트 파일), 정렬 규칙(형식 순위 우선 vs 이름만), 루트 구성(단일 루트 vs 부서별 루트)이 모두 다르다. 공통분모는 "경로 세그먼트를 따라 폴더를 찾거나 만드는" 12줄뿐이라, 이를 뽑으려면 노드 타입·자식 접근자·생성자를 제네릭 인자로 받는 헬퍼가 필요하고 그 배관이 없애는 중복보다 길다. 반면 basename 헬퍼 2벌은 실익이 분명해 합쳤다 — `requestFormSourceTree`의 `safeBasename`을 export하고, 가드가 없던 `requestFormAnalysisFiles.basenameOf`를 삭제해 그쪽도 제어문자·`.`·`..`를 `'file'`로 중화하는 같은 판정을 쓰게 했다(`normalizeSafeRelativePath`가 이미 내부적으로 `safeBasename`을 fallback으로 쓰고 있어 동작은 그대로다). | `app/utils/requestFormSourceTree.ts`, `app/utils/requestFormAnalysisFiles.ts` |
 
 **마이그레이션 설계.** 100개 컬럼을 `ALTER` 문 100줄로 늘어놓는 대신, `'테이블\|컬럼\|길이'` 문자열 컬렉션을 도는 PL/SQL 블록 하나로 썼다. 이유가 두 가지다. ① **재실행 안전** — 컬럼이 없거나 이미 CHAR면 건너뛰므로, `ITPOWN_DDL_live.sql` 스냅샷이 최신이 아니어도(실제로 `V20260820_011`이 바꾼 `FL_NM`이 스냅샷에는 BYTE로 남아 있다) 안전하다. ② **목록과 검증이 갈라지지 않는다** — 전환 뒤 같은 목록을 되짚어 `CHAR_USED <> 'C'`가 하나라도 남으면 `ORA-20005`로 실패시킨다. 레코드 타입에는 생성자가 없어 컬렉션 리터럴을 못 만들므로, 스키마에 OBJECT 타입을 새로 만들지 않으려고 파이프 구분 문자열을 쓴다.
