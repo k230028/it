@@ -16,6 +16,98 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-23 잔여과제 저비용 배치 4 — FE-56·FE-58
+
+앞선 세 배치에서 **"백엔드를 기동할 수 없어 `api.d.ts`를 재생성하지 못한다"는 이유로 두 번 미뤘던 FE-56을 이번에 끝냈다.** `DB_PASSWORD`가 환경변수에 이미 있었고, 로컬 백엔드가 28080에서 이미 떠 있어 그 인스턴스의 `/v3/api-docs`로 타입을 재생성할 수 있었다.
+
+| ID | 조치 | 파일 |
+| --- | --- | --- |
+| FE-56 | **백엔드 계약 → 타입 재생성 → 프론트 판정 전환**을 한 번에 마쳤다. ① 백엔드 `ApplicationInfoDto`·`CostDto.Response`·`ProjectDto.Response`에 `apfStsC`를 추가하고, 라벨을 세팅하던 어셈블러 4곳(`CostQueryAssembler` 2·`ProjectQueryAssembler`·`ProjectBatchAssembler`)에서 코드 원본을 함께 세팅한다. ② `npm run codegen`으로 `app/types/api.d.ts`를 재생성했다 — **추가 9줄이 전부**라 미반영 드리프트가 없었음도 함께 확인했고 `npm run codegen:check`도 통과했다. ③ `useApprovalLock`을 `APPROVAL_COMPLETED_LABEL = '결재완료'` 비교에서 `APPROVAL_COMPLETED_CODE = '02'` 비교로 바꾸고 호출부 5곳(`TerminalFormDialog`·`useCostEditingState`·`info/cost/[id]`·`info/cost/terminal/[id]`·`info/projects/[id]`)이 `apfStsC`를 넘기게 했다. | `it_backend`: `common/approval/dto/ApplicationInfoDto.java`, `domain/budget/cost/dto/CostDto.java`, `domain/budget/project/dto/ProjectDto.java`, `domain/budget/cost/service/CostQueryAssembler.java`, `domain/budget/project/service/{ProjectQueryAssembler,ProjectBatchAssembler}.java` · `it_frontend`: `app/types/api.d.ts`, `app/composables/useApprovalLock.ts`, 호출부 5곳 |
+| FE-58 | 부하 민감 테스트 2건에 파일 단위 `vi.setConfig({ testTimeout: 60_000 })`를 줬다(조치 후보 ①). `requestFormMigrationPageBoundary`는 페이지를 12번 실제 마운트하는데 **무거운 자식은 이미 전부 stub**이라 ②(추가 stub)로 줄일 여지가 없고, ③(워커 하향)은 `vitest.config.ts`가 이미 MIG-25 실측으로 `maxWorkers = cpus/2`를 걸어 둔 상태라 전체를 더 느리게 만든다. 같은 실행에서 걸렸던 `architecture/scripts-lint`(ESLint Node API로 `scripts/**` 전수 검사)도 같이 올렸다. | `tests/unit/pages/requestFormMigrationPageBoundary.test.ts`, `tests/unit/architecture/scripts-lint.test.ts` |
+
+**로컬 DB는 건드리지 않았다.** 코드젠을 위해 백엔드를 직접 띄우려 했으나 28080이 이미 사용 중이어서(사용자 인스턴스가 devtools로 재시작하며 새 DTO를 이미 반영하고 있었다) 그 인스턴스의 스펙을 그대로 썼다. 애초에 띄울 때도 `FLYWAY_ENABLED=false`로 시작해 **미적용 마이그레이션 2건(`V20260823_001`·`_002`)이 로컬 스키마에 적용되지 않게** 했다 — 두 스크립트는 여전히 적용 대기 상태다.
+
+**회귀 방지.** `useApprovalLock.test.ts`를 코드값 기준으로 바꾸고 **"표시 라벨(`'결재완료'`·`'Approved'`)을 넘기면 잠기지 않는다"** 는 단언을 추가했다 — 라벨 비교로 되돌아가면 이 테스트가 깨진다. 라벨만 세팅하던 픽스처 3곳(`useCostEditingState`·`useCostListPage`·`TerminalFormDialog` 테스트)에 `apfStsC`를 함께 넣었다.
+
+**계약 가드가 세 번 걸렸고 셋 다 정당했다.** ① `ApiResponseOpenApiContractTest`가 `CostDto.Response`의 `requiredProperties`와 `ApplicationInfoDto`의 nullable 예외 목록에 `apfStsC`가 빠진 것을 잡았다 — 응답 스키마의 필수·nullable 계약을 필드 추가와 함께 갱신하도록 강제하는 가드다. ② `MaxLinesRatchetTest`가 `ProjectDto.java`를 1,016 → 1,024줄로 키운 것을 막았다(정책상 기준값 상향은 해소 수단이 아니다). 새 필드의 여러 줄 JavaDoc과 바로 위 `apfSts`의 블록 주석을 각각 한 줄 요약으로 압축해 **정확히 1,016줄로 되돌렸고** 설명은 그대로 남겼다. ③ `requiredProperties` 변경이 스키마의 `required` 배열을 바꿔 `codegen:check`가 드리프트를 잡았고, 재생성해 `apfStsC?: string | null` → `apfStsC: string | null`로 맞췄다.
+
+**검증.** 백엔드 `./gradlew check`(test + spotlessCheck + Jacoco) **BUILD SUCCESSFUL**. 프론트 `npm run codegen:check` 드리프트 없음, `npm run format:check`·`npm run check` 통과, `npm test` **337개 파일 3,816건 전부 통과** — FE-58 대상이던 두 파일도 이번 전체 실행에서 통과했다.
+
+**남은 것.** 이번 회차 뒤 `TASK.md`의 활성 항목은 전부 **이 환경에서 끝낼 수 없는 것들**이다 — 🏛️ External 3건(BE-24·BE-58·BE-66), DB 접속·DBA 판단이 선행인 2건(BE-64와 그에 걸린 BE-71), 두 프로세스 실환경 검증(BE-57), 설계·업무 결정이 선행인 4건(FE-54·BE-72·MIG-01·BE-51), 조건부 1건(BE-52), 외부 규격 대기 1건(SEC-12), 해외점포 자료 대기 1건(MIG-12), 수동 로그인이 필요한 E2E 2건(FE-47·FE-48).
+
+### ✅ 2026-08-23 잔여과제 저비용 배치 3 — BE-65(BE-73 ② 포함)·CQ-32 ③
+
+남은 항목 중 코드·스크립트만으로 끝낼 수 있는 것을 마저 처리했다. 이번 회차는 **DDL 한 건과 프론트 정리 한 건**이다. 나머지 잔여는 DB 접속·DBA 판단·외부 규격에 걸려 있어 손대지 않았다(아래 「손대지 않은 것」).
+
+| ID | 조치 | 파일 |
+| --- | --- | --- |
+| BE-65 | `V20260823_002__AlignByteSemanticColumnsToCharSemantics.sql`를 추가했다. **전수 감사부터 했다** — `ITPOWN_DDL_live.sql`을 파싱해 VARCHAR2 컬럼 1,089개(BYTE 284 / CHAR 805)를 뽑고, 백엔드 엔티티의 `@Table`·`@Column`과 대조해 **엔티티에 매핑된 BYTE 컬럼 103개**를 확정했다. 103개 모두 엔티티 `length`가 DDL 길이와 같아 **글자 수를 전제**하고 있었다. 그중 한글이 실제로 들어가는 **46개**(1군)를 CHAR로 바꾼다 — BE-65가 지목한 후보(`BCOSTM/BCOSTL.CTT_OPP_NM`, `BTERMM/BTERML.RMK`, `CFILEM.FL_PYS_NM`·`FL_KPN_PTH`, `CMENUM/CMENUL.IMK_NM`) 8개에 더해, 같은 결함이지만 후보 목록에 없던 자리들을 찾았다. **가장 큰 것은 `CBLBCM/CBLBCL.NAC_CONE`(게시물 본문)** — `BoardPostDto`가 `@Size(max = 4000)`을 **글자 수**로 검증하는데 컬럼은 4000 BYTE라 한글 1,334자부터 `ORA-12899`가 난다. `CUSERI.USR_NM`·`CORGNI.BBR_NM`·`CCODEM.CO_CDVA_NM`·`CDECIM.DCR_OPNN_CONE`·`CINFMM.TTL`·`BPLANM/BPLANL`의 예산 비고 4종도 같은 성격이다. | `it_database/migrations/V20260823_002__AlignByteSemanticColumnsToCharSemantics.sql`(신규) |
+| BE-73 ② | 같은 스크립트의 **2군 54개**로 처리했다(BE-65에 합쳐 두었던 항목). 마스터↔로그 짝을 전수 대조해 semantics가 갈린 62쌍을 찾았고, 1군에서 이미 처리되는 8개를 뺀 54개를 정렬한다. 방향은 **마스터를 로그에 맞춘다** — 2026-08-20 재구축이 로그 쪽만 CHAR로 만들어 생긴 비대칭이라 로그가 기준이다(`BTERML.IT_PTL_TMN_SVC_TC` 하나만 반대라 로그 쪽을 고친다). 길이 문제는 없고 비대칭 해소가 목적이다. | 위와 같음 |
+| CQ-32 ③ | **실측 결과 "통합하지 않는다"로 결정하고, 대신 basename 헬퍼만 합쳤다.** 두 트리 빌더는 겉모습만 닮았고 계약이 다르다 — 노드 필드(`SourceTreeFolder{id,name,folders,files}` vs `RequestFormAnalysisFolder{id,path,name,depth,childFolders,files,descendantFileCount,descendantBlockerCount}`), 파일 payload(서버 `FileRecord` vs 진단이 붙은 클라이언트 파일), 정렬 규칙(형식 순위 우선 vs 이름만), 루트 구성(단일 루트 vs 부서별 루트)이 모두 다르다. 공통분모는 "경로 세그먼트를 따라 폴더를 찾거나 만드는" 12줄뿐이라, 이를 뽑으려면 노드 타입·자식 접근자·생성자를 제네릭 인자로 받는 헬퍼가 필요하고 그 배관이 없애는 중복보다 길다. 반면 basename 헬퍼 2벌은 실익이 분명해 합쳤다 — `requestFormSourceTree`의 `safeBasename`을 export하고, 가드가 없던 `requestFormAnalysisFiles.basenameOf`를 삭제해 그쪽도 제어문자·`.`·`..`를 `'file'`로 중화하는 같은 판정을 쓰게 했다(`normalizeSafeRelativePath`가 이미 내부적으로 `safeBasename`을 fallback으로 쓰고 있어 동작은 그대로다). | `app/utils/requestFormSourceTree.ts`, `app/utils/requestFormAnalysisFiles.ts` |
+
+**마이그레이션 설계.** 100개 컬럼을 `ALTER` 문 100줄로 늘어놓는 대신, `'테이블\|컬럼\|길이'` 문자열 컬렉션을 도는 PL/SQL 블록 하나로 썼다. 이유가 두 가지다. ① **재실행 안전** — 컬럼이 없거나 이미 CHAR면 건너뛰므로, `ITPOWN_DDL_live.sql` 스냅샷이 최신이 아니어도(실제로 `V20260820_011`이 바꾼 `FL_NM`이 스냅샷에는 BYTE로 남아 있다) 안전하다. ② **목록과 검증이 갈라지지 않는다** — 전환 뒤 같은 목록을 되짚어 `CHAR_USED <> 'C'`가 하나라도 남으면 `ORA-20005`로 실패시킨다. 레코드 타입에는 생성자가 없어 컬렉션 리터럴을 못 만들므로, 스키마에 OBJECT 타입을 새로 만들지 않으려고 파이프 구분 문자열을 쓴다.
+
+**안전성 근거.** ① 확장 방향이라 기존 값은 반드시 들어간다. ② `MAX_STRING_SIZE`가 이미 EXTENDED다(스키마에 `VARCHAR2(6000 CHAR)` 컬럼이 있다) — 4000자 컬럼도 CHAR로 선언할 수 있고, STANDARD였다면 `ORA-00910`으로 막혔을 자리다. ③ 대상 중 인덱스에 걸린 컬럼은 3개뿐이고 전환 후 최대 키가 모두 1KB 미만이라 키 길이 한도에 닿지 않는다. 적용·검증·실패 대응은 [`it_database/docs/operations/2026-08-23-char-semantics-alignment-handover.md`](it_database/docs/operations/2026-08-23-char-semantics-alignment-handover.md)에 인계 노트로 남겼다.
+
+**회귀 방지.** `safeBasename`이 export되어 공개 계약이 됐으므로 `requestFormSourceTree.test.ts`에 경로 분리·중화(`.`·`..`·공백·제어문자)·멱등성 3건을 고정했다.
+
+**손대지 않은 것.** 표에 남은 항목은 이번 회차의 수단으로 끝낼 수 없다.
+
+- **BE-64**(옵티마이저 통계)·**BE-71**(`CBLBCM` 인덱스) — BE-64는 dev/prod 통계 상태 확인이 선행이고 로컬 수집도 DB 접속이 필요하다. BE-71은 항목 자체가 "실행계획 판단이 유효하려면 BE-64를 먼저 확인"이라고 못박고 있다.
+- **FE-56**(`useApprovalLock` 코드값 판정) — `apfStsC`가 `ApplicationResponse`에만 있고 호출부 5곳이 쓰는 `ApplicationInfo`·`CostBulkResponse`·`ProjectResponse`에는 없다. 백엔드 DTO 3곳을 고친 뒤 **백엔드를 기동해 `npm run codegen`으로 `api.d.ts`를 재생성**해야 하는데(프론트 CLAUDE §2), 기동에 필요한 DB 비밀값이 없어 재생성을 할 수 없다. DTO만 고치고 타입을 안 맞추면 그 규칙을 어기는 중간 상태가 되므로 손대지 않았다.
+- **BE-72**(`MAXVALUE 9999` + `CYCLE`) — 항목 자체가 "운영 DDL도 이미 CYCLE이라 즉시 되돌릴 사안은 아니며 … 검토 과제로 둔다"고 적고 있다. 채번 시 존재 확인 재시도든 연도별 리셋이든 채번 설계 결정이 선행이다.
+- **FE-54**(가상 스크롤) — 펼침 행의 가변 높이를 고정 `itemSize` 전제와 어떻게 맞출지가 설계 결정이다.
+- **BE-52**(1+M 조회) — 항목이 "다부모로 부르는 화면이 생기면 그때" 다루라고 조건을 달아 두었다.
+- **SEC-12**(FIDO 거부 상태) — 연동 규격에 거부 상태값이 정의되면 그때 분기한다.
+- **FE-47·FE-48** — 이 환경에서는 `auth.setup.ts`가 수동 로그인(`headless:false`)을 요구해 E2E를 돌릴 수 없다.
+
+**검증.** 프론트 `npm run format:check`·`npm run check`(typecheck+lint+copy ratchet) 통과, `npm test` **3,815건 중 3,814건 통과**. 실패 1건은 `pages/requestFormMigrationPageBoundary.test.ts`의 20초 타임아웃으로 단독 실행에서는 3.1초에 통과한다 — 이번 변경(`safeBasename` 통합)이 건드린 화면이라 특히 확인했고, 부하 의존 flaky임을 확정해 **FE-58로 신규 등재**했다(2026-08-23 전체 실행 3회 중 2회 실패, 매번 단독 실행은 통과). 백엔드는 이번 회차에 코드 변경이 없어 배치 2의 `./gradlew check` 결과가 그대로 유효하다. 추가한 마이그레이션은 **아직 적용하지 않았다** — 로컬은 백엔드 기동 시 Flyway가, dev/prod는 DBA가 인계 노트의 절차대로 적용한다.
+
+### ✅ 2026-08-23 잔여과제 저비용 배치 2 — BE-67·BE-70·BE-73·FE-57 + BE-66·CQ-32 부분
+
+같은 날 첫 배치([아래 절](#-2026-08-23-잔여과제-저비용-배치--sec-17be-68be-69be-74cq-30cq-31cq-33))에 이어, 코드·문서만으로 끝낼 수 있는 항목을 한 번 더 처리했다. **BE-66·CQ-32는 남은 조각이 있어 표에 축소된 형태로 유지한다.**
+
+| ID | 조치 | 파일 |
+| --- | --- | --- |
+| BE-67 | 검증·권한 판정을 응답 헤더 확정 **이전**으로 옮겼다. 두 아카이브 서비스를 `prepareArchive(...)`(검증 → 권한 조회 → 선택 판정 → 엔트리명 확정 → `ArchivePlan` 반환)와 `writeArchive(plan, output)`(확정된 바이트 전송만)으로 갈랐고, `FileController`가 `prepareArchive`를 먼저 부른 뒤 그 결과로 `ResponseEntity`를 만든다. 이제 잘못된 요청·권한 밖 선택은 `200 OK` 커밋 전에 400으로 나가 공통 예외 응답 계약을 그대로 탄다. | `infra/file/service/BoardAttachmentArchiveService.java`, `domain/migration/request/service/RequestFormSourceArchiveService.java`, `infra/file/controller/FileController.java` |
+| BE-70 | `deleteExpiredBefore`에 `OR e.endDtm IS NULL`을 보강해 `TPRMPP_CMFATM`·`TPRMPP_CMFADM` 양쪽에서 END_DTM이 NULL인 행이 조회·정리 어디에도 걸리지 않고 영구 잔존하는 구간을 막았다. `fail`의 `e.failureCount + 1`은 `COALESCE(e.failureCount, 0) + 1`로 바꿔 `FLUR_NOT`이 NULL일 때 실패 잠금이 발화하지 않던 문제도 함께 닫았다. | `common/mfa/store/MfaTransactionJpaRepository.java`, `LoginPendingTransactionJpaRepository.java` |
+| BE-73 ① | 로그 엔티티 `@Column(length)`를 물리 DDL에 맞췄다 — `BprojmL` 14건(`ABUS_NM` 200→100, `USID`·`TLR_USID`·`DVM_USID`·`DVM_TLR_USID` 32→14, `SVN_DPM_C`·`DVM_DPM_C` 100→20, `DGOG_PPO_CONE`·`PLM_DES` 1000→4000, `ABUS_RNG_CONE` 1000→600, `ABUS_NCS_CONE`·`HRF_PLN_CONE` 1000→300, `ABUS_MNG_NO` 32→30, `PRLM_HRK_OGZ_C_CONE` 32→100), `BtermmL` 4건(`SVN_DPM_C` 3→20, `BG_NO` 32→15, `CGPR_ID` 32→14, `TMN_MNG_NO` 32→16), 그리고 `length` 자체가 빠져 JPA 기본값 255가 되던 날짜 문자열 3건(`BprojmL.FLF_FSG_DT`, `BtermmL.XCR_BSE_DT`, `BcostmL.FST_DFR_DT`·`XCR_BSE_DT`)에 8을 넣었다. **마스터 엔티티(`Bprojm`·`Btermm`·`Bcostm`)는 이미 DDL과 일치했으므로 로그 쪽이 유일한 이탈이었다** — 정렬 대상을 마스터가 아니라 DDL로 잡은 근거다. 대조는 DDL 파싱 스크립트로 전수 확인했고 남은 불일치 0건이다. | `domain/log/entity/{BprojmL,BtermmL,BcostmL}.java` |
+| BE-73 ③ | 백필 술어를 런타임 판정기에 맞춘 보정 마이그레이션 `V20260823_001__AlignPersonNameBackfillPredicate.sql`을 추가했다. `V20260822_002`는 `REGEXP_LIKE(v, '[^[:print:]]|[가-힣]')`로 판정해 한자·악센트 라틴 이름을 건너뛰었는데, `UserNameResolver`는 `[^\p{ASCII}]`로 본다. Oracle에는 `[:ascii:]` 클래스가 없어 `LENGTHB(TRIM(v)) <> LENGTH(TRIM(v))`로 같은 판정을 만들었다(이 DB는 AL32UTF8이라 비ASCII는 반드시 2바이트 이상). `IS NULL` 가드가 있어 재실행 안전하며 이미 채워진 행은 건드리지 않는다. **적용은 아직 하지 않았다** — 로컬은 백엔드 기동 시 Flyway가, dev/prod는 DBA가 적용한다. | `it_database/migrations/V20260823_001__AlignPersonNameBackfillPredicate.sql` |
+| BE-73 ② | **BE-65로 이관한다.** 마스터↔로그 BYTE/CHAR 시맨틱 비대칭은 현 저장값에서 무해하고, 손대려면 어차피 DDL이 필요하다. 같은 성격의 BE-65(운영 레이아웃 재구축이 남긴 BYTE 시맨틱 컬럼)와 한 번에 다루는 편이 맞다. | — |
+| FE-57 | 두 곳 모두 실패를 상태로 올렸다. ① `useInfoHomeFeed.loadBoardAttachments`가 `{ attachmentsByPost, failed }`를 돌려주고, 공지·일정 각각 `noticeAttachmentsFailed`·`scheduleAttachmentsFailed`를 노출한다. 본 목록은 그대로 두고(READY 유지) 그 위에 인라인 경고 + [첨부 다시 시도]를 띄운다 — 첨부가 있는 글이 **첨부 없음처럼** 보이던 것이 이제 구분된다. ② 경상예산 상세 조회 실패는 `ordinaryBudgetDetailError`로 올려 `InfoBudgetTimingCard`에 인라인 경고 + [다시 시도]를 붙였다(본 목록 재조회 없이 상세만 다시 부른다). 미등록의 `-`와 조회 실패의 `-`가 구분된다. | `app/composables/useInfoHomeFeed.ts`, `app/pages/info/index.vue`, `app/components/info/InfoBudgetTimingCard.vue`, `i18n/messages/info.ts` |
+| CQ-32 ① | 확장자→아이콘 매핑 SoT를 `app/utils/fileFormatPresentation.ts` 하나로 합쳤다. 두 벌이던 `utils/requestFormSourceTree.filePresentation()`과 `components/common/FileFormatIcon.presentationFromFileName()`이 모두 이 표를 쓴다. 어긋나 있던 두 지점을 정리했다 — csv를 excel로 보고(컴포넌트 쪽 규칙 채택), hwp/hwpx 색상 분리는 유지했다(반입 트리는 아이콘이 같아 배지·색으로 구분하고, 컴포넌트는 한글 문서에 전용 아이콘을 써서 색을 무시하므로 손실이 없다). 반입 트리도 이제 word·image·archive를 인식하며 정렬 순위는 종전과 같다(PDF 0 · 엑셀 1 · 나머지 2). | `app/utils/fileFormatPresentation.ts`(신규), `app/utils/requestFormSourceTree.ts`, `app/components/common/FileFormatIcon.vue` |
+| CQ-32 ② | `toBoardScheduleYmd`를 공통 `toLocalDateKey` 위임으로 바꿨다. 본문이 같았고 공통 쪽에 Invalid Date 가드가 있어 더 안전하다. | `app/utils/boardSchedule.ts` |
+| CQ-32 ④ | `useFiles`의 ZIP 다운로드 두 곳에 복제돼 있던 파일명 안전화를 `app/utils/downloadFileName.ts`의 `safeDownloadNamePart`로 뽑았다. | `app/utils/downloadFileName.ts`(신규), `app/composables/useFiles.ts` |
+| BE-66 ②③ | ② 개번 이력·증상·복구 절차를 `it_database/docs/operations/2026-08-23-migration-renumbering-recovery.md`에 기록했다. 세 대상 스크립트가 모두 멱등(`MERGE`·`INSERT … WHERE NOT EXISTS`·컬럼 존재 확인)임을 확인하고, 그 사실 위에 "중간 상태 이력 행만 삭제 → 재기동으로 새 번호 재적용" 절차를 세웠다. 개번 사슬은 git으로 재확인했다(`7ccebf2` → `ac71cd3` → `ba62fa5`, `e1d7828`). ③ 버전 예약 규칙(내용 채우기 전 빈 파일로 번호 선점, push된 번호는 개번 금지)을 `it_database/CLAUDE.md` §2와 `docs/guides/migrations.md`에 명문화했다. | `it_database/docs/operations/2026-08-23-migration-renumbering-recovery.md`(신규), `it_database/CLAUDE.md`, `it_database/docs/guides/migrations.md` |
+
+**회귀 방지.** BE-67은 `FileControllerTest`에 두 엔드포인트 각각 "대상 확정 실패 → `400` + `asyncNotStarted()` + `Content-Disposition` 없음 + `writeArchive` 미호출"을 고정하는 테스트를 추가했다. 기존 서비스 테스트 29건은 확정→전송을 이어 부르는 헬퍼로 감싸 시나리오를 그대로 유지했다. FE-57은 `useInfoHomeFeed.test.ts`에 첨부 일괄조회 실패/성공 두 경우의 플래그를 고정하는 테스트를 추가했고, CQ-32는 `fileFormatPresentation.test.ts`(반입 트리와 공통 표가 **같은 객체**를 돌려주는지 포함)와 `downloadFileName.test.ts`를 새로 두었다.
+
+**남긴 것.**
+
+- **BE-66 ①** — dev/prod 미적용 확인은 DBA 조회가 필요해 표에 🏛️ External로 남긴다. 조회 SQL과 판단 기준은 위 운영 문서 §1에 있다.
+- **CQ-32 ③** — 폴더 트리 빌더 2벌(`requestFormAnalysisFiles.ts`·`requestFormSourceTree.ts`)은 노드 타입과 집계 필드가 달라 통합 비용 실측이 필요하다. 표에 축소해 남긴다.
+- **BE-73 ③의 적용** — 스크립트만 추가했고 실제 적용은 기동·DBA 몫이다.
+
+**검증.** 백엔드 `./gradlew check`(test + spotlessCheck + Jacoco 커버리지 검증) **BUILD SUCCESSFUL**. 신규 Java 코드가 google-java-format을 어겨 첫 실행이 spotlessCheck에서 red였고 `spotlessApply` 후 통과했다. 프론트 `npm run format:check`·`npm run check`(typecheck+lint+copy ratchet) 통과, `npm test` **337개 파일 3,812건 전부 통과**(첫 배치에서 부하 타임아웃으로 실패했던 `scripts-lint`·`requestFormMigrationPageBoundary` 2건도 이번 실행에서는 통과했다).
+
+### ✅ 2026-08-23 잔여과제 저비용 배치 — SEC-17·BE-68·BE-69·BE-74·CQ-30·CQ-31·CQ-33
+
+2026-08-23 REVIEW·TEST 점검이 등재한 항목 중 **DDL 변경도 API 계약 재생성도 필요 없는 7건**을 한 배치로 처리했다.
+
+| ID | 조치 | 파일 |
+| --- | --- | --- |
+| SEC-17 | `SearchCondition.ignorePublicationPeriod`에 `@Setter(AccessLevel.NONE)`. 클래스 레벨 Lombok `@Setter`가 만들던 `setIgnorePublicationPeriod(boolean)`가 사라져 `@ModelAttribute` 바인딩 경로가 끊긴다. 서비스는 종전대로 무인자 `ignorePublicationPeriod()`로만 켠다. | `common/board/dto/BoardPostDto.java` |
+| BE-68 | `OnePassClient.request`의 `catch (Exception ignored)`를 `catch (Exception exception)` + cause 체이닝으로 바꾸고, null 응답 판정을 try 밖으로 분리해 자기 예외를 다시 감싸지 않게 했다. `MfaService`에 `@Slf4j`를 도입해 재포장 3지점(공급자 거부·challenge 시작 실패·검증 실패)에 `log.warn(..., exception)`을 남긴다. | `common/mfa/provider/OnePassClient.java`, `common/mfa/service/MfaService.java` |
+| BE-69 | 로그 엔티티 `BcostmL`·`BprojmL`에 `cncdRfrNo` 필드 추가. `AuditLogPersister.copyColumnFields`가 필드명 일치로 복사하므로 필드만 있으면 채워진다. 물리 컬럼은 `V20260820_008`·`_009`에 이미 있어 DDL 변경 없음. | `domain/log/entity/BcostmL.java`, `BprojmL.java` |
+| BE-74 | 조치 후보 ②를 택했다 — `RequestFormSourceFileArchiver`의 `private FileDto.UploadRequest.UploadRequestBuilder request(String)`를 없애고 `private FileDto.UploadRequest uploadRequest(String apfMngNo, String relativePath)`로 바꿔 시그니처에서 Lombok 생성 타입을 걷어냈다(`request(apfMngNo, null)`이 `request(String, ArchivePlanItem)`과 모호해져 이름을 분리). **그 뒤 첫 에러에 가려져 있던 javadoc 에러 3건이 더 드러나 함께 고쳤다** — 모두 같은 성격(javadoc이 Lombok 생성 게터·미import 타입을 못 봄)이다: `FileController:117`의 `@throws CustomGeneralException`을 같은 파일 다른 두 곳과 같은 FQN 표기로, `MigrationController:52`의 `{@link CustomUserDetails#getEno()}`와 `PlanService:319`의 `{@link PlanDto.SnapshotDto#getMigrationAdjustments()}`를 `{@link 타입}` + `{@code 메서드()}` 조합으로. 결과: `./gradlew javadoc` **BUILD SUCCESSFUL**(에러 0건, 경고 1,781건). | `domain/migration/request/service/RequestFormSourceFileArchiver.java`, `infra/file/controller/FileController.java`, `domain/migration/controller/MigrationController.java`, `domain/budget/plan/service/PlanService.java` |
+| CQ-30 | **✔️ Resolved — 등재 시점 이후 이미 해소돼 있었다.** 워킹트리가 clean인 상태에서 `./gradlew spotlessCheck --rerun-tasks`가 **BUILD SUCCESSFUL**이고, `spotlessApply`도 완주하며 **변경 파일 0건**이었다(`MenuPathPolicyTest` lint 중단 없음, 40건 위반 없음). 커밋 `8a1c9f1` 「품질 정비」가 처리한 것으로 보인다. 별도 조치 없이 종료한다. | — |
+| CQ-31 | ①~⑤ 전부 정리. ①`readDroppedEntries`(래퍼) 삭제 — 남는 `captureDroppedEntries`의 TSDoc으로 "drop 핸들러에서 동기적으로 호출해야 한다"는 경고를 옮겼고, 테스트는 지우는 대신 실제 소비 조합(`captureDroppedEntries`+`readDroppedEntryRoots`)을 부르도록 바꿔 순회·페이징·깊이 상한 커버리지를 지켰다. ②`monthFromYmd8`와 해당 describe 블록 삭제. ③`admin.requestForm.progress`·`dropActive` ko/en 4개 키 삭제. ④`FileKindRegistry.knownKinds()` 삭제. ⑤배너 PNG 3종 `git rm`. | `app/utils/directoryDrop.ts`, `app/utils/common.ts`, `i18n/messages/admin.ts`, `tests/unit/utils/{directoryDrop,common}.test.ts`, `app/assets/banner/*.png`, `infra/file/authz/FileKindRegistry.java` |
+| CQ-33 | `infoDashboardProgress.ts`에 파일 헤더 배너와 공개 함수 4개·인터페이스 2개 TSDoc을 붙이고 `buildInfoDashboardProgressRows`의 **제외 조건 4가지(경상사업·중복 ID·날짜 파싱 실패·윈도우 밖)와 기간 역전 보정**을 문서에 명시했다. `getInfoDashboardProgressStage`에는 `stsTc` 앞자리 10단계 → 카드 4종으로 접는 규칙과 그 기준이 `utils/common.ts`의 `IT_PTL_STS_PHASE_TAG_CLASS`와 같다는 출처를 적었다. 테스트는 손으로 선언한 모듈 형태와 **옵셔널 호출을 걷어내고 실제 export를 직접 import**하도록 다시 썼다(export가 사라지면 타입 에러로 잡힌다). 문서화한 제외 조건 중 검증이 없던 **중복 ID·날짜 파싱 실패·기간 역전** 3건을 추가해 5건 → 8건. | `app/utils/infoDashboardProgress.ts`, `app/utils/infoDashboardSummary.ts`, `tests/unit/utils/infoDashboardProgress.test.ts` |
+
+**회귀 방지.** SEC-17은 `BoardPostControllerTest`에 `GET /api/boards/{blbMngNo}/posts?ignorePublicationPeriod=true&keyword=공지`를 쏘고 `ArgumentCaptor`로 받은 `SearchCondition`의 `isIgnorePublicationPeriod()`가 `false`이며 `keyword`는 정상 바인딩됨을 고정하는 테스트를 추가했다.
+
+**검증.** 백엔드 `./gradlew check`(spotlessCheck 포함)·`./gradlew javadoc` BUILD SUCCESSFUL. 프론트 `npm run format:check`·`npm run check`(typecheck+lint+copy ratchet) 통과, `npm test` 3,798건 중 3,796건 통과 — 실패 2건(`architecture/scripts-lint.test.ts`, `pages/requestFormMigrationPageBoundary.test.ts`)은 **전체 실행 부하에서만 나는 20초 타임아웃**이고 단독 실행에서는 각각 3.8초·3.3초로 통과한다(이번 변경과 무관, FE-48과 같은 성격).
+
 ### ✅ 2026-08-22 BE-63 이름 스냅샷 컬럼 8개 적재
 
 **결정: 채운다. 규칙은 "생성·수정 시 갱신, 조인 값이 없으면(퇴사자) 기존 값 유지".**
