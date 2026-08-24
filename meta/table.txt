@@ -101,8 +101,8 @@ TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	FL_KPN_PTH	파일저�
 TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	FL_TP_CONE	파일유형내용		Y		VARCHAR2	100	
 TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	APG_FL_SZ	첨부파일크기		Y		NUMBER	10	
 TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	APG_FL_PTH	첨부파일경로		Y		VARCHAR2	255	
-TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	PK_COL_NM	주식별자컬럼명		Y		VARCHAR2	4000	
-TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	PK_CONE	주식별자내용		Y		VARCHAR2	4000	
+TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	APG_FL_KD_NM	첨부파일종류명		Y		VARCHAR2	100
+TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	APG_FL_LNK_CTZ_NM	첨부파일연결콘텐츠명		Y		VARCHAR2	100
 TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
 TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
 TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	

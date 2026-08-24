@@ -16,6 +16,19 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-24 BE-51 완료 — `TPRMPP_CFILEM` 부모 키 컬럼 개명·폭 축소
+
+**배경.** BE-51은 2026-08-22 실측에서 `PK_COL_NM`·`PK_CONE`(각 `VARCHAR2(4000)`) 위에 복합 인덱스를 만들려던 원안이 선언 키 8000바이트로 `ORA-01450`(상한 6397바이트)에 걸려 실패한다는 것과, 실 데이터 최대 길이가 각각 21·17바이트뿐이라는 것을 확인하고 "컬럼 폭 축소가 유일하게 합리적"이라는 결론과 함께 보류됐다. 이번 조치는 그 결론을 실행하면서, 두 컬럼명이 실제 쓰임(서로 다른 값이 2개뿐인 종류 구분자와 그 연결 콘텐츠 식별자)과 동떨어져 있던 것도 함께 바로잡았다.
+
+**조치.**
+- DB: `it_database/migrations/V20260824_003__RenameAndResizeCfilemParentKeyColumns.sql` — `PK_COL_NM`→`APG_FL_KD_NM`(첨부파일종류명), `PK_CONE`→`APG_FL_LNK_CTZ_NM`(첨부파일연결콘텐츠명)으로 `RENAME COLUMN` 후 각 `VARCHAR2(100 CHAR)`로 축소. 재실행 안전(이미 새 이름·길이면 건너뜀). 두 컬럼 다 인덱스가 없어 안전. 새 컬럼명은 `meta/meta.txt`에 이미 등록된 표준 용어(동일 이름·길이)였다. `meta/table.txt`의 `TPRMPP_CFILEM` 행도 갱신했다.
+- 백엔드: `Cfilem` 엔티티(길이 4000→100 포함)·`FileRepository`(Spring Data derived 쿼리 메서드명 포함)·`FileDto`·`FileService`·`FileController`·`infra.file.authz` 전체 프레임워크·배너/게시판/가이드문서/편성요청서반입/관리자 파일목록 등 도메인 호출부·관련 테스트까지 `pkColNm`→`apgFlKdNm`, `pkCone`→`apgFlLnkCtzNm`로 일괄 리팩토링했다(약 65개 파일). `RequestFormSourceFileArchiver.PK_COL_NM`→`APG_FL_KD_NM`, `BannerService.BANNER_PK_CONE`→`BANNER_APG_FL_LNK_CTZ_NM`, `FileUploadUnitService.SAFE_PK_COL_NM`→`SAFE_APG_FL_KD_NM` 상수도 함께 개명했다. `TPRMPP_BBUGTM`/`TPRMPP_BBUGTL`(예산집행 원천 추적)·`TPRMPP_CAPPLA`(전자결재 원장 연결)가 같은 이름 `PK_COL_NM`을 무관한 의미로 재사용하는 지점은 건드리지 않았다(`RequestFormFileReadAuthorizer`·그 테스트는 두 개념이 한 파일에 섞여 있어 줄 단위로만 개명). `docs/operations/file-read-migration.md`는 2026-07-19 시점 실행 기록이라 SQL·수치는 그대로 두고 개명 사실만 안내 문구로 추가했다.
+- 프론트: `useFiles.ts` 등 파일 API 계층, 배너·게시판·가이드문서·협의회·검토의견·전자결재뷰어 등 파일첨부 호출부(FormData 키·쿼리 파라미터명 포함), 관련 단위·e2e 테스트까지 동일하게 개명했다(약 33개 파일). `ApplicationOrcItem`(전자결재 원천 연결, 무관한 동명 필드)은 건드리지 않았다. `app/types/api.d.ts`는 로컬 `local-ext` 백엔드를 임시 기동해 `npm run codegen`으로 재생성했다(수기 편집 아님).
+
+**검증.** 백엔드 `./gradlew test` **4,063건 중 1건 실패**(`RequestForm2026SampleSmokeTest` — 로컬 `sample/2026/` 폴더에 다른 작업이 추가한 부서 폴더로 파일 개수 기준선이 어긋난 환경 문제이며 이번 변경과 무관, 기존에 알려진 결함). 프론트 `npm run codegen:check`·`format:check`·`npm test` **3,867건 중 1건 실패**(`user-facing-copy-ratchet` — `app/utils/infoDashboardCost.ts`는 이 작업이 건드리지 않은 파일로 같은 워킹트리의 다른 진행 중 작업 소관). 두 실패 모두 이번 리네이밍과 무관함을 확인했다. `npm run check`(typecheck·lint·check:copy 중 lint·typecheck)는 통과.
+
+**주의.** `V20260824_003`는 로컬 `local-ext` 기동으로 적용됐다. dev/prod는 이 저장소 관례대로 DBA가 검토 후 수동 적용해야 한다.
+
 ### ✅ 2026-08-23 완료 — 세션 만료 시 수동 로그인 대신 SSO 재진입 (프론트)
 
 **원인.** 화면용 `it-portal-user` 쿠키(7일)는 남고 httpOnly JWT 쿠키만 사라진 상태에서, `auth.global.ts`는 쿠키 존재만으로 인증으로 판정해 SSO를 건너뛰고 페이지를 렌더링했다. 이어지는 API 401 → 갱신 실패 시 `plugins/auth.ts`와 `useApiFetch`의 세션 종료 처리가 `navigateTo('/login')`으로 수동 로그인 페이지에 보냈다. 백엔드 재기동 직후 최초 접속이 항상 이 경로를 타 "SSO 대신 수동 로그인" 증상이 됐다(e2e `session.spec.ts` 케이스 4 주석의 의도는 SSO 리다이렉트였으나 단언이 `/login` 도달도 통과로 인정해 불일치를 못 잡았다).
