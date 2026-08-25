@@ -16,6 +16,14 @@
 
 ## 🗂️ 진행 중에서 종료된 항목 (영역별)
 
+### ✅ 2026-08-25 사업 입력 길라잡이 구현·교차 저장소 검증
+
+`/info/projects/form`의 정보화사업·경상사업 입력 필드와 소요자원 상세 셀에 고정 ID 기반 길라잡이를 연결하고, 등록된 내용이 있을 때만 우측 반응형 패널에 표시하도록 구현했다. 관리자 메뉴 `/admin/form-guides`에서는 고정 카탈로그 항목만 선택해 `TPRMPP_BGDOCM`의 `FDOC-*` 문서를 등록·수정·삭제하며, 기존 단계 문서는 `GDOC-*` 경계를 유지한다.
+
+호환 커밋은 백엔드 `f2bb834f`(입력 길라잡이 API·권한·GDOC 경계와 Controller 범위 테스트), 프론트엔드 `d040b31b`(폼·패널·관리 화면·API 타입과 포맷 비의존 회귀 테스트), 데이터베이스 `75fd9587`(FDOC 활성 대상 유니크 인덱스·관리자 메뉴·권한·영문 번역)이다.
+
+검증 결과: 백엔드 `./gradlew test`와 `./gradlew bootJar` 통과, `./gradlew check -x spotlessJavaCheck` 통과. 전체 `./gradlew check`는 이번 기능과 무관한 기존 Java 24개 파일의 Spotless 포맷 드리프트 때문에 `spotlessJavaCheck`에서 실패했으며 기능 변경 파일의 JaCoCo 기준은 통과했다. 프론트엔드는 `npm run format:check`, `npm run check`, `npm test -- --run`(3,923 통과·8 skip), `npm run lint:css`, `npm run test:e2e`(144 통과·2 skip), 기능 백엔드 전용 포트에 대한 `npm run codegen:check`(paths 189·schemas 275)가 통과했다. 로컬 Oracle은 Flyway `20260825.001` success=1·checksum=1005106596을 확인했고, 중복 FDOC 대상 0건과 유니크 인덱스·경로·메뉴·영문 번역·ITPAD001 권한 각각 1건을 확인했다.
+
 ### ✅ 2026-08-24 BE-51 완료 — `TPRMPP_CFILEM` 부모 키 컬럼 개명·폭 축소
 
 **배경.** BE-51은 2026-08-22 실측에서 `PK_COL_NM`·`PK_CONE`(각 `VARCHAR2(4000)`) 위에 복합 인덱스를 만들려던 원안이 선언 키 8000바이트로 `ORA-01450`(상한 6397바이트)에 걸려 실패한다는 것과, 실 데이터 최대 길이가 각각 21·17바이트뿐이라는 것을 확인하고 "컬럼 폭 축소가 유일하게 합리적"이라는 결론과 함께 보류됐다. 이번 조치는 그 결론을 실행하면서, 두 컬럼명이 실제 쓰임(서로 다른 값이 2개뿐인 종류 구분자와 그 연결 콘텐츠 식별자)과 동떨어져 있던 것도 함께 바로잡았다.
