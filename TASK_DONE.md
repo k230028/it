@@ -20,9 +20,9 @@
 
 `/info/projects/form`의 정보화사업·경상사업 입력 필드와 소요자원 상세 셀에 고정 ID 기반 길라잡이를 연결하고, 등록된 내용이 있을 때만 우측 반응형 패널에 표시하도록 구현했다. 관리자 메뉴 `/admin/form-guides`에서는 고정 카탈로그 항목만 선택해 `TPRMPP_BGDOCM`의 `FDOC-*` 문서를 등록·수정·삭제하며, 기존 단계 문서는 `GDOC-*` 경계를 유지한다.
 
-호환 커밋은 백엔드 `3f1d22e2`(입력 길라잡이 API·권한·GDOC 경계, 의미 있는 HTML 판정과 Controller 범위 테스트), 프론트엔드 `4011697f`(폼·패널·최초 조회 복구·접근성·관리 화면·API 타입과 회귀 테스트), 데이터베이스 `7b6d1902`(FDOC 활성 대상 유니크 인덱스 계약 검증과 관리자 메뉴·권한·번역 수렴 시드)이다.
+호환 커밋은 백엔드 `e258da9c`(입력 길라잡이 API·권한·GDOC 경계, 유니코드 공백과 수식·첨부를 포함한 의미 있는 HTML 판정), 프론트엔드 `fd717005`(폼·패널·최초 조회 복구·접근성·관리 화면, 서버와 일치하는 의미 판정 및 단일 scope 재조회 소유권), 데이터베이스 `8d0dc42f`(V001 체크섬 보존과 V002 인덱스 완전식 검증·관리자 메뉴 수렴)이다.
 
-검증 결과: 백엔드 `./gradlew test`, `./gradlew check -x spotlessJavaCheck`, `./gradlew bootJar` 통과. 리뷰가 지목한 기능 테스트 4개 파일과 이번 의미 판정 2개 파일은 파일 한정 Spotless 적용·재검증을 마쳤다. 전체 `./gradlew check`는 이번 기능과 무관한 기존 Java 20개 파일의 Spotless 포맷 드리프트 때문에 `spotlessJavaCheck`에서만 실패했으며 JaCoCo를 포함한 나머지 게이트는 통과했다. 프론트엔드는 `npm run format:check`, `npm run check`, `npm test -- --run`(3,924 통과·8 skip), `npm run lint:css`, 최초 실패 복구를 포함한 `npm run test:e2e`(144 통과·2 skip, 기존 예산 이동 시나리오 1건은 첫 시도 실패 후 재시도 통과)를 재검증했고, 기능 백엔드 전용 포트에 대한 `npm run codegen:check`(paths 189·schemas 275)도 통과했다. 로컬 Oracle은 강화된 마이그레이션을 재실행해 FDOC 인덱스 함수식 계약과 중복 0건, 유니크 인덱스·경로·메뉴·영문 번역·ITPAD001 권한 각각 1건을 확인했다.
+검증 결과: 백엔드 `./gradlew test check -x spotlessJavaCheck`가 JaCoCo 포함 통과했다. 기능 변경 파일과 Controller 테스트 2개를 파일 한정 Spotless로 정규화했으며, 전체 `spotlessCheck`의 잔여는 이번 기능과 무관한 기존 Java 18개 파일이다. 프론트엔드는 `npm run format:check`, `npm run check`, `npm test`(3,926 통과·8 skip) 및 의미 판정·관리 조회 집중 테스트를 통과했다. Flyway는 V001 적용 상태에서 112개 마이그레이션 validate 후 V002만 적용했으며, 검증 SQL에서 V001/V002 성공 이력, 완전 일치 함수식, 중복 0건과 인덱스·경로·메뉴·영문 번역·ITPAD001 권한 각각 1건을 확인했다.
 
 ### ✅ 2026-08-24 BE-51 완료 — `TPRMPP_CFILEM` 부모 키 컬럼 개명·폭 축소
 
