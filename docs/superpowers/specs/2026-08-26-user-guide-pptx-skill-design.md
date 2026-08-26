@@ -97,7 +97,7 @@ A 템플릿의 레이아웃 24개에는 자리표시자가 하나도 없다.
 | Python | 3.11.0 (`%LOCALAPPDATA%\Programs\Python\Python311`), 3.14 | 3.11 사용 |
 | PyPI 접근 | 가능 (`python-pptx 1.0.2` 설치 가능) | 필수 의존성으로는 쓰지 않음 |
 | Node | v24.16.0 | Playwright 캡처에 사용 |
-| Playwright | `it_frontend`에 설정 완비 (`baseURL: localhost:3002`) | 그대로 재사용 |
+| Playwright | `it_frontend/node_modules`에 1.60.0 + chromium-1223 설치됨 | 라이브러리만 빌려 씀 |
 | PowerPoint COM | **없음** (CLSID 미등록) | 슬라이드 렌더링·PDF 변환 불가 |
 | LibreOffice | **없음** | 동일 |
 
@@ -140,9 +140,9 @@ PowerPoint와 LibreOffice가 모두 없으므로 **빌드 파이프라인은 렌
 ### 3.1 파이프라인
 
 ```
-flow.yaml ──①캡처──▶ shots/*.png
+flow.json ──①캡처──▶ shots/*.png
     │                     │
-    └──②패턴 선택─────▶ deck.yaml ──③빌드──▶ 가이드.pptx ──④검증──▶ 리포트
+    └──②패턴 선택─────▶ deck.json ──③빌드──▶ 가이드.pptx ──④검증──▶ 리포트
               ▲
       template-catalog.json
 ```
@@ -161,12 +161,12 @@ C:\it\.claude\skills\writing-user-guide-pptx\
     ooxml-notes.md                슬라이드 이식 함정 모음
   scripts/
     catalog_templates.py          템플릿 → template-catalog.json / .md
-    capture_screens.ts            Playwright 캡처
-    build_deck.py                 deck.yaml + PNG → pptx
+    capture_screens.mjs            Playwright 캡처
+    build_deck.py                 deck.json + PNG → pptx
     verify_deck.py                산출물 검증
   assets/
-    flow.it-portal.yaml           1차 범위 3개 흐름 정의
-    deck.example.yaml
+    flow.it-portal.json           1차 범위 3개 흐름 정의
+    deck.example.json
 ```
 
 ### 3.3 구성요소
@@ -190,36 +190,54 @@ C:\it\.claude\skills\writing-user-guide-pptx\
 분류는 규칙 기반이며 규칙은 `catalog_templates.py` 상단에 상수로 둔다.
 오분류를 발견하면 `references/template-catalog.md`에 수동 보정 주석을 남기고 규칙을 고친다.
 
-#### capture_screens.ts
+#### capture_screens.mjs
 
-`it_frontend`에서 `npx playwright test`로 실행하는 캡처 전용 스펙.
+`node scripts/capture_screens.mjs`로 직접 실행하는 **독립 스크립트**다.
+`it_frontend`의 `playwright` 1.60.0과 설치된 chromium을 빌려 쓸 뿐,
+`it_frontend` 저장소에는 파일을 추가하지 않는다. 교차 저장소 변경을 피하기 위함이다.
 
-- `tests/e2e/helpers/mockApi.ts`의 `setLoggedIn` / `mockCommonApis` / `mockApi`를 그대로 재사용한다.
-  백엔드·DB·SSO 없이 결정적으로 동작하게 하기 위함이다.
-- `mocks`에 쓰는 프리셋은 스킬이 함께 두는 `capture-fixtures.ts`에 정의한다.
-  초기값은 `tests/e2e/budget.spec.ts`·`approval.spec.ts`의 mock 데이터에서 가져오되,
+- `@playwright/test`가 아니라 `playwright`의 `chromium.launch()`를 직접 쓴다.
+  테스트 러너가 아니라 캡처 도구이므로 테스트 수명주기가 필요 없다.
+- 로그인 주입과 API mock은 `assets/capture-fixtures.json`에 선언적으로 둔다.
+  초기값은 `it_frontend/tests/e2e/helpers/mockApi.ts`의 `mockCommonApis`가 거는 경로 목록과
+  `budget.spec.ts`·`approval.spec.ts`의 mock 데이터를 **참고해서 옮겨 적되**, import 하지 않는다.
   가이드에 실릴 화면이므로 `테스트 정보화사업 A` 같은 시험용 문구는 실제로 있음직한 값으로 바꾼다.
-- `flow.yaml`의 각 step을 순회하며 `goto` → 대기 조건 → 선택적 조작(`click`/`fill`/`check`) → `screenshot`.
+- `flow.json`의 각 step을 순회하며 `goto` → 대기 조건 → 선택적 조작(`click`/`fill`/`check`) → `screenshot`.
 - 뷰포트는 1600×900 고정, `deviceScaleFactor: 2`.
-- 캡처 대상은 기본적으로 전체 뷰포트이며, step에 `clip.selector`가 있으면 해당 요소만 캡처한다.
+- 캡처 대상은 기본적으로 전체 뷰포트이며, step에 `clipSelector`가 있으면 해당 요소만 캡처한다.
 - 출력: `shots/<flow-id>/<NN>-<step-id>.png` + `shots/manifest.json`(경로·해상도·캡처 시각).
 
-`flow.yaml` 스키마:
+`flow.json` 스키마:
 
-```yaml
-flows:
-  - id: budget-write
-    title: 예산 작성
-    mocks: [projects, costs, budget-period]      # capture-fixtures.ts의 프리셋 이름
-    steps:
-      - id: type-select
-        url: /budget
-        waitFor: { role: heading, name: 경상사업 }
-        caption: 작성할 예산 유형을 고릅니다
-        note: 정보화사업·전산업무비·경상사업 중 하나를 클릭합니다
+```json
+{
+  "baseUrl": "http://localhost:3002",
+  "flows": [
+    {
+      "id": "budget-write",
+      "title": "예산 작성",
+      "mocks": ["common", "projects", "costs", "budgetPeriod"],
+      "steps": [
+        {
+          "id": "type-select",
+          "url": "/budget",
+          "waitFor": { "role": "heading", "name": "경상사업" },
+          "caption": "작성할 예산 유형을 고릅니다",
+          "notes": [
+            "좌측 메뉴에서 [예산]을 클릭합니다",
+            "정보화사업·전산업무비·경상사업 중 해당 유형을 고릅니다"
+          ]
+        }
+      ]
+    }
+  ]
+}
 ```
 
-`caption`은 슬라이드 소제목, `note`는 본문 설명으로 흘러간다.
+`caption`은 슬라이드 부제목으로, `notes`는 단계 설명 문단으로 흘러간다.
+
+설정 파일을 YAML이 아니라 **JSON으로 통일한 이유**는, Python 표준 라이브러리에 YAML 파서가 없고
+Node에도 내장 YAML이 없기 때문이다. JSON이면 양쪽 모두 무의존성으로 읽는다.
 
 #### build_deck.py
 
@@ -229,14 +247,14 @@ Python 3.11 **표준 라이브러리만** 사용한다(`zipfile`, `xml.etree.Ele
 처리 순서:
 
 1. B 템플릿을 작업 디렉터리에 풀어 베이스 패키지로 삼는다.
-2. `deck.yaml`의 슬라이드 목록을 읽어 필요한 원본 슬라이드를 확정한다.
+2. `deck.json`의 슬라이드 목록을 읽어 필요한 원본 슬라이드를 확정한다.
 3. A 출처 슬라이드는 **이식**한다.
    - 슬라이드 XML과 그 rels를 복사
    - 참조 레이아웃을 B에 새 번호로 append하고, 그 레이아웃의 rels·미디어도 함께 이식
    - append한 레이아웃의 마스터 참조는 B의 `slideMaster1`로 다시 건다
    - 미디어는 **내용 SHA-1 앞 12자리를 파일명에 붙여 재명명**한다. 이름 충돌로 인한 조용한 이미지 교체를 막는 유일한 방어선이다.
 4. 같은 원본 슬라이드를 두 번 이상 쓰면 그때마다 새 `slideN.xml`로 복제한다.
-5. `presentation.xml`의 `<p:sldIdLst>`를 `deck.yaml` 순서대로 재작성하고, `presentation.xml.rels`·`[Content_Types].xml`을 정합화한다.
+5. `presentation.xml`의 `<p:sldIdLst>`를 `deck.json` 순서대로 재작성하고, `presentation.xml.rels`·`[Content_Types].xml`을 정합화한다.
 6. 텍스트 치환: 슬라이드별 `text` 매핑을 `<a:t>` 런 단위로 적용한다.
    - 매핑 키는 원본 자리표시자 문구, 값은 넣을 문구
    - 같은 문구가 여러 번 나오면 `키#2` 형식으로 n번째를 지정한다
@@ -245,38 +263,51 @@ Python 3.11 **표준 라이브러리만** 사용한다(`zipfile`, `xml.etree.Ele
    - `rect`: 지정한 cm 좌표에 `<p:pic>`을 새로 만들어 `<p:spTree>` 끝에 붙인다.
      원본 종횡비를 유지하며 사각형 안에 **내접(contain)**시키고 중앙 정렬한다. 잘라내지 않는다.
      화면 캡처의 기본 방식이다.
-   - `ph`: 빈 `<p:sp>` 그림 자리표시자를 `<p:pic>`으로 대체한다. `<p:nvPr><p:ph .../></p:nvPr>`을
-     그대로 유지해 레이아웃 박스를 상속받고, `<a:srcRect>`로 중앙 크롭한다. 사진용이다.
+   - 복제한 슬라이드에 남은 **빈 `<p:ph type="pic">` 도형은 제거한다.** 채우지 않은 자리표시자는
+     PowerPoint에서 "그림을 추가하려면 클릭" 안내 문구로 보이기 때문이다.
+     (`ph`에 이미지를 채우는 방식은 6절 범위 밖이다.)
 8. `screen` 유형 슬라이드는 6~7 대신 아래 3.5의 조립 절차를 따른다.
 9. 어느 슬라이드에서도 참조되지 않는 `ppt/media/*`와 `slideLayout*`을 제거한다.
 10. 결정적 순서로 다시 zip한다.
 
-`deck.yaml` 스키마:
+`deck.json` 스키마:
 
-```yaml
-output: 사용자가이드.pptx
-slides:
-  # 유형 1 — pattern: 템플릿 슬라이드를 복제해 문구만 갈아끼운다
-  - type: pattern
-    from: { template: B, slide: 1 }
-    text:
-      "템플릿 디자인": IT Project Portal 사용자 가이드
-      "부제목을 입력해주세요": 예산 작성부터 전자결재까지
-
-  # 유형 2 — screen: 헤더만 남긴 내지에 캡처와 단계 설명을 조립한다
-  - type: screen
-    badge: "01"
-    title: 예산 작성
-    caption: 작성할 예산 유형을 고릅니다
-    shot: shots/budget-write/01-type-select.png
-    steps:
-      - 좌측 메뉴에서 [예산]을 클릭합니다
-      - 정보화사업·전산업무비·경상사업 중 해당 유형을 고릅니다
-      - 카드를 클릭하면 작성 폼이 열립니다
-    callouts:
-      - { n: 1, x: 4.2, y: 7.1 }
-      - { n: 2, x: 12.8, y: 7.1 }
+```json
+{
+  "output": "사용자가이드.pptx",
+  "slides": [
+    {
+      "type": "pattern",
+      "from": { "template": "B", "slide": 1 },
+      "text": {
+        "템플릿 디자인": "IT Project Portal 사용자 가이드",
+        "부제목을 입력해주세요": "예산 작성부터 전자결재까지"
+      }
+    },
+    {
+      "type": "screen",
+      "badge": "01",
+      "title": "예산 작성",
+      "caption": "작성할 예산 유형을 고릅니다",
+      "shot": "shots/budget-write/01-type-select.png",
+      "steps": [
+        "좌측 메뉴에서 [예산]을 클릭합니다",
+        "정보화사업·전산업무비·경상사업 중 해당 유형을 고릅니다",
+        "카드를 클릭하면 작성 폼이 열립니다"
+      ],
+      "callouts": [
+        { "n": 1, "x": 4.2, "y": 7.1 },
+        { "n": 2, "x": 12.8, "y": 7.1 }
+      ]
+    }
+  ]
+}
 ```
+
+`type`은 `pattern`과 `screen` 두 가지다.
+`pattern`은 템플릿 슬라이드를 복제해 문구만 갈아끼우고, `screen`은 헤더만 남긴 내지에 캡처를 조립한다.
+`pattern` 슬라이드에 이미지를 얹을 때는 `images` 배열에
+`{ "rect": [x, y, w, h], "src": "..." }` 형태로 지정한다. 좌표 단위는 cm다.
 
 `callouts[].x/y`는 **슬라이드 절대 좌표(cm)**이며 배지의 좌상단이다.
 캡처 이미지 내부의 상대 좌표가 아니다.
@@ -290,7 +321,7 @@ slides:
 | 검사 | 실패 조건 |
 | --- | --- |
 | zip/OPC 정합성 | 깨진 엔트리, 끊어진 `r:embed`/`r:id`, `[Content_Types].xml` 누락 확장자 |
-| 슬라이드 수 | `deck.yaml` 슬라이드 수와 불일치 |
+| 슬라이드 수 | `deck.json` 슬라이드 수와 불일치 |
 | 잔여 자리표시자 | `내용입력` `하위내용입력` `대제목` `소제목 내용 입력` `내용을 입력해주세요` `부제목을 입력해주세요` 중 1건이라도 남음 |
 | 그림 자리표시자 | 빈 `<p:ph type="pic">`가 1개라도 남음 (빌드 8단계에서 제거되어야 한다) |
 | 캡처 크기 | `screen` 슬라이드의 캡처 폭이 20 cm 미만 (읽히지 않는 크기) |
@@ -379,7 +410,10 @@ PowerPoint가 없어 자동 육안 검증은 불가하다. 최종 확인은 사�
 
 ## 6. 범위 밖
 
-- 예산 작성·예산 결재신청·전자결재 외의 흐름 (필요 시 `flow.yaml`에 추가)
+- **그림 자리표시자(`ph`) 방식 이미지 채우기.** 2.2에서 245개를 실측한 결과 대다수가 사진용
+  세로 상자라 이 스킬의 용도에 맞지 않는다. `rect` 방식만 구현하고, `ph` 방식이 필요해지면
+  그때 추가한다. 빌드는 복제한 슬라이드에 남은 빈 `<p:ph type="pic">` 도형을 제거한다.
+- 예산 작성·예산 결재신청·전자결재 외의 흐름 (필요 시 `flow.json`에 추가)
 - 관리자 화면
 - PDF 변환, 슬라이드 이미지 렌더링 (PowerPoint·LibreOffice 부재)
 - 애니메이션·화면 전환 효과
