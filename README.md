@@ -33,6 +33,7 @@ sqlplus ITPAPP@127.0.0.1:11521/XEPDB1
 ### 2. 백엔드
 
 배포파일 빌드
+
 ```
 cd C:\it\it_backend; ./gradlew bootWar -x test
 ```
@@ -52,6 +53,7 @@ $env:SPRING_PROFILES_ACTIVE = "local-ext"
 ### 3. 프론트엔드
 
 배포파일 빌드
+
 ```
 cd C:\it\it_frontend; npm run generate:dev
 ```
@@ -80,6 +82,7 @@ npm run generate
 모든 정적 생성 스크립트는 API 기준 주소를 빈 값으로 강제해 브라우저가 same-origin `/api/`와 `/sso/`를 호출하게 합니다. 따라서 nginx·WebTobe는 두 경로를 백엔드로 프록시해야 합니다. API 호출에는 CORS가 발생하지 않지만 SSO 완료 후 복귀 주소는 백엔드 Origin 허용 목록으로 검증하므로, 실제 프론트 Origin을 `APP_FRONTEND_URL` 또는 `CORS_ALLOWED_ORIGINS`에 `scheme://host[:port]` 형식으로 등록합니다.
 
 nginx.conf
+
 ```bash
 server {
         listen       80;
@@ -158,10 +161,10 @@ Remove-Item -Recurse -Force C:\it\it_backend\.gradle\8.9   # 덮어쓴 버전의
 
 `java.import.exclusions`의 두 항목은 취향이 아니라 **장애 회피책**입니다.
 
-| 제외 경로 | 지우면 생기는 일 |
-| --- | --- |
-| `**/bin/**` | `bin` 아래에 `.project`·`build.gradle`이 생기면 JDT가 이를 별도 프로젝트로 임포트해 같은 클래스가 두 출력 루트(`bin/main`, `build/classes/java/main`)로 올라갑니다. Spring 기동이 `BeanDefinitionOverrideException`(already defined)으로 실패합니다. |
-| `**/.worktrees/**` | `.worktrees` 하위에 같은 이름의 `it_backend` 체크아웃이 있어 JDT가 프로젝트명 `it-it_backend`를 중복 등록하고 `Duplicate root element`로 임포트가 실패합니다. 워크트리는 각자의 창에서 엽니다. |
+| 제외 경로            | 지우면 생기는 일                                                                                                                                                                                                                                                  |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `**/bin/**`        | `bin` 아래에 `.project`·`build.gradle`이 생기면 JDT가 이를 별도 프로젝트로 임포트해 같은 클래스가 두 출력 루트(`bin/main`, `build/classes/java/main`)로 올라갑니다. Spring 기동이 `BeanDefinitionOverrideException`(already defined)으로 실패합니다. |
+| `**/.worktrees/**` | `.worktrees` 하위에 같은 이름의 `it_backend` 체크아웃이 있어 JDT가 프로젝트명 `it-it_backend`를 중복 등록하고 `Duplicate root element`로 임포트가 실패합니다. 워크트리는 각자의 창에서 엽니다.                                                            |
 
 `launch.json`의 `classPaths`에 `$Runtime`과 출력 폴더 제외를 명시한 이유도 같은 계열입니다. 기본값(`$Auto`)은 테스트 출력 폴더까지 런타임 클래스패스에 올려, 테스트의 중첩 `@SpringBootConfiguration`이 컴포넌트 스캔에 걸리고 JPA 리포지토리 빈이 두 번 등록되어 기동이 실패합니다.
 
@@ -213,15 +216,15 @@ Nuxt 페이지·컴포넌트
 
 ## 주요 업무 모듈
 
-| 흐름            | 프론트 진입점                                 | 백엔드 책임                                                |
-| --------------- | --------------------------------------------- | ---------------------------------------------------------- |
-| 정보화사업·예산 | `app/pages/info/projects`, `app/pages/budget` | 사업, 예산편성, 전산업무비와 결재 연계                     |
-| 사업계획        | `app/pages/project/bizplan`                   | 계획 대상 확인, 보고서·일정·품목·계약 병합, 작성 상태 관리 |
-| 사업 집행       | `app/pages/project`                           | 소요예산 산정 → 과업심의 → 입찰계약 → 대금지급 상태 전이   |
-| 문서·사전협의   | `app/pages/info/documents`                    | 문서 버전, 검토 의견, 첨부파일과 결재 연결                 |
-| 홈 대시보드     | `app/pages/info/index.vue`                    | 연도별 사업·예산 KPI, 예산 일정, 공지·일정 피드, 홈 배너   |
-| 수기 엑셀 이관  | `app/pages/admin/migration`                   | 편성요청서 분석·반입, 원본 파일 보관과 결재 연계           |
-| 공통 기능       | 공통 레이아웃·메뉴·알림·관리자 화면           | 인증, MFA, IAM, 서버 권한 메뉴, 게시판, 알림, 다국어, 배너, 감사·실시간 로그와 WAS 로그 |
+| 흐름             | 프론트 진입점                                     | 백엔드 책임                                                                              |
+| ---------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| 정보화사업·예산 | `app/pages/info/projects`, `app/pages/budget` | 사업, 예산편성, 전산업무비와 결재 연계                                                   |
+| 사업계획         | `app/pages/project/bizplan`                     | 계획 대상 확인, 보고서·일정·품목·계약 병합, 작성 상태 관리                            |
+| 사업 집행        | `app/pages/project`                             | 소요예산 산정 → 과업심의 → 입찰계약 → 대금지급 상태 전이                              |
+| 문서·사전협의   | `app/pages/info/documents`                      | 문서 버전, 검토 의견, 첨부파일과 결재 연결                                               |
+| 홈 대시보드      | `app/pages/info/index.vue`                      | 연도별 사업·예산 KPI, 예산 일정, 공지·일정 피드, 홈 배너                               |
+| 수기 엑셀 이관   | `app/pages/admin/migration`                     | 편성요청서 분석·반입, 원본 파일 보관과 결재 연계                                        |
+| 공통 기능        | 공통 레이아웃·메뉴·알림·관리자 화면            | 인증, MFA, IAM, 서버 권한 메뉴, 게시판, 알림, 다국어, 배너, 감사·실시간 로그와 WAS 로그 |
 
 메뉴는 백엔드가 사용자 권한으로 필터링한 `/api/menus` 트리를 프론트 헤더·사이드바·Breadcrumb·상단 탭이 함께 사용합니다. 탭 제목도 화면에 하드코딩하지 않고 이 트리의 메뉴명을 따릅니다. 프론트 메뉴 숨김은 화면 편의를 위한 것이며 API 접근 권한을 대신하지 않습니다.
 
@@ -240,17 +243,17 @@ Nuxt 페이지·컴포넌트
 
 ## 문서 역할
 
-| 문서                     | 역할                         |
-| ------------------------ | ---------------------------- |
-| `README.md`              | 설치, 실행, 저장소 탐색      |
-| `CLAUDE.md`              | 반드시 지킬 공통 규칙        |
-| `it_frontend/CLAUDE.md`  | 프론트 필수 규칙             |
-| `it_backend/CLAUDE.md`   | 백엔드 필수 규칙과 보안 경계 |
+| 문서                       | 역할                            |
+| -------------------------- | ------------------------------- |
+| `README.md`              | 설치, 실행, 저장소 탐색         |
+| `CLAUDE.md`              | 반드시 지킬 공통 규칙           |
+| `it_frontend/CLAUDE.md`  | 프론트 필수 규칙                |
+| `it_backend/CLAUDE.md`   | 백엔드 필수 규칙과 보안 경계    |
 | `it_database/CLAUDE.md`  | DB 변경·마이그레이션 안전 규칙 |
-| `docs/guides`            | 주제별 상세 설명과 예제      |
-| `docs/operations`        | 배포·복구·인계 기록          |
-| `TASK.md`                | 미구현, 기술부채, 후속 검증  |
-| `it_database/migrations` | 물리 DB 변경 이력            |
+| `docs/guides`            | 주제별 상세 설명과 예제         |
+| `docs/operations`        | 배포·복구·인계 기록           |
+| `TASK.md`                | 미구현, 기술부채, 후속 검증     |
+| `it_database/migrations` | 물리 DB 변경 이력               |
 
 ## 상세 문서
 
