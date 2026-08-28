@@ -680,7 +680,9 @@ TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	NSF_
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	RMK	비고		Y		VARCHAR2	300	
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	SPF_TMN_NM	특정단말명		Y		VARCHAR2	100	
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	SVN_DPM_C	주관부서코드		Y		VARCHAR2	20	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	SVN_DPM_NM	주관부서명		Y		VARCHAR2	100
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	SVN_TEM_C	주관팀코드		Y		VARCHAR2	5	
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	SVN_TEM_NM	주관팀명		Y		VARCHAR2	100
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	AMT	금액		Y		NUMBER	18	3
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	FC_AMT	외화금액		Y		NUMBER	18	3
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	CUR_C	통화코드		Y		VARCHAR2	3	
@@ -1570,7 +1572,9 @@ TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	NSF_USG_CONE	소
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	RMK	비고		Y		VARCHAR2	300	
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	SPF_TMN_NM	특정단말명		Y		VARCHAR2	100	
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	SVN_DPM_C	주관부서코드		Y		VARCHAR2	20	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	SVN_DPM_NM	주관부서명		Y		VARCHAR2	100
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	SVN_TEM_C	주관팀코드		Y		VARCHAR2	5	
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	SVN_TEM_NM	주관팀명		Y		VARCHAR2	100
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	AMT	금액		Y		NUMBER	18	3
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	FC_AMT	외화금액		Y		NUMBER	18	3
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	CUR_C	통화코드		Y		VARCHAR2	3	
