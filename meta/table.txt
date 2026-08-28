@@ -101,8 +101,8 @@ TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	FL_KPN_PTH	파일저�
 TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	FL_TP_CONE	파일유형내용		Y		VARCHAR2	100	
 TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	APG_FL_SZ	첨부파일크기		Y		NUMBER	10	
 TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	APG_FL_PTH	첨부파일경로		Y		VARCHAR2	255	
-TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	APG_FL_KD_NM	첨부파일종류명		Y		VARCHAR2	100
-TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	APG_FL_LNK_CTZ_NM	첨부파일연결콘텐츠명		Y		VARCHAR2	100
+TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	APG_FL_KD_NM	첨부파일종류명		Y		VARCHAR2	100	
+TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	APG_FL_LNK_CTZ_NM	첨부파일연결콘텐츠명		Y		VARCHAR2	100	
 TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
 TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
 TPRMPP_CFILEM	프로젝트관리_공통첨부파일기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
@@ -631,9 +631,9 @@ TPRMPP_BPROJM	프로젝트관리_정보화사업기본	CST_TP_TC_NM	고객유형
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_PPO_CONE	사업목적내용		Y		VARCHAR2	300	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	IT_PTL_EDRT_TC	IT포탈전결권구분코드		Y		VARCHAR2	2	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	IT_PTL_RPR_STS_TC	IT포탈보고상태구분코드		Y		VARCHAR2	2	
-TPRMPP_BPROJM	프로젝트관리_정보화사업기본	TOT_RQM_AMT	총소요금액(당해·예정·지급 원화 스냅샷)		Y		NUMBER	18	3
-TPRMPP_BPROJM	프로젝트관리_정보화사업기본	MPL_AMT	예정금액(활성 품목 예정 원화 환산 합계 스냅샷)		Y		NUMBER	18	3
-TPRMPP_BPROJM	프로젝트관리_정보화사업기본	DFR_AMT	지급금액(원화)		Y		NUMBER	18	3
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	TOT_RQM_AMT	총소요금액		Y		NUMBER	18	3
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	MPL_AMT	예정금액		Y		NUMBER	18	3
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	DFR_AMT	지급금액		Y		NUMBER	18	3
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	DEL_YN	삭제여부		N	'N'	VARCHAR2	1	
@@ -653,9 +653,9 @@ TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	IOE_C	비목코드	
 TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	ITR_INFR_YN	통합인프라여부		Y		VARCHAR2	1	
 TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	SECT_SYS_UTZ_YN	보안시스템운용여부		Y		VARCHAR2	1	
 TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	QTY	수량		Y		NUMBER	10	
-TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	AMT	당해 원화 금액		Y		NUMBER	18	3
-TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	MPL_AMT	예정 원금(KRW 행 원화·외화 행 외화)		N	0	NUMBER	18	3
-TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	FC_AMT	당해 외화 원금		Y		NUMBER	18	3
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	AMT	금액		Y		NUMBER	18	3
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	MPL_AMT	예정금액		N	0	NUMBER	18	3
+TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	FC_AMT	외화금액		Y		NUMBER	18	3
 TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	CUR_C	통화코드		Y		VARCHAR2	3	
 TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	XCR	환율		Y		NUMBER	9	4
 TPRMPP_BITEMM	프로젝트관리_정보화사업품목기본	XCR_BSE_DT	환율기준일자		Y		VARCHAR2	8	
@@ -680,9 +680,9 @@ TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	NSF_
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	RMK	비고		Y		VARCHAR2	300	
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	SPF_TMN_NM	특정단말명		Y		VARCHAR2	100	
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	SVN_DPM_C	주관부서코드		Y		VARCHAR2	20	
-TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	SVN_DPM_NM	주관부서명		Y		VARCHAR2	100
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	SVN_DPM_NM	주관부서명		Y		VARCHAR2	100	
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	SVN_TEM_C	주관팀코드		Y		VARCHAR2	5	
-TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	SVN_TEM_NM	주관팀명		Y		VARCHAR2	100
+TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	SVN_TEM_NM	주관팀명		Y		VARCHAR2	100	
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	AMT	금액		Y		NUMBER	18	3
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	FC_AMT	외화금액		Y		NUMBER	18	3
 TPRMPP_BTERML	프로젝트관리_전산업무비단말기기본변경로그	CUR_C	통화코드		Y		VARCHAR2	3	
@@ -1572,9 +1572,9 @@ TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	NSF_USG_CONE	소
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	RMK	비고		Y		VARCHAR2	300	
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	SPF_TMN_NM	특정단말명		Y		VARCHAR2	100	
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	SVN_DPM_C	주관부서코드		Y		VARCHAR2	20	
-TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	SVN_DPM_NM	주관부서명		Y		VARCHAR2	100
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	SVN_DPM_NM	주관부서명		Y		VARCHAR2	100	
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	SVN_TEM_C	주관팀코드		Y		VARCHAR2	5	
-TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	SVN_TEM_NM	주관팀명		Y		VARCHAR2	100
+TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	SVN_TEM_NM	주관팀명		Y		VARCHAR2	100	
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	AMT	금액		Y		NUMBER	18	3
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	FC_AMT	외화금액		Y		NUMBER	18	3
 TPRMPP_BTERMM	프로젝트관리_전산업무비단말기기본	CUR_C	통화코드		Y		VARCHAR2	3	
