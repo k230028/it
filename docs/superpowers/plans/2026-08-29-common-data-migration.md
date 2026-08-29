@@ -38,7 +38,7 @@
 - Consumes: `CmenumRepository.findAllActive()`, `CmenuaRepository.findAllActive()`, `CmenudRepository.findAllActive()` (기존), 신규 `CodeRepository.findAllActiveOrdered()`, `ClangmRepository.findAllActive()`
 - Produces: `CommonDataMigrationDto.{MenuRow, MenuAuthRow, RouteRow, CodeRow, TranslationRow, Request, ExportResponse, TableSummary, Response}` — Task 2~6 전체가 이 record 시그니처에 의존한다.
 
-- [ ] **Step 1: DTO 작성**
+- [x] **Step 1: DTO 작성**
 
 ```java
 package com.kdb.it.domain.migration.commondata.dto;
@@ -141,7 +141,7 @@ public final class CommonDataMigrationDto {
 }
 ```
 
-- [ ] **Step 2: 리포지토리 조회 메서드 추가**
+- [x] **Step 2: 리포지토리 조회 메서드 추가**
 
 `CodeRepository.java`에 추가 (클래스 상단 주석대로 명시적 JPQL 필수):
 
@@ -176,7 +176,7 @@ public final class CommonDataMigrationDto {
     List<Clangm> findAllByTcIdConeIn(@Param("targetKeys") Collection<String> targetKeys);
 ```
 
-- [ ] **Step 3: 실패하는 서비스 테스트 작성**
+- [x] **Step 3: 실패하는 서비스 테스트 작성**
 
 `CommonDataExportServiceTest.java` — Mockito 스타일은 `TerminalBulkImportServiceTest` 참조:
 
@@ -276,12 +276,12 @@ class CommonDataExportServiceTest {
 }
 ```
 
-- [ ] **Step 4: 테스트 실패 확인**
+- [x] **Step 4: 테스트 실패 확인**
 
 Run: `cd C:\it\it_backend; ./gradlew test --tests 'com.kdb.it.domain.migration.commondata.CommonDataExportServiceTest'`
 Expected: 컴파일 실패 (CommonDataExportService 미존재)
 
-- [ ] **Step 5: Export 서비스 구현**
+- [x] **Step 5: Export 서비스 구현**
 
 ```java
 package com.kdb.it.domain.migration.commondata;
@@ -379,7 +379,7 @@ public class CommonDataExportService {
 
 주의: Lombok `@Getter`가 `cId`류 필드에 만드는 게터명은 `getCId()`, `getCNm()`, `getCTp()`, `getCTpDes()`, `getCSqn()`이다(기존 `AdminCodeService.toCodeResponse` L337-339와 동일 호출 참조). 컴파일 오류가 나면 그쪽 사용례를 확인한다.
 
-- [ ] **Step 6: 컨트롤러 작성 (GET /export만)**
+- [x] **Step 6: 컨트롤러 작성 (GET /export만)**
 
 ```java
 package com.kdb.it.domain.migration.commondata.controller;
@@ -419,12 +419,12 @@ public class CommonDataMigrationController {
 }
 ```
 
-- [ ] **Step 7: 테스트 통과 확인**
+- [x] **Step 7: 테스트 통과 확인**
 
 Run: `cd C:\it\it_backend; ./gradlew test --tests 'com.kdb.it.domain.migration.commondata.*'`
 Expected: PASS
 
-- [ ] **Step 8: 커밋 (it_backend 저장소에서)**
+- [x] **Step 8: 커밋 (it_backend 저장소에서)**
 
 ```bash
 cd C:\it\it_backend
@@ -456,7 +456,7 @@ git commit -m "feat: 공통 데이터 이관 export API 추가"
 
 메시지 형식: `"메뉴 시트 12행: 메뉴유형은 GRP/LNK/PGE만 허용합니다 (값: XXX)"` — 시트명·excelRow 포함.
 
-- [ ] **Step 1: 실패하는 테스트 작성 (핵심 케이스부터)**
+- [x] **Step 1: 실패하는 테스트 작성 (핵심 케이스부터)**
 
 ```java
 package com.kdb.it.domain.migration.commondata;
@@ -645,12 +645,12 @@ class CommonDataMigrationPlannerTest {
 - `다국어대상키가_메뉴에없으면_경고한다` (구분명=메뉴, tcIdCone이 어디에도 없음 → warnings)
 - `PGE메뉴경로가_카탈로그에없으면_경고한다`
 
-- [ ] **Step 2: 테스트 실패 확인**
+- [x] **Step 2: 테스트 실패 확인**
 
 Run: `cd C:\it\it_backend; ./gradlew test --tests 'com.kdb.it.domain.migration.commondata.CommonDataMigrationPlannerTest'`
 Expected: 컴파일 실패 (Planner 미존재)
 
-- [ ] **Step 3: Planner 구현**
+- [x] **Step 3: Planner 구현**
 
 구현 골격 (Spring 의존 없는 순수 클래스 + `@Component`):
 
@@ -724,12 +724,12 @@ public class CommonDataMigrationPlanner {
 
 `TranslationTarget` 매핑: `구분명 "메뉴" → TranslationTarget.MENU`, `"공통코드" → COMMON_CODE` (dbName() 비교로 찾고, 못 찾으면 오류).
 
-- [ ] **Step 4: 테스트 통과 확인**
+- [x] **Step 4: 테스트 통과 확인**
 
 Run: `cd C:\it\it_backend; ./gradlew test --tests 'com.kdb.it.domain.migration.commondata.CommonDataMigrationPlannerTest'`
 Expected: PASS (전 케이스)
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 cd C:\it\it_backend
@@ -757,7 +757,7 @@ git commit -m "feat: 공통 데이터 이관 검증·분류 Planner 추가"
   - `MenuSequenceSynchronizer.advanceTo(List<MenuRow>): Optional<String>` — 커밋 트랜잭션 밖에서 호출, 실패·미완료 시 경고 문자열 반환
   - `POST /api/admin/migration/common-data/dry-run` (200), `POST /api/admin/migration/common-data` (201)
 
-- [ ] **Step 1: 실패하는 서비스 테스트 작성**
+- [x] **Step 1: 실패하는 서비스 테스트 작성**
 
 Mockito 스타일 (`TerminalBulkImportServiceTest` 참조). 핵심 케이스:
 
@@ -922,12 +922,12 @@ class CommonDataMigrationServiceTest {
 
 주의: `stubEmptySnapshot()`의 코드·번역 stub은 파일에 해당 행이 없으면 호출되지 않을 수 있다. Mockito strict stubbing(UnnecessaryStubbingException)이 나면 스냅샷 로딩을 "파일에 행이 있을 때만 조회"로 구현했다는 뜻이므로, 해당 stub을 각 테스트로 옮기거나 `lenient()`를 쓴다. 추가 케이스: `commit은_신규메뉴와_메뉴권한을_저장한다`, `commit은_다국어를_update로_갱신하고_부활시킨다`(Clangm.update(tcDes)가 restore까지 하는 것 검증), `빈요청은_아무것도저장하지않는다`.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `cd C:\it\it_backend; ./gradlew test --tests 'com.kdb.it.domain.migration.commondata.CommonDataMigrationServiceTest'`
 Expected: 컴파일 실패
 
-- [ ] **Step 3: Cmenud에 갱신 메서드 추가**
+- [x] **Step 3: Cmenud에 갱신 메서드 추가**
 
 ```java
     /**
@@ -944,7 +944,7 @@ Expected: 컴파일 실패
     }
 ```
 
-- [ ] **Step 4: 서비스 구현**
+- [x] **Step 4: 서비스 구현**
 
 ```java
 package com.kdb.it.domain.migration.commondata;
@@ -1199,7 +1199,7 @@ public class CommonDataMigrationService {
 주의 2: 관리 엔티티(existing)의 변경은 더티체킹으로 flush되므로 `saveAll`은 신규만 담는다.
 주의 3: `AdminCodeService.bulkUpsertCodes`는 외부 빈 호출이므로 `@CacheEvict(codesByCid·budgetPeriod)` 프록시가 정상 동작한다. 메뉴권한 캐시는 이 서비스의 `commit`에 붙인 `@CacheEvict(value = "menuAuthMap")`이 무효화한다(선례: `AdminMenuService`).
 
-- [ ] **Step 5: MenuSequenceSynchronizer 테스트 작성 → 실패 확인 → 구현**
+- [x] **Step 5: MenuSequenceSynchronizer 테스트 작성 → 실패 확인 → 구현**
 
 테스트:
 
@@ -1348,7 +1348,7 @@ public class MenuSequenceSynchronizer {
 }
 ```
 
-- [ ] **Step 6: 컨트롤러에 POST 2본 추가**
+- [x] **Step 6: 컨트롤러에 POST 2본 추가**
 
 `CommonDataMigrationController`에 필드 `private final CommonDataMigrationService migrationService;`, `private final MenuSequenceSynchronizer menuSequenceSynchronizer;` 추가 후:
 
@@ -1378,12 +1378,12 @@ public class MenuSequenceSynchronizer {
 
 import에 `HttpStatus`, `MediaType`, `PostMapping`, `RequestBody`, `Valid` 추가.
 
-- [ ] **Step 7: 테스트 통과 확인**
+- [x] **Step 7: 테스트 통과 확인**
 
 Run: `cd C:\it\it_backend; ./gradlew test --tests 'com.kdb.it.domain.migration.commondata.*'`
 Expected: PASS
 
-- [ ] **Step 8: 커밋**
+- [x] **Step 8: 커밋**
 
 ```bash
 cd C:\it\it_backend
@@ -1403,24 +1403,24 @@ git commit -m "feat: 공통 데이터 이관 dry-run/commit API와 메뉴 시퀀
 - Consumes: Task 1·3의 컨트롤러. 테스트 구성(MockMvc 세팅·인증 헬퍼)은 기존 `it_backend/src/test/java/com/kdb/it/domain/migration/controller/MigrationControllerTest.java`를 열어 **같은 방식**(사용 어노테이션, 목 구성, 관리자/비관리자 인증 스텁)을 그대로 따른다.
 - Produces: 없음 (검증 전용)
 
-- [ ] **Step 1: `MigrationControllerTest.java`를 읽고 같은 구성으로 테스트 작성**
+- [x] **Step 1: `MigrationControllerTest.java`를 읽고 같은 구성으로 테스트 작성**
 
 케이스 3개:
 1. `관리자는_dryRun을호출할수있다` — ADMIN 인증으로 `POST /api/admin/migration/common-data/dry-run` (본문: 시트 5개 전부 빈 배열 `{"menus":[],"menuAuths":[],"routes":[],"codes":[],"translations":[]}`) → 200
 2. `비관리자는_403이다` — 일반 사용자 인증으로 같은 요청 → 403
 3. `관리자는_export를호출할수있다` — `GET /api/admin/migration/common-data/export` → 200
 
-- [ ] **Step 2: 테스트 실행**
+- [x] **Step 2: 테스트 실행**
 
 Run: `cd C:\it\it_backend; ./gradlew test --tests 'com.kdb.it.domain.migration.commondata.controller.CommonDataMigrationControllerTest'`
 Expected: PASS
 
-- [ ] **Step 3: 백엔드 전체 테스트**
+- [x] **Step 3: 백엔드 전체 테스트**
 
 Run: `cd C:\it\it_backend; ./gradlew test`
 Expected: BUILD SUCCESSFUL (기존 테스트 회귀 없음). `binary/output.bin` 파일락 이슈가 나면 데몬 정리 후 재시도(메모리 참조: `--no-daemon`).
 
-- [ ] **Step 4: 커밋**
+- [x] **Step 4: 커밋**
 
 ```bash
 cd C:\it\it_backend
@@ -1446,7 +1446,7 @@ git commit -m "test: 공통 데이터 이관 컨트롤러 보안 테스트 추�
   - `parseCommonDataSheets(sheets: Record<string, unknown[][]>): { bundle: CommonDataBundle; errors: string[] }` — 시트명·헤더 매칭 파싱. 다섯 시트 중 하나라도 없으면 errors에 `"'{시트명}' 시트를 찾을 수 없습니다"` 추가. excelRow는 실제 행번호(헤더=1, 데이터 2부터)
   - `toCellValue(value: unknown): unknown` — 수식/서식 셀 정규화 (`useTerminalBulkImportPage.ts:72-77`과 동일 로직을 이 유틸로 export)
 
-- [ ] **Step 1: 실패하는 왕복 테스트 작성**
+- [x] **Step 1: 실패하는 왕복 테스트 작성**
 
 ```ts
 import { describe, expect, it } from 'vitest';
@@ -1547,12 +1547,12 @@ describe('commonDataMigration 유틸', () => {
 });
 ```
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `cd C:\it\it_frontend; npx vitest run tests/unit/utils/commonDataMigration.test.ts`
 Expected: FAIL (모듈 미존재)
 
-- [ ] **Step 3: 유틸 구현**
+- [x] **Step 3: 유틸 구현**
 
 시트 정의(스펙 §5 그대로):
 
@@ -1581,12 +1581,12 @@ export const COMMON_DATA_SHEETS = {
 - `parseCommonDataSheets`는 시트별로 1행을 헤더로 읽어 헤더명→열 인덱스 맵을 만들고(순서 변경 허용), 2행부터 각 행을 파싱한다. 전부 빈 행은 건너뛴다.
 - `toCellValue`는 `useTerminalBulkImportPage.ts:72-77`의 로직(수식 `result`, 리치텍스트 `text` 언랩)을 그대로 옮겨 export하고, Task 6에서 그 파일이 이 유틸을 import하도록 바꾸지는 않는다(기존 파일 무변경 원칙 — 중복 허용, 이 유틸 안에서만 사용·export).
 
-- [ ] **Step 4: 테스트 통과 확인**
+- [x] **Step 4: 테스트 통과 확인**
 
 Run: `cd C:\it\it_frontend; npx vitest run tests/unit/utils/commonDataMigration.test.ts`
 Expected: PASS
 
-- [ ] **Step 5: 커밋 (it_frontend 저장소에서)**
+- [x] **Step 5: 커밋 (it_frontend 저장소에서)**
 
 ```bash
 cd C:\it\it_frontend
@@ -1625,7 +1625,7 @@ export interface CommonDataMigrationApiResponse {
 }
 ```
 
-- [ ] **Step 1: composable 작성 (구조는 `useTerminalBulkImportPage.ts`를 그대로 답습)**
+- [x] **Step 1: composable 작성 (구조는 `useTerminalBulkImportPage.ts`를 그대로 답습)**
 
 ```ts
 import { computed, ref } from 'vue';
@@ -1776,7 +1776,7 @@ export function useCommonDataMigrationPage() {
 }
 ```
 
-- [ ] **Step 2: i18n 메시지 추가**
+- [x] **Step 2: i18n 메시지 추가**
 
 `i18n/messages/migration.ts`의 ko·en 트리 각각에 (기존 `terminalImport` 키 형태를 그대로 따라):
 
@@ -1802,7 +1802,7 @@ commonData: {
 
 (파일의 실제 트리 구조·타입에 맞춰 배치. `npm run check:copy` 기준선을 늘리지 않도록 하드코딩 문구는 모두 i18n 키로.)
 
-- [ ] **Step 3: 페이지 작성**
+- [x] **Step 3: 페이지 작성**
 
 `app/pages/admin/migration/common-data.vue` — 구조·클래스는 `app/pages/admin/migration/index.vue`를 열어 같은 레이아웃 패턴을 따른다:
 
@@ -1924,7 +1924,7 @@ const onSelect = (files: File[]) => {
 
 (스타일 토큰·클래스 네이밍은 기존 마이그레이션 페이지와 어긋나면 그 페이지 쪽을 따른다.)
 
-- [ ] **Step 4: composable 테스트 작성**
+- [x] **Step 4: composable 테스트 작성**
 
 `tests/unit/composables/useCommonDataMigrationPage.test.ts` — 기존 composable 테스트의 mock 구성(`tests/unit/composables/` 아래 아무 파일이나 열어 `useNuxtApp`·`useToast`·`useI18n` mock 방식 확인)을 따라 최소 2케이스:
 1. `dry-run 오류가 있으면 canCommit이 false다` — `$apiFetch` mock이 `errors: ['x']` 응답 → `canCommit.value === false`
@@ -1932,12 +1932,12 @@ const onSelect = (files: File[]) => {
 
 (파일 파싱 경로는 Task 5 유틸 테스트가 담당하므로 selectFile 전체 흐름 대신 내부 상태를 직접 세팅해 computed만 검증해도 된다. computed 검증이 mock 구성상 어려우면 이 테스트는 dry-run 응답 상태 조작으로 대체한다.)
 
-- [ ] **Step 5: 프론트 검증 명령 실행**
+- [x] **Step 5: 프론트 검증 명령 실행**
 
 Run: `cd C:\it\it_frontend; npm run format:check; npm run check; npm test`
 Expected: 모두 PASS. format 실패 시 `npm run format` 후 재확인.
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 cd C:\it\it_frontend
@@ -1957,7 +1957,7 @@ git commit -m "feat: 공통 데이터 이관 관리자 화면 추가"
 - Consumes: 기존 시드 패턴 (`V20260822_001__SeedAdminMenuCatalogPathsAndAuthMapping.sql`의 CMENUD MERGE·CMENUA NOT EXISTS·GUID 식, `V20260829_003`의 CLANGM 갱신)
 - Produces: `/admin/migration/common-data` 경로 카탈로그 + 「공통 데이터 이관」 메뉴(기존 `/admin/migration` 메뉴의 형제) + ITPAD001 권한 매핑 + 영문 메뉴명
 
-- [ ] **Step 1: SQL 작성**
+- [x] **Step 1: SQL 작성**
 
 ```sql
 -- ============================================================================
@@ -2056,7 +2056,7 @@ COMMIT;
 
 작성 전 확인: ① `WHL_MNU_PTH` 실제 형식(`/MNU0000001/...`인지 `/0000001/...`인지)을 기존 데이터로 확인해 `v_parent_whl || '/' || v_new_id` 결합이 형제 행과 같은 형식이 되는지 검증(형제 행 `/admin/migration`의 WHL_MNU_PTH에서 자기 MNU_ID를 떼어낸 접두사와 v_parent_whl이 일치해야 한다), ② 컬럼명은 `it_database/ITPOWN_DDL_live.sql`의 TPRMPP_CMENUM 정의와 대조.
 
-- [ ] **Step 2: 로컬 Flyway 적용 검증**
+- [x] **Step 2: 로컬 Flyway 적용 검증**
 
 백엔드 로컬 프로파일 기동으로 Flyway가 적용하거나, 로컬 검증 절차(`it_database/docs/guides/migrations.md`)를 따른다. 적용 후:
 
@@ -2070,7 +2070,7 @@ SELECT COUNT(*) FROM ITPOWN.TPRMPP_CMENUA a
 
 Expected: 메뉴 1행(WHL_MNU_PTH가 형제와 같은 형식), 매핑 1건. `flyway_schema_history`에서 신규 버전 success=1 확인.
 
-- [ ] **Step 3: 커밋 (it_database 저장소에서)**
+- [x] **Step 3: 커밋 (it_database 저장소에서)**
 
 ```bash
 cd C:\it\it_database
@@ -2100,7 +2100,7 @@ npm run codegen:check
 
 Expected: `app/types/api.d.ts`에 `/api/admin/migration/common-data*` 경로 3개 추가, drift 검사 통과. (백엔드 기동이 환경상 불가능하면 이 단계를 사용자에게 보고하고 후속 과제로 `TASK.md`에 등재한다 — 조용히 건너뛰지 않는다.)
 
-- [ ] **Step 2: 전체 Health Stack**
+- [x] **Step 2: 전체 Health Stack**
 
 ```bash
 cd C:\it\it_backend
@@ -2134,7 +2134,7 @@ git add versions.lock
 git commit -m "chore: 공통 데이터 이관 호환 버전 기록"
 ```
 
-- [ ] **Step 5: 계획·스펙 문서 정리**
+- [x] **Step 5: 계획·스펙 문서 정리**
 
 - 이 계획 파일의 체크박스를 최종 상태로 갱신하고, 완료되면 `docs/superpowers/plans/` 규칙에 따라 위치 유지(이동은 사용자 지시 시).
 - 미완(예: codegen 미실행)이 있으면 `C:\it\TASK.md`에 후속 과제로 등재.
