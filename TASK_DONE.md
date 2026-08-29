@@ -1,6 +1,6 @@
 # ✅ IT Portal 완료·종료 내역 (Archive)
 
-> 🗓️ **기준일:** 2026-08-17
+> 🗓️ **기준일:** 2026-08-29
 > 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️)·폐기(⛔) 항목을 보관합니다.
 
 ### 🔑 범례 (Legend)
@@ -13,6 +13,16 @@
 | ⛔ Discarded | 사용자 범위 결정으로 폐기 |
 
 ---
+
+### ✅ 2026-08-29 TASK remediation plan 코드 조치
+
+- **SEC-18~22, CQ-38:** 관리자 판정 fail-closed, 사업 첨부 부모 권한 재검증, fingerprint secret 분리, 서버 절대경로 비노출, `@ModelAttribute` mass-assignment 방어를 반영했다.
+- **FE-61~63, CQ-34, CQ-37:** 프로젝트 입력 제한을 문자/UTF-8 바이트 단일 SoT로 통합하고, 협의회 첨부 다운로드·비용 이월·401 세션 갱신 coordinator를 공통 경계로 정리했다.
+- **BE-78~82, CQ-36, CQ-40:** 운영 표준 `VARCHAR2(... BYTE)`를 유지하면서 단말 조직명 저장 전 byte 검증을 추가하고, 반입 원본 보관 실패 결과 노출·첨부 ZIP 공통화·UTF-8 byte 유틸리티 공통화를 구현했다.
+- **CQ-39:** 예산 필터 중복과 미사용 테스트 import를 정리했다.
+- **DB/문서:** `meta/table.txt`와 적용된 Flyway migration은 수정하지 않았다. BE-78의 BYTE 기준은 [`it_database/docs/operations/2026-08-29-terminal-org-name-byte-semantics.md`](it_database/docs/operations/2026-08-29-terminal-org-name-byte-semantics.md)에, BE-83의 측정 전 인덱스 보류는 [`it_database/docs/operations/2026-08-29-be83-index-review.md`](it_database/docs/operations/2026-08-29-be83-index-review.md)에 기록했다. `ITPOWN_DDL_live.sql` 재추출(CQ-35)과 환경별 Flyway repair(REPO-04)는 승인된 운영 접근 후 처리할 인계 항목이다.
+- **검증:** 프론트 `npm run format:check`, `npm run check`, `npm run codegen:check`, 전체 Vitest 366개 파일/4,059개 테스트 통과. 백엔드 전체 `./gradlew test --no-daemon --max-workers=1 --console=plain` `BUILD SUCCESSFUL`.
+- 상세 계획과 커밋별 작업 내역은 [`docs/superpowers/plans/2026-08-29-task-remediation-plan.md`](docs/superpowers/plans/2026-08-29-task-remediation-plan.md)와 SDD 진행 장부를 참조한다.
 
 ### ✅ 2026-08-28 활성 잔여과제 일괄 조치 (BE-64 제외)
 
