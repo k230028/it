@@ -121,7 +121,7 @@
 | 메서드·경로 | 역할 | 응답 |
 | --- | --- | --- |
 | `GET /export` | 5개 테이블 전량 JSON | `ExportResponse(menus, menuAuths, routes, codes, translations)` |
-| `POST /dry-run` | 저장 없이 검증·계획 요약 | 테이블별 `{추가, 갱신, 부활, 변동없음}` 건수 + `warnings[]` + `errors[]` |
+| `POST /dry-run` | 저장 없이 검증·계획 요약 | 테이블별 `{추가, 갱신, 부활}` 건수 + `warnings[]` + `errors[]` |
 | `POST` | 단일 `@Transactional` 확정 반영 | dry-run과 동일 요약 + 시퀀스 재동기화 결과, 201 |
 
 DTO는 record 묶음(`CommonDataMigrationDto.MenuRow/MenuAuthRow/RouteRow/CodeRow/TranslationRow/Request/PlanSummary/...`)으로 작성하고 `@NotEmpty`/`@Valid` 검증을 건다. 요청 본문은 dry-run과 commit이 동일한 `Request(rows 5종)`를 공유한다.
@@ -143,7 +143,7 @@ DTO는 record 묶음(`CommonDataMigrationDto.MenuRow/MenuAuthRow/RouteRow/CodeRo
 모든 쓰기는 JPA 엔티티 경유로 수행한다 → `@LogTarget` 리스너가 `CMENUL`/`CCODEL`/`CLANGL` 변경로그를 자동 기록하고 BaseEntity 공통 컬럼(GUID 등)이 채워진다. 네이티브 벌크 SQL 금지.
 
 ### 시퀀스 재동기화
-메뉴 커밋 후 파일·운영을 합친 최대 `MNU_ID`(숫자 해석) 기준으로 `SQ_TPRMPP_CMENUM_1`을 `ALTER SEQUENCE … RESTART START WITH max+1`(Oracle 21c 지원)로 재동기화한다. 현재 시퀀스가 이미 그보다 크면 건드리지 않는다. DATA_ONLY 임포트에서 겪은 ORA-00001 재발 방지 조치.
+메뉴 커밋 트랜잭션이 끝난 뒤, 파일 메뉴ID(`MNU\d{7}` 형식)의 최대 번호 이상이 될 때까지 `SQ_TPRMPP_CMENUM_1.NEXTVAL`을 반복 소비해 전진시킨다. `ALTER SEQUENCE`는 DDL이라 implicit commit으로 이관 트랜잭션의 원자성을 깨고 ITPAPP 계정에 ALTER 권한도 필요하므로 쓰지 않는다. 전진 실패는 이관을 되돌릴 사유가 아니므로 응답 경고로만 알린다. DATA_ONLY 임포트에서 겪은 ORA-00001 재발 방지 조치.
 
 ### dry-run 검증
 
@@ -190,8 +190,9 @@ DTO는 record 묶음(`CommonDataMigrationDto.MenuRow/MenuAuthRow/RouteRow/CodeRo
 TDD로 진행한다.
 
 **백엔드**
-- 플래너 단위 테스트: 추가/갱신/부활/변동없음 분류, 각 오류·경고 케이스, 시트 내 PK 중복
-- 서비스 통합 테스트: 반영 순서, 논리삭제 부활, 변경로그 자동 생성, 시퀀스 재동기화(현재값이 더 크면 무변경 포함), 오류 존재 시 commit 400, 캐시 evict
+- 플래너 단위 테스트: 추가/갱신/부활 분류, 각 오류·경고 케이스, 시트 내 PK 중복
+- 서비스 단위 테스트(Mockito): dry-run 무저장, 신규 저장·논리삭제 부활, 공통코드 위임, 오류 존재 시 commit 거부, 시퀀스 동기화 루프·실패 경고
+- 변경로그 자동 생성과 캐시 evict는 기존 계약(@LogTarget 리스너, @CacheEvict 어노테이션)에 위임
 - 컨트롤러: ADMIN 아닌 사용자 403
 
 **프론트**
