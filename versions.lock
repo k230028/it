@@ -1,6 +1,6 @@
 # 서브레포 커밋 잠금 — 릴리스/재현용. scripts/update-versions-lock.ps1로 갱신.
 # 형식: <레포>  <origin URL>  <브랜치>  <HEAD SHA>  (갱신시각은 마지막 줄 주석)
-it_frontend  https://github.com/gonnabe88/it_frontend      codex/speed-dial-faq-qna 063b81e3abc6572092049309dc8c989777ba40d3
-it_backend   https://github.com/gonnabe88/it_backend       codex/speed-dial-faq-qna 3f6f42276b743d5e055433eeb34dd7800ef224b4
+it_frontend  https://github.com/gonnabe88/it_frontend      codex/speed-dial-faq-qna 19ccb819ebe82eb9c99081f7cfa5b7b65df9c904
+it_backend   https://github.com/gonnabe88/it_backend       codex/speed-dial-faq-qna e675f4882fca3f9d41d16458489f8c0cf91b2882
 it_database  https://github.com/gonnabe88/it_database      codex/speed-dial-faq-qna a407c0c201f8319793c28dffd3b54947f79bf771
-# 갱신시각: 2026-08-31 00:28:19
+# 갱신시각: 2026-08-31 01:05:38
