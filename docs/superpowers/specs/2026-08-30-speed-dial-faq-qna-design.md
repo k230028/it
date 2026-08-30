@@ -7,19 +7,26 @@
 
 이번 변경은 이미 운영 중인 범용 게시판을 재사용한다.
 
-| 기능 | 게시판 | 게시판관리번호 |
+| 기능 | 게시판 | 고유 게시판 유형 코드 (`IT_PTL_BLB_TC`) |
 | --- | --- | --- |
-| FAQ | FAQ | `BLBM-0426` |
-| Q&A | Q&A | `BLBM-0427` |
+| FAQ | FAQ | `004` |
+| Q&A | Q&A | `005` |
 
-DB 테이블이나 게시판을 새로 만들지 않는다. 게시판 ID는 백엔드 설정으로 관리하고
-기본값을 위 두 ID로 둔다.
+DB 테이블이나 게시판을 새로 만들지 않는다. FAQ와 Q&A는 각각 고유한
+`IT_PTL_BLB_TC` 유형 코드로 지정한다. 런타임에는 게시판관리번호를 설정값으로
+보관하거나 직접 참조하지 않고, 해당 유형 코드의 활성 게시판을 조회한다.
+
+현재 운영 데이터의 `BLBM-0426`(FAQ), `BLBM-0427`(Q&A)은 초기 데이터 보정
+마이그레이션에서만 각각 `004`, `005` 유형으로 지정한다. 이후 게시판관리번호가
+변경되거나 게시판이 재생성되어도 새 게시판에 같은 고유 유형을 유지하면 기능은
+영향을 받지 않는다. 각 유형은 활성 게시판이 정확히 하나만 존재하도록 관리한다.
 
 범위에 포함하는 내용:
 
 - `AppShell` 기반 전역 스피드다이얼 UI
 - 문의 작성용 전용 API와 Q&A 게시글 저장
 - FAQ 조회용 전용 API와 다이얼로그
+- FAQ/Q&A 고유 게시판 유형 코드와 활성 게시판 단일성 보장
 - FAQ 등록 후 활성 시스템관리자 전원에 대한 GWE 메일 알림
 - Tiptap 공통 에디터 적용
 - 한국어·영어 번역과 단위/API/E2E 검증
@@ -125,12 +132,16 @@ GWE 메일은 `GwePayload`와 `EaiService`를 직접 호출하지 않고 기존
 
 규칙:
 
-- 설정된 FAQ 게시판의 `DEL_YN='N'` 게시글만 조회한다.
+- `IT_PTL_BLB_TC='004'`, `USE_YN='Y'`, `DEL_YN='N'`인 FAQ 게시판을 조회한다.
+- FAQ 유형의 활성 게시판이 정확히 하나가 아니면 서버 설정 오류로 처리한다.
+- 선택된 FAQ 게시판의 `DEL_YN='N'` 게시글만 조회한다.
 - 사용자에게 공개 가능한 게시글만 조회한다.
 - 최신 등록순의 안정된 정렬을 사용한다.
 - 서버에서 최대 조회 건수를 제한한다.
 - 게시글 엔티티 전체를 반환하지 않고 전용 projection/DTO를 사용한다.
-- 게시판이 없거나 비활성인 경우 공통 Not Found 오류를 반환한다.
+- FAQ 유형 게시판이 없거나 비활성이면 공통 Not Found 오류를 반환한다.
+- FAQ 유형 게시판이 둘 이상이면 공통 Conflict/설정 오류를 반환하고 임의의
+  게시판을 선택하지 않는다.
 
 ### 4.2 Q&A 문의 등록
 
@@ -157,7 +168,9 @@ GWE 메일은 `GwePayload`와 `EaiService`를 직접 호출하지 않고 기존
 
 처리 규칙:
 
-- 서버가 설정된 Q&A 게시판 ID를 사용하고 클라이언트의 게시판 ID는 받지 않는다.
+- 서버가 `IT_PTL_BLB_TC='005'`, `USE_YN='Y'`, `DEL_YN='N'`인 Q&A 게시판을
+  조회하고 클라이언트의 게시판 ID는 받지 않는다.
+- Q&A 유형의 활성 게시판이 정확히 하나가 아니면 서버 설정 오류로 처리한다.
 - 인증 주체에서 작성자 사번을 결정한다.
 - `screenName`, `screenUrl`, `content`의 길이·형식·빈 값을 Bean Validation으로
   검증한다.
@@ -182,9 +195,10 @@ GWE 메일은 `GwePayload`와 `EaiService`를 직접 호출하지 않고 기존
 
 ### 5.1 발생 조건
 
-기존 `POST /api/boards/{blbMngNo}/posts`를 통한 게시글 등록 중 게시판관리번호가
-설정된 FAQ 게시판 ID인 경우 FAQ 등록 이벤트를 발행한다. FAQ 게시판 등록 권한은
-서버에서 시스템관리자(`ITPAD001`)로 강제한다.
+기존 `POST /api/boards/{blbMngNo}/posts`를 통한 게시글 등록 중 대상 게시판의
+`IT_PTL_BLB_TC='004'`인 경우 FAQ 등록 이벤트를 발행한다. FAQ 게시판 등록
+권한은 서버에서 시스템관리자(`ITPAD001`)로 강제한다. FAQ 유형 게시판의 활성
+단일성은 게시판 관리 저장 시에도 검증한다.
 
 이벤트에는 게시글 ID, 제목, 정화된 본문, 등록자 사번, FAQ 화면 내부 링크를 담는다.
 게시글 저장 트랜잭션의 성공 여부와 이벤트 처리는 분리한다.
@@ -237,7 +251,7 @@ FAQ 게시글 저장
 - `common/speeddial/controller/SpeedDialController.java`
 - `common/speeddial/dto/SpeedDialDto.java`
 - `common/speeddial/service/SpeedDialService.java`
-- `common/speeddial/config/SpeedDialProperties.java`
+- FAQ/Q&A 유형 게시판 단일 조회·검증을 담당하는 resolver/repository 확장
 - `common/speeddial/event/FaqRegisteredEvent.java`
 - `common/speeddial/event/FaqRegisteredEventListener.java`
 - 게시판 projection/repository 조회 확장
@@ -254,7 +268,14 @@ FAQ 게시글 저장
 - `i18n/messages/layout.ts` 또는 전용 `speedDial.ts`
 - 관련 Vitest/Playwright 테스트
 
-DB 마이그레이션 파일은 추가하지 않는다.
+DB 마이그레이션에는 다음을 포함한다.
+
+- `IT_PTL_BLB_TC` 공통코드 `004`(FAQ), `005`(Q&A) 등록
+- 현재 `BLBM-0426`, `BLBM-0427`의 초기 유형 지정
+- 두 유형에 활성 게시판이 정확히 하나인지 확인하는 검증 SQL
+
+마이그레이션 이후 애플리케이션 런타임 코드에는 위 게시판관리번호를 하드코딩하지
+않는다.
 
 ## 8. 오류·상태 처리
 
@@ -279,7 +300,7 @@ FAQ 다이얼로그가 열릴 때마다 불필요한 중복 조회를 만들지 
   - FAQ projection 변환·정렬·상한
   - Q&A 제목/본문 템플릿 조립
   - 허용되지 않은 category·URL·빈 본문 차단
-  - FAQ/Q&A 게시판 ID 정책
+  - FAQ/Q&A 유형 코드 조회와 활성 게시판 단일성 정책
 - `BoardPostService` 회귀 테스트
   - FAQ 등록 권한
   - FAQ 이벤트 발행
@@ -324,8 +345,12 @@ FAQ 다이얼로그가 열릴 때마다 불필요한 중복 조회를 만들지 
 
 1. `/admin`과 로그인 화면을 제외한 인증 화면에서 스피드다이얼을 사용할 수 있다.
 2. 문의하기가 현재 화면명·URL·구분·Tiptap HTML을 Q&A 게시판에 저장한다.
-3. 자주하는 질문이 FAQ 게시판의 최신 활성 글을 다이얼로그로 표시한다.
+3. 자주하는 질문이 `IT_PTL_BLB_TC='004'`인 FAQ 게시판의 최신 활성 글을
+   다이얼로그로 표시한다.
 4. FAQ 등록 시 활성 시스템관리자 전원에게 GWE 메일 아웃박스가 생성된다.
 5. 메일 실패가 FAQ 저장을 롤백하지 않고 재시도 정책으로 남는다.
-6. 서버 권한·정화·URL 검증과 관련 회귀 테스트가 통과한다.
-7. 프론트·백엔드·OpenAPI 타입·E2E Health Stack이 통과한다.
+6. 문의가 `IT_PTL_BLB_TC='005'`인 Q&A 게시판에 저장된다.
+7. FAQ/Q&A 유형 게시판의 활성 단일성 및 게시판관리번호 변경 시나리오가
+   검증된다.
+8. 서버 권한·정화·URL 검증과 관련 회귀 테스트가 통과한다.
+9. 프론트·백엔드·OpenAPI 타입·E2E Health Stack이 통과한다.
