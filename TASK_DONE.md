@@ -1,6 +1,6 @@
 # ✅ IT Portal 완료·종료 내역 (Archive)
 
-> 🗓️ **기준일:** 2026-08-29
+> 🗓️ **기준일:** 2026-08-30
 > 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️)·폐기(⛔) 항목을 보관합니다.
 
 ### 🔑 범례 (Legend)
@@ -32,9 +32,21 @@
 - **FE-61~63, CQ-34, CQ-37:** 프로젝트 입력 제한을 문자/UTF-8 바이트 단일 SoT로 통합하고, 협의회 첨부 다운로드·비용 이월·401 세션 갱신 coordinator를 공통 경계로 정리했다.
 - **BE-78~82, CQ-36, CQ-40:** 운영 표준 `VARCHAR2(... BYTE)`를 유지하면서 단말 조직명 저장 전 byte 검증을 추가하고, 반입 원본 보관 실패 결과 노출·첨부 ZIP 공통화·UTF-8 byte 유틸리티 공통화를 구현했다.
 - **CQ-39:** 예산 필터 중복과 미사용 테스트 import를 정리했다.
-- **DB/문서:** `meta/table.txt`와 적용된 Flyway migration은 수정하지 않았다. BE-78의 BYTE 기준은 [`it_database/docs/operations/2026-08-29-terminal-org-name-byte-semantics.md`](it_database/docs/operations/2026-08-29-terminal-org-name-byte-semantics.md)에, BE-83의 측정 전 인덱스 보류는 [`it_database/docs/operations/2026-08-29-be83-index-review.md`](it_database/docs/operations/2026-08-29-be83-index-review.md)에 기록했다. `ITPOWN_DDL_live.sql` 재추출(CQ-35)과 환경별 Flyway repair(REPO-04)는 승인된 운영 접근 후 처리할 인계 항목이다.
+- **DB/문서:** `meta/table.txt`와 적용된 Flyway migration은 수정하지 않았다. BE-78의 BYTE 기준은 [`it_database/docs/operations/2026-08-29-terminal-org-name-byte-semantics.md`](it_database/docs/operations/2026-08-29-terminal-org-name-byte-semantics.md)에, BE-83의 측정 전 인덱스 보류는 [`it_database/docs/operations/2026-08-29-be83-index-review.md`](it_database/docs/operations/2026-08-29-be83-index-review.md)에 기록했다. CQ-35는 [`docs/db-schema-gap/db-schema-gap-2026-08-29.md`](docs/db-schema-gap/db-schema-gap-2026-08-29.md) 6.3절의 라이브 DDL 재추출·대조로 해소했다. 환경별 Flyway repair(REPO-04)만 승인된 운영 접근 후 처리할 인계 항목이다.
 - **검증:** 프론트 `npm run format:check`, `npm run check`, `npm run codegen:check`, 전체 Vitest 366개 파일/4,059개 테스트 통과. 백엔드 전체 `./gradlew test --no-daemon --max-workers=1 --console=plain` `BUILD SUCCESSFUL`.
 - 상세 계획과 커밋별 작업 내역은 [`docs/superpowers/plans/2026-08-29-task-remediation-plan.md`](docs/superpowers/plans/2026-08-29-task-remediation-plan.md)와 SDD 진행 장부를 참조한다.
+
+### ✅ 2026-08-30 TASK remediation 완료
+
+- **ERR-15·ERR-17:** 이관 조정비율·일반관리비율에서 빈 값과 형식 오류를 분리했다. 형식 오류는 `RATE_UNPARSEABLE` 셀 진단/차단 또는 경고·예외로 표면화하고 정상 기본값으로 계산하지 않는다.
+- **ERR-16:** 협의회 계획·공지 조회 실패를 빈 결과나 수립 폴백으로 숨기지 않고 오류 상태와 재시도를 제공하며, 실패 시 이전 성공 상태를 정리한다.
+- **FE-64:** 백엔드 OpenAPI 계약을 기준으로 프론트 타입을 재생성했다. `app/types/api.d.ts`는 197 paths/276 schemas이며 `npm run codegen:check`에서 드리프트가 없다. 기존 imports→terminals 계약에 맞춰 레거시 미리보기 테스트 경계도 정리했다.
+- **FE-65·FE-66:** Nuxt fetch 옵션과 관리자 행 정제의 우회 단언을 제거하고, 협의회 준비·결과 접근 판정을 `useCouncilAccessContext`로 공통화했다. 관련 타입·구조 테스트를 추가했다.
+- **FE-67:** 정보 홈의 공지·일정 초기 조회와 검토의견 세션 조회를 공유 Promise/명시적 재시도 경계로 통합했다. KeepAlive 최초 활성화는 중복 조회하지 않고 실제 재활성화 때만 갱신한다. 정보 홈·검토 첨부 E2E 10건이 통과했다.
+- **BE-84·BE-85:** 공통 데이터 이관 조회를 IN 900개 단위로 분할하고 삭제·활성·번역 길이 규칙을 검증했다. `CostTerminalDto`의 누락 required properties를 OpenAPI 계약과 테스트에 반영했다.
+- **BE-86·BE-87:** Javadoc 기준선을 실제 2,106건으로 정합화하고 재실행 옵션을 추가했다(실측 2,064건). 프로젝트·비용 목록은 read projection, 안정 정렬, 최대 500건으로 제한하고 전체 Spotless도 통과시켰다.
+- **BE-88·BE-89·CQ-41:** 신청 목록 bulk 조립을 batch 조회·상한으로 바꾸고, 협의회 skip 조회를 IN/map 방식으로 바꿨다. 게시글·댓글의 공통 조회/안전 헬퍼를 추출했다.
+- **문서·검증:** 루트/백엔드/프론트 `README.md`와 `CLAUDE.md`에 목록·bulk·OpenAPI codegen·오류/빈 결과·초기 조회 공유 규칙을 추가했다. 프론트 `format:check`, `check`, `codegen:check`, Vitest 375개 파일/4,113건 및 관련 E2E 10건, 백엔드 전체 test 4,416건과 `check bootJar`, Javadoc 검사, Spotless를 통과했다.
 
 ### ✅ 2026-08-28 활성 잔여과제 일괄 조치 (BE-64 제외)
 

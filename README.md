@@ -207,12 +207,15 @@ Nuxt 페이지·컴포넌트
 ```
 
 - 프론트가 사용하는 응답 타입은 백엔드 OpenAPI 스펙(`/v3/api-docs`)에서 생성합니다(`npm run codegen` → `it_frontend/app/types/api.d.ts`). 백엔드 응답 DTO의 `@Schema` 계약이 프론트 타입의 단일 출처이며, 스펙 변경 후 재생성 누락은 `npm run codegen:check`가 잡습니다.
-- 프론트는 `runtimeConfig.public.apiBase`를 접두사로 구성한 API URL과 인증 쿠키를 사용합니다.
+- 프론트는 Nuxt `ssr:false` 정적 CSR이므로 인증 진입과 세션 복원은 클라이언트 `auth.global.ts`가 담당합니다. 핵심 E2E는 API를 모킹하고 Nuxt 개발 서버도 Playwright가 자동 기동하므로, 실제 백엔드 연동 검증과 구분해 실행합니다.
+- 프론트는 `runtimeConfig.public.apiBase`를 접두사로 구성한 API URL과 인증 쿠키를 사용합니다. BioAgent 설치 안내는 `NUXT_PUBLIC_ONEPASS_INSTALL_URL`, OpenAPI 타입 생성은 `OPENAPI_BACKEND_URL`을 별도로 사용합니다.
 - 개발 실행은 절대 API URL을 사용하고, 정적 프록시 배포는 빈 API 접두사와 same-origin `/api/`·`/sso/` 경로를 사용합니다.
 - 백엔드는 Controller에서 입력을 받고, Service에서 JWT 사용자 기준 부서·소유권·상태 전이를 검증합니다.
 - 목록·검색은 필요한 경우 QueryDSL 프로젝션을 사용하고, 물리 DB 변경은 애플리케이션 코드와 분리된 Flyway 스크립트로 관리합니다.
 - 결재 상태처럼 원 트랜잭션과 함께 성공해야 하는 처리는 동기 이벤트로 연결하고, 알림·메일처럼 원 업무를 롤백하면 안 되는 부수효과는 커밋 이후 별도 트랜잭션으로 처리합니다.
 - 업무·검증 예외는 백엔드 전역 처리기가 일관된 JSON 오류 응답으로 변환하고, 프론트 페이지·다이얼로그가 사용자 동작 맥락에 맞는 toast와 이동 여부를 결정합니다.
+
+새 API나 조회 흐름을 추가할 때는 백엔드 DTO·OpenAPI 계약과 계약 테스트를 먼저 확정합니다. 목록은 DB 프로젝션·안정 정렬·페이지 상한을 사용하고, 여러 ID를 조립하는 응답은 IN 배치 조회를 사용합니다. 프론트는 계약 확정 후 `npm run codegen`과 `npm run codegen:check`를 실행하며, 정상 빈 결과·초기 조회 실패·재조회 실패를 서로 다른 UI 상태로 유지합니다.
 
 ## 주요 업무 모듈
 
@@ -224,6 +227,9 @@ Nuxt 페이지·컴포넌트
 | 문서·사전협의   | `app/pages/info/documents`                      | 문서 버전, 검토 의견, 첨부파일과 결재 연결                                               |
 | 홈 대시보드      | `app/pages/info/index.vue`                      | 연도별 사업·예산 KPI, 예산 일정, 공지·일정 피드, 홈 배너                               |
 | 수기 엑셀 이관   | `app/pages/admin/migration`                     | 편성요청서 분석·반입, 원본 파일 보관과 결재 연계                                        |
+| 전자결재         | `app/pages/approval`                            | 결재 대시보드·목록·상세와 승인·반려·회수 명령                                           |
+| 공통 게시판      | `app/pages/board`                               | 게시글·댓글·첨부파일·멘션 관리                                                          |
+| 사전진단·가이드  | `app/pages/diagnosis`, `app/pages/guide`        | 클라이언트 설문 결과와 서버 문서·첨부·변수 카탈로그 조회                                |
 | 공통 기능        | 공통 레이아웃·메뉴·알림·관리자 화면            | 인증, MFA, IAM, 서버 권한 메뉴, 게시판, 알림, 다국어, 배너, 입력 길라잡이, 감사·실시간 로그와 WAS 로그 |
 
 메뉴는 백엔드가 사용자 권한으로 필터링한 `/api/menus` 트리를 프론트 헤더·사이드바·Breadcrumb·상단 탭이 함께 사용합니다. 탭 제목도 화면에 하드코딩하지 않고 이 트리의 메뉴명을 따릅니다. 프론트 메뉴 숨김은 화면 편의를 위한 것이며 API 접근 권한을 대신하지 않습니다.
