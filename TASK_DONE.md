@@ -14,6 +14,18 @@
 
 ---
 
+### ✅ 2026-08-31 사용자가이드 관리 기능 구현
+
+전용 테이블 없이 기존 `TPRMPP_CFILEM`을 재사용해 사용자가이드 업로드·전사 공개 다운로드·이력 관리를 구현했다. 서버가 `APG_FL_KD_NM='사용자가이드'` / `APG_FL_LNK_CTZ_NM='HEADER'` / `FL_TP_CONE='첨부파일'`을 고정하고, `DEL_YN`으로 현재 가이드(`N`)와 이력(`Y`)을 구분한다. 업로드·되돌리기 모두 같은 트랜잭션에서 기존 활성 건을 먼저 내려 **현재 가이드는 항상 0건 또는 1건**을 유지한다.
+
+- **API:** `/api/user-guides` — `GET /active`(인증 사용자 전체, 없으면 204), `GET /admin`·`POST`·`PATCH /{id}/active`(관리자). 내려받기는 전용 경로 없이 공통 `GET /api/files/{flMpnId}/download`와 신설 `UserGuideFileReadAuthorizer`(전사 공개)를 사용한다. 허용 확장자는 pdf·hwp·hwpx·docx·pptx.
+- **화면:** 관리 화면 `/admin/user-guides`(사이드바 [콘텐츠 관리] 하위), 헤더 [통합검색] 좌측 [사용자가이드] 버튼(현재 가이드가 없으면 숨김).
+- **DB:** `it_database/migrations/V20260830_003__SeedUserGuideAdminMenu.sql`로 관리자 메뉴를 시드했다.
+- **설계·계획:** [`docs/superpowers/specs/2026-08-30-user-guide-design.md`](docs/superpowers/specs/2026-08-30-user-guide-design.md), [`docs/superpowers/plans/2026-08-30-user-guide.md`](docs/superpowers/plans/2026-08-30-user-guide.md).
+- **호환 커밋(`versions.lock`):** it_backend `3f6f4227`(브랜치 `codex/speed-dial-faq-qna`, 읽기 판정기 `95b1b3d5`→서비스·DTO `ebf5e461`→컨트롤러 `3f6f4227`), it_database `a407c0c`, it_frontend `063b81e3`(컴포저블 `38a02e72`→헤더 버튼 `e4ede996`/`68638d85`→관리 화면 `90e97fbf`/`063b81e3`).
+- **검증:** 백엔드 전체 `./gradlew test --no-daemon` `BUILD SUCCESSFUL`. 프론트 `npm run format:check`·`npm run codegen:check`(드리프트 없음, 203 paths/281 schemas)는 통과했다. `npm run check`·`npm test`는 이 기능이 새로 만든 파일 2건의 등록 누락으로 각 1건씩 실패한다 — `tests/unit/architecture/component-boundaries.test.ts`가 신설 `UserGuideButton.vue`를 layout 컴포넌트 목록에 반영하지 못했고, `scripts/user-facing-copy-baselines.mjs`가 `app/pages/admin/user-guides.vue`의 진단 로그 라벨(`useRefreshGuard`의 `logLabel`, 사용자 노출 문구 아님)을 기준선에 등재하지 못했다. 두 파일 모두 후속 커밋에서 등재가 필요한 잔여 항목이다.
+- **미검증 범위:** 관리자·일반 사용자 실계정을 통한 실제 브라우저 왕복 확인(사이드바 메뉴 노출·업로드·되돌리기·내려받기·권한 차단)은 이 기록 시점에 계정 준비가 없어 별도로 처리한다.
+
 ### ✅ 2026-08-29 TASK remediation plan 코드 조치
 
 - **SEC-18~22, CQ-38:** 관리자 판정 fail-closed, 사업 첨부 부모 권한 재검증, fingerprint secret 분리, 서버 절대경로 비노출, `@ModelAttribute` mass-assignment 방어를 반영했다.
