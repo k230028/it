@@ -81,6 +81,7 @@ IT Project Portal은 정보화 예산·사업·인력과 관리자 실시간 로
 
 - 물리 변경은 `it_database/migrations/V{YYYYMMDD_NNN}__{CamelCaseDescription}.sql`로 추가합니다.
 - 적용된 Flyway 스크립트는 수정하지 않고 새 버전으로 변경합니다.
+- ITPOWN의 데이터베이스 문자셋은 `AL32UTF8`, `VARCHAR2` 길이 기준은 BYTE semantics입니다. 신규·변경 DDL은 세션 기본값에 맡기지 않고 `VARCHAR2(n BYTE)`를 명시하며, 저장 가능 여부는 글자 수가 아니라 UTF-8 바이트 길이와 `LENGTHB`로 확인합니다.
 - 엔티티·검증·운영 적용 규칙은 `it_database/CLAUDE.md`와 `it_database/docs/guides/migrations.md`를 따릅니다.
 
 ## 4. 작업 흐름
@@ -97,6 +98,7 @@ IT Project Portal은 정보화 예산·사업·인력과 관리자 실시간 로
 - 백엔드 DTO/OpenAPI 계약을 먼저 확정한 뒤 프론트에서 `npm run codegen`과 `npm run codegen:check`를 실행합니다. 생성 타입은 수기로 편집하지 않습니다.
 - 빈 결과·누락 값·잘못된 입력·조회 실패를 같은 상태로 취급하지 않습니다. malformed 값은 정상 기본값이나 미존재로 숨기지 말고 진단·경고·차단 중 계약에 맞게 표면화합니다.
 - 초기 조회 실패는 정상 빈 화면으로 대체하지 않고 재시도 가능한 오류 상태로 유지하며, 재조회 실패 때 이전 성공 데이터를 새 성공처럼 표시하지 않습니다.
+- 정보화사업·경상사업은 `BPROJM(ABUS_MNG_NO, SNO)`의 순번으로 재상신 이력을 식별하며 `ODN_YN='Y'`가 경상사업, NULL 또는 `N`이 정보화사업입니다. 전산업무비는 `BCOSTM(BG_NO, BG_SNO)`를 사용합니다. 후속 업무 목록·집계·bulk 조회는 `LST_YN='Y'` 최종본만 사용하고, 미상신 작성 목록은 재상신 초안을 포함해 응답 순번을 보존합니다. 이력 조회·수정·결재 매핑도 관리번호와 순번을 함께 사용합니다.
 
 Superpowers 산출물은 `docs/superpowers/{specs,plans,done}/`에 둡니다. 프로젝트 규칙과 일반 스킬이 충돌하면 이 저장소의 CLAUDE와 `docs/guides/`가 우선합니다.
 
