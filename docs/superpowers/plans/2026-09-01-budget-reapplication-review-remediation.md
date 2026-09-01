@@ -181,15 +181,10 @@ List<Bcostm> costs = costRepository.findByCostBgNoAndDelYnOrderByBgSnoAsc(itMngc
    ```
    락이 두 트랜잭션을 직렬화하므로 두 번째 트랜잭션은 이 검사에서 차단된다.
 
-2. DB 차원 이중 안전망 — Oracle 함수 기반 부분 고유 인덱스로 "관리번호당 활성 초안 1건"을 강제한다. 명명은 기존 `IX_{테이블}_##` 규칙을 따른다(`IX_TPRMPP_BPROJM_02`는 `V20260831_001`이, `IX_TPRMPP_BCOSTM_01`·`_02`는 운영이 이미 점유하므로 양쪽 모두 `_03`).
-   ```sql
-   CREATE UNIQUE INDEX ITPOWN.IX_TPRMPP_BPROJM_03 ON ITPOWN.TPRMPP_BPROJM
-       (CASE WHEN (LST_YN = 'N' AND DEL_YN = 'N') THEN ABUS_MNG_NO END);
+2. ~~DB 차원 이중 안전망 — 함수 기반 부분 고유 인덱스~~ **철회(2026-09-01)**.
+   `LST_YN='N' AND DEL_YN='N'`은 미결 초안뿐 아니라 **승격으로 강등된 과거 버전**까지 포함한다. 실제 데이터(`PRJ-2027-0600`: 최종본 `SNO=4`, `SNO=1`·`3`이 `N`/`N`)로 로컬 적용에서 확인했다. 재상신을 한 번이라도 거친 문서는 모두 위반이 되므로 이 불변식은 성립하지 않는다. 미결 초안은 "최종본보다 뒤 순번"으로만 가려낼 수 있고 이는 행 단위 술어가 아니어서 함수 기반 인덱스로 강제할 수 없다. `V20260901_002`를 철회하고 중복 차단은 애플리케이션 가드에만 맡긴다.
 
-   CREATE UNIQUE INDEX ITPOWN.IX_TPRMPP_BCOSTM_03 ON ITPOWN.TPRMPP_BCOSTM
-       (CASE WHEN (LST_YN = 'N' AND DEL_YN = 'N') THEN COST_BG_NO END);
-   ```
-   기존 데이터에 중복 초안이 있으면 ORA-01452로 생성이 실패하므로 **사전 점검 SQL을 검증 스크립트로 먼저 배포**한다. 두 인덱스는 신규 `V20260901_002__AddReapplicationDraftUniqueness.sql`에 담아 위 애플리케이션 가드와 **같은 배치에서** 배포한다 — DB 제약이 먼저 나가면 더블클릭이 안내 문구 대신 ORA-00001 기반 500이 된다. 운영 반영 목록은 [`meta/backlog.md`](../../../meta/backlog.md) §2에 등록했다.
+   같은 이유로 **1의 가드 술어도 정정**했다. `existsByAbusMngNoAndLstYnAndDelYn(mngNo,'N','N')`은 위와 같은 오판을 하므로 `existsByAbusMngNoAndSnoGreaterThanAndDelYn(mngNo, 최종본순번, 'N')`으로 바꿨다.
 
 3. 승격 역행 방지 — `promoteApprovedVersion`에서 현재 최종본 순번보다 낮은 순번으로의 승격을 거부한다.
    ```java
