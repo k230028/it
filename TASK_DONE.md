@@ -1,6 +1,6 @@
 # ✅ IT Portal 완료·종료 내역 (Archive)
 
-> 🗓️ **기준일:** 2026-08-30
+> 🗓️ **기준일:** 2026-09-03
 > 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️)·폐기(⛔) 항목을 보관합니다.
 
 ### 🔑 범례 (Legend)
@@ -13,6 +13,16 @@
 | ⛔ Discarded | 사용자 범위 결정으로 폐기 |
 
 ---
+
+### ✅ 2026-09-03 공통 안내 팝업 구현
+
+`TPRMPP_BGDOCM`의 `DOC_TTL_CONE='common.popup'` 문서를 관리자가 `/admin/common-popup`에서 게시·수정·중지하도록 구현했다. 활성 문서는 하나만 유지하며, 인증 화면의 공통 `AppShell`이 어느 업무 경로로 직접 진입하더라도 표준 다이얼로그로 표시한다.
+
+- **API:** `GET /api/common-popup`은 인증 사용자에게 활성 팝업을 반환하고 없으면 204를 반환한다. 관리자용 `GET`·`PUT`·`DELETE /api/admin/common-popup`은 `ROLE_ADMIN`으로 제한하며 저장 HTML을 서버에서 정화한다.
+- **다시 보지 않기:** 문서번호와 최종변경시각으로 만든 콘텐츠 버전을 1년 쿠키 `it-common-popup-dismissed-version`에 저장한다. 같은 버전만 숨기므로 관리자가 내용을 갱신하면 다시 표시한다.
+- **DB:** `V20260902_002__AddCommonPopupDocumentAndAdminMenu.sql`이 활성 `common.popup` 문서의 조건부 유일 인덱스와 [관리자] > [컨텐츠 관리] > [안내 팝업 관리] 메뉴·영문 번역·`ITPAD001` 권한을 추가한다.
+- **검증:** 백엔드 공통 팝업 테스트와 OpenAPI 계약 테스트, 프론트 컴포저블·다이얼로그·관리 화면·AppShell 단위 테스트를 통과했다. Playwright 5개 시나리오로 `/info`·`/budget` 직접 진입, 동일 버전 숨김, 변경 버전 재노출, API 500 시 화면 진입 유지를 확인했다.
+- **설계·계획:** [`docs/superpowers/specs/2026-09-02-common-popup-design.md`](docs/superpowers/specs/2026-09-02-common-popup-design.md), [`docs/superpowers/plans/2026-09-02-common-popup.md`](docs/superpowers/plans/2026-09-02-common-popup.md).
 
 ### ✅ 2026-08-31 사용자가이드 관리 기능 구현
 
