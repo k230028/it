@@ -202,4 +202,3 @@ npm run codegen:check
 ```
 
 API 계약을 구현한 뒤 백엔드를 기동하여 `npm run codegen`으로 생성 타입을 갱신하고 변경분을 함께 검증한다.
-
