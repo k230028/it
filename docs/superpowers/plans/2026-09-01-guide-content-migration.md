@@ -35,12 +35,12 @@
 ### Task 1: GDOC 논리 키 유일성 선행 마이그레이션
 
 **Files:**
-- Modify: `it_database/migrations/V20260903_002__NormalizeBgdocIndexes.sql`
-- Create: `it_database/docs/verification/V20260903_002__NormalizeBgdocIndexes.verify.sql`
+- Modify: `it_database/migrations/V20260903_005__NormalizeBgdocIndexes.sql`
+- Create: `it_database/docs/verification/V20260903_005__NormalizeBgdocIndexes.verify.sql`
 - Create: `it_database/docs/operations/2026-09-03-bgdoc-namespace-index-handover.md`
 
-**Interfaces:** BE-97의 `V20260903_001__NormalizeBgdocNamespaces.sql` 이후
-`V20260903_002__NormalizeBgdocIndexes.sql`이 활성 `GDOC-%` 행의
+**Interfaces:** BE-97의 `V20260903_004__NormalizeBgdocNamespaces.sql` 이후
+`V20260903_005__NormalizeBgdocIndexes.sql`이 활성 `GDOC-%` 행의
 `DOC_TTL_CONE` 유일성을 `IX_TPRMPP_BGDOCM_04`로 보장한다. 같은 버전은 담당자
 `CDOC-*`를 `_02`, 공통 팝업 `PDOC-*`를 `_03`으로 정규화한다. 진단 출력은
 제목·본문 없이 건수와 기술 키만 제공한다.
@@ -53,17 +53,17 @@
 
 - [x] **Step 2: 중복 사전 차단·기존 표준명 계약 검증을 포함한다**
 
-`V20260903_002`는 `_02`~`_04`가 이미 있으면 `ALL_INDEXES`와
+`V20260903_005`는 `_02`~`_04`가 이미 있으면 `ALL_INDEXES`와
 `ALL_IND_EXPRESSIONS`에서 UNIQUE 여부와 정규화된 함수식을 검증하고, 다른
 계약이면 DDL 전에 실패한다. 활성 CDOC 담당자, PDOC 공통 팝업, GDOC 제목의
 중복 그룹도 DDL 전에 차단한다.
 
 - [ ] **Step 3: DBA 또는 local-int에서 적용과 검증 SQL을 실행한다**
 
-Run: `@docs/verification/V20260903_002__NormalizeBgdocIndexes.verify.sql`
+Run: `@docs/verification/V20260903_005__NormalizeBgdocIndexes.verify.sql`
 
 Expected: 구 UX 인덱스는 0건, `_02`~`_04`는 각각 UNIQUE 1건, 함수식은
-운영 인계 표와 일치, 세 중복 그룹 수는 0, Flyway version `20260903.002`는
+운영 인계 표와 일치, 세 중복 그룹 수는 0, Flyway version `20260903.005`는
 success다. 적용 이력이 있으면 파일을 수정하지 않고 운영 인계의 실패·복구 분기를
 따른다.
 
