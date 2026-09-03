@@ -32,112 +32,40 @@
 
 ---
 
-### Task 1: GDOC 논리 키 유일성 마이그레이션
+### Task 1: GDOC 논리 키 유일성 선행 마이그레이션
 
 **Files:**
-- Create: `it_database/migrations/V20260901_001__AddBusinessGuideTitleUniqueness.sql`
-- Create: `it_database/docs/verification/V20260901_001__AddBusinessGuideTitleUniqueness.verify.sql`
+- Modify: `it_database/migrations/V20260903_002__NormalizeBgdocIndexes.sql`
+- Create: `it_database/docs/verification/V20260903_002__NormalizeBgdocIndexes.verify.sql`
+- Create: `it_database/docs/operations/2026-09-03-bgdoc-namespace-index-handover.md`
 
-**Interfaces:** 활성 `GDOC-%` 행의 `DOC_TTL_CONE` 유일성을 `UX_BGDOCM_GDOC_TITLE`로 보장한다. 적용 전 진단과 검증 출력은 제목·본문 없이 건수만 제공한다.
+**Interfaces:** BE-97의 `V20260903_001__NormalizeBgdocNamespaces.sql` 이후
+`V20260903_002__NormalizeBgdocIndexes.sql`이 활성 `GDOC-%` 행의
+`DOC_TTL_CONE` 유일성을 `IX_TPRMPP_BGDOCM_04`로 보장한다. 같은 버전은 담당자
+`CDOC-*`를 `_02`, 공통 팝업 `PDOC-*`를 `_03`으로 정규화한다. 진단 출력은
+제목·본문 없이 건수와 기술 키만 제공한다.
 
-- [ ] **Step 1: 버전 충돌을 재확인하고 검증 SQL을 먼저 작성한다**
+- [x] **Step 1: 기존 계획의 별도 `V20260901_001` 생성을 철회한다**
 
-Run:
+버전 `20260901.001`과 `UX_BGDOCM_GDOC_TITLE`은 생성하지 않는다. 새 인덱스는
+`meta/index.txt`의 `IX_TPRMPP_{테이블약어}_{2자리 순번}` 명명 규칙을 따라야
+한다.
 
-```powershell
-cd C:\it\it_database
-rg --files migrations | rg 'V20260901_001__'
-```
+- [x] **Step 2: 중복 사전 차단·기존 표준명 계약 검증을 포함한다**
 
-Expected: 출력 없음. 이미 선점됐다면 같은 날짜의 다음 빈 번호를 사용하고 이 계획의 두 파일명을 함께 갱신한다.
+`V20260903_002`는 `_02`~`_04`가 이미 있으면 `ALL_INDEXES`와
+`ALL_IND_EXPRESSIONS`에서 UNIQUE 여부와 정규화된 함수식을 검증하고, 다른
+계약이면 DDL 전에 실패한다. 활성 CDOC 담당자, PDOC 공통 팝업, GDOC 제목의
+중복 그룹도 DDL 전에 차단한다.
 
-검증 SQL은 다음 결과만 출력한다.
+- [ ] **Step 3: DBA 또는 local-int에서 적용과 검증 SQL을 실행한다**
 
-```sql
-SELECT COUNT(*) AS DUPLICATE_GROUP_COUNT
-  FROM (
-        SELECT 1
-          FROM ITPOWN.TPRMPP_BGDOCM
-         WHERE DEL_YN = 'N'
-           AND DOC_MNG_NO LIKE 'GDOC-%'
-         GROUP BY DOC_TTL_CONE
-        HAVING COUNT(*) > 1
-       );
+Run: `@docs/verification/V20260903_002__NormalizeBgdocIndexes.verify.sql`
 
-SELECT COUNT(*) AS EXPECTED_INDEX_COUNT
-  FROM ALL_INDEXES
- WHERE OWNER = 'ITPOWN'
-   AND TABLE_NAME = 'TPRMPP_BGDOCM'
-   AND INDEX_NAME = 'UX_BGDOCM_GDOC_TITLE'
-   AND UNIQUENESS = 'UNIQUE';
-```
-
-- [ ] **Step 2: 적용 전 검증이 red임을 확인한다**
-
-Run: DBA 콘솔 또는 로컬 Oracle에서 `@docs/verification/V20260901_001__AddBusinessGuideTitleUniqueness.verify.sql`
-
-Expected: `DUPLICATE_GROUP_COUNT=0`, `EXPECTED_INDEX_COUNT=0`. 중복 그룹이 있으면 데이터 정리 전까지 다음 단계로 진행하지 않는다.
-
-- [ ] **Step 3: 중복 사전 차단과 함수 기반 유일 인덱스를 구현한다**
-
-마이그레이션의 핵심 계약은 다음과 같다.
-
-```sql
-DECLARE
-    v_duplicate_group_count NUMBER;
-BEGIN
-    SELECT COUNT(*)
-      INTO v_duplicate_group_count
-      FROM (
-            SELECT 1
-              FROM ITPOWN.TPRMPP_BGDOCM
-             WHERE DEL_YN = 'N'
-               AND DOC_MNG_NO LIKE 'GDOC-%'
-             GROUP BY DOC_TTL_CONE
-            HAVING COUNT(*) > 1
-           );
-
-    IF v_duplicate_group_count > 0 THEN
-        RAISE_APPLICATION_ERROR(
-            -20031,
-            '활성 GDOC 논리 키 중복 그룹 수=' || v_duplicate_group_count
-        );
-    END IF;
-END;
-/
-
-CREATE UNIQUE INDEX ITPOWN.UX_BGDOCM_GDOC_TITLE
-    ON ITPOWN.TPRMPP_BGDOCM (
-        CASE
-            WHEN DEL_YN = 'N' AND DOC_MNG_NO LIKE 'GDOC-%'
-            THEN DOC_TTL_CONE
-        END
-    );
-```
-
-인덱스가 이미 있으면 `ALL_INDEXES`와 `ALL_IND_EXPRESSIONS`로 UNIQUE 여부와 정규화된 함수식을 검증하고, 계약이 다르면 이름만 믿고 통과하지 말고 실패시킨다.
-
-- [ ] **Step 4: 로컬 Flyway 적용과 표현식 검증을 수행한다**
-
-Run:
-
-```powershell
-cd C:\it\it_backend
-./gradlew bootRun --args='--spring.profiles.active=local-int'
-```
-
-별도 콘솔에서 검증 SQL을 실행한다.
-
-Expected: `DUPLICATE_GROUP_COUNT=0`, `EXPECTED_INDEX_COUNT=1`, `ALL_IND_EXPRESSIONS` 정규화 결과가 `CASEWHENDEL_YN='N'ANDDOC_MNG_NOLIKE'GDOC-%'THENDOC_TTL_CONEEND`와 일치하고 Flyway version `20260901.001`이 success다.
-
-- [ ] **Step 5: 데이터베이스 변경만 커밋한다**
-
-```powershell
-cd C:\it\it_database
-git add migrations/V20260901_001__AddBusinessGuideTitleUniqueness.sql docs/verification/V20260901_001__AddBusinessGuideTitleUniqueness.verify.sql
-git diff --cached --stat
-git commit -m "feat: 사업 가이드 제목 유일성 보장"
-```
+Expected: 구 UX 인덱스는 0건, `_02`~`_04`는 각각 UNIQUE 1건, 함수식은
+운영 인계 표와 일치, 세 중복 그룹 수는 0, Flyway version `20260903.002`는
+success다. 적용 이력이 있으면 파일을 수정하지 않고 운영 인계의 실패·복구 분기를
+따른다.
 
 ### Task 2: 공통 파일 검증과 안전한 저장 경로 정책 추출
 
