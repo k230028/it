@@ -111,8 +111,8 @@ git -C C:\it\it_database commit -m "docs: BYTE 전환 사전 게이트와 영향
 ### Task 3: BE-90 BGDOCM 문서번호 데이터 보정
 
 **Files:**
-- Create: `it_database/migrations/V20260903_001__NormalizeBgdocNamespaces.sql`
-- Create: `it_database/docs/verification/V20260903_001__NormalizeBgdocNamespaces.verify.sql`
+- Create: `it_database/migrations/V20260903_004__NormalizeBgdocNamespaces.sql`
+- Create: `it_database/docs/verification/V20260903_004__NormalizeBgdocNamespaces.verify.sql`
 - Create: `it_database/docs/operations/2026-09-03-bgdoc-namespace-index-handover.md`
 
 **Interfaces:** 담당자 정보는 `CDOC-{yyyy}-{seq:04d}`, 공통 팝업은 `PDOC-{yyyy}-{seq:04d}`를 사용한다.
@@ -148,15 +148,15 @@ Expected: 특수 문서가 전용 접두사를 사용하고 기존 `GDOC-*` 특�
 - [ ] **Step 5: 데이터 보정과 운영 인계를 커밋한다**
 
 ```powershell
-git -C C:\it\it_database add migrations/V20260903_001__NormalizeBgdocNamespaces.sql docs/verification/V20260903_001__NormalizeBgdocNamespaces.verify.sql docs/operations/2026-09-03-bgdoc-namespace-index-handover.md
+git -C C:\it\it_database add migrations/V20260903_004__NormalizeBgdocNamespaces.sql docs/verification/V20260903_004__NormalizeBgdocNamespaces.verify.sql docs/operations/2026-09-03-bgdoc-namespace-index-handover.md
 git -C C:\it\it_database commit -m "fix: BGDOC 문서번호 네임스페이스 분리"
 ```
 
 ### Task 4: BE-97 BGDOCM 인덱스 정규화
 
 **Files:**
-- Create: `it_database/migrations/V20260903_002__NormalizeBgdocIndexes.sql`
-- Create: `it_database/docs/verification/V20260903_002__NormalizeBgdocIndexes.verify.sql`
+- Create: `it_database/migrations/V20260903_005__NormalizeBgdocIndexes.sql`
+- Create: `it_database/docs/verification/V20260903_005__NormalizeBgdocIndexes.verify.sql`
 - Modify: `it_database/docs/operations/2026-09-03-bgdoc-namespace-index-handover.md`
 - Modify: `docs/superpowers/plans/2026-09-01-guide-content-migration.md`
 
@@ -192,7 +192,7 @@ Expected: 구 UX 0개, `_02`~`_04` 각각 1개, 표현식 일치, GDOC 중복 �
 - [ ] **Step 5: DB와 루트 계획 변경을 저장소별로 커밋한다**
 
 ```powershell
-git -C C:\it\it_database add migrations/V20260903_002__NormalizeBgdocIndexes.sql docs/verification/V20260903_002__NormalizeBgdocIndexes.verify.sql docs/operations/2026-09-03-bgdoc-namespace-index-handover.md
+git -C C:\it\it_database add migrations/V20260903_005__NormalizeBgdocIndexes.sql docs/verification/V20260903_005__NormalizeBgdocIndexes.verify.sql docs/operations/2026-09-03-bgdoc-namespace-index-handover.md
 git -C C:\it\it_database commit -m "feat: BGDOC 인덱스 명명과 유일성 정규화"
 git -C C:\it add docs/superpowers/plans/2026-09-01-guide-content-migration.md
 git -C C:\it commit -m "docs: 가이드 이관 DB 선행 작업 현행화"

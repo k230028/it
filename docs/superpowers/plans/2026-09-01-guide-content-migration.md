@@ -35,12 +35,12 @@
 ### Task 1: GDOC 논리 키 유일성 선행 마이그레이션
 
 **Files:**
-- Modify: `it_database/migrations/V20260903_002__NormalizeBgdocIndexes.sql`
-- Create: `it_database/docs/verification/V20260903_002__NormalizeBgdocIndexes.verify.sql`
+- Modify: `it_database/migrations/V20260903_005__NormalizeBgdocIndexes.sql`
+- Create: `it_database/docs/verification/V20260903_005__NormalizeBgdocIndexes.verify.sql`
 - Create: `it_database/docs/operations/2026-09-03-bgdoc-namespace-index-handover.md`
 
-**Interfaces:** BE-97의 `V20260903_001__NormalizeBgdocNamespaces.sql` 이후
-`V20260903_002__NormalizeBgdocIndexes.sql`이 활성 `GDOC-%` 행의
+**Interfaces:** BE-97의 `V20260903_004__NormalizeBgdocNamespaces.sql` 이후
+`V20260903_005__NormalizeBgdocIndexes.sql`이 활성 `GDOC-%` 행의
 `DOC_TTL_CONE` 유일성을 `IX_TPRMPP_BGDOCM_04`로 보장한다. 같은 버전은 담당자
 `CDOC-*`를 `_02`, 공통 팝업 `PDOC-*`를 `_03`으로 정규화한다. 진단 출력은
 제목·본문 없이 건수와 기술 키만 제공한다.
@@ -60,7 +60,7 @@
 
 - [ ] **Step 3: DBA 또는 local-int에서 적용과 검증 SQL을 실행한다**
 
-Run: `@docs/verification/V20260903_002__NormalizeBgdocIndexes.verify.sql`
+Run: `@docs/verification/V20260903_005__NormalizeBgdocIndexes.verify.sql`
 
 Expected: 구 UX 인덱스는 0건, `_02`~`_04`는 각각 UNIQUE 1건, 함수식은
 운영 인계 표와 일치, 세 중복 그룹 수는 0, Flyway version `20260903.002`는

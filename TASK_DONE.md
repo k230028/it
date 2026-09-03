@@ -23,7 +23,7 @@
 - **프런트 오류 상태(FE-68~70):** 게시판 첨부 bulk 실패를 빈 첨부로 숨기지 않고 오류·재시도 상태로 표시한다. 담당자 정보 조회 실패에서도 스피드다이얼 진입과 재시도가 유지된다. 예산·사업 보고서의 손상된 sessionStorage는 정상 빈 선택과 구분해 차단하고 항상 제거한다.
 - **프런트 타입·중복(FE-71~73):** 사용자 가이드를 생성 OpenAPI 타입에 연결하고, HTML escape/strip/본문 유의미성 판정과 프로젝트 입력 제한의 중복·미사용 export를 정리했다. 게시판 멘션 접근성 이름은 호출부의 현재 locale 번역을 사용한다.
 - **구조·품질(CQ-42~44):** 800줄을 넘던 프런트 7개 화면·에디터의 책임을 하위 컴포넌트와 composable로 분리했다. 정규식 ESLint 오류와 pdfmake 테이블 타입 오류를 해소했다. 백엔드도 `CostDto`와 `ApplicationService`를 800줄 아래로 내리고 `ProjectDto` 기존 기준선을 1016에서 1011로 낮췄다.
-- **검증:** 프런트 전체 Vitest 419개 파일 중 418개 통과·1개 skip, 4,428건 통과·8건 skip. 커버리지는 라인 97.65%, 분기 85.53%, 함수 96.64%, 구문 96.16%이며 측정 대상 237개 파일이 네 지표 모두 70% 이상이다. `npm run check`·Stylelint·Prettier·OpenAPI drift 검사와 예산 핵심 E2E 9건을 통과했다. 백엔드는 전체 4,737건(20건 skip, 실패·오류 0), 클래스별 라인·분기·복잡도 70% 게이트, Spotless, bootJar와 Javadoc 생성을 통과했다. 결과는 [`docs/test/test-report-2026-09-03.html`](docs/test/test-report-2026-09-03.html)에 갱신했다.
+- **검증:** 프런트 전체 Vitest 422개 파일 중 421개 통과·1개 skip, 4,461건 통과·8건 skip. 커버리지는 라인 97.65%, 분기 85.53%, 함수 96.64%, 구문 96.16%이며 측정 대상 237개 파일이 네 지표 모두 70% 이상이다. `npm run check`·Stylelint·Prettier·OpenAPI drift 검사와 예산 핵심 E2E 9건을 통과했다. 백엔드는 전체 4,753건(20건 skip, 실패·오류 0), 클래스별 라인·분기·복잡도 70% 게이트, Spotless, bootJar와 Javadoc 생성을 통과했다. 결과는 [`docs/test/test-report-2026-09-03.html`](docs/test/test-report-2026-09-03.html)에 갱신했다.
 - **DB 적용 경계:** 마이그레이션 파일과 검증 SQL은 작성·정적 리뷰를 마쳤지만 실제 Oracle/Flyway 적용은 하지 않았다. DBA가 [`meta/backlog.md`](meta/backlog.md)의 `적용대기` 항목과 각 운영 인계 문서를 확인해 적용한 뒤, 실 DB에서 다시 추출한 결과로만 `meta/index.txt`를 갱신한다.
 
 ### ✅ 2026-09-03 공통 안내 팝업 구현
