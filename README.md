@@ -229,10 +229,10 @@ Nuxt 페이지·컴포넌트
 | 수기 엑셀 이관   | `app/pages/admin/migration`                                              | 편성요청서 분석·반입, 원본 파일 보관과 결재 연계                                                       |
 | 전자결재         | `app/pages/approval`                                                     | 결재 대시보드·목록·상세와 승인·반려·회수 명령                                                       |
 | 공통 게시판      | `app/pages/board`                                                        | 게시글·댓글·첨부파일·멘션 관리. 본문은 Tiptap HTML로 저장하고 서버 정화 후 표시                      |
-| 공통 안내 팝업   | `app/pages/admin/common-popup.vue`, 공통 `AppShell`                      | `TPRMPP_BGDOCM`의 `common.popup` 게시·중지와 콘텐츠 버전별 안내 표시                                  |
-| 스피드다이얼     | 공통 `AppShell`, `app/pages/admin/contact-information.vue`                | 전역 FAQ 조회·Q&A 등록·담당자 정보 열람. FAQ·Q&A는 공통 게시판 유형(`004`·`005`)을 재사용             |
-| 사용자가이드     | 헤더 버튼, `app/pages/admin/user-guides.vue`                              | 전사 공개 가이드 파일 업로드·내려받기·이력 되돌리기. 현재 가이드는 항상 0건 또는 1건                  |
-| 공통 데이터 이관 | `app/pages/admin/migration/common-data.vue`                              | 메뉴·메뉴권한·경로·공통코드·다국어를 개발→운영으로 내보내기·dry-run·확정 반영                       |
+| 공통 안내 팝업   | `app/pages/admin/common-popup.vue`, 공통 `AppShell`                    | `TPRMPP_BGDOCM`의 `common.popup` 게시·중지와 콘텐츠 버전별 안내 표시                               |
+| 스피드다이얼     | 공통`AppShell`, `app/pages/admin/contact-information.vue`              | 전역 FAQ 조회·Q&A 등록·담당자 정보 열람. FAQ·Q&A는 공통 게시판 유형(`004`·`005`)을 재사용       |
+| 사용자가이드     | 헤더 버튼,`app/pages/admin/user-guides.vue`                              | 전사 공개 가이드 파일 업로드·내려받기·이력 되돌리기. 현재 가이드는 항상 0건 또는 1건                  |
+| 공통 데이터 이관 | `app/pages/admin/migration/common-data.vue`                              | 메뉴·메뉴권한·경로·공통코드·다국어를 개발→운영으로 내보내기·dry-run·확정 반영                    |
 | 사전진단·가이드 | `app/pages/diagnosis`, `app/pages/guide`                               | 클라이언트 설문 결과와 서버 문서·첨부·변수 카탈로그 조회                                              |
 | 공통 기능        | 공통 레이아웃·메뉴·알림·관리자 화면                                     | 인증, MFA, IAM, 서버 권한 메뉴, 게시판, 알림, 다국어, 배너, 입력 길라잡이, 감사·실시간 로그와 WAS 로그 |
 
