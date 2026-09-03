@@ -34,3 +34,6 @@ graphify-out/
 # GitHub 일반 파일 용량 제한을 초과하는 로컬 PPT 템플릿
 /sample/템플릿 1번 A(문서작업용).pptx
 /sample/템플릿 1번 B(다이어그램용).pptx
+
+# Superpowers SDD 작업공간 (원장·브리프·리뷰 패키지 등 세션 산출물)
+/.superpowers/
