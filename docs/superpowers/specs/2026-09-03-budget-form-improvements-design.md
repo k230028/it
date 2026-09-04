@@ -140,7 +140,7 @@ i18n `project.form.resource.columns.item`을 `항목(품목 등)`으로 바꾼�
 - 구현은 `common.approval.service.ApprovalLineSuggestionService`가 맡는다. `UserRepository`에 `findByBbrCAndPtCInAndDelYn`, `findByBbrCAndTemCAndPtCInAndDelYn`을 추가해 DB에서 거른다.
 - 직위코드 그룹은 `CommonCodeService`로 읽고 차수별로 나눈다. 그룹이 비어 있으면 두 차수 모두 사유 `NONE`으로 응답하고 경고 로그를 남긴다.
 - 국외 판정 접두사 `9`는 `FormAdapterContext.FOREIGN_DEPT_PREFIX`가 이미 갖고 있다. `common.iam.BranchCodes.isForeign(bbrC)`로 뽑아 두 곳이 함께 쓴다.
-- 인증 실패는 401, 사용자 행이 없으면 404를 돌려준다.
+- 인증 실패는 401, 사용자 행이 없으면 `IllegalArgumentException`을 던지고 `GlobalExceptionHandler`가 이를 400으로 매핑해 돌려준다(404가 아니다).
 
 ### 7.3 프론트
 
@@ -203,6 +203,7 @@ i18n `project.form.resource.columns.item`을 `항목(품목 등)`으로 바꾼�
 - 결재 상신은 지금처럼 여러 원천을 묶어 `1` 상태의 새 신청서를 만든다. 원천의 `0` 행은 갱신하지 않는다. 목록 판정이 최신 신청서번호 기준이라 새 신청서가 `0` 행을 자연스럽게 덮고, `0` 행은 반려·회수 행처럼 이력으로 남는다.
 - 결재 상신 화면의 "상신 대상" 조회는 `apfSts='none'`에서 `apfSts='0'`으로 바꾼다. 결재 상신 사이드바 배지의 건수 조회도 같은 조건을 쓴다. 반려·회수 건은 다시 [저장]해야 상신 대상이 된다. 이는 현행과 다른 동작이며 작성완료를 상신 관문으로 쓰려는 이번 요청의 취지에 맞춘 결정이다.
 - `BudgetListVersionScope.DRAFT_VISIBLE_CODES`에 `DRAFTED`를 추가해 저장한 재상신 초안(`LST_YN='N'`)이 작성완료 스코프에서 보이게 한다.
+- **알려진 부작용(문서만, 코드 변경 없음):** 편성요청서 반입 경로는 원천에 결재선 없는 수기등록(`9`, `MANUAL`) 신청서를 스탬프한다. 상신 화면 스코프가 "활성·완료 신청서 없음"(`apfSts='none'`)이던 이전에는 이 반입 항목이 상신 대상에 보였지만, 스코프를 "최신 신청서가 작성완료(`0`)"로 좁힌 이번 변경 이후로는 최신 신청서가 `9`(작성완료가 아님)라 상신 대상에서 사라진다. 담당자가 화면을 열어 [저장]해 작성완료(`0`) 신청서로 갱신해야 다시 나타난다. 이는 이번 변경이 낳은 실제 동작 차이이며, 반입 항목을 스코프에 자동 포함시키는 것은 별도 결정이 필요하다(이번 계획은 그런 규칙을 의도하지 않았다).
 - `none` 스코프의 의미는 유지한다(활성·완료 신청서가 없는 항목). 상신 대상 판정에는 더 이상 쓰지 않는다.
 - 사업·전산업무비 목록 배지: 신청서 없음은 `임시저장`, `0`은 `작성완료`. 기존 `getApprovalTagClass`의 `임시저장` 회색 스타일을 쓰고 `작성완료`는 같은 회색 계열로 추가한다. 목록 응답의 `apfSts` 라벨은 `ApprovalStatus.label()`에서 나온다.
 - 결재함 목록(`GET /api/applications`), 대시보드, 결재 대기 조회는 `0`을 제외한다. `findTop500ByOrderByApfMngNoDesc`를 상태 제외 조건이 있는 쿼리로 바꾼다. 대시보드 집계는 이미 `1`·`2`·`3`을 명시하므로 영향이 없다.
@@ -219,7 +220,7 @@ i18n `project.form.resource.columns.item`을 `항목(품목 등)`으로 바꾼�
 ## 10. 오류 처리
 
 - 저장 중 원천 저장은 성공했는데 스탬프가 실패하면 같은 트랜잭션이므로 함께 롤백된다. 화면은 저장 실패 토스트를 띄운다.
-- 결재중인 원천에 [저장]을 누르면 409로 응답하고 화면은 `결재중인 항목은 수정할 수 없습니다`를 띄운다.
+- 결재중인 원천에 [저장]을 누르면 `ApprovalStamper`가 `IllegalStateException`을 던지고 `GlobalExceptionHandler`가 이를 400으로 매핑해 응답한다(409가 아니다). 화면은 `결재중인 항목은 수정할 수 없습니다`를 띄운다.
 - 결재라인 제안 API 실패는 배너로 안내하고 상신은 막지 않는다.
 - 산정근거 기타에 텍스트가 없으면 저장 전 검증에서 행 번호를 지목한다.
 - 마이그레이션 검증 실패는 기동을 막는다.
