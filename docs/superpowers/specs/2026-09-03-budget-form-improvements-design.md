@@ -152,7 +152,7 @@ i18n `project.form.resource.columns.item`을 `항목(품목 등)`으로 바꾼�
 
 ### 7.4 시드와 운영 조정
 
-7.1의 직위코드 표를 시드 마이그레이션 `V20260904_002__SeedApprovalLinePositionCodes.sql`로 넣는다. 값이 바뀌어도 코드 수정 없이 공통코드에서 조정할 수 있다. 시드는 재실행 안전한 MERGE로 작성하고 검증 블록으로 8행 존재를 확인한다.
+7.1의 직위코드 표를 시드 마이그레이션 `V20260903_002__SeedApprovalLinePositionCodes.sql`로 넣는다. 값이 바뀌어도 코드 수정 없이 공통코드에서 조정할 수 있다. 시드는 재실행 안전한 MERGE로 작성하고 검증 블록으로 8행 존재를 확인한다.
 
 ## 8. 변경5. 임시저장·작성완료
 
@@ -174,7 +174,7 @@ i18n `project.form.resource.columns.item`을 `항목(품목 등)`으로 바꾼�
 
 ### 8.2 데이터 이관
 
-마이그레이션 `V20260904_001__AddDraftedApplicationStatusCode.sql`
+마이그레이션 `V20260903_001__AddDraftedApplicationStatusCode.sql`
 
 1. `TPRMPP_CCODEM`에 `('IT_PTL_APF_PRG_STS_C','0','작성완료', 순번 0)`과 `('IT_PTL_APF_PRG_STS_C','9','수기등록', 순번 9)`를 MERGE 한다.
 2. `TPRMPP_CAPPLM`과 `TPRMPP_CAPPLL`의 `IT_PTL_APF_PRG_STS_C='0'` 행을 `'9'`로 UPDATE 한다. 이 시점의 `0` 행은 모두 반입 산출물이다. 앱 기동 전에 Flyway가 먼저 돌아 새 코드가 `0`을 쓰기 전에 정리가 끝난다.

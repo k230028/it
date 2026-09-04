@@ -14,6 +14,23 @@
 
 ---
 
+### ✅ 2026-09-03 전산예산 작성 화면 개선(변경1~5) 완료
+
+전산예산 작성·상신 화면에 접수된 다섯 가지 변경 요청을 한 번에 반영했다. 기 지급금액 라벨 연도 표기, 사업연도 Select 축소·유의사항 팝업, 소요자원 입력 개선, 결재라인 자동지정, 임시저장·작성완료 분리를 구현했다.
+
+- **DB:** `V20260903_001__AddDraftedApplicationStatusCode.sql`(신청서상태 `IT_PTL_APF_PRG_STS_C`에 `0`=작성완료 신설, 기존 `0` 행은 `9`=수기등록으로 이관), `V20260903_002__SeedApprovalLinePositionCodes.sql`(결재자직위코드 `IT_PTL_APF_DCR_PT_C` 8건 시드), `V20260903_003__SeedBudgetBasisTypeCodes.sql`(산정근거구분코드 `IT_PTL_CNCD_FDTN_TC` 4건 시드).
+- **백엔드:** 공용 결재선 도장 `common.approval.service.ApprovalStamper`(반입 전용이던 `MigrationApprovalStamper`를 승격하고 멱등 규칙 추가), 결재라인 제안 `common.approval.service.ApprovalLineSuggestionService`와 `GET /api/applications/approval-line/suggestion`, `ProjectDto`·`CostDto` 저장 요청에 `complete` 플래그 추가, 결재함·목록 조회에서 `0`(작성완료) 제외.
+- **프론트:** `project.form.fields.paidBudget`을 연도 포함 라벨로 변경하고 보조 문구를 추가, `defaultBudgetYear()` 기준월을 9월로 전환하고 사업연도 Select를 올해·내년 2개로 축소·유의사항 팝업 추가(`useProjectFormPage.ts`), 소요자원 금액 포커스·블러 0 처리(`useResourceAmountFocus`)와 산정근거 Select+기타 텍스트 입력(`ResourceTableSection.vue`), 작성 화면 [임시저장]/[저장] 버튼 분리와 상신 화면 결재라인 자동 채움·사유 배너(`report.vue`).
+- **검증:** 각 태스크에서 백엔드 `./gradlew test`, 프론트 `format:check`·`check`·`npm test`가 모두 통과했다. 상세 결과는 각 태스크 실행 기록을 따른다.
+- **설계·계획:** [`docs/superpowers/specs/2026-09-03-budget-form-improvements-design.md`](docs/superpowers/specs/2026-09-03-budget-form-improvements-design.md), [`docs/superpowers/plans/2026-09-03-budget-form-improvements.md`](docs/superpowers/plans/2026-09-03-budget-form-improvements.md).
+- **호환 커밋(`versions.lock`):** it_database `675dd12`, it_backend `2841f9ec`, it_frontend `901cd9ad`.
+- **인계 — 수동 화면 확인 필요(미실행):** 자동 검증(단위 테스트·게이트)은 태스크마다 통과했지만, 다음 5개 시나리오는 로컬 기동 후 사람이 직접 화면으로 확인해야 한다.
+  1. 정보화사업 신규 작성 시 사업연도 Select에 올해·내년만 보인다. (시스템 날짜를 9월 이후로 바꾸거나 `requiresCurrentYearNotice`를 콘솔에서 호출해) 올해 선택 시 "유의사항 안내" 팝업이 뜨고 취소하면 내년으로 돌아간다.
+  2. 기 지급금액 라벨이 `{연도} 이전 지급금액 (원)` 형태이고 아래에 `* 당해 지급예정액 포함`이 보인다.
+  3. 소요자원 금액 `₩0` 칸을 클릭하면 빈칸, 벗어나면 `₩0`으로 복원된다. 산정근거는 Select이며 기타를 고르면 텍스트 입력이 나타나고 비운 채 저장하면 행 번호 안내가 뜬다.
+  4. [임시저장] 후 목록 배지가 `임시저장`, [저장] 후 `작성완료`로 보인다. 결재 상신 화면 "작성완료" 스코프에 저장 건만 보이고, 작성완료 건을 다시 열면 [임시저장] 버튼이 없다.
+  5. 상신 화면 진입 시 국내 기안자의 팀장·부서장이 채워지거나 사유 배너가 보인다. 상신 후 결재함 목록에 작성완료 신청서가 나타나지 않는다.
+
 ### ✅ 2026-09-03 잔여과제 SEC-21~23 · BE-90~100 · FE-68~73 · CQ-42~44 일괄 완료
 
 - **접근 범위(SEC-21~23):** 정보화사업·전산업무비 목록과 bulk 조회에 인증 사용자의 부서 범위를 서버에서 강제했다. 범위 밖 bulk 항목은 `failedIds`로 분리하고 인증 주체가 없으면 차단한다. Q&A의 타 부서 비공개 글은 제목·작성자 등 식별 정보를 마스킹한다.
