@@ -1,0 +1,9 @@
+{
+  "name": "it-readme-pdf",
+  "private": true,
+  "type": "module",
+  "description": "루트 README와 직접 링크 Markdown을 단일 PDF로 만드는 스킬 전용 의존성",
+  "dependencies": {
+    "marked": "^12.0.0"
+  }
+}

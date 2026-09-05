@@ -101,7 +101,7 @@ IT Project Portal은 정보화 예산·사업·인력과 관리자 실시간 로
 - 초기 조회 실패는 정상 빈 화면으로 대체하지 않고 재시도 가능한 오류 상태로 유지하며, 재조회 실패 때 이전 성공 데이터를 새 성공처럼 표시하지 않습니다.
 - 정보화사업·경상사업은 `BPROJM(ABUS_MNG_NO, SNO)`의 순번으로 재상신 이력을 식별하며 `ODN_YN='Y'`가 경상사업, NULL 또는 `N`이 정보화사업입니다. 전산업무비는 `BCOSTM(BG_NO, BG_SNO)`를 사용합니다. 후속 업무 목록·집계·bulk 조회는 `LST_YN='Y'` 최종본만 사용하고, 미상신 작성 목록은 재상신 초안을 포함해 응답 순번을 보존합니다. 이력 조회·수정·결재 매핑도 관리번호와 순번을 함께 사용합니다.
 
-Superpowers 산출물은 `docs/superpowers/{specs,plans,done}/`에 둡니다. 프로젝트 규칙과 일반 스킬이 충돌하면 이 저장소의 CLAUDE와 `docs/guides/`가 우선합니다.
+Superpowers 산출물은 `docs/superpowers/`에 두고 설계는 `specs/`, 구현 계획은 `plans/`, 완료분은 각 디렉터리의 `done/` 하위에 옮깁니다. 실행 근거·조사 메모·리포트는 `evidence/`, `notes/`, `reports/`를 사용합니다. 프로젝트 규칙과 일반 스킬이 충돌하면 이 저장소의 CLAUDE와 `docs/guides/`가 우선합니다.
 
 ## 5. Health Stack
 

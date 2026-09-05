@@ -25,7 +25,17 @@ description: Use when analyzing this IT Portal project's coverage gaps, adding o
 
 1. 대상 저장소 규칙과 현재 테스트·커버리지 설정을 읽는다.
 2. 기존 리포트가 있으면 수치를 파싱하고, 없으면 테스트와 소스를 교차 분석하되 추정임을 표시한다.
-3. 위험도와 미커버 정도로 대상을 정한다. 기존 70% 목표보다 빌드 설정이 엄격하면 설정값을 따른다.
+3. 위험도와 미커버 정도로 대상을 정한다. 임계값은 문서가 아니라 아래 빌드 설정에서 읽는다.
+
+| 대상 | 임계값 SoT |
+| --- | --- |
+| 백엔드 커버리지 | `it_backend/build.gradle`의 `jacocoTestCoverageVerification`. `check`에 연결되어 있다 |
+| 프론트 커버리지 | `it_frontend/vitest.config.ts`의 `coverage.thresholds`와 `coverage.include` |
+| 백엔드 품질 게이트 | `./gradlew check` (Spotless·JaCoCo 포함) |
+| 프론트 품질 게이트 | `npm run format:check`, `npm run check`(typecheck·lint·check:copy), `npm run lint:css`, `npm test` |
+
+`coverage.include` 밖의 파일을 커버리지 미달로 보고하지 않는다. 프론트 커버리지 측정은 `npm run test:coverage`로 실행한다.
+
 4. 테스트를 작성하거나 보강하고 해당 테스트부터 실행한다.
 5. 영향 범위의 전체 테스트와 품질 게이트를 새로 실행한다.
 6. 보고서 요청 시 `it_frontend`의 `generate-report` 스크립트를 사용한다.
@@ -45,6 +55,8 @@ description: Use when analyzing this IT Portal project's coverage gaps, adding o
 ## 흔한 실수
 
 - 오래된 `TEST.md` 명령이나 인라인 스캐폴드를 현재 설정보다 우선한다.
+- 임계값을 스킬·주석에 적힌 숫자에서 읽고 빌드 설정을 확인하지 않는다.
+- `coverage.include` 범위 밖 파일을 커버리지 갭으로 보고한다.
 - 커버리지 파일이 없는데 실측값처럼 단정한다.
 - Mock 호출 횟수만 검증하고 사용자 관찰 가능한 동작을 검증하지 않는다.
 - 실패한 제품 코드를 테스트 기대값 완화로 숨긴다.

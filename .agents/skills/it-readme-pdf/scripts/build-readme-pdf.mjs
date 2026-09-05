@@ -24,6 +24,35 @@ const IMAGE_MIME_TYPES = new Map([
 
 let markedModule;
 
+// 스크립트 위치(<repo>/.agents/skills/it-readme-pdf/scripts)에서 저장소 루트를 역산한다.
+const SCRIPT_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
+const REPOSITORY_ROOT = path.resolve(SCRIPT_DIRECTORY, "..", "..", "..", "..");
+
+/**
+ * 의존 모듈을 찾을 후보 디렉터리를 반환한다.
+ * NODE_PATH를 우선 사용하고, 지정되지 않은 하네스에서는 저장소 안의 기존 설치본으로 대체한다.
+ */
+function moduleSearchRoots() {
+  const fromEnvironment = (process.env.NODE_PATH ?? "")
+    .split(path.delimiter)
+    .filter(Boolean);
+  const fallbacks = [
+    // 스킬 전용 의존성(marked). `.agents/skills/it-readme-pdf`에서 npm install로 설치한다.
+    path.resolve(SCRIPT_DIRECTORY, "..", "node_modules"),
+    // playwright와 Chromium은 프론트엔드 저장소의 기존 설치본을 재사용한다.
+    path.join(REPOSITORY_ROOT, "it_frontend", "node_modules"),
+  ];
+  return [...fromEnvironment, ...fallbacks];
+}
+
+function missingModuleMessage(moduleName) {
+  return [
+    `${moduleName} 모듈을 찾을 수 없습니다.`,
+    `${moduleName}가 설치된 Node modules 디렉터리를 NODE_PATH에 지정하세요.`,
+    `탐색한 경로: ${moduleSearchRoots().join(path.delimiter) || "(없음)"}`,
+  ].join(" ");
+}
+
 function isExternalHref(href) {
   return /^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(href);
 }
@@ -45,22 +74,16 @@ async function importFromNodePath(moduleName, relativeEntrypoint) {
   try {
     return await import(moduleName);
   } catch (error) {
-    const roots = (process.env.NODE_PATH ?? "")
-      .split(path.delimiter)
-      .filter(Boolean);
-    for (const root of roots) {
+    for (const root of moduleSearchRoots()) {
       const candidate = path.join(root, moduleName, relativeEntrypoint);
       try {
         await access(candidate);
         return await import(pathToFileURL(candidate).href);
       } catch {
-        // 다음 NODE_PATH 항목을 확인한다.
+        // 다음 탐색 경로를 확인한다.
       }
     }
-    throw new Error(
-      `${moduleName} 모듈을 찾을 수 없습니다. Codex workspace dependencies의 Node modules 경로를 NODE_PATH에 지정하세요.`,
-      { cause: error },
-    );
+    throw new Error(missingModuleMessage(moduleName), { cause: error });
   }
 }
 
@@ -320,21 +343,15 @@ async function loadPlaywright() {
   try {
     return await import("playwright");
   } catch (error) {
-    const roots = (process.env.NODE_PATH ?? "")
-      .split(path.delimiter)
-      .filter(Boolean);
-    for (const root of roots) {
+    for (const root of moduleSearchRoots()) {
       try {
         const require = createRequire(path.join(root, "package.json"));
         return require("playwright");
       } catch {
-        // 다음 NODE_PATH 항목을 확인한다.
+        // 다음 탐색 경로를 확인한다.
       }
     }
-    throw new Error(
-      "playwright 모듈을 찾을 수 없습니다. Codex workspace dependencies의 Node modules 경로를 NODE_PATH에 지정하세요.",
-      { cause: error },
-    );
+    throw new Error(missingModuleMessage("playwright"), { cause: error });
   }
 }
 
@@ -369,8 +386,12 @@ function parseArguments(argv) {
       options.keepTemp = true;
       continue;
     }
+    if (argument === "--check-deps") {
+      options.checkDependenciesOnly = true;
+      continue;
+    }
     const key = argument.slice(2).replaceAll("-", "");
-    if (!["entry", "output", "title", "workspace"].includes(key)) {
+    if (!["entry", "output", "title", "workspace", "screenshots"].includes(key)) {
       throw new Error(`지원하지 않는 인자입니다: ${argument}`);
     }
     const value = argv[index + 1];
@@ -383,6 +404,52 @@ function parseArguments(argv) {
   return options;
 }
 
+/**
+ * 인쇄 레이아웃을 A4 비율 뷰포트로 잘라 PNG로 저장한다.
+ * PDF 래스터라이저(pdftoppm 등)가 없는 하네스에서 시각 검토 경로를 제공한다.
+ * 반환값은 저장한 PNG 경로 목록이다.
+ */
+async function captureLayoutScreenshots(page, targetDirectory) {
+  const pageWidth = 1240;
+  const pageHeight = 1754;
+  await page.setViewportSize({ width: pageWidth, height: pageHeight });
+  const totalHeight = await page.evaluate(
+    () => document.documentElement.scrollHeight,
+  );
+  await mkdir(targetDirectory, { recursive: true });
+  const captured = [];
+  const sliceCount = Math.max(1, Math.ceil(totalHeight / pageHeight));
+  for (let index = 0; index < sliceCount; index += 1) {
+    const top = index * pageHeight;
+    const height = Math.min(pageHeight, totalHeight - top);
+    if (height <= 0) {
+      break;
+    }
+    const filePath = path.join(
+      targetDirectory,
+      `page-${String(index + 1).padStart(3, "0")}.png`,
+    );
+    await page.screenshot({
+      path: filePath,
+      fullPage: true,
+      clip: { x: 0, y: top, width: pageWidth, height },
+    });
+    captured.push(filePath);
+  }
+  return captured;
+}
+
+/**
+ * 문서 수집과 임시 파일 생성 전에 marked·playwright와 Chromium 실행 가능 여부를 확인한다.
+ * 하네스마다 의존성 제공 방식이 달라 실패를 초기에 드러내야 한다.
+ */
+export async function ensureDependencies() {
+  await loadMarked();
+  const { chromium } = await loadPlaywright();
+  const browser = await launchChromium(chromium);
+  await browser.close();
+}
+
 export async function buildReadmePdf(options) {
   const workspaceRoot = await realpath(path.resolve(options.workspace));
   const entryPath = path.resolve(workspaceRoot, options.entry);
@@ -390,6 +457,8 @@ export async function buildReadmePdf(options) {
   if (!isInside(workspaceRoot, outputPath)) {
     throw new Error(`출력 파일은 워크스페이스 안에 있어야 합니다: ${outputPath}`);
   }
+
+  await ensureDependencies();
 
   const documents = await resolveDirectDocuments(entryPath, workspaceRoot);
   const html = await buildHtml(documents, workspaceRoot, options.title);
@@ -400,6 +469,7 @@ export async function buildReadmePdf(options) {
   const tempPdfPath = path.join(tempDirectory, "bundle.pdf");
   await writeFile(htmlPath, html, "utf8");
 
+  let screenshots = [];
   const { chromium } = await loadPlaywright();
   const browser = await launchChromium(chromium);
   try {
@@ -417,6 +487,15 @@ export async function buildReadmePdf(options) {
         '<div style="font-size:8px;color:#718096;width:100%;text-align:center"><span class="pageNumber"></span> / <span class="totalPages"></span></div>',
       margin: { top: "18mm", right: "16mm", bottom: "20mm", left: "16mm" },
     });
+    if (options.screenshots) {
+      const screenshotDirectory = path.resolve(workspaceRoot, options.screenshots);
+      if (!isInside(workspaceRoot, screenshotDirectory)) {
+        throw new Error(
+          `스크린샷 디렉터리는 워크스페이스 안에 있어야 합니다: ${screenshotDirectory}`,
+        );
+      }
+      screenshots = await captureLayoutScreenshots(page, screenshotDirectory);
+    }
     await context.close();
   } finally {
     await browser.close();
@@ -431,17 +510,27 @@ export async function buildReadmePdf(options) {
   return {
     documents: documents.map((item) => portableRelative(workspaceRoot, item.path)),
     outputPath,
+    screenshots: screenshots.map((item) => portableRelative(workspaceRoot, item)),
     tempDirectory: options.keepTemp ? tempDirectory : null,
   };
 }
 
 async function main() {
   const options = parseArguments(process.argv.slice(2));
+  if (options.checkDependenciesOnly) {
+    await ensureDependencies();
+    console.log("의존성 확인 완료: marked, playwright, Chromium 실행 가능");
+    return;
+  }
   const result = await buildReadmePdf(options);
   console.log(`PDF 생성: ${result.outputPath}`);
   console.log(`포함 문서: ${result.documents.length}개 (README + 직접 링크 ${result.documents.length - 1}개)`);
   for (const document of result.documents) {
     console.log(`- ${document}`);
+  }
+  if (result.screenshots.length > 0) {
+    console.log(`레이아웃 스크린샷: ${result.screenshots.length}장`);
+    console.log(`- ${path.dirname(result.screenshots[0])}`);
   }
   if (result.tempDirectory) {
     console.log(`임시 파일: ${result.tempDirectory}`);

@@ -20,6 +20,8 @@ it_database
 !.claude/skills/it-clean-code-audit/**
 !.claude/skills/it-db-gap/
 !.claude/skills/it-db-gap/**
+!.claude/skills/it-db-migration/
+!.claude/skills/it-db-migration/**
 !.claude/skills/it-readme-pdf/
 !.claude/skills/it-readme-pdf/**
 # 로컬 에이전트 하네스 설정 (개발자 환경마다 다름)
@@ -38,6 +40,8 @@ it_database
 !.agents/skills/it-clean-code-audit/**
 !.agents/skills/it-db-gap/
 !.agents/skills/it-db-gap/**
+!.agents/skills/it-db-migration/
+!.agents/skills/it-db-migration/**
 !.agents/skills/it-readme-pdf/
 !.agents/skills/it-readme-pdf/**
 
@@ -58,6 +62,9 @@ __pycache__/
 
 # 문서·PDF 생성 과정의 재생성 가능한 임시 파일
 /tmp/
+
+# 스킬이 생성하는 재생성 가능한 산출물 (PDF 등)
+/output/
 
 # graphify 지식그래프 캐시 (도구 산출물)
 graphify-out/

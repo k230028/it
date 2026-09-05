@@ -33,10 +33,18 @@ description: Use when auditing, synchronizing, standardizing, or improving this 
 | `CLAUDE.md` | 반복 적용할 필수 규칙, 금지 사항, 검증 진입점 |
 | `docs/guides/` | 여러 변경에서 재사용하는 구현 계약, 절차, 예제, 체크리스트 |
 | `docs/operations/` | 날짜와 환경이 있는 배포·복구·인계·실행 결과 |
-| `docs/superpowers/` | 설계, 구현 계획과 완료된 계획 기록 |
-| `docs/verification/` | 특정 DB 변경 등을 검증하는 실행 가능한 자료 |
+| `docs/superpowers/` | 설계는 `specs/`, 구현 계획은 `plans/`, 완료분은 각 하위 `done/`. 실행 근거는 `evidence/`, 조사 메모는 `notes/`, 종합 리포트는 `reports/` |
+| `docs/clean-code-review-YYYY-MM-DD.md` | Clean Code 진단 리포트. 완료된 `done/` 기록이 이 평면 경로를 참조하므로 하위 폴더로 옮기지 않는다 |
+| `docs/db-schema-gap/`, `docs/test/` | 날짜별 DB Gap 리포트와 테스트 결과 리포트 |
+| `docs/artifacts/` | 보고·공유용 생성 산출물과 그 인덱스 |
+| `it_database/docs/verification/` | 특정 DB 변경을 검증하는 실행 가능한 SQL |
+| `AGENTS.md` | `CLAUDE.md`로 향하는 포인터와 절 바로가기. 규칙 본문을 두지 않는다 |
+| `.agents/skills/` | 반복 워크플로우의 canonical 스킬. `.claude/skills/`는 얇은 어댑터만 둔다 |
 | `TASK.md`, `TASK_DONE.md` | 검증된 활성 과제와 완료 근거 |
 | `versions.lock` | 함께 검증된 하위 저장소 리비전 조합 |
+| `meta/backlog.md` | 운영 적용 대기 중인 DB 변경의 상태 관리 |
+
+`agents(db).md`는 개발자 로컬 DB 접속 설정이므로 인벤토리와 현행화 대상에서 제외한다. 내용을 다른 문서로 옮기거나 비밀값을 인용하지 않는다.
 
 제품 의도는 `prds/`, 엔티티·컬럼 명명은 `meta/`, 물리 데이터 모델은 `it_database/migrations/`를 우선한다. 구현이 다르다는 이유만으로 제품 요구사항이나 적용된 마이그레이션을 문서에 맞춰 덮어쓰지 않는다.
 
@@ -62,7 +70,7 @@ description: Use when auditing, synchronizing, standardizing, or improving this 
 - TODO/FIXME는 후속 조치가 가능한 문장으로 작성하고 장기 과제는 코드 근거와 중복 여부를 확인한 뒤 `TASK.md` 후보로 제시한다.
 - 비즈니스 로직은 변경하지 않는다. 문서 조사 중 발견한 코드 결함은 위치·영향·재현 근거를 보고한다.
 
-요청이 문서뿐 아니라 코드 품질 진단을 명시하면 `it-clean-code-audit`, 테스트 보강이나 품질 게이트를 명시하면 `it-test-maintenance`, 운영 DB와 로컬 DDL 차이를 명시하면 `it-db-gap`을 해당 범위에 함께 적용한다. 문서를 코드와 대조한다는 이유만으로 다른 스킬을 자동 실행하지 않는다.
+요청이 문서뿐 아니라 코드 품질 진단을 명시하면 `it-clean-code-audit`, 테스트 보강이나 품질 게이트를 명시하면 `it-test-maintenance`, 운영 DB와 로컬 DDL 차이를 명시하면 `it-db-gap`, 마이그레이션 작성·적용·복구를 명시하면 `it-db-migration`을 해당 범위에 함께 적용한다. 문서를 코드와 대조한다는 이유만으로 다른 스킬을 자동 실행하지 않는다.
 
 ## 검증 체크리스트
 

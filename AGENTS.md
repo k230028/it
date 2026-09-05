@@ -7,13 +7,16 @@
 1. 루트 공통 규약: [CLAUDE.md](CLAUDE.md)
 2. 백엔드 작업 시: [it_backend/CLAUDE.md](it_backend/CLAUDE.md)
 3. 프론트엔드 작업 시: [it_frontend/CLAUDE.md](it_frontend/CLAUDE.md)
+4. 데이터베이스 작업 시: [it_database/CLAUDE.md](it_database/CLAUDE.md)
 
 주요 섹션 바로가기 (CLAUDE.md 기준):
 
-- 프로젝트 개요·디렉토리 구조·SoT 분배 — §1~2
-- 개발/운영 환경 (URL·시작 명령·DB 접속) — §3
-- 공통 운영 규약 (한글 주석, 인증/보안, 문서 관리, Flyway) — §4
-- AI 하네스 가이드 (워크플로우·스킬) — §5
-- Health Stack (검사·테스트 명령) — §6
+- 프로젝트와 저장소·주요 루트 경로 — §1
+- 단일 진실 공급원과 문서 역할 — §2
+- 공통 작업 규칙 (공유 워킹트리, 한글 주석, 인증·비밀값, DB 변경) — §3
+- 작업 흐름과 성능·계약·실패 상태 기준 — §4
+- Health Stack (검사·테스트 명령) — §5
+
+반복 사용하는 프로젝트 공용 워크플로우 스킬은 [.agents/skills/README.md](.agents/skills/README.md)를 참고하십시오.
 
 이 파일에는 CLAUDE.md와 중복되는 본문을 추가하지 마십시오. 규칙 변경은 CLAUDE.md에만 반영합니다.
