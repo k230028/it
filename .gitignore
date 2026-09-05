@@ -6,9 +6,36 @@ it_database
 .worktrees/
 .playwright-mcp/
 .superpowers/
-.claude
-# 로컬 에이전트 하네스 설정 (.claude와 같은 성격, 개발자 환경마다 다름)
-.agents/
+# Claude 로컬 하네스 설정. 프로젝트 공용 어댑터 스킬만 선택적으로 추적한다.
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/fp/
+!.claude/skills/fp/**
+!.claude/skills/it-doc-sync/
+!.claude/skills/it-doc-sync/**
+!.claude/skills/it-test-maintenance/
+!.claude/skills/it-test-maintenance/**
+!.claude/skills/it-clean-code-audit/
+!.claude/skills/it-clean-code-audit/**
+!.claude/skills/it-db-gap/
+!.claude/skills/it-db-gap/**
+# 로컬 에이전트 하네스 설정 (개발자 환경마다 다름)
+# 프로젝트 공용 워크플로우 스킬만 선택적으로 추적한다.
+.agents/*
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/README.md
+!.agents/skills/fp/
+!.agents/skills/fp/**
+!.agents/skills/it-doc-sync/
+!.agents/skills/it-doc-sync/**
+!.agents/skills/it-test-maintenance/
+!.agents/skills/it-test-maintenance/**
+!.agents/skills/it-clean-code-audit/
+!.agents/skills/it-clean-code-audit/**
+!.agents/skills/it-db-gap/
+!.agents/skills/it-db-gap/**
 
 # 개인 Obsidian 볼트 본문 (.obsidian 설정과 함께 저장소 밖에서 관리)
 TaskNotes/

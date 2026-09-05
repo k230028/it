@@ -1,6 +1,5 @@
-# 지침 및 매뉴얼 정비
-각 레포지토리별 claude.md와 docs/guides를 분석해서 중복되는 부분을 제거하고, 효율적으로 다시 카테고리 분류가 필요한 부분 정리해줘. 내용 중 claude.md나 docs/guides가 아닌 readme.md로 이동해야하는 부분이 있으면 이 부분도 정리해줘
+# 지침·아키텍처 문서 정비
 
+이 문서의 재사용 가능한 내용은 프로젝트 공용 스킬 [it-doc-sync](../../.agents/skills/it-doc-sync/SKILL.md)의 `지침 구조 점검` 모드로 통합했습니다.
 
-# 
-폴더 구조·아키텍처 분석 보고서
+Codex에서는 `$it-doc-sync`를 사용하고 `CLAUDE.md`, `README.md`, `docs/guides/`의 중복·분류·폴더 구조 점검을 요청하십시오.
