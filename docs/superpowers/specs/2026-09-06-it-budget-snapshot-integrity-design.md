@@ -155,7 +155,7 @@
       "clientDocumentKey": "combined-budget",
       "payloadDigest": "sha256:...",
       "snapshot": {
-        "form": { "id": "IT_BUDGET", "version": 2 },
+        "form": { "id": "it-budget", "version": 2 },
         "payload": {},
         "approvalLine": {}
       },
@@ -225,7 +225,7 @@
 ```json
 {
   "form": {
-    "id": "IT_BUDGET",
+    "id": "it-budget",
     "version": 2
   },
   "payload": {
