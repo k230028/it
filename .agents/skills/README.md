@@ -9,6 +9,7 @@
 | `it-clean-code-audit` | 근거 기반 Clean Code·유지보수성 진단 | `docs/prompts/CLEAN_CODE_REVIEW.md` |
 | `it-db-gap` | 로컬 DDL과 운영 메타 스냅샷 Gap 분석 | `docs/prompts/DB_GAP.md` |
 | `fp` | 정통법 기능점수·비용 산정 | `FP/FP.md` |
+| `it-readme-pdf` | 루트 README와 직접 연결된 Markdown을 단일 PDF로 생성·검증 | 신규 자동화 |
 
 각 스킬은 독립적으로 호출합니다. 전체 품질 점검을 요청받더라도 필요한 스킬만 선택하며 모든 스킬을 자동으로 연쇄 실행하지 않습니다.
 

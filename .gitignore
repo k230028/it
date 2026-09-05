@@ -20,6 +20,8 @@ it_database
 !.claude/skills/it-clean-code-audit/**
 !.claude/skills/it-db-gap/
 !.claude/skills/it-db-gap/**
+!.claude/skills/it-readme-pdf/
+!.claude/skills/it-readme-pdf/**
 # 로컬 에이전트 하네스 설정 (개발자 환경마다 다름)
 # 프로젝트 공용 워크플로우 스킬만 선택적으로 추적한다.
 .agents/*
@@ -36,6 +38,8 @@ it_database
 !.agents/skills/it-clean-code-audit/**
 !.agents/skills/it-db-gap/
 !.agents/skills/it-db-gap/**
+!.agents/skills/it-readme-pdf/
+!.agents/skills/it-readme-pdf/**
 
 # 개인 Obsidian 볼트 본문 (.obsidian 설정과 함께 저장소 밖에서 관리)
 TaskNotes/
@@ -51,6 +55,9 @@ node_modules/
 # Python
 __pycache__/
 *.pyc
+
+# 문서·PDF 생성 과정의 재생성 가능한 임시 파일
+/tmp/
 
 # graphify 지식그래프 캐시 (도구 산출물)
 graphify-out/
