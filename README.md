@@ -238,6 +238,35 @@ Nuxt 페이지·컴포넌트
 
 메뉴는 백엔드가 사용자 권한으로 필터링한 `/api/menus` 트리를 프론트 헤더·사이드바·Breadcrumb·상단 탭이 함께 사용합니다. 탭 제목도 화면에 하드코딩하지 않고 이 트리의 메뉴명을 따릅니다. 프론트 메뉴 숨김은 화면 편의를 위한 것이며 API 접근 권한을 대신하지 않습니다.
 
+## 전산예산 신청서 스냅샷
+
+`/budget/report`는 선택한 사업·전산업무비를 문서 한 건으로, `/info/projects/report`는 사업별 문서 N건으로 구성합니다. 두 화면은 `POST /api/applications/it-budget/previews`에서 받은 서버 v2 스냅샷으로 PDF를 만들고, `POST /api/applications/it-budget/submissions`에 선택 대상·결재자·다이제스트·미리보기 토큰을 전달합니다. 상신 요청은 원본 스냅샷 JSON을 받지 않습니다. 인증된 신청자, 결재자 표시 정보, CAPPLA 원장 연결과 CDECIM 결재선은 백엔드가 확정합니다. 미리보기는 조회 권한을 검사하고 상신은 기존 결재 MFA를 요구합니다.
+
+미리보기 토큰은 신청자·대상·순서·결재선·해시 집합을 HMAC-SHA-256으로 결속하며 수명은 30분입니다. 활성 키로 서명하고 회전 중에는 활성·직전 키를 검증합니다. 전용 키 환경변수, 32바이트 이상 검증과 직전 키를 30분보다 길게 유지하는 교체 절차는 [백엔드 HMAC 키 회전 안내](it_backend/README.md#전산예산-미리보기-hmac-키-회전)를 따릅니다.
+
+상신은 정확한 원장 버전을 고정 순서로 잠그고 현재 스냅샷을 다시 생성·비교합니다. 일반 원장 수정도 같은 부모 잠금 뒤 결재 진행 여부를 검사합니다. 사업별 N문서는 서로 다른 결재번호를 갖지만 CAPPLM·CAPPLA·CDECIM을 한 트랜잭션에 저장하므로 한 문서가 실패해도 부분 상신은 남지 않습니다.
+
+| 오류 코드 | HTTP | 사용자 조치 |
+| --- | ---: | --- |
+| `IT_BUDGET_PREVIEW_INVALID` | 400 | 토큰 변조·신청자 또는 요청 불일치. 미리보기부터 다시 진행 |
+| `IT_BUDGET_SOURCE_CHANGED` | 409 | 원장 변경 내역 확인 후 다시 조회·미리보기 |
+| `IT_BUDGET_PREVIEW_STALE` | 409 | 결재선·표시 정보 등 현재 조건으로 미리보기 갱신 |
+| `IT_BUDGET_PREVIEW_EXPIRED` | 409 | 30분 수명이 만료되어 미리보기 갱신 |
+| `IT_BUDGET_CONCURRENT_UPDATE` | 409 | 5초 잠금 제한을 넘긴 경합. 잠시 후 다시 진행 |
+
+원장 변경 안내는 다음 문구와 네 열을 사용합니다. 품목·단말기 변경도 부모 사업·계약별 한 행으로 표시합니다.
+
+> 신청서가 중간에 변경되었습니다. 다시 결재를 상신해주시기 바랍니다.
+
+| NO | 사업명/계약명 | 수정자 | 수정일시 |
+| ---: | --- | --- | --- |
+
+안내를 닫으면 미리보기를 폐기하고 상신을 비활성화합니다. 다시 조회한 원장으로 미리보기를 완료해야 상신할 수 있습니다. 기존 v1 문서는 변환 없이 읽으며, v2는 저장된 payload의 깊은 구조와 해시를 검증합니다. 손상된 문서는 PDF·결재 상태 변경을 차단하고, 메일은 상세 요약을 제외한 안내로 처리합니다. 현재 원장으로 역사 문서를 다시 만들지 않습니다.
+
+운영에서는 Micrometer의 `approval.it_budget.preview`·`approval.it_budget.submission.duration` 처리시간과 `approval.it_budget.preview.outcome`·`approval.it_budget.submission` 결과 건수를 확인합니다. 결과 태그는 `success`, `invalid`, `expired`, `source_changed`, `stale`, `concurrent_update`, `error`로 제한하며 개인정보·원장 ID를 태그로 사용하지 않습니다. 상신 성공은 트랜잭션 커밋 이후에 기록하고 해당 계측 실패가 업무 결과를 바꾸지 않게 합니다. 손상 문서의 메일 요약 생략은 `approval.snapshot.mail.degraded`의 `version` 태그와 경고 로그로 확인합니다.
+
+변경 검증은 백엔드 `./gradlew spotlessCheck test`와 Oracle의 `./gradlew integrationTest --tests '*ItBudgetLedgerLockingIT' --tests '*ItBudgetSubmissionTransactionIT'`를 구분해 실행합니다. 프론트는 기능 브랜치 백엔드를 대상으로 `npm run codegen:check`, 관련 단위 테스트, `npm run typecheck`, `npm run lint`, `npm run lint:css`를 수행합니다. 브라우저 계약은 `npm run test:e2e -- tests/e2e/budget-report-session.spec.ts tests/e2e/report-pdf-latest.spec.ts`로 확인합니다. 이 두 spec은 API 응답을 모킹하므로 실제 백엔드·인증·원장 변경을 연결한 검증 결과와 구분해야 합니다. 전체 계약과 배포 순서는 [스냅샷 무결성 설계](docs/superpowers/specs/2026-09-06-it-budget-snapshot-integrity-design.md)를 참고합니다.
+
 ## 주요 설계 원칙
 
 - JWT는 백엔드가 httpOnly 쿠키로 발급하고 프론트가 직접 저장하거나 읽지 않습니다.
