@@ -425,6 +425,7 @@ TPRMPP_BRDOCM	프로젝트관리_사전협의기본	LST_CHG_USID	최종변경사
 TPRMPP_BRDOCM	프로젝트관리_사전협의기본	LST_CHG_DTM	최종변경일시		N	sysdate	DATE		
 TPRMPP_BGDOCM	프로젝트관리_사업가이드기본	DOC_MNG_NO	문서관리번호	Y	N		VARCHAR2	20	
 TPRMPP_BGDOCM	프로젝트관리_사업가이드기본	DOC_TTL_CONE	문서제목내용		Y		VARCHAR2	300	
+TPRMPP_BGDOCM	프로젝트관리_사업가이드기본	DOC_DTL_ITM_C	문서상세항목코드		Y		VARCHAR2	2	
 TPRMPP_BGDOCM	프로젝트관리_사업가이드기본	NAC_TXT_INF	게시물본문정보		Y		CLOB		
 TPRMPP_BGDOCM	프로젝트관리_사업가이드기본	FST_ENR_USID	최초등록사용자ID		N	'00000000000000'	VARCHAR2	14	
 TPRMPP_BGDOCM	프로젝트관리_사업가이드기본	FST_ENR_DTM	최초등록일시		N	sysdate	DATE		
@@ -459,6 +460,7 @@ TPRMPP_BRDOCL	프로젝트관리_사전협의기본변경로그	LST_CHG_DTM	최�
 TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	LOG_HIS_TGR_SNO	로그이력전문일련번호	Y	N		NUMBER	18	
 TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	DOC_MNG_NO	문서관리번호		N		VARCHAR2	20	
 TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	DOC_TTL_CONE	문서제목내용		Y		VARCHAR2	300	
+TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	DOC_DTL_ITM_C	문서상세항목코드		Y		VARCHAR2	2	
 TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	NAC_TXT_INF	게시물본문정보		Y		CLOB		
 TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	CHG_DTT_YN	변경구분여부		N		VARCHAR2	1	
 TPRMPP_BGDOCL	프로젝트관리_사업가이드기본변경로그	CHG_DTM	변경일시		N		DATE		
@@ -594,14 +596,14 @@ TPRMPP_BPLANA	프로젝트관리_정보기술부문계획관계	LST_CHG_DTM	최�
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_MNG_NO	사업관리번호	Y	N		VARCHAR2	30	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	SNO	일련번호	Y	N		NUMBER	9	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_NM	사업명		Y		VARCHAR2	100	
-TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_CONE	사업내용		Y		VARCHAR2	1000	
-TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_NCS_CONE	사업필요성내용		Y		VARCHAR2	300	
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_PUL_CONE_INF	사업추진내용정보		Y		CLOB		
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_PUL_NCS_INF	사업추진필요성정보		Y		CLOB		
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_PUL_DRCN_INF	사업추진방향정보		Y		CLOB		
+TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_XPT_EFF_INF	사업기대효과정보		Y		CLOB		
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_TC	사업구분코드		N		VARCHAR2	2	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	BSE_YY	기준연도		Y		VARCHAR2	4	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	CNCD_RFR_NO	관련참조번호		Y		VARCHAR2	30	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	CPN_SAF_CONE	회사현황내용		Y		VARCHAR2	1000	
-TPRMPP_BPROJM	프로젝트관리_정보화사업기본	DGOG_PPO_CONE	효과성목적내용		Y		VARCHAR2	4000	
-TPRMPP_BPROJM	프로젝트관리_정보화사업기본	ABUS_RNG_CONE	사업범위내용		Y		VARCHAR2	600	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	DPL_YN	중복여부		Y		VARCHAR2	1	
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	STT_DTM	시작일시		Y		DATE		
 TPRMPP_BPROJM	프로젝트관리_정보화사업기본	END_DTM	종료일시		Y		DATE		
@@ -704,14 +706,14 @@ TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	LOG_HIS_TGR_S
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ABUS_MNG_NO	사업관리번호		N		VARCHAR2	30	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	SNO	일련번호		N		NUMBER	9	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ABUS_NM	사업명		Y		VARCHAR2	100	
-TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ABUS_CONE	사업내용		Y		VARCHAR2	1000	
-TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ABUS_NCS_CONE	사업필요성내용		Y		VARCHAR2	300	
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ABUS_PUL_CONE_INF	사업추진내용정보		Y		CLOB		
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ABUS_PUL_DRCN_INF	사업추진방향정보		Y		CLOB		
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ABUS_PUL_NCS_INF	사업추진필요성정보		Y		CLOB		
+TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ABUS_XPT_EFF_INF	사업기대효과정보		Y		CLOB		
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ABUS_TC	사업구분코드		N		VARCHAR2	2	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	BSE_YY	기준연도		Y		VARCHAR2	4	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	CNCD_RFR_NO	관련참조번호		Y		VARCHAR2	30	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	CPN_SAF_CONE	회사현황내용		Y		VARCHAR2	1000	
-TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	DGOG_PPO_CONE	효과성목적내용		Y		VARCHAR2	4000	
-TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	ABUS_RNG_CONE	사업범위내용		Y		VARCHAR2	600	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	DPL_YN	중복여부		Y		VARCHAR2	1	
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	STT_DTM	시작일시		Y		DATE		
 TPRMPP_BPROJL	프로젝트관리_정보화사업기본변경로그	END_DTM	종료일시		Y		DATE		
