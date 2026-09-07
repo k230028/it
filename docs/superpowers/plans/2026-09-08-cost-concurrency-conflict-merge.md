@@ -166,22 +166,49 @@ class CostConcurrencyStamperTest {
     @Test
     @DisplayName("감사 필드만 다르면 충돌이 아니다")
     void auditOnlyChangeDoesNotChangeStamp() {
-        Bcostm untouched = cost();
-        Bcostm audited = cost();
-        audited.setLstChgEno("EMP-999");
-        assertThat(stamper.stamp(audited, List.of()))
-                .isEqualTo(stamper.stamp(untouched, List.of()));
+        assertThat(
+                        stamper.stamp(
+                                Bcostm.builder()
+                                        .costBgNo("COST_2026_0001")
+                                        .bgSno(2)
+                                        .cttNm("서버 유지보수")
+                                        .lstChgUsid("EMP-999")
+                                        .lstChgDtm(LocalDateTime.of(2026, 9, 8, 14, 25))
+                                        .build(),
+                                List.of()))
+                .isEqualTo(
+                        stamper.stamp(
+                                Bcostm.builder()
+                                        .costBgNo("COST_2026_0001")
+                                        .bgSno(2)
+                                        .cttNm("서버 유지보수")
+                                        .lstChgUsid("EMP-001")
+                                        .lstChgDtm(LocalDateTime.of(2026, 1, 1, 0, 0))
+                                        .build(),
+                                List.of()));
     }
 
     @Test
     @DisplayName("결재 상태(LST_YN)가 달라도 충돌이 아니다")
     void approvalStateDoesNotChangeStamp() {
-        Bcostm current = cost();
-        current.setLstYn("Y");
-        Bcostm superseded = cost();
-        superseded.setLstYn("N");
-        assertThat(stamper.stamp(current, List.of()))
-                .isEqualTo(stamper.stamp(superseded, List.of()));
+        assertThat(
+                        stamper.stamp(
+                                Bcostm.builder()
+                                        .costBgNo("COST_2026_0001")
+                                        .bgSno(2)
+                                        .cttNm("서버 유지보수")
+                                        .lstYn("Y")
+                                        .build(),
+                                List.of()))
+                .isEqualTo(
+                        stamper.stamp(
+                                Bcostm.builder()
+                                        .costBgNo("COST_2026_0001")
+                                        .bgSno(2)
+                                        .cttNm("서버 유지보수")
+                                        .lstYn("N")
+                                        .build(),
+                                List.of()));
     }
 
     @Test
@@ -192,7 +219,7 @@ class CostConcurrencyStamperTest {
 }
 ```
 
-`Bcostm`에 `setLstChgEno`·`setLstYn` setter가 없으면 빌더로 같은 값을 만들어 비교한다. 감사 필드가 빌더에도 없다면 그 필드는 애초에 스탬프 입력에 들어갈 수 없으므로, 해당 테스트를 지우지 말고 빌더로 만들 수 있는 감사 필드 하나로 바꿔 검증한다.
+`Bcostm`은 `@Getter`와 `@SuperBuilder`만 가지며 setter가 없다. 감사 필드는 `BaseEntity`의 `lstChgUsid`·`lstChgDtm`이고 `@SuperBuilder` 덕분에 빌더로 지정할 수 있다. `java.time.LocalDateTime` import를 추가한다.
 
 - [ ] **Step 2: 테스트가 실패하는지 확인한다**
 
@@ -400,6 +427,7 @@ git commit -m "feat: add cost concurrency stamper"
 - Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/cost/dto/CostDto.java` (`Response` 클래스, `UpdateRequest` 클래스)
 - Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/cost/service/CostQueryAssembler.java` (`assembleDetail`)
 - Test: `it_backend/src/test/java/com/kdb/it/domain/budget/cost/service/CostQueryAssemblerTest.java`
+- Modify (컴파일 유지): `it_backend/src/test/java/com/kdb/it/domain/budget/cost/service/CostQueryServiceTest.java:45`, `it_backend/src/test/java/com/kdb/it/domain/budget/cost/service/CostServiceTest.java:265` — 둘 다 `new CostQueryAssembler(...)`를 직접 호출한다
 
 **Interfaces:**
 - Consumes: `CostConcurrencyStamper.stamp(Bcostm, List<Btermm>)` (Task 1)
@@ -490,7 +518,13 @@ cd C:/it/it_backend
 ./gradlew test --tests '*CostQueryAssemblerTest' --tests '*CostDtoMappingTest' --no-daemon
 ```
 
-기대: 전부 PASS. 실패하면 생성자 인자 순서를 확인한다 — Lombok `@RequiredArgsConstructor`는 필드 선언 순서를 따르므로, 테스트의 `new CostQueryAssembler(...)` 인자 순서도 같이 고쳐야 한다.
+기대: 전부 PASS.
+
+`new CostQueryAssembler(...)`는 **세 개의 테스트 파일**에서 호출된다 — `CostQueryAssemblerTest.java:180`, `CostQueryServiceTest.java:45`, `CostServiceTest.java:265`. 세 곳 모두에 새 인자 두 개를 추가해야 컴파일된다. Lombok `@RequiredArgsConstructor`는 필드 선언 순서를 따르므로 인자 순서도 선언 순서에 맞춘다.
+
+```bash
+./gradlew test --tests '*CostQueryServiceTest' --tests '*CostServiceTest' --no-daemon
+```
 
 - [ ] **Step 6: 커밋한다**
 
@@ -1853,6 +1887,8 @@ npm test -- tests/unit/composables/cost/useCostFormSave.test.ts
 
 - [ ] **Step 6: 409 분기를 구현한다**
 
+`baselines`를 ctx 필수 인자로 추가하면 **Task 5에서 추가한 테스트가 ctx를 만들 때 이 인자를 넘기지 않아 타입 에러가 난다.** 테스트 헬퍼(`createSave` 또는 각 테스트의 인라인 ctx 조립)가 `baselines`를 기본값 `ref(new Map())`으로 채우게 먼저 고친 뒤 구현을 진행한다. 프로덕션 코드에서는 옵셔널로 만들지 않는다 — 원본 없이 저장하면 병합의 base가 사라진다.
+
 `useCostFormSave.ts`의 ctx 타입에 `baselines: Ref<Map<string, ItCost>>`를 추가하고, import와 상태를 추가한다.
 
 ```ts
@@ -2328,14 +2364,14 @@ private 메서드를 추가한다.
                 HttpStatus.CONFLICT,
                 "COST_SOURCE_CHANGED",
                 "다른 사용자가 이 전산업무비를 수정했습니다.",
-                resolveCgprName(target.getLstChgEno()),
+                resolveCgprName(target.getLstChgUsid()),
                 target.getLstChgDtm(),
                 current,
                 queryService.getCost(target.getCostBgNo(), target.getBgSno()));
     }
 ```
 
-최종 수정자·수정일시 getter 이름은 공통 감사 필드 정의에 맞춘다. `resolveCgprName`은 `CostService`에 이미 있는 사번→이름 해석 헬퍼다. 이름이 다르면 실제 헬퍼로 바꾸고, 해석할 수 없으면 사번이 그대로 표시되게 둔다.
+감사 필드는 `BaseEntity`의 `getLstChgUsid()`(최종 변경자 사번)와 `getLstChgDtm()`(최종 변경일시)다 (`BaseEntity.java:83,88`). `resolveCgprName`은 `CostService`에 이미 있는 사번→이름 해석 헬퍼다. 해석할 수 없으면 사번이 그대로 표시되게 둔다.
 
 **알려진 한계:** 이 구현은 부모의 감사 필드만 본다. 단말만 수정된 경우 자식의 `LST_CHG_DTM`이 더 최근이므로 표시되는 수정자가 부정확할 수 있다. 스펙 11.1의 "부모·자식 중 최신" 규칙은 Task 11에서 잔여 과제로 등록한다.
 
