@@ -14,6 +14,16 @@
 
 ---
 
+### ✅ 2026-09-07 SSO 세션 무상태화·지정맥 공급자 무상태화 (L4 세션 유지 의존 제거)
+
+다중 WAS 인스턴스를 L4 Least Connection만으로 운영할 수 있도록, 요청 간 인스턴스 로컬 상태를 쓰던 두 곳을 DDL 변경 없이 제거했다. 서버 고정·NAT 없음 조건에서는 source IP hash로도 우회 가능했지만, 롤링 재기동과 인프라 변경에 흐름이 조용히 깨지는 의존을 없애는 쪽을 택했다.
+
+- **SSO(`SsoController`):** `HttpSession`에 두던 `resultCode`/`resultData`/`ssoVerifiedEno`/`secureSessionId`/`ssoNext`/`ssoOrigin`을 모두 제거했다. 검증 사번은 `JwtUtil.generateSsoVerifiedToken`(`tokenUse=sso-verified`, 60초, `jti`)을 담은 `sso-verified` httpOnly 쿠키(`Path=/api/auth/sso`)로 `checkauth`/모의 `business`가 발급하고, `complete`가 `resolveSsoVerifiedEno`로 서명·만료·용도를 검증한 뒤 성공·실패 모두 삭제한다. `loginProc`/`agentProc`는 `sso-next`/`sso-origin` 쿠키만 쿼리로 옮긴다. 설정 `jwt.sso-verified-validity`(기본 60000) 추가. 서버 저장소가 없어 60초 내 재전송을 서버가 막지 못하는 점은 설계 시 확인·수용했으며(httpOnly 쿠키 탈취 위협 모델은 Refresh 쿠키와 동일) 가이드에 기록했다.
+- **지정맥(`FingerVeinMfaProvider`):** 인스턴스 로컬 `activeScans` 맵과 용량 제한·`synchronized`를 제거했다. `start`가 6자리 랜덤키를 `MfaChallengeData.providerTransactionId`로도 돌려 `MfaService`가 기존 경로로 `TPRMPP_CMFATM.APN_CER_SVC_TR_NO`(VARCHAR2(20))에 저장하고, `verify`는 `MfaVerifyContext.providerTransactionId`의 랜덤키와 컨텍스트 사번으로 기대 해시를 재계산한다. 1회 사용·재전송 차단은 `MfaService`의 거래 상태 전이가 담당한다(FIDO SEC-16과 같은 패턴). 관련 JavaDoc의 "FIDO만 값이 있다" 설명을 지정맥 랜덤키까지 넓혔다.
+- **문서:** `it_backend/README.md`, `docs/guides/integrations/sso.md`(다중 인스턴스 전제 섹션을 "sticky 불필요·`jwt.secret` 공유 필수"로 교체), `docs/guides/security/authentication-authorization.md`(SSO 경로 표·CSRF 트리거 목록).
+- **검증:** `FingerVeinMfaProviderTest` 13건, `JwtUtilTest` 33건, `CookieUtilTest` 23건, `SsoControllerTest` 70건(세션 기반 케이스를 쿠키 기반으로 재작성, 세션 ID 교체·동시 소비 테스트는 대상 소멸로 삭제). 백엔드 전체 `./gradlew test` 5,191건 통과(실패 0), `spotlessCheck` 통과. 프론트엔드·DB 변경 없음.
+- **운영 인계:** 모든 WAS 인스턴스에 같은 `JWT_SECRET`을 주입해야 한다. L4에서 persistence를 켜 두었다면 해제해도 되고, 켜 둔 채로도 동작한다. `EnvironmentValidator`의 `JSESSIONID` 속성 검사는 방어용으로 유지했다.
+
 ### ✅ 2026-09-03 전산예산 작성 화면 개선(변경1~5) 완료
 
 전산예산 작성·상신 화면에 접수된 다섯 가지 변경 요청을 한 번에 반영했다. 기 지급금액 라벨 연도 표기, 사업연도 Select 축소·유의사항 팝업, 소요자원 입력 개선, 결재라인 자동지정, 임시저장·작성완료 분리를 구현했다.
