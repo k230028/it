@@ -946,10 +946,33 @@ cd C:/it/it_backend
 cd C:/it/it_frontend
 npm run codegen
 npm run codegen:check
-curl -s http://localhost:8080/v3/api-docs | grep -o '"CostConflictResponse"'
+curl -s http://localhost:28080/v3/api-docs | grep -o '"CostConflictResponse"'
 ```
 
-기대: `codegen:check` 통과, `CostConflictResponse` 스키마 존재. 스키마 이름이 `Response`처럼 단순 이름으로 나오면 Task 3 Step 4의 `@Schema(name = ...)`가 빠진 것이다.
+기대: `codegen:check` 통과, `CostConflictResponse` 스키마 존재.
+
+**codegen 백엔드 origin은 `OPENAPI_BACKEND_URL`이며 기본값은 `http://localhost:28080`이다** (`scripts/codegen.mjs`). 8080이 아니다.
+
+**선행 조건 — 컨트롤러가 409 응답을 선언해야 한다.** springdoc은 컨트롤러 시그니처에서 도달 가능한 스키마만 내보낸다. `CostConflictResponse`는 예외로만 던져지므로 어떤 엔드포인트도 반환 타입으로 선언하지 않으면 api-docs에 나타나지 않고, 프론트는 생성 타입을 받지 못한다. 전산업무비 수정 엔드포인트(`CostController`의 PUT)에 다음을 붙인다.
+
+```java
+    @ApiResponse(
+            responseCode = "409",
+            description = "다른 사용자가 원장을 변경했거나 잠금 대기를 초과함",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = CostConflictResponse.class)))
+    @ApiResponse(
+            responseCode = "400",
+            description = "동시성 스탬프 누락 또는 형식 오류",
+            content =
+                    @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = CostConflictResponse.class)))
+```
+
+이 선언은 문서화일 뿐 동작을 바꾸지 않으므로 배포 1단계에 넣어도 안전하다.
 
 - [ ] **Step 2: 실패하는 테스트를 작성한다**
 
