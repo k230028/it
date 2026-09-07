@@ -1052,7 +1052,7 @@ codegen이 갱신한 생성 타입 파일 경로를 `git status --short`로 확�
   - `interface CostConflict { fields: CostFieldConflict[]; terminals: CostTerminalConflict[] }`
   - `interface CostResolutionChoices { fields: Record<string, 'mine' | 'theirs'>; terminals: Record<string, 'mine' | 'theirs'> }`
   - `buildCostConflict(base: ItCost, mine: ItCost, theirs: ItCost): CostConflict`
-  - `applyCostResolution(mine: ItCost, theirs: ItCost, conflict: CostConflict, choices: CostResolutionChoices, currentStamp: string): ItCost`
+  - `applyCostResolution(base: ItCost, mine: ItCost, theirs: ItCost, conflict: CostConflict, choices: CostResolutionChoices, currentStamp: string): ItCost` — `base`가 첫 인자다. 충돌하지 않은 필드에서 "내가 안 건드린 값"과 "내가 바꾼 값"을 구별하려면 원본이 필요하다.
 
 - [ ] **Step 1: 실패하는 테스트를 작성한다**
 
@@ -1910,6 +1910,8 @@ npm test -- tests/unit/composables/cost/useCostFormSave.test.ts
 
 - [ ] **Step 6: 409 분기를 구현한다**
 
+`applyCostResolution`은 `base`를 첫 인자로 받는다. 충돌하지 않은 필드는 `mine !== base`이면 내 값을, 아니면 서버 값을 따르며, 단말은 서버 목록에서 출발해 내가 실제로 바꾼 행만 다시 얹는다. 한쪽만 바꾼 변경은 사용자에게 묻지 않고 조용히 반영된다 — 상대가 지운 행을 기본 선택으로 되살리지 않기 위해서다.
+
 `baselines`를 ctx 필수 인자로 추가하면 **Task 5에서 추가한 테스트가 ctx를 만들 때 이 인자를 넘기지 않아 타입 에러가 난다.** 테스트 헬퍼(`createSave` 또는 각 테스트의 인라인 ctx 조립)가 `baselines`를 기본값 `ref(new Map())`으로 채우게 먼저 고친 뒤 구현을 진행한다. 프로덕션 코드에서는 옵셔널로 만들지 않는다 — 원본 없이 저장하면 병합의 base가 사라진다.
 
 `useCostFormSave.ts`의 ctx 타입에 `baselines: Ref<Map<string, ItCost>>`를 추가하고, import와 상태를 추가한다.
@@ -1984,7 +1986,9 @@ import {
     const resolveConflict = async (choices: CostResolutionChoices): Promise<boolean> => {
         const pending = pendingConflict.value;
         if (!pending || !conflict.value) return false;
+        const base = ctx.baselines.value.get(pending.cost.costBgNo as string) ?? pending.theirs;
         const merged = applyCostResolution(
+            base,
             pending.cost,
             pending.theirs,
             conflict.value,
