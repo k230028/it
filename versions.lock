@@ -1,6 +1,6 @@
 # 서브레포 커밋 잠금 — 릴리스/재현용. scripts/update-versions-lock.ps1로 갱신.
 # 형식: <레포>  <origin URL>  <브랜치>  <HEAD SHA>  (갱신시각은 마지막 줄 주석)
-it_frontend  https://github.com/gonnabe88/it_frontend      main  1b2284dc37d99e721c2f506a4ab8c437462d3879
-it_backend   https://github.com/gonnabe88/it_backend       main  73852b6b4e7512cd2ac3e1de90d633c964cc9f47
-it_database  https://github.com/gonnabe88/it_database      main  68843a0d20dc932573461ce7ed03b4c82d5358dc
-# 갱신시각: 2026-09-06 18:14:49
+it_frontend  https://github.com/gonnabe88/it_frontend      feature/cost-concurrency-stamp cc76eca5c1e29b4250fd7ae9c37294d04ad6bb1f
+it_backend   https://github.com/gonnabe88/it_backend       feature/cost-concurrency-stamp ddbd0668aa237280b2987724d3edb84a87301feb
+it_database  https://github.com/gonnabe88/it_database      main  827c2ad6b4a354098f7ba85adddb6762dcc628e5
+# 갱신시각: 2026-09-08 06:20:20
