@@ -56,6 +56,7 @@ $env:SPRING_PROFILES_ACTIVE = "local-ext"
 
 ```
 cd C:\it\it_frontend; npm run generate:dev
+cd C:\it\it_frontend; npm run generate:prod
 ```
 
 ```powershell

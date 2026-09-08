@@ -4,7 +4,7 @@
  * 이 파일이 리포트 레이아웃의 단일 진실 공급원이며, 매 실행마다 동일한 형태를 보장합니다.
  */
 
-import { COMPLEXITIES } from './fp-rules.mjs';
+import { COMPLEXITIES, COMPLEXITY_LABEL, COMPLEXITY_NAME } from './fp-rules.mjs';
 
 /** 리포트 본문에 노출할 FP 유형 한글 표기 */
 const TYPE_LABEL = {
@@ -46,8 +46,18 @@ function complexityBar(stats) {
   if (total === 0) return '<div class="bar"></div>';
   const seg = (cls, c) =>
     stats[c] > 0 ? `<i class="${cls}" style="width:${pct(stats[c], total)}%"></i>` : '';
-  return `<div class="bar">${seg('l', 'Low')}${seg('a', 'Average')}${seg('h', 'High')}</div>`;
+  return `<div class="bar">${seg('l', 'L')}${seg('a', 'A')}${seg('h', 'H')}</div>`;
 }
+
+/** 복잡도 표 머리글. 약어(L/A/H)에 원어와 한글 설명을 툴팁으로 붙입니다. */
+function complexityHeads() {
+  return COMPLEXITIES.map(
+    (c) => `<th class="n" title="${COMPLEXITY_NAME[c]}(${COMPLEXITY_LABEL[c]})">${c}</th>`,
+  ).join('');
+}
+
+/** 복잡도 표기 범례 문구 */
+const COMPLEXITY_LEGEND = COMPLEXITIES.map((c) => `${c}=${COMPLEXITY_NAME[c]}(${COMPLEXITY_LABEL[c]})`).join(' · ');
 
 /** 유형 1행 (데이터/트랜잭션 공통) */
 function typeRow(type, stats) {
@@ -55,7 +65,7 @@ function typeRow(type, stats) {
   return `        <tr>
           <td><span class="type ${type.toLowerCase()}">${type}</span> <span class="muted">${TYPE_LABEL[type]}</span></td>
           <td class="n">${num(stats.count)}</td>
-          <td class="n">${dash(stats.Low)}</td><td class="n">${dash(stats.Average)}</td><td class="n">${dash(stats.High)}</td>
+          ${COMPLEXITIES.map((c) => `<td class="n">${dash(stats[c])}</td>`).join('')}
           <td>${complexityBar(stats)}</td>
           <td class="n"><b>${num(stats.fp)}</b></td>
         </tr>`;
@@ -65,7 +75,7 @@ function typeRow(type, stats) {
 function subtotalRow(label, s) {
   return `        <tr class="total">
           <td>${esc(label)}</td><td class="n">${num(s.count)}</td>
-          <td class="n">${num(s.Low)}</td><td class="n">${num(s.Average)}</td><td class="n">${num(s.High)}</td>
+          ${COMPLEXITIES.map((c) => `<td class="n">${num(s[c])}</td>`).join('')}
           <td></td><td class="n">${num(s.fp)}</td>
         </tr>`;
 }
@@ -77,7 +87,7 @@ function typeTable(unitHeader, types, byType, total, subtotalLabel) {
       <thead>
         <tr>
           <th>유형</th><th class="n">${esc(unitHeader)}</th>
-          <th class="n">Low</th><th class="n">Average</th><th class="n">High</th>
+          ${complexityHeads()}
           <th style="width:150px">복잡도 분포</th><th class="n">FP</th>
         </tr>
       </thead>
@@ -147,11 +157,11 @@ ${rows}
         <p class="sub" style="margin-top:10px">컴포넌트 ${num(scale.components)} · 컴포저블 ${num(scale.composables)}</p>`;
 }
 
-/** 데이터기능 중 복잡도 상위(Average/High) 상세 행. 해당 항목이 없으면 섹션 자체를 생략합니다. */
+/** 데이터기능 중 복잡도 상위(A/H) 상세 행. 해당 항목이 없으면 섹션 자체를 생략합니다. */
 function topDataRows(rows) {
-  const notable = rows.filter((r) => ['ILF', 'EIF'].includes(r.type) && r.complexity !== 'Low');
+  const notable = rows.filter((r) => ['ILF', 'EIF'].includes(r.type) && r.complexity !== 'L');
   if (notable.length === 0) return '';
-  const color = { Average: 'var(--avg)', High: 'var(--high)' };
+  const color = { A: 'var(--avg)', H: 'var(--high)' };
   const body = notable
     .sort((a, b) => b.fp - a.fp)
     .map(
@@ -167,6 +177,33 @@ function topDataRows(rows) {
     <div class="tw">
     <table>
       <thead><tr><th>논리파일</th><th>물리 테이블</th><th class="n">RET</th><th class="n">DET</th><th>복잡도</th><th class="n">FP</th></tr></thead>
+      <tbody>
+${body}
+      </tbody>
+    </table>
+    </div>`;
+}
+
+/**
+ * SW기능(등록·수정·삭제·조회·출력·내부논리파일·외부연계파일)별 건수·FP 표.
+ * 과거 형식 산정본의 EI 행은 '미기재'로 묶여 나옵니다.
+ */
+function swFunctionTable(bySwFunction, ufp) {
+  const body = bySwFunction
+    .map(
+      (s) => `        <tr>
+          <td><b>${esc(s.sw)}</b></td>
+          <td><span class="type ${s.type.toLowerCase()}">${s.type}</span> <span class="muted">${TYPE_LABEL[s.type]}</span></td>
+          <td class="n">${num(s.count)}</td>
+          <td class="n"><b>${num(s.fp)}</b></td>
+          <td class="n">${pct1(s.fp, ufp)}%</td>
+        </tr>`,
+    )
+    .join('\n');
+  return `    <h3>SW기능별 구성</h3>
+    <div class="tw">
+    <table>
+      <thead><tr><th>SW기능</th><th>FP유형</th><th class="n">건수</th><th class="n">FP</th><th class="n">비중</th></tr></thead>
       <tbody>
 ${body}
       </tbody>
@@ -274,7 +311,7 @@ function changeRow(kind, row, detail) {
   return `            <tr>
               <td>${changeBadge(kind)}</td>
               <td>${esc(row.domain)}</td>
-              <td><b>${esc(row.name)}</b></td>
+              <td><b>${esc(row.name)}</b>${row.sw ? ` <span class="muted">${esc(row.sw)}</span>` : ''}</td>
               <td class="cx">${esc(detail)}</td>
               <td class="desc">${esc(row.change || '—')}</td>
             </tr>`;
@@ -477,7 +514,7 @@ const STYLE = `
  * @returns {string} 완성된 HTML 문서 문자열
  */
 export function renderReport({ date, scale, agg, config, csvName, rowCount, diff }) {
-  const { byType, dataTotal, txTotal, ufp, byGroup } = agg;
+  const { byType, dataTotal, txTotal, ufp, byGroup, bySwFunction } = agg;
   const composite = config.factors.reduce((acc, f) => acc * f.value, 1);
   const adjustedFp = Math.round(ufp * composite);
   const totals = { data: dataTotal.count, tx: txTotal.count, count: dataTotal.count + txTotal.count };
@@ -610,9 +647,21 @@ ${typeTable('단위프로세스', ['EI', 'EO', 'EQ'], byType, txTotal, '트랜�
       </tbody>
     </table>
     </div>
-    <div class="note">복잡도는 FP.md의 <b>FTR × DET 매트릭스</b>로 결정적 산출
-      (<span class="type">lib/fp-rules.mjs</span> 재계산) — 임의 판단 없음.</div>
+    <div class="note">복잡도는 <b>RET/FTR × DET 매트릭스</b>로 결정적 산출
+      (<span class="type">lib/fp-rules.mjs</span> 재계산) — 임의 판단 없음.
+      표기: ${esc(COMPLEXITY_LEGEND)}.</div>
 ${mismatchNote(agg.mismatches)}
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-no">SW기능</span><h2>SW기능별 구성</h2>
+      <span class="sec-note">${num(bySwFunction.length)} 구분 · ${num(ufp)} FP</span></div>
+    <p>
+      단위프로세스와 논리파일을 <b>SW기능</b>(등록 · 수정 · 삭제 · 조회 · 출력 · 내부논리파일 · 외부연계파일)으로
+      구분한 구성입니다. 등록·수정·삭제는 EI, 조회는 EQ, 출력은 EO, 내부논리파일은 ILF, 외부연계파일은 EIF에 대응하며
+      산정 명세의 <span class="type">SW기능</span> 열과 <span class="type">FP유형</span> 열의 대응은 생성기가 검증합니다.
+    </p>
+${swFunctionTable(bySwFunction, ufp)}
   </section>
 
   <section>

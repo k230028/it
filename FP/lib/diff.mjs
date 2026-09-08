@@ -46,6 +46,8 @@ function withScore(row) {
 /** 두 행 사이에서 실제로 달라진 항목만 골라 사람이 읽을 문구로 만듭니다. */
 function fieldDeltas(before, after) {
   const deltas = [];
+  // 과거 형식 산정본의 EI 행은 SW기능이 비어 있으므로 양쪽 모두 값이 있을 때만 비교합니다.
+  if (before.sw && after.sw && before.sw !== after.sw) deltas.push(`SW기능 ${before.sw}→${after.sw}`);
   if (before.type !== after.type) deltas.push(`유형 ${before.type}→${after.type}`);
   if (before.ret !== after.ret) deltas.push(`RET/FTR ${before.ret}→${after.ret}`);
   if (before.det !== after.det) deltas.push(`DET ${before.det}→${after.det}`);

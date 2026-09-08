@@ -7,6 +7,8 @@
  * (아티팩트 CSP가 CDN·외부 폰트·원격 이미지를 차단하기 때문입니다).
  */
 
+import { COMPLEXITIES, COMPLEXITY_LABEL, COMPLEXITY_NAME } from './fp-rules.mjs';
+
 /** FP 유형 표시 순서. 차트 색 슬롯은 이 순서에 고정 배정하며 순환시키지 않습니다. */
 const TYPE_ORDER = ['ILF', 'EIF', 'EI', 'EO', 'EQ'];
 
@@ -19,8 +21,8 @@ const TYPE_META = {
   EQ: { name: '외부조회', kind: '트랜잭션', desc: '파생 없이 있는 값을 그대로 보여주는 조회 기능' },
 };
 
-const COMPLEXITIES = ['Low', 'Average', 'High'];
-const COMPLEXITY_LABEL = { Low: '단순', Average: '보통', High: '복잡' };
+/** 복잡도 표기(L/A/H)와 설명은 fp-rules.mjs가 SoT입니다. */
+const COMPLEXITY_HEAD = COMPLEXITIES.join(' / ');
 
 /** HTML 특수문자를 이스케이프합니다. */
 function esc(value) {
@@ -272,9 +274,26 @@ function typeTableRows(byType, ufp) {
       <td class="num">${s.count}</td>
       <td class="num">${n(s.fp)}</td>
       <td class="num">${pct(s.fp, ufp)}</td>
-      <td class="num sm">${s.Low} / ${s.Average} / ${s.High}</td>
+      <td class="num sm">${COMPLEXITIES.map((c) => s[c]).join(' / ')}</td>
     </tr>`;
   }).join('\n');
+}
+
+/**
+ * SW기능(등록·수정·삭제·조회·출력·내부논리파일·외부연계파일)별 표 본문을 만듭니다.
+ * 과거 형식 산정본의 EI 행은 '미기재'로 묶여 나옵니다.
+ */
+function swFunctionRows(bySwFunction, ufp) {
+  return bySwFunction
+    .map(
+      (s) => `<tr>
+      <th scope="row">${esc(s.sw)} <span class="mut">${esc(s.type)}</span></th>
+      <td class="num">${s.count}</td>
+      <td class="num">${n(s.fp)}</td>
+      <td class="num">${pct(s.fp, ufp)}</td>
+    </tr>`,
+    )
+    .join('\n');
 }
 
 /** 보정계수 표 본문을 만듭니다. */
@@ -738,25 +757,40 @@ export function renderArtifact(model) {
         <table>
           <caption>유형별 건수·점수·복잡도 분포</caption>
           <thead>
-            <tr><th>유형</th><th class="num">건수</th><th class="num">FP</th><th class="num">비중</th><th class="num">단순 / 보통 / 복잡</th></tr>
+            <tr><th>유형</th><th class="num">건수</th><th class="num">FP</th><th class="num">비중</th><th class="num">복잡도 ${esc(COMPLEXITY_HEAD)}</th></tr>
           </thead>
           <tbody>
 ${typeTableRows(byType, ufp)}
           </tbody>
           <tfoot>
-            <tr><th>합계</th><td class="num">${model.rowCount}</td><td class="num">${n(ufp)}</td><td class="num">100.0%</td><td class="num sm">${dataTotal.Low + txTotal.Low} / ${dataTotal.Average + txTotal.Average} / ${dataTotal.High + txTotal.High}</td></tr>
+            <tr><th>합계</th><td class="num">${model.rowCount}</td><td class="num">${n(ufp)}</td><td class="num">100.0%</td><td class="num sm">${COMPLEXITIES.map((c) => dataTotal[c] + txTotal[c]).join(' / ')}</td></tr>
           </tfoot>
         </table>
       </div>
     </figure>
 
     <figure class="figure">
-      <figcaption><b>유형별 복잡도 분포</b> — 색이 진할수록 복잡도가 높습니다</figcaption>
+      <figcaption><b>SW기능별 구성</b> — 등록·수정·삭제는 EI, 조회는 EQ, 출력은 EO, 내부논리파일은 ILF, 외부연계파일은 EIF에 대응합니다</figcaption>
+      <div class="t-box">
+        <table>
+          <caption>SW기능별 건수·점수</caption>
+          <thead>
+            <tr><th>SW기능</th><th class="num">건수</th><th class="num">FP</th><th class="num">비중</th></tr>
+          </thead>
+          <tbody>
+${swFunctionRows(agg.bySwFunction, ufp)}
+          </tbody>
+        </table>
+      </div>
+    </figure>
+
+    <figure class="figure">
+      <figcaption><b>유형별 복잡도 분포</b> — 색이 진할수록 복잡도가 높습니다 (${COMPLEXITIES.map((c) => `${c}=${COMPLEXITY_NAME[c]}`).join(' · ')})</figcaption>
       <div class="chart-box">${complexityRows(byType)}</div>
       <div class="legend">
         ${COMPLEXITIES.map(
           (c, i) =>
-            `<span><i class="swatch" style="background:var(--o${i + 1})"></i>${esc(COMPLEXITY_LABEL[c])} ${esc(c)}</span>`,
+            `<span><i class="swatch" style="background:var(--o${i + 1})"></i>${esc(c)} ${esc(COMPLEXITY_LABEL[c])}</span>`,
         ).join('\n        ')}
       </div>
     </figure>
@@ -861,16 +895,16 @@ ${trendRows}
     </p>
 
     <figure class="figure">
-      <figcaption><b>복잡도 판정 매트릭스</b> — 셀 안의 값은 판정되는 복잡도 등급입니다</figcaption>
+      <figcaption><b>복잡도 판정 매트릭스</b> — 셀 안의 값은 판정되는 복잡도 등급입니다 (L=단순 · A=보통 · H=복잡)</figcaption>
       <div class="mx">
         <div class="t-box">
           <table>
             <caption>데이터 기능 (ILF · EIF) — RET × DET</caption>
             <thead><tr><th>RET \\ DET</th><th>1–19</th><th>20–50</th><th>51+</th></tr></thead>
             <tbody>
-              <tr><th scope="row">1</th><td class="cx-L">단순</td><td class="cx-L">단순</td><td class="cx-A">보통</td></tr>
-              <tr><th scope="row">2–5</th><td class="cx-L">단순</td><td class="cx-A">보통</td><td class="cx-H">복잡</td></tr>
-              <tr><th scope="row">6+</th><td class="cx-A">보통</td><td class="cx-H">복잡</td><td class="cx-H">복잡</td></tr>
+              <tr><th scope="row">1</th><td class="cx-L">L</td><td class="cx-L">L</td><td class="cx-A">A</td></tr>
+              <tr><th scope="row">2–5</th><td class="cx-L">L</td><td class="cx-A">A</td><td class="cx-H">H</td></tr>
+              <tr><th scope="row">6+</th><td class="cx-A">A</td><td class="cx-H">H</td><td class="cx-H">H</td></tr>
             </tbody>
             <tfoot><tr><th scope="row">점수</th><td colspan="3" class="basis">ILF 7 / 10 / 15 · EIF 5 / 7 / 10</td></tr></tfoot>
           </table>
@@ -880,9 +914,9 @@ ${trendRows}
             <caption>외부입력 (EI) — FTR × DET</caption>
             <thead><tr><th>FTR \\ DET</th><th>1–4</th><th>5–15</th><th>16+</th></tr></thead>
             <tbody>
-              <tr><th scope="row">0–1</th><td class="cx-L">단순</td><td class="cx-L">단순</td><td class="cx-A">보통</td></tr>
-              <tr><th scope="row">2</th><td class="cx-L">단순</td><td class="cx-A">보통</td><td class="cx-H">복잡</td></tr>
-              <tr><th scope="row">3+</th><td class="cx-A">보통</td><td class="cx-H">복잡</td><td class="cx-H">복잡</td></tr>
+              <tr><th scope="row">0–1</th><td class="cx-L">L</td><td class="cx-L">L</td><td class="cx-A">A</td></tr>
+              <tr><th scope="row">2</th><td class="cx-L">L</td><td class="cx-A">A</td><td class="cx-H">H</td></tr>
+              <tr><th scope="row">3+</th><td class="cx-A">A</td><td class="cx-H">H</td><td class="cx-H">H</td></tr>
             </tbody>
             <tfoot><tr><th scope="row">점수</th><td colspan="3" class="basis">EI 3 / 4 / 6</td></tr></tfoot>
           </table>
@@ -892,9 +926,9 @@ ${trendRows}
             <caption>외부출력·조회 (EO · EQ) — FTR × DET</caption>
             <thead><tr><th>FTR \\ DET</th><th>1–5</th><th>6–19</th><th>20+</th></tr></thead>
             <tbody>
-              <tr><th scope="row">0–1</th><td class="cx-L">단순</td><td class="cx-L">단순</td><td class="cx-A">보통</td></tr>
-              <tr><th scope="row">2–3</th><td class="cx-L">단순</td><td class="cx-A">보통</td><td class="cx-H">복잡</td></tr>
-              <tr><th scope="row">4+</th><td class="cx-A">보통</td><td class="cx-H">복잡</td><td class="cx-H">복잡</td></tr>
+              <tr><th scope="row">0–1</th><td class="cx-L">L</td><td class="cx-L">L</td><td class="cx-A">A</td></tr>
+              <tr><th scope="row">2–3</th><td class="cx-L">L</td><td class="cx-A">A</td><td class="cx-H">H</td></tr>
+              <tr><th scope="row">4+</th><td class="cx-A">A</td><td class="cx-H">H</td><td class="cx-H">H</td></tr>
             </tbody>
             <tfoot><tr><th scope="row">점수</th><td colspan="3" class="basis">EO 4 / 5 / 7 · EQ 3 / 4 / 6</td></tr></tfoot>
           </table>
