@@ -1,5 +1,14 @@
 # IT Portal 잔여과제
 
+## 2026-09-09 현재 상태
+
+반입 원본 파일 다이얼로그와 전산업무비·금융정보단말기 첨부 기능([`docs/superpowers/specs/2026-09-09-import-source-and-cost-attachments-design.md`](docs/superpowers/specs/2026-09-09-import-source-and-cost-attachments-design.md)) 최종 리뷰에서 범위 밖으로 분류한 후속 항목입니다. 기능 배포를 막지 않습니다.
+
+| ID | 우선순위 | 상태 | 과제 | 다음 조치 | 근거 문서 |
+| -- | :------: | ---- | ---- | --------- | --------- |
+| FE-79 | 보통 | 미착수 | `TerminalFormDialog`의 첨부 재시도 상태(`pendingAttachmentRetryCostBgNo`, `pendingAttachmentRetrySnapshotCurrent`)가 `visible`·`itMngcNo` 변경 watcher에서 초기화되지 않는다. 첨부 동기화 실패 후 다이얼로그를 닫고 다른 전산업무비로 다시 열면 이전 costBgNo를 가리키는 재시도 버튼과 강제 view 모드가 남는다 | 다이얼로그 열림·대상 변경 watcher에서 재시도 상태와 `savedTerminalSnapshot`을 함께 초기화하고, 다른 대상으로 재오픈 시 재시도 버튼이 사라지는 회귀 테스트를 추가한다 | `it_frontend/app/components/cost/TerminalFormDialog.vue` |
+| FE-80 | 보통 | 미착수 | 전산업무비 개별 수정 화면(`/info/cost/form`)의 첨부 섹션은 `isSubmitting`만으로 잠겨, 본문 PUT과 첨부 동기화 사이에 늦게 선택한 파일이 동기화 대상에서 빠질 수 있다. 금융정보단말기 다이얼로그에는 같은 문제를 operation lock으로 막았지만 폼 경로는 미적용이다 | `useCostFormSave`의 저장 구간 전체(확인~PUT~첨부 동기화)에 단말기 다이얼로그와 같은 operation lock을 두고 첨부 섹션·저장 버튼을 그 동안 비활성화한다. 늦은 파일 선택이 무시되는 회귀 테스트를 추가한다 | `it_frontend/app/pages/info/cost/form.vue`, `it_frontend/app/composables/cost/useCostFormSave.ts` |
+
 ## 2026-09-08 현재 상태
 
 전산업무비 동시성 스탬프·병합 기능([`docs/superpowers/specs/2026-09-08-cost-concurrency-conflict-merge-design.md`](docs/superpowers/specs/2026-09-08-cost-concurrency-conflict-merge-design.md), 배포 절차는 [`docs/operations/2026-09-08-cost-concurrency-rollout.md`](docs/operations/2026-09-08-cost-concurrency-rollout.md)) 구현 과정에서 의도적으로 뒤로 미룬 항목을 아래 표에 등록합니다. 기능 자체는 배포 가능하지만 아래 항목은 배포를 막지 않는 후속 개선입니다.
