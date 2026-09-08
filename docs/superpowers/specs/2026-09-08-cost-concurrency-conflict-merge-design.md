@@ -19,6 +19,8 @@
 
 전산업무비와 금융정보단말의 사용자 저장 경로에만 적용한다. 정보화사업(BPROJM·BITEMM)은 같은 규약으로 확장할 수 있으나 이 설계의 범위가 아니다. DB 마이그레이션은 없다.
 
+> 2026-09-08 후속(BE-102): 정보화사업(BPROJM·BITEMM)에도 같은 규약을 적용했다. 정보화사업 고유 계약과 배포 순서는 [`docs/operations/2026-09-08-project-concurrency-rollout.md`](../../operations/2026-09-08-project-concurrency-rollout.md)를 따른다.
+
 ## 3. 개정본 스탬프
 
 조회 응답에 `concurrencyStamp` 문자열 한 개를 싣는다. 부모 BCOSTM 업무 필드와 활성 BTERMM 행 전체를 정규 순서로 직렬화한 SHA-256 64자 소문자 16진수다.

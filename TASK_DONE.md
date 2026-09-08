@@ -14,6 +14,17 @@
 
 ---
 
+### ✅ 2026-09-08 잔여과제 BE-102 · BE-105 · CQ-45 · CQ-46 일괄 완료
+
+전산업무비 동시성 스탬프·병합 기능에서 뒤로 미뤘던 네 항목을 조치했다. 상세 상태와 근거 문서는 [`TASK.md`](TASK.md)의 2026-09-08 표에 있다.
+
+- **BE-102 정보화사업 동시성 스탬프·충돌 병합:** 백엔드는 `ProjectConcurrencyStamper`(부모 BPROJM 업무 필드 + 활성 BITEMM 품목, 감사·`LST_YN` 제외)·`ProjectConcurrencyGuard`(행 잠금·결재 확인 뒤, 원장 수정 전 검사; 잠금 초과 409 변환)·`ProjectConflictException`/`ProjectConflictResponse`·`GlobalExceptionHandler.handleProjectConflict`를 신설하고 `ProjectQueryAssembler.assembleDetail`이 `concurrencyStamp`를 싣는다. `PUT /api/projects/{id}`는 400 `PROJECT_STAMP_REQUIRED`·409 `PROJECT_SOURCE_CHANGED`(현재 상세 포함)·409 `PROJECT_CONCURRENT_UPDATE`를 응답한다. 반입·생성 경로는 면제한다. 프론트는 `projectFormMapping`(상세→폼·폼→payload 순수 함수), `useProjectConflictMerge`(payload 형태 3-way 병합, `gclMngNo` 키, 원본 미보관 시 보수 전환), `ProjectConflictMergeDialog`(cost 다이얼로그와 CSS 공유), `useProjectFormSave`의 409 처리·생성/수정 직후 스탬프 재조회, i18n `project.form.conflict.*`, `projectFieldLabels`를 추가했다. 배포는 프론트 → 백엔드 순서다([`docs/operations/2026-09-08-project-concurrency-rollout.md`](docs/operations/2026-09-08-project-concurrency-rollout.md)).
+- **BE-105 연결 단말 생성 단일 트랜잭션:** `POST /api/cost/{itMngcNo}/linked-costs`·`CostTerminalLinkService.createLinkedCost`가 부모 잠금·결재 확인 → 단말 전산업무비 생성 → `TMN_YN` 표시를 한 트랜잭션으로 처리한다. `TerminalFormDialog`는 `useCost.createLinkedCost` 하나만 호출하고 프론트의 `markTerminalLinked`는 제거했다. 기존 `POST …/terminal-link`는 구버전 번들 호환용으로만 남겨 두었다(프론트 배포 뒤 제거 대상).
+- **CQ-45 `CostDto` 기준선 예외 해제:** `CostListRow`·`SearchCondition`·`BulkGetRequest`·`VersionRef`를 `CostQueryDto`로 옮기고 `CostDto extends CostQueryDto extends CostTerminalDto` 상속으로 `CostDto.SearchCondition` 같은 참조와 `@Schema(name)`을 그대로 유지했다(호출부·OpenAPI 무변경). 804→653줄로 기준선 항목을 삭제했다. 같은 방식으로 `ProjectDto`의 검색·일괄 조회 DTO를 `ProjectQueryDto`로 분리해 BE-102의 두 필드 추가를 상쇄하고 기준값을 1005→920으로 낮췄다.
+- **CQ-46 `CostService` 분해:** 금융정보단말기 생성·동기화를 `CostTerminalSynchronizer`, 담당자·조직 스냅샷 해석을 `CostNameSnapshotResolver`로 분리했다(789→540줄). 동작은 그대로이며 `CostServiceTest`·`CostServiceMigrationOverloadTest`·`CostServiceXcrLookupTest`·`TerminalBulkImportCostServiceTest`가 실물 협력자로 계속 검증한다.
+- **검증:** 백엔드 `./gradlew test` 5,365건 통과(실패 0, 건너뜀 2), `MaxLinesRatchetTest`·`ApiResponseOpenApiContractTest` 포함. Oracle 통합 `./gradlew integrationTest --tests '*ConcurrencyStampIt'` 4건 통과(cost 2, project 2). 프론트 `npm run codegen`(paths 224 / schemas 329) 후 `codegen:check` 드리프트 없음, `format:check`·`check`(0 errors, 22 pre-existing warnings) 통과, `npm test` 5,222건 통과·4건 실패. 4건은 이 작업이 손대지 않은 파일의 기존 실패다 — `max-lines-ratchet`(`ProjectDetailSections.vue` 802줄), `useCostListPage` 반환 키 기준선(`conflictChangedByEno` 누락), `projectDetailBudgetCard`·`projectFormBudgetRow`(기 지급금액 라벨 `{year}` 인자 단정). 백엔드 전체 스위트 실행 중 다른 도구의 동시 `gradlew check`가 `build/test-results`를 지워 첫 실행 결과가 오염됐고, 그 프로세스가 끝난 뒤 재실행해 위 수치를 얻었다.
+- **인계 — 수동 화면 확인 필요(미실행):** 두 브라우저에서 같은 정보화사업을 열어 순차 저장했을 때 병합 다이얼로그가 뜨고 먼저 저장한 쪽의 소요자원 행이 사라지지 않는지, 신규 사업 임시저장 직후 자동 임시저장이 400 없이 이어지는지, 금융정보단말 연결 신규 등록이 한 요청으로 저장되는지는 로컬 기동 후 사람이 직접 확인해야 한다.
+
 ### ✅ 2026-09-07 SSO 세션 무상태화·지정맥 공급자 무상태화 (L4 세션 유지 의존 제거)
 
 다중 WAS 인스턴스를 L4 Least Connection만으로 운영할 수 있도록, 요청 간 인스턴스 로컬 상태를 쓰던 두 곳을 DDL 변경 없이 제거했다. 서버 고정·NAT 없음 조건에서는 source IP hash로도 우회 가능했지만, 롤링 재기동과 인프라 변경에 흐름이 조용히 깨지는 의존을 없애는 쪽을 택했다.
