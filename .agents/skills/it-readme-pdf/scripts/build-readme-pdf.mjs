@@ -13,6 +13,14 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const DEFAULT_OUTPUT = "output/pdf/it-project-portal-readme-direct-links.pdf";
+// 표지와 머리말·꼬리말에 넣는 브랜딩 이미지. 워크스페이스 기준 상대 경로다.
+const BRAND_ASSETS = {
+  cover: "it_frontend/app/assets/logo_rm.png",
+  headerLeft: "it_frontend/app/assets/kdb-ci.png",
+  footerRight: "it_frontend/app/assets/kdb-ci2.png",
+};
+const COVER_SUBTITLE = "운영 및 개발 가이드";
+const COVER_DESCRIPTION = "README, CLAUDE/AGENTS 지침, GUIDE 문서 등";
 const IMAGE_MIME_TYPES = new Map([
   [".gif", "image/gif"],
   [".jpeg", "image/jpeg"],
@@ -235,10 +243,66 @@ async function rewriteImageSources(html, sourcePath, workspaceRoot) {
 
 function firstHeading(markdown, fallback) {
   const heading = markdown.match(/^#{1,6}\s+(.+)$/m)?.[1]?.trim();
-  return heading || fallback;
+  if (!heading) {
+    return fallback;
+  }
+  // 목차가 자체 번호를 매기므로 "1. 프로젝트와 저장소"처럼 소제목에 박힌 앞 번호는 뗀다.
+  return heading.replace(/^\d+(?:\.\d+)*\.?\s+/, "") || heading;
 }
 
-async function buildHtml(documents, workspaceRoot, title) {
+/**
+ * 표지와 머리말·꼬리말에 넣는 브랜딩 이미지를 data URI로 읽는다.
+ * 누락·워크스페이스 밖·지원하지 않는 형식은 본문 이미지와 같은 기준으로 생성을 실패시킨다.
+ */
+async function loadBrandAssets(workspaceRoot) {
+  const entries = [];
+  for (const [key, relativePath] of Object.entries(BRAND_ASSETS)) {
+    let assetPath;
+    try {
+      assetPath = await canonicalFile(
+        path.resolve(workspaceRoot, relativePath),
+        workspaceRoot,
+        relativePath,
+      );
+    } catch (error) {
+      throw new Error(`브랜딩 이미지를 찾을 수 없습니다: ${relativePath}`, { cause: error });
+    }
+    const mime = IMAGE_MIME_TYPES.get(path.extname(assetPath).toLowerCase());
+    if (!mime) {
+      throw new Error(`지원하지 않는 브랜딩 이미지 형식입니다: ${relativePath}`);
+    }
+    const data = await readFile(assetPath);
+    entries.push([key, `data:${mime};base64,${data.toString("base64")}`]);
+  }
+  return Object.fromEntries(entries);
+}
+
+/**
+ * 생성한 PDF 바이트에서 페이지 수를 센다.
+ * 목차 쪽수를 실제 페이지와 대조하는 용도이며, 세지 못하면 잘못된 쪽수를 내보내지 않고 실패한다.
+ */
+function countPdfPages(buffer) {
+  const raw = Buffer.isBuffer(buffer) ? buffer.toString("latin1") : String(buffer);
+  const count = (raw.match(/\/Type\s*\/Page[^s]/g) ?? []).length;
+  if (count < 1) {
+    throw new Error("생성한 PDF에서 페이지 수를 읽지 못했습니다.");
+  }
+  return count;
+}
+
+/** Chromium 머리말·꼬리말은 본문과 다른 문서로 렌더링되므로 스타일과 이미지를 인라인으로 넣는다. */
+function headerTemplate(brand) {
+  return `<div style="box-sizing:border-box;font-size:8px;margin:0;padding:1mm 16mm 0;width:100%"><img src="${brand.headerLeft}" style="display:block;height:13px;width:73px"></div>`;
+}
+
+function footerTemplate(brand) {
+  return `<div style="align-items:flex-end;box-sizing:border-box;color:#718096;display:flex;font-size:8px;justify-content:space-between;margin:0;padding:0 16mm 7mm;width:100%"><span style="flex:0 0 73px"></span><span style="flex:1 1 auto;text-align:center"><span class="pageNumber"></span> / <span class="totalPages"></span></span><img src="${brand.footerRight}" style="display:block;flex:0 0 auto;height:13px;width:73px"></div>`;
+}
+
+/**
+ * 각 Markdown을 HTML 본문으로 바꾸고 목차·본문이 함께 쓰는 메타데이터를 만든다.
+ */
+async function renderDocuments(documents, workspaceRoot) {
   const marked = await loadMarked();
   const rendered = [];
 
@@ -251,43 +315,88 @@ async function buildHtml(documents, workspaceRoot, title) {
     rendered.push({ index, relativePath, heading, body });
   }
 
-  const toc = rendered
-    .map(
-      (item) =>
-        `<li><a href="#document-${item.index}">${escapeHtml(item.heading)}</a><small>${escapeHtml(item.relativePath)}</small></li>`,
-    )
+  return rendered;
+}
+
+function coverSection(brand, title) {
+  return `<section class="cover">
+  <img class="cover-logo" src="${brand.cover}" alt="">
+  <h1>${escapeHtml(title)}</h1>
+  <p class="cover-subtitle">${escapeHtml(COVER_SUBTITLE)}</p>
+  <p class="cover-note">${escapeHtml(COVER_DESCRIPTION)}</p>
+</section>`;
+}
+
+/**
+ * 목차를 만든다. startPages를 주지 않으면 쪽수 자리를 비운 예비 목차가 나온다.
+ */
+function tocSection(rendered, startPages) {
+  const items = rendered
+    .map((item, order) => {
+      const page = startPages?.[order];
+      const label = page ? `${page}페이지` : "";
+      return `<li><a class="toc-row" href="#document-${item.index}"><span class="toc-name">${escapeHtml(item.heading)}</span><span class="toc-dots"></span><span class="toc-page">${escapeHtml(label)}</span></a><small>${escapeHtml(item.relativePath)}</small></li>`;
+    })
     .join("\n");
-  const sections = rendered
-    .map(
-      (item) => `
-<section class="document${item.index === 0 ? " first" : ""}" id="document-${item.index}">
-  <div class="document-label">문서 ${item.index + 1} / ${rendered.length}</div>
+  return `<section class="toc">
+  <h2>목차</h2>
+  <ol>${items}</ol>
+</section>`;
+}
+
+function documentSection(item, total) {
+  return `<section class="document${item.index === 0 ? " first" : ""}" id="document-${item.index}">
+  <div class="document-label">문서 ${item.index + 1} / ${total}</div>
   <h1 class="document-title">${escapeHtml(item.heading)}</h1>
   <div class="source-path">SOURCE: ${escapeHtml(item.relativePath)}</div>
   <article>${item.body}</article>
-</section>`,
-    )
-    .join("\n");
+</section>`;
+}
+
+/**
+ * 인쇄용 HTML을 조립한다.
+ * mode "front"는 표지·목차만, "document"는 쪽수를 재기 위해 문서 하나만 담는다.
+ */
+function composeHtml({ rendered, brand, startPages, title, mode = "all", document: single }) {
+  const total = rendered.length;
+  const front = `${coverSection(brand, title)}\n${tocSection(rendered, startPages)}`;
+  let body;
+  if (mode === "front") {
+    body = front;
+  } else if (mode === "document") {
+    body = documentSection(single, total);
+  } else {
+    body = `${front}\n${rendered.map((item) => documentSection(item, total)).join("\n")}`;
+  }
+  // 문서 하나만 렌더링할 때는 앞의 강제 개면을 없애야 합본에서의 쪽수와 같아진다.
+  const measureStyle =
+    mode === "document" ? "\n  .document, .document.first { page-break-before: auto; }" : "";
 
   return `<!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>${escapeHtml(title)}</title>
+<title>${escapeHtml(`${title} ${COVER_SUBTITLE}`)}</title>
 <style>
   @page { size: A4; margin: 18mm 16mm 20mm; }
   * { box-sizing: border-box; }
   html { color: #172033; font-family: "Malgun Gothic", "Noto Sans KR", sans-serif; font-size: 10.5pt; line-height: 1.6; }
   body { margin: 0; }
   .cover { min-height: 235mm; display: flex; flex-direction: column; justify-content: center; page-break-after: always; }
-  .cover h1 { color: #12203d; font-size: 30pt; line-height: 1.2; margin: 0 0 10mm; }
-  .cover p { color: #526078; font-size: 12pt; }
+  .cover-logo { display: block; height: 34mm; margin: 0 0 14mm; width: 34mm; }
+  .cover h1 { color: #12203d; font-size: 34pt; line-height: 1.2; margin: 0 0 3mm; }
+  .cover-subtitle { color: #1b4a8c; font-size: 18pt; font-weight: 700; margin: 0 0 9mm; }
+  .cover-note { border-top: 1px solid #ccd6e4; color: #526078; font-size: 11pt; margin: 0; padding-top: 5mm; }
   .toc { page-break-after: always; }
   .toc h2 { border-bottom: 2px solid #2457a7; padding-bottom: 3mm; }
   .toc ol { padding-left: 7mm; }
-  .toc li { margin: 0 0 2.2mm; }
-  .toc small { color: #718096; display: block; font-family: Consolas, monospace; font-size: 8pt; }
+  .toc li { margin: 0 0 1.2mm; page-break-inside: avoid; break-inside: avoid; }
+  .toc small { color: #718096; display: block; font-family: Consolas, monospace; font-size: 8pt; line-height: 1.35; }
   .toc a { color: #163f7a; text-decoration: none; }
+  .toc-row { align-items: baseline; display: flex; gap: 1.5mm; }
+  .toc-name { flex: 0 1 auto; }
+  .toc-dots { align-self: flex-end; border-bottom: 1px dotted #9aa7bb; flex: 1 1 auto; height: 0; margin-bottom: 1.2mm; min-width: 6mm; }
+  .toc-page { color: #526078; flex: 0 0 auto; font-size: 9.5pt; white-space: nowrap; }
   .document { page-break-before: always; }
   .document.first { page-break-before: auto; }
   .document-label { color: #2457a7; font-size: 8.5pt; font-weight: 700; letter-spacing: .08em; }
@@ -310,20 +419,11 @@ async function buildHtml(documents, workspaceRoot, title) {
   tr { page-break-inside: avoid; }
   img { display: block; height: auto; margin: 4mm auto; max-width: 100%; }
   hr { border: 0; border-top: 1px solid #ccd6e4; margin: 8mm 0; }
-  p, li { orphans: 3; widows: 3; }
+  p, li { orphans: 3; widows: 3; }${measureStyle}
 </style>
 </head>
 <body>
-<section class="cover">
-  <div class="document-label">IT PROJECT PORTAL</div>
-  <h1>${escapeHtml(title)}</h1>
-  <p>루트 README와 README가 직접 연결한 로컬 Markdown 문서 ${documents.length - 1}개</p>
-</section>
-<section class="toc">
-  <h2>포함 문서</h2>
-  <ol>${toc}</ol>
-</section>
-${sections}
+${body}
 </body>
 </html>`;
 }
@@ -377,7 +477,7 @@ function parseArguments(argv) {
   const options = {
     entry: "README.md",
     output: DEFAULT_OUTPUT,
-    title: "IT Project Portal 문서 모음",
+    title: "IT정보화포탈",
     workspace: process.cwd(),
   };
   for (let index = 0; index < argv.length; index += 1) {
@@ -461,32 +561,82 @@ export async function buildReadmePdf(options) {
   await ensureDependencies();
 
   const documents = await resolveDirectDocuments(entryPath, workspaceRoot);
-  const html = await buildHtml(documents, workspaceRoot, options.title);
+  const brand = await loadBrandAssets(workspaceRoot);
+  const rendered = await renderDocuments(documents, workspaceRoot);
   const tempParent = path.join(workspaceRoot, "tmp", "pdfs");
   await mkdir(tempParent, { recursive: true });
   const tempDirectory = await mkdtemp(path.join(tempParent, "it-readme-pdf-"));
   const htmlPath = path.join(tempDirectory, "bundle.html");
   const tempPdfPath = path.join(tempDirectory, "bundle.pdf");
-  await writeFile(htmlPath, html, "utf8");
 
   let screenshots = [];
+  let startPages = [];
   const { chromium } = await loadPlaywright();
   const browser = await launchChromium(chromium);
   try {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();
     await page.route("**/*", (route) => route.abort());
-    await page.setContent(html, { waitUntil: "load" });
-    await page.pdf({
-      path: tempPdfPath,
+    const pdfOptions = {
       format: "A4",
       printBackground: true,
       displayHeaderFooter: true,
-      headerTemplate: "<span></span>",
-      footerTemplate:
-        '<div style="font-size:8px;color:#718096;width:100%;text-align:center"><span class="pageNumber"></span> / <span class="totalPages"></span></div>',
+      headerTemplate: headerTemplate(brand),
+      footerTemplate: footerTemplate(brand),
       margin: { top: "18mm", right: "16mm", bottom: "20mm", left: "16mm" },
-    });
+    };
+    const renderPdf = async (markup) => {
+      await page.setContent(markup, { waitUntil: "load" });
+      return await page.pdf(pdfOptions);
+    };
+
+    // 문서는 언제나 새 페이지에서 시작하므로 개별 렌더의 쪽수가 합본에서의 쪽수와 같다.
+    const documentPageCounts = [];
+    for (const item of rendered) {
+      const markup = composeHtml({
+        rendered,
+        brand,
+        title: options.title,
+        mode: "document",
+        document: item,
+      });
+      documentPageCounts.push(countPdfPages(await renderPdf(markup)));
+    }
+
+    // 목차 쪽수는 앞부분(표지·목차) 분량에 의존하므로 값이 고정될 때까지 되풀이한다.
+    let frontPages = 2;
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      startPages = [];
+      let cursor = frontPages + 1;
+      for (const count of documentPageCounts) {
+        startPages.push(cursor);
+        cursor += count;
+      }
+      const markup = composeHtml({
+        rendered,
+        brand,
+        startPages,
+        title: options.title,
+        mode: "front",
+      });
+      const actual = countPdfPages(await renderPdf(markup));
+      if (actual === frontPages) {
+        break;
+      }
+      frontPages = actual;
+    }
+
+    const html = composeHtml({ rendered, brand, startPages, title: options.title });
+    const buffer = await renderPdf(html);
+    const totalPages = countPdfPages(buffer);
+    const expectedPages = frontPages + documentPageCounts.reduce((sum, count) => sum + count, 0);
+    if (totalPages !== expectedPages) {
+      throw new Error(
+        `목차에 적은 쪽수가 실제 페이지 수와 어긋납니다: 예상 ${expectedPages}, 실제 ${totalPages}`,
+      );
+    }
+    await writeFile(tempPdfPath, buffer);
+    await writeFile(htmlPath, html, "utf8");
     if (options.screenshots) {
       const screenshotDirectory = path.resolve(workspaceRoot, options.screenshots);
       if (!isInside(workspaceRoot, screenshotDirectory)) {
@@ -509,6 +659,7 @@ export async function buildReadmePdf(options) {
 
   return {
     documents: documents.map((item) => portableRelative(workspaceRoot, item.path)),
+    startPages,
     outputPath,
     screenshots: screenshots.map((item) => portableRelative(workspaceRoot, item)),
     tempDirectory: options.keepTemp ? tempDirectory : null,
