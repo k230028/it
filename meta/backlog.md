@@ -42,13 +42,17 @@
 
 ## 4. 데이터 보정
 
-메타 파일로는 데이터 반영 여부를 알 수 없다. 각 항목은 확인 조회를 먼저 실행하고, 기대값과 다를 때만 `V20260907_002`의 해당 구간을 적용한다.
+메타 파일로는 데이터 반영 여부를 알 수 없다. 각 항목은 확인 조회를 먼저 실행하고, 기대값과 다를 때만 해당 마이그레이션의 지정 구간을 적용한다(NO 1~3은 `V20260907_002`).
 
 | NO | 대상 | 변경 내용 | 선행 조건 | 작성일자 |
 | -- | ---- | --------- | --------- | -------- |
 | 1 | TPRMPP_BPROJM, TPRMPP_BPROJL | 구 컬럼 값이 신 CLOB 컬럼으로 복사됐는지 확인. 구 컬럼은 이미 삭제됐으므로 재복사는 불가능하며, 누락 시 컬럼 변경 전 백업본에서 복구한다 | 확인 조회: `SELECT COUNT(*) FROM ITPOWN.TPRMPP_BPROJM WHERE LST_YN='Y' AND DEL_YN='N' AND ABUS_PUL_CONE_INF IS NULL AND ABUS_XPT_EFF_INF IS NULL AND ABUS_PUL_DRCN_INF IS NULL AND ABUS_PUL_NCS_INF IS NULL` 결과가 컬럼 변경 전 본문 미보유 건수와 맞아야 한다 | 2026-09-07 |
 | 2 | TPRMPP_BGDOCM, TPRMPP_BGDOCL | `DOC_DTL_ITM_C` 분류: `CDOC-%` 또는 제목 `SPEED_DIAL_CONTACT_INFO`→`04`, `PDOC-%` 또는 제목 `common.popup`·`project.approval-authority`→`05`, `FDOC-%`→`02`, `BNOTE-%`→`03`, `GDOC-%`→`01` | 확인 조회: `SELECT COUNT(*) FROM ITPOWN.TPRMPP_BGDOCM WHERE DEL_YN='N' AND DOC_DTL_ITM_C IS NULL` 기대값 0. 0이 아니면 스크립트의 `UPDATE ... SET DOC_DTL_ITM_C = CASE ...` 구간(BGDOCM·BGDOCL)을 적용한다. 사후 코드·제목 조합 중복 그룹 0건 확인 후 인덱스 NO 2를 생성한다 | 2026-09-07 |
 | 3 | TPRMPP_CCODEM | 공통코드 `DOC_DTL_ITM_C` 5건 등록: `01` 사업 가이드, `02` 길라잡이, `03` 사용자가이드, `04` 담당자 정보, `05` 안내 팝업 (`STT_DT=20260101`, `END_DT=99991231`, 등록자 `MIGRATION`) | 확인 조회: `SELECT COUNT(*) FROM ITPOWN.TPRMPP_CCODEM WHERE CO_C_ID_NM='DOC_DTL_ITM_C' AND DEL_YN='N'` 기대값 5. 미달이면 스크립트의 `INSERT ... WHERE NOT EXISTS` 구간을 적용한다(재실행 안전) | 2026-09-07 |
+| 4 | TPRMPP_CCODEM, TPRMPP_CLANGM, TPRMPP_CAPPLM, TPRMPP_CAPPLL | `V20260903_001`: 신청서상태 `IT_PTL_APF_PRG_STS_C`에 `0` 작성완료 신설, 기존 `0`(수기등록) 행을 `9`로 이관, 영문 번역 시드 | 확인 조회: `SELECT CDVA_ID FROM ITPOWN.TPRMPP_CCODEM WHERE CO_C_ID_NM='IT_PTL_APF_PRG_STS_C' AND DEL_YN='N' AND CDVA_ID IN ('0','9')` 기대값 2행. `SELECT COUNT(*) FROM ITPOWN.TPRMPP_CAPPLM WHERE IT_PTL_APF_PRG_STS_C='0' AND RGPR_DCD_REQ_CONE='수기등록'` 기대값 0. 절차는 [`2026-09-03-application-status-code-migration.md`](../it_database/docs/operations/2026-09-03-application-status-code-migration.md) | 2026-09-12 |
+| 5 | TPRMPP_CCODEM, TPRMPP_CLANGM | `V20260903_002`(결재자직위코드 `IT_PTL_APF_DCR_PT_C` 8건), `V20260903_003`(산정근거구분코드 `IT_PTL_CNCD_FDTN_TC` 4건) 시드 | 확인 조회: `SELECT CO_C_ID_NM, COUNT(*) FROM ITPOWN.TPRMPP_CCODEM WHERE CO_C_ID_NM IN ('IT_PTL_APF_DCR_PT_C','IT_PTL_CNCD_FDTN_TC') AND DEL_YN='N' GROUP BY CO_C_ID_NM` 기대값 8·4. 미달이면 각 스크립트의 `MERGE` 구간을 적용한다(재실행 안전) | 2026-09-12 |
+| 6 | TPRMPP_CFILEM | `V20260904_003`: `요구사항정의서` 종류 중 Excalidraw 고정 파일명 행을 `다이어그램` 종류로 보정 | 확인 조회: `SELECT COUNT(*) FROM ITPOWN.TPRMPP_CFILEM WHERE DEL_YN='N' AND APG_FL_KD_NM='요구사항정의서' AND (LOWER(FL_NM)='excalidraw-scene.lzstr' OR LOWER(FL_NM) LIKE 'excalidraw-img-%')` 기대값 0. 0이 아니면 스크립트 `UPDATE` 구간을 적용한다 | 2026-09-12 |
+| 7 | TPRMPP_CMENUD, TPRMPP_CMENUM, TPRMPP_CLANGM | `V20260908_001`: 전자결재 헤더 아래 '전체 문서함'(`/approval/list`) 경로 카탈로그·메뉴 행·번역 시드 | 확인 조회는 [`migrations/_verify/approval-all-documents-menu-seed-verify.sql`](../it_database/migrations/_verify/approval-all-documents-menu-seed-verify.sql). 미달이면 스크립트의 `MERGE` 구간을 적용한다(재실행 안전) | 2026-09-12 |
 
 ## 5. 보류
 

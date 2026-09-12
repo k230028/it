@@ -53,7 +53,7 @@
 **Files:**
 - Create: `it_backend/src/main/java/com/kdb/it/common/approval/itbudget/dto/ItBudgetApprovalDto.java`
 - Create: `it_backend/src/main/java/com/kdb/it/common/approval/itbudget/exception/ItBudgetApprovalException.java`
-- Modify: `it_backend/src/main/java/com/kdb/it/common/exception/GlobalExceptionHandler.java`
+- Modify: `it_backend/src/main/java/com/kdb/it/exception/GlobalExceptionHandler.java`
 - Create: `it_backend/src/test/java/com/kdb/it/common/approval/itbudget/dto/ItBudgetApprovalDtoTest.java`
 - Modify: `it_backend/src/test/java/com/kdb/it/architecture/ApiResponseOpenApiContractTest.java`
 
@@ -950,8 +950,7 @@ git commit -m "feat: read IT budget snapshot v2"
 **Files:**
 - Create: `it_frontend/app/composables/approval/useItBudgetApproval.ts`
 - Create: `it_frontend/app/components/approval/ItBudgetSourceChangedDialog.vue`
-- Modify: `it_frontend/app/i18n/locales/ko/approval.ts`
-- Modify: `it_frontend/app/i18n/locales/en/approval.ts`
+- Modify: `it_frontend/i18n/messages/approval.ts` (ko·en 트리 동일 파일)
 - Create: `it_frontend/tests/unit/composables/useItBudgetApproval.test.ts`
 - Create: `it_frontend/tests/unit/components/approval/ItBudgetSourceChangedDialog.test.ts`
 - Modify: `it_frontend/tests/unit/composables/approval-mfa-coverage.test.ts`

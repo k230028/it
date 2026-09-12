@@ -1,0 +1,25 @@
+# 테스트 결과 리포트 인덱스
+
+프론트·백엔드 단위·커버리지·E2E 결과를 합친 HTML 리포트입니다. `it_frontend`에서 `npm run generate-report`(전체 테스트 직후)로 생성하며 절차는 `.agents/skills/it-test-maintenance/SKILL.md`를 따릅니다. 최신순입니다.
+
+- [test-report-2026-09-11.html](test-report-2026-09-11.html)
+- [test-report-2026-09-10.html](test-report-2026-09-10.html)
+- [test-report-2026-09-03.html](test-report-2026-09-03.html)
+- [test-report-2026-08-30.html](test-report-2026-08-30.html)
+- [test-report-2026-08-29.html](test-report-2026-08-29.html)
+- [test-report-2026-08-23.html](test-report-2026-08-23.html)
+- [test-report-2026-08-19.html](test-report-2026-08-19.html)
+- [test-report-2026-08-09.html](test-report-2026-08-09.html)
+- [test-report-2026-08-01.html](test-report-2026-08-01.html)
+- [test-report-2026-07-28.html](test-report-2026-07-28.html)
+- [test-report-2026-07-20.html](test-report-2026-07-20.html)
+- [test-report-2026-07-16.html](test-report-2026-07-16.html)
+- [test-report-2026-07-11.html](test-report-2026-07-11.html)
+- [test-report-2026-07-06.html](test-report-2026-07-06.html)
+- [test-report-2026-07-02.html](test-report-2026-07-02.html)
+- [test-report-2026-07-01.html](test-report-2026-07-01.html)
+- [test-report-2026-06-22.html](test-report-2026-06-22.html)
+- [test-report-2026-06-14.html](test-report-2026-06-14.html)
+- [test-report-2026-06-09.html](test-report-2026-06-09.html)
+- [test-report-2026-06-01.html](test-report-2026-06-01.html)
+- [test-report-2026-05-29.html](test-report-2026-05-29.html)

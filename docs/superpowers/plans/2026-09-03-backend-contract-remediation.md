@@ -204,7 +204,7 @@ git -C C:\it\it_backend commit -m "fix: 전산업무비 이력 권한과 배치 
 - Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/document/service/GuideDocService.java`
 - Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/document/formguide/FormGuideService.java`
 - Modify: `it_backend/src/main/java/com/kdb/it/common/notification/entity/Cinfmm.java`
-- Delete: `it_backend/src/test/java/com/kdb/it/domain/migration/request/service/Utf8ByteLimitTest.java`
+- Delete: `it_backend/src/test/java/com/kdb/it/domain/migration/request/service/Utf8ByteLimitTest.java` (완료 후 `common/util/Utf8ByteLimitTest.java`만 남음)
 
 **Interfaces:** `BgdocNumberAllocator.next(String prefix): String`은 공유 시퀀스와 주입된 `Clock`으로 `{prefix}{yyyy}-{seq:04d}`를 만든다.
 

@@ -23,7 +23,7 @@
 ### Task 1: BE-95 철회된 Flyway 버전 운영 인계
 
 **Files:**
-- Create: `it_database/docs/operations/2026-09-03-draft-uniqueness-withdrawal.md`
+- Create: `it_database/docs/operations/2026-09-01-draft-uniqueness-withdrawal.md`
 - Modify: `it_database/docs/operations/2026-09-01-flyway-002-checksum-recovery.md`
 - Modify: `it_database/docs/verification/2026-09-01-budget-reapplication-indexes.sql`
 
@@ -61,7 +61,7 @@ Expected: 예정 산출물 표현이 0건.
 - [ ] **Step 5: 변경을 커밋한다**
 
 ```powershell
-git -C C:\it\it_database add docs/operations/2026-09-03-draft-uniqueness-withdrawal.md docs/operations/2026-09-01-flyway-002-checksum-recovery.md docs/verification/2026-09-01-budget-reapplication-indexes.sql
+git -C C:\it\it_database add docs/operations/2026-09-01-draft-uniqueness-withdrawal.md docs/operations/2026-09-01-flyway-002-checksum-recovery.md docs/verification/2026-09-01-budget-reapplication-indexes.sql
 git -C C:\it\it_database commit -m "docs: 철회된 재상신 유일성 버전 봉인"
 ```
 

@@ -398,7 +398,7 @@ git commit -m "feat: 소요자원 산정근거구분코드 시드"
 - Modify: `it_backend/src/main/java/com/kdb/it/domain/budget/common/repository/BudgetListVersionScope.java`
 - Test: `it_backend/src/test/java/com/kdb/it/common/approval/domain/ApprovalStatusTest.java`
 - Test: `it_backend/src/test/java/com/kdb/it/domain/budget/common/repository/BudgetListVersionScopeTest.java`
-- Test: `it_backend/src/test/java/com/kdb/it/domain/migration/service/MigrationApprovalStamperTest.java` (`"0"` 기대값을 `"9"`로)
+- Test: `it_backend/src/test/java/com/kdb/it/common/approval/service/ApprovalStamperTest.java` (`"0"` 기대값을 `"9"`로; 계획 당시 경로 `domain/migration/service/MigrationApprovalStamperTest.java`)
 
 **Interfaces:**
 - Produces: `ApprovalStatus.DRAFTED` (code `"0"`, label `"작성완료"`), `ApprovalStatus.MANUAL` (code `"9"`). 이후 모든 태스크가 문자열 대신 이 상수를 쓴다.
