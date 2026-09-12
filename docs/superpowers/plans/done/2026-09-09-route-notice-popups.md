@@ -8,7 +8,7 @@
 
 **Tech Stack:** Java 25, Spring Boot 4, JUnit/MockMvc, Nuxt 4, Vue 3, TypeScript, Vitest, Playwright
 
-**Spec:** `docs/superpowers/specs/2026-09-09-route-notice-popups.md`
+**Spec:** `docs/superpowers/specs/done/2026-09-09-route-notice-popups.md`
 
 ## Global Constraints
 

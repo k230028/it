@@ -8,7 +8,7 @@
 
 **Tech Stack:** Spring Boot (JPA, Jackson, JUnit 5 + Mockito + AssertJ), Nuxt 4 CSR (Vue 3 Composition API, PrimeVue, Vitest), Oracle.
 
-**Spec:** `docs/superpowers/specs/2026-09-08-cost-concurrency-conflict-merge-design.md`
+**Spec:** `docs/superpowers/specs/done/2026-09-08-cost-concurrency-conflict-merge-design.md`
 
 ## Global Constraints
 
@@ -2579,7 +2579,7 @@ git commit -m "feat: reject stale cost saves with concurrency stamp check"
 `C:/it/TASK.md`에 추가한다.
 
 ```markdown
-- 전산업무비 충돌 응답의 `changedBy`가 부모 `LST_CHG_ENO`만 본다. 단말만 수정된 경우 자식의 감사 정보가 더 최근이므로, 부모·자식 중 최신 수정자를 고르도록 개선해야 한다. (스펙 `docs/superpowers/specs/2026-09-08-cost-concurrency-conflict-merge-design.md` 11.1)
+- 전산업무비 충돌 응답의 `changedBy`가 부모 `LST_CHG_ENO`만 본다. 단말만 수정된 경우 자식의 감사 정보가 더 최근이므로, 부모·자식 중 최신 수정자를 고르도록 개선해야 한다. (스펙 `docs/superpowers/specs/done/2026-09-08-cost-concurrency-conflict-merge-design.md` 11.1)
 - 정보화사업(BPROJM·BITEMM) 저장 경로에 같은 동시성 스탬프 규약을 확장해야 한다.
 - 병합 다이얼로그가 필드명을 원시 컬럼명(`cttNm` 등)으로 보여준다. 화면 라벨과 같은 문구로 바꿔야 한다.
 ```

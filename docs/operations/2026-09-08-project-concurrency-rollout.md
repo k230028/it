@@ -2,7 +2,7 @@
 
 ## 배경
 
-전산업무비에 적용한 동시성 스탬프·병합 규약([`2026-09-08-cost-concurrency-rollout.md`](2026-09-08-cost-concurrency-rollout.md))을 정보화사업(BPROJM)·품목(BITEMM) 작성 화면에도 같은 방식으로 확장했다(TASK BE-102). 조회 응답에 `concurrencyStamp`를 싣고, 저장 요청이 이를 동봉하지 않거나 서버 값과 다르면 병합 다이얼로그를 유도한다. 설계 원칙은 [`docs/superpowers/specs/2026-09-08-cost-concurrency-conflict-merge-design.md`](../superpowers/specs/2026-09-08-cost-concurrency-conflict-merge-design.md)를 그대로 따르며, 정보화사업 고유 사항만 아래에 적는다.
+전산업무비에 적용한 동시성 스탬프·병합 규약([`2026-09-08-cost-concurrency-rollout.md`](2026-09-08-cost-concurrency-rollout.md))을 정보화사업(BPROJM)·품목(BITEMM) 작성 화면에도 같은 방식으로 확장했다(TASK BE-102). 조회 응답에 `concurrencyStamp`를 싣고, 저장 요청이 이를 동봉하지 않거나 서버 값과 다르면 병합 다이얼로그를 유도한다. 설계 원칙은 [`docs/superpowers/specs/done/2026-09-08-cost-concurrency-conflict-merge-design.md`](../superpowers/specs/done/2026-09-08-cost-concurrency-conflict-merge-design.md)를 그대로 따르며, 정보화사업 고유 사항만 아래에 적는다.
 
 ## 계약
 

@@ -2,7 +2,7 @@
 
 ## 배경
 
-전산업무비(BCOSTM)·금융정보단말(BTERMM) 작성 화면의 lost update를 막기 위해 조회 응답에 `concurrencyStamp`를 싣고, 저장 요청이 이를 동봉하지 않거나 서버 값과 다르면 병합을 유도하는 기능이다. 설계는 [`docs/superpowers/specs/2026-09-08-cost-concurrency-conflict-merge-design.md`](../superpowers/specs/2026-09-08-cost-concurrency-conflict-merge-design.md)를 따른다.
+전산업무비(BCOSTM)·금융정보단말(BTERMM) 작성 화면의 lost update를 막기 위해 조회 응답에 `concurrencyStamp`를 싣고, 저장 요청이 이를 동봉하지 않거나 서버 값과 다르면 병합을 유도하는 기능이다. 설계는 [`docs/superpowers/specs/done/2026-09-08-cost-concurrency-conflict-merge-design.md`](../superpowers/specs/done/2026-09-08-cost-concurrency-conflict-merge-design.md)를 따른다.
 
 ## 순서
 

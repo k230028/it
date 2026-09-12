@@ -66,3 +66,5 @@
 - [`docs/db-schema-gap/db-schema-gap-2026-09-07.md`](../docs/db-schema-gap/db-schema-gap-2026-09-07.md) — 운영 실측 `index.txt`·로컬 재추출 DDL 비교 결과
 - [`docs/superpowers/plans/2026-09-01-guide-content-migration.md`](../docs/superpowers/plans/2026-09-01-guide-content-migration.md) — 사업 가이드 제목 유일성 요구
 - [`it_database/docs/operations/2026-09-03-bgdoc-namespace-index-handover.md`](../it_database/docs/operations/2026-09-03-bgdoc-namespace-index-handover.md) — 접두어 기반 BGDOC 인덱스의 이전 인계 기록(통합 인덱스로 대체됨)
+- [`it_database/docs/operations/2026-09-12-project-content-clob-and-bgdoc-type-handover.md`](../it_database/docs/operations/2026-09-12-project-content-clob-and-bgdoc-type-handover.md) — `V20260907_001`(빈 버전)·`V20260907_002` 단계별 파괴 지점·복구 입력·백업 테이블 정리 시점
+- [`it_database/docs/verification/V20260907_002__ClassifyGuideDocumentsAndExpandProjectContent.verify.sql`](../it_database/docs/verification/V20260907_002__ClassifyGuideDocumentsAndExpandProjectContent.verify.sql) — 적용 후 assert

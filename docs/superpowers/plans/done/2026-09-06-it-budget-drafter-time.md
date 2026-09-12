@@ -8,7 +8,7 @@
 
 **Tech Stack:** Java 25, Spring Boot 4, Jackson, Jakarta Validation, Nuxt 4, Vue 3, TypeScript, Vitest, pdfmake
 
-**Spec:** `docs/superpowers/specs/2026-09-06-it-budget-drafter-time.md`
+**Spec:** `docs/superpowers/specs/done/2026-09-06-it-budget-drafter-time.md`
 
 ## Global Constraints
 

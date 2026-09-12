@@ -8,7 +8,7 @@
 
 **Tech Stack:** Spring Boot, JPA, JUnit 5, Nuxt 4, Vue 3, TypeScript, Vitest
 
-**Spec:** `docs/superpowers/specs/2026-09-09-cost-terminal-carryover-design.md`
+**Spec:** `docs/superpowers/specs/done/2026-09-09-cost-terminal-carryover-design.md`
 
 ## Global Constraints
 

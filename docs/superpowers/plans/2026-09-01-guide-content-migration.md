@@ -1,5 +1,7 @@
 # 가이드 콘텐츠 개발→운영 이관 Implementation Plan
 
+> **상태(2026-09-12): 보류.** Task 1(`DOC_DTL_ITM_C` 문서 유형 분류)만 `V20260907_002`로 실현됐고, Task 2~11이 약속한 `it_backend` `domain/migration/guidecontent` 패키지·ZIP 번들 API·프론트 화면은 착수되지 않았다(워킹트리에 해당 패키지 없음). 가이드 콘텐츠의 개발→운영 이관은 현재 사업 가이드 문서를 운영에서 직접 등록하는 방식으로 운영 중이며, 재개하려면 [설계](../specs/2026-09-01-guide-content-migration-design.md)를 `BgdocDocumentType`·`BgdocNumberAllocator`·`FileStoragePathPolicy`(2026-09-03 이후 신설) 기준으로 다시 검토한 뒤 이 계획을 갱신한다. 그 전까지 이 문서를 구현 사실로 읽지 않는다.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 기존 공통 데이터 xlsx 계약을 유지하면서 입력 길라잡이와 선택한 사업 가이드를 문서·첨부·이미지·Excalidraw 장면까지 완결된 ZIP으로 개발에서 운영에 반복 이관하고, 선택한 운영 집합은 동일한 경우를 제외하고 개발본으로 원자적으로 덮어쓴다.

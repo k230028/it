@@ -8,7 +8,7 @@
 
 **Tech Stack:** Java 25, Spring Boot 4, Spring Data JPA, JUnit 5, Nuxt 4, Vue 3 Composition API, TypeScript, PrimeVue, Vitest, Playwright
 
-**Spec:** `docs/superpowers/specs/2026-09-09-import-source-and-cost-attachments-design.md`
+**Spec:** `docs/superpowers/specs/done/2026-09-09-import-source-and-cost-attachments-design.md`
 
 ## Global Constraints
 
