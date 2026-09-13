@@ -221,22 +221,22 @@ Nuxt 페이지·컴포넌트
 
 ## 주요 업무 모듈
 
-| 흐름             | 프론트 진입점                                                              | 백엔드 책임                                                                                             |
-| ---------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| 정보화사업·예산 | `app/pages/info/projects`, `app/pages/info/cost`, `app/pages/budget` | 정보화사업·경상사업·전산업무비, SNO 기반 재상신 이력과 결재 연계                                      |
-| 사업계획         | `app/pages/project/bizplan`                                              | 계획 대상 확인, 보고서·일정·품목·계약 병합, 작성 상태 관리                                           |
-| 사업 집행        | `app/pages/project`                                                      | 소요예산 산정 → 과업심의 → 입찰계약 → 대금지급 상태 전이                                             |
-| 문서·사전협의   | `app/pages/info/documents`                                               | 문서 버전, 검토 의견, 첨부파일과 결재 연결                                                              |
-| 홈 대시보드      | `app/pages/info/index.vue`                                               | 연도별 사업·예산 KPI, 예산 일정, 공지·일정 피드, 홈 배너                                              |
-| 수기 엑셀 이관   | `app/pages/admin/migration`                                              | 편성요청서 분석·반입, 원본 파일 보관과 결재 연계                                                       |
-| 전자결재         | `app/pages/approval`                                                     | 결재 대시보드·목록·상세와 승인·반려·회수 명령                                                       |
-| 공통 게시판      | `app/pages/board`                                                        | 게시글·댓글·첨부파일·멘션 관리. 본문은 Tiptap HTML로 저장하고 서버 정화 후 표시                      |
+| 흐름             | 프론트 진입점                                                              | 백엔드 책임                                                                                                                                               |
+| ---------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 정보화사업·예산 | `app/pages/info/projects`, `app/pages/info/cost`, `app/pages/budget` | 정보화사업·경상사업·전산업무비, SNO 기반 재상신 이력과 결재 연계                                                                                        |
+| 사업계획         | `app/pages/project/bizplan`                                              | 계획 대상 확인, 보고서·일정·품목·계약 병합, 작성 상태 관리                                                                                             |
+| 사업 집행        | `app/pages/project`                                                      | 소요예산 산정 → 과업심의 → 입찰계약 → 대금지급 상태 전이                                                                                               |
+| 문서·사전협의   | `app/pages/info/documents`                                               | 문서 버전, 검토 의견, 첨부파일과 결재 연결                                                                                                                |
+| 홈 대시보드      | `app/pages/info/index.vue`                                               | 연도별 사업·예산 KPI, 예산 일정, 공지·일정 피드, 홈 배너                                                                                                |
+| 수기 엑셀 이관   | `app/pages/admin/migration`                                              | 편성요청서 분석·반입, 원본 파일 보관과 결재 연계                                                                                                         |
+| 전자결재         | `app/pages/approval`                                                     | 결재 대시보드·목록·상세와 승인·반려·회수 명령                                                                                                         |
+| 공통 게시판      | `app/pages/board`                                                        | 게시글·댓글·첨부파일·멘션 관리. 본문은 Tiptap HTML로 저장하고 서버 정화 후 표시                                                                        |
 | 공통 안내 팝업   | `app/pages/admin/common-popup.vue`, 공통 `AppShell`                    | `TPRMPP_BGDOCM`의 공통 안내(`common.popup`)와 화면별 작성 안내(`common.info`·`common.ordn`·`common.cost`) 게시·중지, 콘텐츠 버전별 순차 표시 |
-| 스피드다이얼     | 공통`AppShell`, `app/pages/admin/contact-information.vue`              | 전역 FAQ 조회·Q&A 등록·담당자 정보 열람. FAQ·Q&A는 공통 게시판 유형(`004`·`005`)을 재사용       |
-| 사용자가이드     | 헤더 버튼,`app/pages/admin/user-guides.vue`                              | 전사 공개 가이드 파일 업로드·내려받기·이력 되돌리기. 현재 가이드는 항상 0건 또는 1건                  |
-| 공통 데이터 이관 | `app/pages/admin/migration/common-data.vue`                              | 메뉴·메뉴권한·경로·공통코드·다국어를 개발→운영으로 내보내기·dry-run·확정 반영                    |
-| 사전진단·가이드 | `app/pages/diagnosis`, `app/pages/guide`                               | 클라이언트 설문 결과와 서버 문서·첨부·변수 카탈로그 조회                                              |
-| 공통 기능        | 공통 레이아웃·메뉴·알림·관리자 화면                                     | 인증, MFA, IAM, 서버 권한 메뉴, 게시판, 알림, 다국어, 배너, 입력 길라잡이, 감사·실시간 로그와 WAS 로그 |
+| 스피드다이얼     | 공통`AppShell`, `app/pages/admin/contact-information.vue`              | 전역 FAQ 조회·Q&A 등록·담당자 정보 열람. FAQ·Q&A는 공통 게시판 유형(`004`·`005`)을 재사용                                                         |
+| 사용자가이드     | 헤더 버튼,`app/pages/admin/user-guides.vue`                              | 전사 공개 가이드 파일 업로드·내려받기·이력 되돌리기. 현재 가이드는 항상 0건 또는 1건                                                                    |
+| 공통 데이터 이관 | `app/pages/admin/migration/common-data.vue`                              | 메뉴·메뉴권한·경로·공통코드·다국어를 개발→운영으로 내보내기·dry-run·확정 반영                                                                      |
+| 사전진단·가이드 | `app/pages/diagnosis`, `app/pages/guide`                               | 클라이언트 설문 결과와 서버 문서·첨부·변수 카탈로그 조회                                                                                                |
+| 공통 기능        | 공통 레이아웃·메뉴·알림·관리자 화면                                     | 인증, MFA, IAM, 서버 권한 메뉴, 게시판, 알림, 다국어, 배너, 입력 길라잡이, 감사·실시간 로그와 WAS 로그                                                   |
 
 메뉴는 백엔드가 사용자 권한으로 필터링한 `/api/menus` 트리를 프론트 헤더·사이드바·Breadcrumb·상단 탭이 함께 사용합니다. 탭 제목도 화면에 하드코딩하지 않고 이 트리의 메뉴명을 따릅니다. 프론트 메뉴 숨김은 화면 편의를 위한 것이며 API 접근 권한을 대신하지 않습니다.
 
@@ -287,20 +287,20 @@ Nuxt 페이지·컴포넌트
 
 ## 문서 역할
 
-| 문서                       | 역할                            |
-| -------------------------- | ------------------------------- |
-| `README.md`              | 설치, 실행, 저장소 탐색         |
-| `CLAUDE.md`              | 반드시 지킬 공통 규칙           |
-| `it_frontend/CLAUDE.md`  | 프론트 필수 규칙                |
-| `it_backend/CLAUDE.md`   | 백엔드 필수 규칙과 보안 경계    |
-| `it_database/CLAUDE.md`  | DB 변경·마이그레이션 안전 규칙 |
-| `it_*/docs/guides`       | 저장소별 주제 상세 설명과 예제  |
-| `docs/operations`, `it_*/docs/operations` | 배포·복구·인계 기록(루트는 교차 저장소 배포 절차) |
-| `docs/superpowers`       | 설계(`specs/`)·구현 계획(`plans/`)·리포트, 완료분은 각 `done/` |
-| `docs/test`, `docs/db-schema-gap` | 날짜별 테스트 결과·DB Gap 리포트 |
-| `TASK.md`                | 미구현, 기술부채, 후속 검증     |
-| `TASK_DONE.md`           | 완료·해소·감내·폐기 과제 보관   |
-| `it_database/migrations` | 물리 DB 변경 이력               |
+| 문서                                          | 역할                                                                   |
+| --------------------------------------------- | ---------------------------------------------------------------------- |
+| `README.md`                                 | 설치, 실행, 저장소 탐색                                                |
+| `CLAUDE.md`                                 | 반드시 지킬 공통 규칙                                                  |
+| `it_frontend/CLAUDE.md`                     | 프론트 필수 규칙                                                       |
+| `it_backend/CLAUDE.md`                      | 백엔드 필수 규칙과 보안 경계                                           |
+| `it_database/CLAUDE.md`                     | DB 변경·마이그레이션 안전 규칙                                        |
+| `it_*/docs/guides`                          | 저장소별 주제 상세 설명과 예제                                         |
+| `docs/operations`, `it_*/docs/operations` | 배포·복구·인계 기록(루트는 교차 저장소 배포 절차)                    |
+| `docs/superpowers`                          | 설계(`specs/`)·구현 계획(`plans/`)·리포트, 완료분은 각 `done/` |
+| `docs/test`, `docs/db-schema-gap`         | 날짜별 테스트 결과·DB Gap 리포트                                      |
+| `TASK.md`                                   | 미구현, 기술부채, 후속 검증                                            |
+| `TASK_DONE.md`                              | 완료·해소·감내·폐기 과제 보관                                       |
+| `it_database/migrations`                    | 물리 DB 변경 이력                                                      |
 
 ## 상세 문서
 
