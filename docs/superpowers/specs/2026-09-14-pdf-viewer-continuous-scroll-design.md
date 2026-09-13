@@ -42,8 +42,8 @@
   - `pages: ShallowRef<PdfPageLayout[]>` — `{ page, width, height }`(현재 배율·회전이 반영된 CSS px 크기).
     문서 열기 시 전 페이지의 배율 1 viewport(폭·높이)를 한 번 읽어 캐시하고, `scale`·`rotation`이 바뀔 때
     캐시에서 다시 계산한다(페이지 재접근 없음).
-  - `rows: ComputedRef<number[][]>` — 단일이면 `[[1],[2],…]`, 펼침이면 `[[1,2],[3,4],…]`, 프레젠테이션이면
-    `[[currentPage]]`.
+  - `rows: ComputedRef<PdfRowLayout[]>` — `{ pages, top, height }`. 단일이면 `[[1],[2],…]`, 펼침이면
+    `[[1,2],[3,4],…]`, 프레젠테이션이면 `[[currentPage]]`이며 `top`은 누적 세로 오프셋이다.
   - `PDF_SPREAD_GAP`(행 안 가로 간격, 기존)과 `PDF_PAGE_GAP`(행 사이 세로 간격, 신규) 상수.
 - 배율 계산(`resolveScale`): 기존 규칙(`auto`·`actual`·`page-fit`·`fit-width`·`custom`) 유지. 기준 크기는
   현재 행(펼침이면 두 장 합산 폭·최대 높이)으로 계산해 현재와 같은 결과를 낸다.
@@ -70,9 +70,10 @@
 
 ### 3.3 프레젠테이션 모드
 
-- 전체화면 진입 시 `presentation` 플래그를 켠다. 이때 `rows`는 `[[currentPage]]`만 반환하고 배율은
-  `page-fit`, 컨테이너는 `overflow: hidden`. Space/Enter/Backspace/화살표로 `currentPage`를 직접 바꾸면
-  그 페이지 한 장만 렌더된다. 종료 시 배율·펼침을 복원하고 현재 페이지 행으로 스크롤한다.
+- 전체화면 진입 시 컴포넌트가 `viewer.setPresentation(true)`를 호출한다. composable은 이전 배율을 기억하고
+  `page-fit`으로 바꾸며 `rows`는 `[[currentPage]]`만 반환한다. 컨테이너는 `overflow: hidden`.
+  Space/Enter/Backspace/화살표는 `goToPage`로 `currentPage`만 바꿔 그 페이지 한 장을 렌더한다.
+  `setPresentation(false)`는 배율을 복원하고 현재 페이지가 속한 행으로 스크롤한다(펼침은 바뀌지 않으므로 복원 대상이 아니다).
 - 별도 렌더 경로를 두지 않고 "가시 행 = 현재 행"인 특수 레이아웃으로 취급한다.
 
 ### 3.4 컴포넌트와 주변 계약
