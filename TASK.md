@@ -11,6 +11,7 @@ ID 접두사와 최대 번호(양 파일 합산): SEC-24, ERR-17, FE-86, BE-114,
 
 ## 예정된 정리 작업
 
+- 2026-09-20경(1주일 후): [직원 정보] 다이얼로그의 전화걸기·메신저 아이콘 5종을 일반 사용자에게 개방. 현재 `it_frontend/app/components/common/EmployeeInfoDialog.vue`의 `canUseContactActions`가 시스템관리자에게만 노출하도록 잠가 두었으며, 개방 시 판정을 `!!user.value?.eno`로 되돌리고 `tests/unit/components/EmployeeInfoDialog.test.ts`의 비관리자 숨김 케이스를 노출 케이스로 바꾼다.
 - 2026-10-12 이후: PDF 미리보기 서비스워커 해제 전환 코드 삭제(`it_frontend/app/plugins/retire-pdf-preview-sw.client.ts`, `app/utils/retirePdfPreviewServiceWorker.ts`, 해당 테스트). 만료일 상수 `RETIRE_PDF_PREVIEW_SW_UNTIL` 이후 플러그인은 이미 no-op이다(FE-86).
 - `V20260907_002` 적용 후 검증 통과 배포로부터 30일 뒤: 로컬·dev의 `BAK_TPRMPP_BPROJM`·`BAK_TPRMPP_BPROJL` 삭제([운영 인계](it_database/docs/operations/2026-09-12-project-content-clob-and-bgdoc-type-handover.md)).
 
