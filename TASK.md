@@ -2,12 +2,13 @@
 
 ## 활성 과제
 
-현재 열린 과제가 없습니다. 새 과제는 아래 표 형식으로 등록하고, 완료·해소·감내·폐기 항목은 [`TASK_DONE.md`](TASK_DONE.md)로 옮깁니다.
+새 과제는 아래 표 형식으로 등록하고, 완료·해소·감내·폐기 항목은 [`TASK_DONE.md`](TASK_DONE.md)로 옮깁니다.
 
 | ID  | 우선순위 | 상태 | 과제 | 다음 조치 | 근거 문서 |
 | --- | :------: | ---- | ---- | --------- | --------- |
+| FE-87 | 낮음 | 열림 | PDF 뷰어 연속 스크롤 후속 정리: `usePdfViewer`가 문서 열기 때 전 페이지 `getPage`를 선행해 장문서 첫 화면이 늦음(pdf.js처럼 첫 페이지 크기로 시작해 지연 채움), 행 모델이 본문 `p-4` 상단 패딩 16px을 반영하지 않음, `layout()` 앵커가 rAF 스로틀된 `scrollTop`을 사용, 렌더 실패 페이지가 스크롤마다 재시도(실패 마커 없음), `renderedPages` 매 프레임 재할당, DPR≠1·행 중간 앵커 복원 테스트 부재 | 장문서 실측 후 `getPage` 지연 채움부터 순서대로 처리 | [설계](docs/superpowers/specs/done/2026-09-14-pdf-viewer-continuous-scroll-design.md) |
 
-ID 접두사와 최대 번호(양 파일 합산): SEC-24, ERR-17, FE-86, BE-114, CQ-50, LOG-07, BRD-11, EAI-04, REPO-06, MIG-31. 새 ID를 채번한 뒤 `grep -ohE '^\| (SEC|ERR|FE|BE|CQ|LOG|BRD|EAI|REPO|MIG)-[0-9]+' TASK.md TASK_DONE.md | sort | uniq -d`로 중복을 확인합니다.
+ID 접두사와 최대 번호(양 파일 합산): SEC-24, ERR-17, FE-87, BE-114, CQ-50, LOG-07, BRD-11, EAI-04, REPO-06, MIG-31. 새 ID를 채번한 뒤 `grep -ohE '^\| (SEC|ERR|FE|BE|CQ|LOG|BRD|EAI|REPO|MIG)-[0-9]+' TASK.md TASK_DONE.md | sort | uniq -d`로 중복을 확인합니다.
 
 ## 예정된 정리 작업
 

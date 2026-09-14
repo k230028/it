@@ -58,8 +58,10 @@
 
 ### 3.2 현재 페이지와 이동
 
-- `currentPage`: 스크롤 영역 세로 중앙선이 지나는 행의 첫 페이지. 스크롤마다 갱신한다. 펼침에서는 행의
-  왼쪽(홀수) 페이지다.
+- `currentPage`: pdf.js 규칙을 따른다 — 현재 행이 뷰포트에 완전히 보이면 유지하고, 아니면 겹침 비율(보이는
+  높이 / 행 높이)이 가장 큰 행의 첫 페이지(동률이면 위쪽). 겹치는 행이 없으면 scrollTop이 0이면 첫 행, 아니면
+  마지막 행. 스크롤마다 갱신한다. 펼침에서는 행의 왼쪽(홀수) 페이지다. (설계 초안의 "세로 중앙선" 규칙은 행
+  높이가 뷰포트 절반보다 작을 때 goToPage와 충돌해 페이지를 건너뛰므로 구현 중 교체했다.)
 - `goToPage(n)`: 해당 행의 상단 오프셋으로 `scrollTop`을 설정한다(1..pageCount 보정은 유지).
   `prevPage`/`nextPage`/`firstPage`/`lastPage`는 행 단위 이동이다.
 - 배율·회전 변경 시 변경 전 현재 행과 행 안 상대 오프셋(0~1)을 기억했다가 레이아웃 재계산 후 같은 위치로
@@ -74,6 +76,7 @@
   `page-fit`으로 바꾸며 `rows`는 `[[currentPage]]`만 반환한다. 컨테이너는 `overflow: hidden`.
   Space/Enter/Backspace/화살표는 `goToPage`로 `currentPage`만 바꿔 그 페이지 한 장을 렌더한다.
   `setPresentation(false)`는 배율을 복원하고 현재 페이지가 속한 행으로 스크롤한다(펼침은 바뀌지 않으므로 복원 대상이 아니다).
+  프레젠테이션 중 `currentPage`가 바뀌면 그 페이지 기준으로 페이지 맞춤 배율을 다시 계산한다(혼합 방향 문서).
 - 별도 렌더 경로를 두지 않고 "가시 행 = 현재 행"인 특수 레이아웃으로 취급한다.
 
 ### 3.4 컴포넌트와 주변 계약
@@ -81,9 +84,16 @@
 - `PdfViewer.vue`: 본문에 `v-for="row in rows"` → `v-for="page in row"` 슬롯. 슬롯은 `:style="{ width, height }"`
   로 미리 크기를 잡아 스크롤 높이를 확정하고, canvas·textLayer는 항상 마운트해 등록한다. 렌더되지 않은
   슬롯은 흰 배경만 보인다. 헤더 주석의 [동작]·[키보드]·설명 문단을 갱신한다.
-- `usePdfSearch`: `visibleLayers`를 렌더된 페이지 목록에서 만들어 주므로 계약 변경 없음.
-- `PdfSidebar`·`PdfViewerToolbar`: `visiblePages`·`currentPage`·`goToPage` 의미가 유지되어 변경 없음.
-  단, 사이드바 썸네일 강조는 `currentPage` 기준으로 유지한다.
+- `visiblePages`는 기존 의미(현재 행의 페이지들)를 유지해 툴바 페이지 입력란과 사이드바 강조가 바뀌지 않는다.
+  뷰포트와 겹치는 페이지 집합은 별도 `viewportPages`로 노출하며 검색의 화면 안 판정(`isPageVisible`)에만 쓴다.
+- 페이지 슬롯은 `components/common/pdf/PdfPageSlot.vue`가 `onMounted`/`onBeforeUnmount`에서 등록·해제한다.
+  인라인 함수 ref는 펼침 전환 때 새 슬롯 등록 뒤에 옛 슬롯 해제가 와서 새 슬롯을 지우므로 쓰지 않는다.
+  `unregisterSlot(page, canvas)`는 등록된 canvas와 같을 때만 해제한다.
+- `usePdfSearch`: `visibleLayers`는 렌더된(버퍼 포함) 레이어를, 새 옵션 `isPageVisible`은 화면 안 여부를 받는다.
+  화면 밖 결과로 이동할 때 `goToPage` 뒤 바로 하이라이트를 적용해 이미 렌더된 버퍼 페이지도 즉시 강조된다.
+  현재 항목으로의 `scrollIntoView`는 명시적 이동(`moveTo`) 뒤 한 번만 수행하고, 렌더 완료에 따른 재적용에서는
+  스크롤하지 않는다(버퍼 페이지가 다시 그려질 때 스크롤을 빼앗지 않기 위해).
+- `PdfSidebar`·`PdfViewerToolbar`: `visiblePages`(현재 행)·`currentPage`·`goToPage` 의미가 유지되어 변경 없음.
 - `printPdfDocument`·문서 속성: 변경 없음.
 
 ### 3.5 전체화면에서 오버레이가 보이지 않는 결함
