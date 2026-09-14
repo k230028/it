@@ -103,7 +103,7 @@
   저장한 항목 중 `svnTemC`가 비어 있지 않고 `user.temC`와 다른 건이 하나라도 있으면 `info` 토스트를
   1회 띄운다. 복수 편집도 1회.
 - 정보화사업: `features/project/useProjectFormSave`의 저장 성공 경로에서 같은 규칙으로 1회.
-- 메시지 키: `common.scope.teamMismatchSummary` / `common.scope.teamMismatchDetail`
+- 메시지 키: `info.dashboard.scope.teamMismatchSummary` / `info.dashboard.scope.teamMismatchDetail`
   (ko: "담당자 팀이 다릅니다" / "저장한 항목의 담당자 팀이 내 팀과 달라 [팀] 목록에는 보이지 않습니다.
   [부서] 범위에서 확인할 수 있습니다."). `user.temC`가 없으면 띄우지 않는다.
 - 토스트 `life`는 `TOAST_LIFE.LONG`.
@@ -111,7 +111,7 @@
 ### 4.6 i18n
 
 - `info.dashboard.scope.team`: ko `'팀'`, en `'Team'`.
-- `common.scope.teamMismatchSummary`, `common.scope.teamMismatchDetail`: 4.5 문구, en 병기.
+- `info.dashboard.scope.teamMismatchSummary`, `info.dashboard.scope.teamMismatchDetail`: 4.5 문구, en 병기.
 
 ### 4.7 오류·경계 처리
 
