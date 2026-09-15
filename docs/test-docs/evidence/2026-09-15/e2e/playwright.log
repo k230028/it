@@ -1,0 +1,526 @@
+$ npx playwright test --config "C:\it\docs\test-docs\evidence\2026-09-15\e2e\playwright.evidence.config.ts" tests/e2e/budget-report-session.spec.ts tests/e2e/projects.spec.ts
+(cwd: C:\it\it_frontend)
+
+
+Running 15 tests using 1 worker
+
+  ok  1 [chromium] › tests\e2e\budget-report-session.spec.ts:111:5 › 예산 보고서 세션 복구 › 선택 항목 세션이 없으면 상세 조회 없이 예산 목록으로 복귀한다 (12.5s)
+  ok  2 [chromium] › tests\e2e\budget-report-session.spec.ts:131:5 › 예산 보고서 세션 복구 › 선택 항목 세션 JSON이 손상되어도 상세 조회 없이 예산 목록으로 복귀한다 (2.5s)
+  x   3 [chromium] › tests\e2e\budget-report-session.spec.ts:161:5 › 예산 보고서 세션 복구 › 서버 미리보기 한 문서의 PDF를 확인하고 같은 token으로 원자적으로 상신한다 (32.3s)
+  x   4 [chromium] › tests\e2e\budget-report-session.spec.ts:161:5 › 예산 보고서 세션 복구 › 서버 미리보기 한 문서의 PDF를 확인하고 같은 token으로 원자적으로 상신한다 (retry #1) (32.3s)
+  x   5 [chromium] › tests\e2e\budget-report-session.spec.ts:198:5 › 예산 보고서 세션 복구 › 원장 충돌의 승인 문구와 수정 이력을 표시하고 재조회 후 새 token으로 상신한다 (30.7s)
+  x   6 [chromium] › tests\e2e\budget-report-session.spec.ts:198:5 › 예산 보고서 세션 복구 › 원장 충돌의 승인 문구와 수정 이력을 표시하고 재조회 후 새 token으로 상신한다 (retry #1) (30.7s)
+  x   7 [chromium] › tests\e2e\projects.spec.ts:123:5 › 정보화사업 프로젝트 목록 › 프로젝트 목록을 표시한다 (15.9s)
+  x   8 [chromium] › tests\e2e\projects.spec.ts:123:5 › 정보화사업 프로젝트 목록 › 프로젝트 목록을 표시한다 (retry #1) (15.7s)
+  x   9 [chromium] › tests\e2e\projects.spec.ts:133:5 › 정보화사업 프로젝트 목록 › 목록의 총소요금액은 당해 요청금액이 아니라 prjBgAmt를 표시한다 (15.7s)
+  x  10 [chromium] › tests\e2e\projects.spec.ts:133:5 › 정보화사업 프로젝트 목록 › 목록의 총소요금액은 당해 요청금액이 아니라 prjBgAmt를 표시한다 (retry #1) (19.4s)
+  x  11 [chromium] › tests\e2e\projects.spec.ts:145:5 › 정보화사업 프로젝트 목록 › 프로젝트 상태 태그가 표시된다 (15.7s)
+  x  12 [chromium] › tests\e2e\projects.spec.ts:145:5 › 정보화사업 프로젝트 목록 › 프로젝트 상태 태그가 표시된다 (retry #1) (15.8s)
+  x  13 [chromium] › tests\e2e\projects.spec.ts:155:5 › 정보화사업 프로젝트 목록 › 검색어 입력 시 필터링된 목록이 표시된다 (19.1s)
+  x  14 [chromium] › tests\e2e\projects.spec.ts:155:5 › 정보화사업 프로젝트 목록 › 검색어 입력 시 필터링된 목록이 표시된다 (retry #1) (15.7s)
+  x  15 [chromium] › tests\e2e\projects.spec.ts:173:5 › 정보화사업 프로젝트 목록 › 신규 등록 버튼 클릭 시 폼 페이지로 이동한다 (16.1s)
+  x  16 [chromium] › tests\e2e\projects.spec.ts:173:5 › 정보화사업 프로젝트 목록 › 신규 등록 버튼 클릭 시 폼 페이지로 이동한다 (retry #1) (15.8s)
+  x  17 [chromium] › tests\e2e\projects.spec.ts:221:5 › 정보화사업 프로젝트 목록 › 사업명 클릭 시 상세 페이지로 이동한다 (15.8s)
+  x  18 [chromium] › tests\e2e\projects.spec.ts:221:5 › 정보화사업 프로젝트 목록 › 사업명 클릭 시 상세 페이지로 이동한다 (retry #1) (15.7s)
+  x  19 [chromium] › tests\e2e\projects.spec.ts:255:5 › 정보화사업 프로젝트 목록 › 상세 조회 지연 시 로딩 인디케이터를 표시한다 (0ms)
+  -  20 [chromium] › tests\e2e\projects.spec.ts:282:5 › 정보화사업 프로젝트 목록 › 사업 상세의 개행과 부문장 문구를 보존하고 전결권 안내를 연다
+  -  21 [chromium] › tests\e2e\projects.spec.ts:338:5 › 정보화사업 프로젝트 목록 › 헤더 검색에서 신청서 상태와 사업 그룹을 표시하고 상세 접근 제한 담당자를 안내한다
+  -  22 [chromium] › tests\e2e\projects.spec.ts:436:9 › 정보화사업 프로젝트 상세 › 수기등록 상태 9은 원본을 목록 대신 다이얼로그에서 보여준다
+  -  23 [chromium] › tests\e2e\projects.spec.ts:436:9 › 정보화사업 프로젝트 상세 › 수기등록 상태 09은 원본을 목록 대신 다이얼로그에서 보여준다
+  x  24 [chromium] › tests\e2e\projects.spec.ts:255:5 › 정보화사업 프로젝트 목록 › 상세 조회 지연 시 로딩 인디케이터를 표시한다 (retry #1) (0ms)
+  -  25 [chromium] › tests\e2e\projects.spec.ts:282:5 › 정보화사업 프로젝트 목록 › 사업 상세의 개행과 부문장 문구를 보존하고 전결권 안내를 연다 (retry #1)
+  -  26 [chromium] › tests\e2e\projects.spec.ts:338:5 › 정보화사업 프로젝트 목록 › 헤더 검색에서 신청서 상태와 사업 그룹을 표시하고 상세 접근 제한 담당자를 안내한다 (retry #1)
+  -  27 [chromium] › tests\e2e\projects.spec.ts:436:9 › 정보화사업 프로젝트 상세 › 수기등록 상태 9은 원본을 목록 대신 다이얼로그에서 보여준다 (retry #1)
+  -  28 [chromium] › tests\e2e\projects.spec.ts:436:9 › 정보화사업 프로젝트 상세 › 수기등록 상태 09은 원본을 목록 대신 다이얼로그에서 보여준다 (retry #1)
+
+
+  1) [chromium] › tests\e2e\budget-report-session.spec.ts:161:5 › 예산 보고서 세션 복구 › 서버 미리보기 한 문서의 PDF를 확인하고 같은 token으로 원자적으로 상신한다 
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator: locator('iframe')
+    Expected pattern: /^blob:/
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 30000ms
+      - waiting for locator('iframe')
+
+
+      175 |             documents: [{ clientDocumentKey: 'budget-report', sourceRefs: SOURCE_REFS }],
+      176 |         });
+    > 177 |         await expect(page.locator('iframe')).toHaveAttribute('src', /^blob:/, { timeout: 30_000 });
+          |                                              ^
+      178 |         const request = await submitServerReport(page);
+      179 |         expect(request.postDataJSON()).toEqual({
+      180 |             previewToken: 'preview-one',
+        at C:\it\it_frontend\tests\e2e\budget-report-session.spec.ts:177:46
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\budget-report-session-예산-보-b179c--확인하고-같은-token으로-원자적으로-상신한다-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\budget-report-session-예산-보-b179c--확인하고-같은-token으로-원자적으로-상신한다-chromium\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator: locator('iframe')
+    Expected pattern: /^blob:/
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 30000ms
+      - waiting for locator('iframe')
+
+
+      175 |             documents: [{ clientDocumentKey: 'budget-report', sourceRefs: SOURCE_REFS }],
+      176 |         });
+    > 177 |         await expect(page.locator('iframe')).toHaveAttribute('src', /^blob:/, { timeout: 30_000 });
+          |                                              ^
+      178 |         const request = await submitServerReport(page);
+      179 |         expect(request.postDataJSON()).toEqual({
+      180 |             previewToken: 'preview-one',
+        at C:\it\it_frontend\tests\e2e\budget-report-session.spec.ts:177:46
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\budget-report-session-예산-보-b179c--확인하고-같은-token으로-원자적으로-상신한다-chromium-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\budget-report-session-예산-보-b179c--확인하고-같은-token으로-원자적으로-상신한다-chromium-retry1\error-context.md
+
+  2) [chromium] › tests\e2e\budget-report-session.spec.ts:198:5 › 예산 보고서 세션 복구 › 원장 충돌의 승인 문구와 수정 이력을 표시하고 재조회 후 새 token으로 상신한다 
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator: locator('iframe')
+    Expected pattern: /^blob:/
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 30000ms
+      - waiting for locator('iframe')
+
+
+      227 |         });
+      228 |         await openReport(page);
+    > 229 |         await expect(page.locator('iframe')).toHaveAttribute('src', /^blob:/, { timeout: 30_000 });
+          |                                              ^
+      230 |         await submitServerReport(page);
+      231 |         const dialog = page.getByRole('dialog').filter({
+      232 |             hasText: '신청서가 중간에 변경되었습니다. 다시 결재를 상신해주시기 바랍니다.',
+        at C:\it\it_frontend\tests\e2e\budget-report-session.spec.ts:229:46
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\budget-report-session-예산-보-fd824-을-표시하고-재조회-후-새-token으로-상신한다-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\budget-report-session-예산-보-fd824-을-표시하고-재조회-후-새-token으로-상신한다-chromium\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator: locator('iframe')
+    Expected pattern: /^blob:/
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 30000ms
+      - waiting for locator('iframe')
+
+
+      227 |         });
+      228 |         await openReport(page);
+    > 229 |         await expect(page.locator('iframe')).toHaveAttribute('src', /^blob:/, { timeout: 30_000 });
+          |                                              ^
+      230 |         await submitServerReport(page);
+      231 |         const dialog = page.getByRole('dialog').filter({
+      232 |             hasText: '신청서가 중간에 변경되었습니다. 다시 결재를 상신해주시기 바랍니다.',
+        at C:\it\it_frontend\tests\e2e\budget-report-session.spec.ts:229:46
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\budget-report-session-예산-보-fd824-을-표시하고-재조회-후-새-token으로-상신한다-chromium-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\budget-report-session-예산-보-fd824-을-표시하고-재조회-후-새-token으로-상신한다-chromium-retry1\error-context.md
+
+  3) [chromium] › tests\e2e\projects.spec.ts:123:5 › 정보화사업 프로젝트 목록 › 프로젝트 목록을 표시한다 ─────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('테스트 정보화사업 A')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByText('테스트 정보화사업 A')
+
+
+      127 |
+      128 |         // 모킹된 데이터가 화면에 표시되는지 확인 (최대 15초 대기)
+    > 129 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });
+          |                                                     ^
+      130 |         await expect(page.getByText('테스트 정보화사업 B')).toBeVisible();
+      131 |     });
+      132 |
+        at C:\it\it_frontend\tests\e2e\projects.spec.ts:129:53
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-프로젝트-목록을-표시한다-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-프로젝트-목록을-표시한다-chromium\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('테스트 정보화사업 A')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByText('테스트 정보화사업 A')
+
+
+      127 |
+      128 |         // 모킹된 데이터가 화면에 표시되는지 확인 (최대 15초 대기)
+    > 129 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });
+          |                                                     ^
+      130 |         await expect(page.getByText('테스트 정보화사업 B')).toBeVisible();
+      131 |     });
+      132 |
+        at C:\it\it_frontend\tests\e2e\projects.spec.ts:129:53
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-프로젝트-목록을-표시한다-chromium-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-프로젝트-목록을-표시한다-chromium-retry1\error-context.md
+
+  4) [chromium] › tests\e2e\projects.spec.ts:133:5 › 정보화사업 프로젝트 목록 › 목록의 총소요금액은 당해 요청금액이 아니라 prjBgAmt를 표시한다 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('테스트 정보화사업 A')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByText('테스트 정보화사업 A')
+
+
+      133 |     test('목록의 총소요금액은 당해 요청금액이 아니라 prjBgAmt를 표시한다', async ({ page }) => {
+      134 |         await page.goto('/info/projects');
+    > 135 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });
+          |                                                     ^
+      136 |
+      137 |         await page.getByRole('button', { name: '원', exact: true }).click();
+      138 |         const projectRow = page.getByRole('row').filter({ hasText: '테스트 정보화사업 A' });
+        at C:\it\it_frontend\tests\e2e\projects.spec.ts:135:53
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-목록의-4be0d-당해-요청금액이-아니라-prjBgAmt를-표시한다-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-목록의-4be0d-당해-요청금액이-아니라-prjBgAmt를-표시한다-chromium\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('테스트 정보화사업 A')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByText('테스트 정보화사업 A')
+
+
+      133 |     test('목록의 총소요금액은 당해 요청금액이 아니라 prjBgAmt를 표시한다', async ({ page }) => {
+      134 |         await page.goto('/info/projects');
+    > 135 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });
+          |                                                     ^
+      136 |
+      137 |         await page.getByRole('button', { name: '원', exact: true }).click();
+      138 |         const projectRow = page.getByRole('row').filter({ hasText: '테스트 정보화사업 A' });
+        at C:\it\it_frontend\tests\e2e\projects.spec.ts:135:53
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-목록의-4be0d-당해-요청금액이-아니라-prjBgAmt를-표시한다-chromium-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-목록의-4be0d-당해-요청금액이-아니라-prjBgAmt를-표시한다-chromium-retry1\error-context.md
+
+  5) [chromium] › tests\e2e\projects.spec.ts:145:5 › 정보화사업 프로젝트 목록 › 프로젝트 상태 태그가 표시된다 ──────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('사업 추진')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByText('사업 추진')
+
+
+      148 |
+      149 |         // 프로젝트 상태 컬럼의 텍스트 확인
+    > 150 |         await expect(page.getByText('사업 추진')).toBeVisible({ timeout: 15000 });
+          |                                               ^
+      151 |         await expect(page.getByText('완료')).toBeVisible();
+      152 |     });
+      153 |
+        at C:\it\it_frontend\tests\e2e\projects.spec.ts:150:47
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-프로젝트-상태-태그가-표시된다-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-프로젝트-상태-태그가-표시된다-chromium\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('사업 추진')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByText('사업 추진')
+
+
+      148 |
+      149 |         // 프로젝트 상태 컬럼의 텍스트 확인
+    > 150 |         await expect(page.getByText('사업 추진')).toBeVisible({ timeout: 15000 });
+          |                                               ^
+      151 |         await expect(page.getByText('완료')).toBeVisible();
+      152 |     });
+      153 |
+        at C:\it\it_frontend\tests\e2e\projects.spec.ts:150:47
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-프로젝트-상태-태그가-표시된다-chromium-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-프로젝트-상태-태그가-표시된다-chromium-retry1\error-context.md
+
+  6) [chromium] › tests\e2e\projects.spec.ts:155:5 › 정보화사업 프로젝트 목록 › 검색어 입력 시 필터링된 목록이 표시된다 ────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('테스트 정보화사업 A')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByText('테스트 정보화사업 A')
+
+
+      158 |
+      159 |         // 목록이 렌더링될 때까지 대기
+    > 160 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });
+          |                                                     ^
+      161 |
+      162 |         // TableSearchInput의 placeholder 기준으로 검색 입력창 탐색
+      163 |         const searchInput = page.getByPlaceholder(/검색/).first();
+        at C:\it\it_frontend\tests\e2e\projects.spec.ts:160:53
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-검색어-입력-시-필터링된-목록이-표시된다-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-검색어-입력-시-필터링된-목록이-표시된다-chromium\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('테스트 정보화사업 A')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByText('테스트 정보화사업 A')
+
+
+      158 |
+      159 |         // 목록이 렌더링될 때까지 대기
+    > 160 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });
+          |                                                     ^
+      161 |
+      162 |         // TableSearchInput의 placeholder 기준으로 검색 입력창 탐색
+      163 |         const searchInput = page.getByPlaceholder(/검색/).first();
+        at C:\it\it_frontend\tests\e2e\projects.spec.ts:160:53
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-검색어-입력-시-필터링된-목록이-표시된다-chromium-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-검색어-입력-시-필터링된-목록이-표시된다-chromium-retry1\error-context.md
+
+  7) [chromium] › tests\e2e\projects.spec.ts:173:5 › 정보화사업 프로젝트 목록 › 신규 등록 버튼 클릭 시 폼 페이지로 이동한다 ─────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('테스트 정보화사업 A')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByText('테스트 정보화사업 A')
+
+
+      203 |
+      204 |         await page.goto('/info/projects');
+    > 205 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });
+          |                                                     ^
+      206 |
+      207 |         // 신규 등록 버튼 탐색
+      208 |         const newBtn = page.getByRole('button', { name: /신규|등록|추가/ }).first();
+        at C:\it\it_frontend\tests\e2e\projects.spec.ts:205:53
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-신규-등록-버튼-클릭-시-폼-페이지로-이동한다-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-신규-등록-버튼-클릭-시-폼-페이지로-이동한다-chromium\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('테스트 정보화사업 A')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByText('테스트 정보화사업 A')
+
+
+      203 |
+      204 |         await page.goto('/info/projects');
+    > 205 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });
+          |                                                     ^
+      206 |
+      207 |         // 신규 등록 버튼 탐색
+      208 |         const newBtn = page.getByRole('button', { name: /신규|등록|추가/ }).first();
+        at C:\it\it_frontend\tests\e2e\projects.spec.ts:205:53
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-신규-등록-버튼-클릭-시-폼-페이지로-이동한다-chromium-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-신규-등록-버튼-클릭-시-폼-페이지로-이동한다-chromium-retry1\error-context.md
+
+  8) [chromium] › tests\e2e\projects.spec.ts:221:5 › 정보화사업 프로젝트 목록 › 사업명 클릭 시 상세 페이지로 이동한다 ─────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('테스트 정보화사업 A')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByText('테스트 정보화사업 A')
+
+
+      233 |         await page.goto('/info/projects');
+      234 |         await expect(page).not.toHaveURL(/\/login/);
+    > 235 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });
+          |                                                     ^
+      236 |
+      237 |         // 사업명 텍스트 클릭 → 상세 이동 또는 Drawer 열림
+      238 |         await page.getByText('테스트 정보화사업 A').first().click();
+        at C:\it\it_frontend\tests\e2e\projects.spec.ts:235:53
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-사업명-클릭-시-상세-페이지로-이동한다-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-사업명-클릭-시-상세-페이지로-이동한다-chromium\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('테스트 정보화사업 A')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for getByText('테스트 정보화사업 A')
+
+
+      233 |         await page.goto('/info/projects');
+      234 |         await expect(page).not.toHaveURL(/\/login/);
+    > 235 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });
+          |                                                     ^
+      236 |
+      237 |         // 사업명 텍스트 클릭 → 상세 이동 또는 Drawer 열림
+      238 |         await page.getByText('테스트 정보화사업 A').first().click();
+        at C:\it\it_frontend\tests\e2e\projects.spec.ts:235:53
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-사업명-클릭-시-상세-페이지로-이동한다-chromium-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\test-docs\evidence\2026-09-15\e2e\artifacts\projects-정보화사업-프로젝트-목록-사업명-클릭-시-상세-페이지로-이동한다-chromium-retry1\error-context.md
+
+  9) [chromium] › tests\e2e\projects.spec.ts:255:5 › 정보화사업 프로젝트 목록 › 상세 조회 지연 시 로딩 인디케이터를 표시한다 ─────
+
+    Error: Cannot find module './tests/e2e/global-setup.ts'
+    Require stack:
+    - C:\it\it_frontend\node_modules\playwright\lib\common\index.js
+    - C:\it\it_frontend\node_modules\playwright\lib\worker\workerProcessEntry.js
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: Cannot find module './tests/e2e/global-setup.ts'
+    Require stack:
+    - C:\it\it_frontend\node_modules\playwright\lib\common\index.js
+    - C:\it\it_frontend\node_modules\playwright\lib\worker\workerProcessEntry.js
+
+  9 failed
+    [chromium] › tests\e2e\budget-report-session.spec.ts:161:5 › 예산 보고서 세션 복구 › 서버 미리보기 한 문서의 PDF를 확인하고 같은 token으로 원자적으로 상신한다 
+    [chromium] › tests\e2e\budget-report-session.spec.ts:198:5 › 예산 보고서 세션 복구 › 원장 충돌의 승인 문구와 수정 이력을 표시하고 재조회 후 새 token으로 상신한다 
+    [chromium] › tests\e2e\projects.spec.ts:123:5 › 정보화사업 프로젝트 목록 › 프로젝트 목록을 표시한다 ──────────────────
+    [chromium] › tests\e2e\projects.spec.ts:133:5 › 정보화사업 프로젝트 목록 › 목록의 총소요금액은 당해 요청금액이 아니라 prjBgAmt를 표시한다 
+    [chromium] › tests\e2e\projects.spec.ts:145:5 › 정보화사업 프로젝트 목록 › 프로젝트 상태 태그가 표시된다 ───────────────
+    [chromium] › tests\e2e\projects.spec.ts:155:5 › 정보화사업 프로젝트 목록 › 검색어 입력 시 필터링된 목록이 표시된다 ─────────
+    [chromium] › tests\e2e\projects.spec.ts:173:5 › 정보화사업 프로젝트 목록 › 신규 등록 버튼 클릭 시 폼 페이지로 이동한다 ──────
+    [chromium] › tests\e2e\projects.spec.ts:221:5 › 정보화사업 프로젝트 목록 › 사업명 클릭 시 상세 페이지로 이동한다 ──────────
+    [chromium] › tests\e2e\projects.spec.ts:255:5 › 정보화사업 프로젝트 목록 › 상세 조회 지연 시 로딩 인디케이터를 표시한다 ──────
+  4 did not run
+  2 passed (8.7m)

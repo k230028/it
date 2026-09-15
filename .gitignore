@@ -27,6 +27,10 @@ it_database
 !.claude/skills/it-design-doc/**
 !.claude/skills/it-design-doc-pdf/
 !.claude/skills/it-design-doc-pdf/**
+!.claude/skills/it-test-doc/
+!.claude/skills/it-test-doc/**
+!.claude/skills/it-test-doc-pdf/
+!.claude/skills/it-test-doc-pdf/**
 # 로컬 에이전트 하네스 설정 (개발자 환경마다 다름)
 # 프로젝트 공용 워크플로우 스킬만 선택적으로 추적한다.
 .agents/*
@@ -51,6 +55,10 @@ it_database
 !.agents/skills/it-design-doc/**
 !.agents/skills/it-design-doc-pdf/
 !.agents/skills/it-design-doc-pdf/**
+!.agents/skills/it-test-doc/
+!.agents/skills/it-test-doc/**
+!.agents/skills/it-test-doc-pdf/
+!.agents/skills/it-test-doc-pdf/**
 
 # 개인 Obsidian 볼트 본문 (.obsidian 설정과 함께 저장소 밖에서 관리)
 TaskNotes/

@@ -188,25 +188,32 @@ foreach ($repoGroup in ($grouped | Group-Object Repo)) {
     Add-Line
 }
 
-Add-Line "## 일자별 활동 (진행경과 초안용)"
+Add-Line "## 일자별 활동 (진행경과 초안용, 시각 오름차순)"
 Add-Line
-$dayMap = [ordered]@{}
+# 진행경과 한 줄은 'YY.MM.DD(요일) HH:MM 단위이므로 커밋 시각(분)과 해시를 함께 남긴다
+$events = [System.Collections.Generic.List[object]]::new()
 foreach ($repo in $repos) {
     $p = $repo.Path
     if (-not (Test-Path (Join-Path $p '.git'))) { continue }
-    $rows = git -C $p log --since="$sinceArg" --until="$untilArg" --date=format:'%Y-%m-%d' --format='%ad%x1f%s' --reverse | Where-Object { $_ }
+    $rows = git -C $p log --since="$sinceArg" --until="$untilArg" --date=format:'%Y-%m-%d %H:%M' --format='%ad%x1f%h%x1f%s' --reverse | Where-Object { $_ }
     foreach ($r in $rows) {
-        $d, $s = $r -split $US
-        if (-not $dayMap.Contains($d)) { $dayMap[$d] = [System.Collections.Generic.List[string]]::new() }
-        $dayMap[$d].Add("$($repo.Name): $s")
+        $d, $h, $s = $r -split $US
+        $events.Add([pscustomobject]@{ At = [datetime]::ParseExact($d, 'yyyy-MM-dd HH:mm', $null); Repo = $repo.Name; Hash = $h; Subject = $s })
+    }
+    # 미커밋 작업은 해시가 없으므로 변경 파일의 최종 수정 시각을 사건 시각으로 쓴다
+    $dirtyPaths = @(git -C $p status --porcelain | Where-Object { $_ } | ForEach-Object { $_.Substring(3).Trim() })
+    $dirtyFiles = @($dirtyPaths | ForEach-Object { Get-Item -LiteralPath (Join-Path $p $_) -ErrorAction SilentlyContinue } | Where-Object { $_ -and -not $_.PSIsContainer })
+    if ($dirtyFiles.Count -gt 0) {
+        $latest = ($dirtyFiles | Sort-Object LastWriteTime | Select-Object -Last 1).LastWriteTime
+        $events.Add([pscustomobject]@{ At = $latest; Repo = $repo.Name; Hash = '(미커밋)'; Subject = "미커밋 $($dirtyPaths.Count)건 · 최종 수정 시각 기준" })
     }
 }
 $dayNames = @('일', '월', '화', '수', '목', '금', '토')
-foreach ($d in ($dayMap.Keys | Sort-Object)) {
-    $dt = [datetime]::ParseExact($d, 'yyyy-MM-dd', $null)
+foreach ($dayGroup in ($events | Sort-Object At | Group-Object { $_.At.ToString('yyyy-MM-dd') })) {
+    $dt = [datetime]::ParseExact($dayGroup.Name, 'yyyy-MM-dd', $null)
     $label = "'" + $dt.ToString('yy.MM.dd') + '(' + $dayNames[[int]$dt.DayOfWeek] + ')'
-    Add-Line "- $label — $($dayMap[$d].Count)건"
-    foreach ($s in $dayMap[$d]) { Add-Line "  - $s" }
+    Add-Line "- $label — $($dayGroup.Count)건"
+    foreach ($e in $dayGroup.Group) { Add-Line "  - $($e.At.ToString('HH:mm')) ``$($e.Hash)`` $($e.Repo): $($e.Subject)" }
 }
 Add-Line
 

@@ -1,0 +1,22 @@
+$ "C:\it\it_backend\gradlew.bat" cleanTest test --tests *CostQueryAssemblerTest --tests *ItBudgetLedgerCaptureTest --tests *ItBudgetSnapshotReaderTest --tests *ItBudgetPreviewOpenApiContractTest --tests *ApiResponseOpenApiContractTest --tests *ProjectQueryAssemblerTest --tests *AuthControllerTest --console=plain
+(cwd: C:\it\it_backend)
+
+> Task :cleanTest
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :compileTestJava UP-TO-DATE
+> Task :processTestResources UP-TO-DATE
+> Task :testClasses UP-TO-DATE
+
+> Task :test
+
+
+> Task :jacocoTestReport
+
+BUILD SUCCESSFUL in 1m 11s
+7 actionable tasks: 3 executed, 4 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.2.1/userguide/configuration_cache_enabling.html
+Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStoreType=Windows-ROOT
+Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStoreType=Windows-ROOT
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended

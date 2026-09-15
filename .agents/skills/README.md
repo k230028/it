@@ -13,6 +13,8 @@
 | `it-readme-pdf` | 루트 README와 직접 연결된 Markdown을 단일 PDF로 생성·검증 | 신규 자동화 |
 | `it-design-doc` | 기간·PRD 단위 변경분을 공공기관 공문서 스타일 분석/설계서로 작성 | 신규 자동화 |
 | `it-design-doc-pdf` | 분석/설계서 Markdown(사용자 수정본 포함)을 브랜드 디자인 A4 PDF로 변환·검증 | 신규 자동화 |
+| `it-test-doc` | 분석/설계서의 시나리오로 Vitest·JUnit·E2E를 실행하고 증적과 함께 테스트 결과서 작성 | 신규 자동화 |
+| `it-test-doc-pdf` | 테스트 결과서 Markdown을 PASS/FAIL 배지가 있는 브랜드 디자인 A4 PDF로 변환·검증 | 신규 자동화 |
 
 각 스킬은 독립적으로 호출합니다. 전체 품질 점검을 요청받더라도 필요한 스킬만 선택하며 모든 스킬을 자동으로 연쇄 실행하지 않습니다.
 

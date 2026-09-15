@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" tests="19" skipped="0" failures="0" errors="0" timestamp="2026-09-15T10:15:09.252Z" hostname="DESKTOP-UQFLPC0" time="0.479">
+  <properties/>
+  <testcase name="상세 조립: 신청서 진행상태 코드가 없으면 상태 표시명을 null로 둔다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.389"/>
+  <testcase name="상세 조립: 행번이 빈 사업은 담당자명 스냅샷(USR_NM·TLR_NM)을 유지한다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.003"/>
+  <testcase name="목록 조립: 미상신 초안 행이 구버전의 결재완료 정보를 물려받지 않는다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.014"/>
+  <testcase name="상세 조립: 비목 코드 없는 품목이 섞여 있으면 코드 있는 품목만 코드명을 채운다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.009"/>
+  <testcase name="상세 조립: 미해석 행번(퇴직 등)이라도 담당자명 스냅샷을 null로 덮지 않는다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.004"/>
+  <testcase name="상세 조립: 최초 작성자·최근 수정자 사번을 배치 조회 한 번으로 이름으로 채운다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.004"/>
+  <testcase name="품목 비목 코드명 보강: 품목 목록이 null이면 예외 없이 종료한다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.005"/>
+  <testcase name="목록 조립: 품목 금액은 사업번호의 다른 개정본과 합산하지 않는다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.006"/>
+  <testcase name="bulk 조립: 비목 유형으로 편성예산을 자본·경상 예산으로 분류한다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.004"/>
+  <testcase name="담당자 이름이 저장된 사업은 이름 필드에 두고 사번 필드를 비운다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.002"/>
+  <testcase name="배치 조립: 빈 목록은 연관 조회 없이 빈 응답을 반환한다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.001"/>
+  <testcase name="상세 조립: 품목 비목 코드가 전부 비어 있으면 코드명 조회 없이 품목을 반환한다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.002"/>
+  <testcase name="상세 조립: 저장된 현업부서명 스냅샷이 있으면 조직 조회보다 우선한다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.001"/>
+  <testcase name="상세 조립: 조직·사용자·직위와 공통 코드명을 응답에 반영한다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.005"/>
+  <testcase name="상세 조립: 최신 신청서와 결재선을 상세 정보에 반영한다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.005"/>
+  <testcase name="배치 조립: null 목록은 계약 위반으로 즉시 실패한다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.002"/>
+  <testcase name="응답 동등성: 단건·목록·bulk가 신청서·상태·품목·예산 규칙을 공유한다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.009"/>
+  <testcase name="상세 조립: 대표상태·활성 품목·코드명과 예산 합계를 함께 반영한다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.003"/>
+  <testcase name="상세 조립: 감사자 사번이 미해석(DB 기본값·퇴직)이면 이름은 비우고 사번은 그대로 둔다" classname="com.kdb.it.domain.budget.project.service.ProjectQueryAssemblerTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" tests="33" skipped="0" failures="0" errors="0" timestamp="2026-09-15T10:14:54.584Z" hostname="DESKTOP-UQFLPC0" time="1.653">
+  <properties/>
+  <testcase name="invalidRolesAndRoleOrderFailOnReadAndMutation()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.479"/>
+  <testcase name="mutableLineIsRevalidatedBeforeSerialization()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.05"/>
+  <testcase name="rejectsStoredSnapshotWithEmptyApprovalLine()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.014"/>
+  <testcase name="rejectsMalformedV3LedgerCompositeKeysEvenWhenResigned()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.201"/>
+  <testcase name="keepsStoredV2FixtureDigestFrozen()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.023"/>
+  <testcase name="dispatchesLegacyAndV2WithoutRewritingLegacy()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.033"/>
+  <testcase name="rejectsMismatchedAndDuplicateV3SourceIdentities()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.037"/>
+  <testcase name="rejectsMalformedV3LedgerTablesEvenWhenResigned()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.096"/>
+  <testcase name="rejectsTamperedV3LedgerColumnWithOriginalDigest()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.036"/>
+  <testcase name="rejectsMissingRoleInV2()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.003"/>
+  <testcase name="rejectsBlankOrNonPositiveDeletedV3ChildPrimaryKeysEvenWhenResigned()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.057"/>
+  <testcase name="rejectsUnknownAndDuplicateV3LedgerAggregatesEvenWhenResigned()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.038"/>
+  <testcase name="recallExtensionIsExplicitAndStrict()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.02"/>
+  <testcase name="rejectsMissingV3LedgerIdentityEvenWhenResigned()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.022"/>
+  <testcase name="legacyAdapterCannotExposeMutableV2Root()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.021"/>
+  <testcase name="acceptsAdditionalScalarV3LedgerColumns()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.03"/>
+  <testcase name="rejectsUnknownV3EnvelopeFieldEvenWithMatchingPayloadDigest()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.008"/>
+  <testcase name="nullVersusMissingAndScalarTokenTypeRemainDistinctEvenWithMatchingDigest()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.017"/>
+  <testcase name="rejectsExplicitNullV3AttachmentsEvenWhenResigned()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.01"/>
+  <testcase name="rejectsObjectAndArrayV3LedgerColumnValuesEvenWhenResigned()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.02"/>
+  <testcase name="acceptsActiveRelatedCfilemRowsAndKeepsLegacyV3WithoutAttachmentsReadable()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.037"/>
+  <testcase name="readsV3AndKeepsV2ProjectionForExistingConsumers()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.039"/>
+  <testcase name="sourceDigestRemainsHistoricalMetadataAndDoesNotUsePayloadDigestScope()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.031"/>
+  <testcase name="treatsOtherFormVersion3AsLegacyWithoutRewritingIt()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.001"/>
+  <testcase name="v3PayloadIsUnavailableForV1AndV2()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.022"/>
+  <testcase name="rejectsInactiveOrUnrelatedCfilemRowsEvenWhenResigned()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.068"/>
+  <testcase name="rejectsMalformedCfilemTableIdentityDuplicateAndNestedValueEvenWhenResigned()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.087"/>
+  <testcase name="rejectsUnsupportedV3CanonicalizationAndLedgerFormat()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.028"/>
+  <testcase name="publicNumericStringsRoundTripToOriginalCanonicalPayload()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.028"/>
+  <testcase name="rejectsNullCollectionElementsAndMismatchedChildRevisionEvenWhenResigned()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.017"/>
+  <testcase name="rejectsMalformedV3ApprovalRoles()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.026"/>
+  <testcase name="rejectsDuplicatePropertiesAndTrailingTokensWithoutRawCause()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.003"/>
+  <testcase name="rejectsMismatchedV3AggregateIdentityEvenWhenResigned()" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetSnapshotReaderTest" time="0.023"/>
+  <system-out><![CDATA[2026-09-15T19:14:54.935+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v2, outcome=integrity_failure
+2026-09-15T19:14:54.941+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v2, outcome=integrity_failure
+2026-09-15T19:14:54.945+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v2, outcome=integrity_failure
+2026-09-15T19:14:54.987+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v2, outcome=integrity_failure
+2026-09-15T19:14:54.995+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v2, outcome=integrity_failure
+2026-09-15T19:14:55.129+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v2, outcome=integrity_failure
+2026-09-15T19:14:55.293+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.311+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.330+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.420+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.426+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.458+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.480+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.503+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.522+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.559+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.562+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v2, outcome=integrity_failure
+2026-09-15T19:14:55.616+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.620+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.655+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.658+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.678+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v2, outcome=integrity_failure
+2026-09-15T19:14:55.702+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.764+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.776+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v2, outcome=integrity_failure
+2026-09-15T19:14:55.783+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v2, outcome=integrity_failure
+2026-09-15T19:14:55.792+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.810+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.813+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.984+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:55.999+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:56.018+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:56.050+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:56.072+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:56.089+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:56.106+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:56.124+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:56.134+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:56.178+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v2, outcome=integrity_failure
+2026-09-15T19:14:56.184+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v2, outcome=integrity_failure
+2026-09-15T19:14:56.203+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:56.206+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:56.210+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+2026-09-15T19:14:56.237+09:00  WARN 37412 --- [it] [    Test worker] c.k.i.c.a.i.s.ItBudgetSnapshotReader     : ���꿹�� ������ ���Ἲ ���� ����: version=v3, outcome=integrity_failure
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

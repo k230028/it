@@ -1,0 +1,1424 @@
+{
+  "config": {
+    "configFile": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\playwright.evidence.config.ts",
+    "rootDir": "C:/it/it_frontend/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/it/docs/test-docs/evidence/2026-09-15/e2e/artifacts",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "setup",
+        "name": "setup",
+        "testDir": "C:/it/it_frontend/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/auth\\.setup\\.ts/"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/it/docs/test-docs/evidence/2026-09-15/e2e/artifacts",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/it/it_frontend/tests/e2e",
+        "testIgnore": [
+          "/(?:^|[\\\\/])auth\\.spec\\.ts$/",
+          "/(?:^|[\\\\/])static-auth\\.spec\\.ts$/"
+        ],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/it/docs/test-docs/evidence/2026-09-15/e2e/artifacts",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "auth-tests",
+        "name": "auth-tests",
+        "testDir": "C:/it/it_frontend/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:^|[\\\\/])auth\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "C:/it/docs/test-docs/evidence/2026-09-15/e2e/playwright-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": {
+      "command": "npx nuxt dev --port 3002",
+      "url": "http://localhost:3002",
+      "reuseExistingServer": true,
+      "timeout": 120000,
+      "env": {
+        "NUXT_SSR": "false"
+      },
+      "cwd": "C:/it/it_frontend"
+    }
+  },
+  "suites": [
+    {
+      "title": "budget-report-session.spec.ts",
+      "file": "budget-report-session.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "예산 보고서 세션 복구",
+          "file": "budget-report-session.spec.ts",
+          "line": 104,
+          "column": 6,
+          "specs": [
+            {
+              "title": "선택 항목 세션이 없으면 상세 조회 없이 예산 목록으로 복귀한다",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 12484,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-15T10:15:31.911Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\budget-report-session-예산-보-9a7f2-이-없으면-상세-조회-없이-예산-목록으로-복귀한다-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a87251323c24cc96e2db-f11c2d6bcb53b4ed2280",
+              "file": "budget-report-session.spec.ts",
+              "line": 111,
+              "column": 5
+            },
+            {
+              "title": "선택 항목 세션 JSON이 손상되어도 상세 조회 없이 예산 목록으로 복귀한다",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2475,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-15T10:15:44.891Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\budget-report-session-예산-보-89651-손상되어도-상세-조회-없이-예산-목록으로-복귀한다-chromium\\test-finished-1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a87251323c24cc96e2db-5d94fb1d5b0ddf2b330a",
+              "file": "budget-report-session.spec.ts",
+              "line": 131,
+              "column": 5
+            },
+            {
+              "title": "서버 미리보기 한 문서의 PDF를 확인하고 같은 token으로 원자적으로 상신한다",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 32256,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('iframe')\nExpected pattern: \u001b[32m/^blob:/\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for locator('iframe')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('iframe')\nExpected pattern: \u001b[32m/^blob:/\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for locator('iframe')\u001b[22m\n\n    at C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts:177:46",
+                        "location": {
+                          "file": "C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts",
+                          "column": 46,
+                          "line": 177
+                        },
+                        "snippet": "  175 |             documents: [{ clientDocumentKey: 'budget-report', sourceRefs: SOURCE_REFS }],\n  176 |         });\n> 177 |         await expect(page.locator('iframe')).toHaveAttribute('src', /^blob:/, { timeout: 30_000 });\n      |                                              ^\n  178 |         const request = await submitServerReport(page);\n  179 |         expect(request.postDataJSON()).toEqual({\n  180 |             previewToken: 'preview-one',"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts",
+                            "column": 46,
+                            "line": 177
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('iframe')\nExpected pattern: \u001b[32m/^blob:/\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for locator('iframe')\u001b[22m\n\n\n  175 |             documents: [{ clientDocumentKey: 'budget-report', sourceRefs: SOURCE_REFS }],\n  176 |         });\n> 177 |         await expect(page.locator('iframe')).toHaveAttribute('src', /^blob:/, { timeout: 30_000 });\n      |                                              ^\n  178 |         const request = await submitServerReport(page);\n  179 |         expect(request.postDataJSON()).toEqual({\n  180 |             previewToken: 'preview-one',\n    at C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts:177:46"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-15T10:15:47.374Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\budget-report-session-예산-보-b179c--확인하고-같은-token으로-원자적으로-상신한다-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\budget-report-session-예산-보-b179c--확인하고-같은-token으로-원자적으로-상신한다-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts",
+                        "column": 46,
+                        "line": 177
+                      }
+                    },
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 32319,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('iframe')\nExpected pattern: \u001b[32m/^blob:/\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for locator('iframe')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('iframe')\nExpected pattern: \u001b[32m/^blob:/\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for locator('iframe')\u001b[22m\n\n    at C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts:177:46",
+                        "location": {
+                          "file": "C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts",
+                          "column": 46,
+                          "line": 177
+                        },
+                        "snippet": "  175 |             documents: [{ clientDocumentKey: 'budget-report', sourceRefs: SOURCE_REFS }],\n  176 |         });\n> 177 |         await expect(page.locator('iframe')).toHaveAttribute('src', /^blob:/, { timeout: 30_000 });\n      |                                              ^\n  178 |         const request = await submitServerReport(page);\n  179 |         expect(request.postDataJSON()).toEqual({\n  180 |             previewToken: 'preview-one',"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts",
+                            "column": 46,
+                            "line": 177
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('iframe')\nExpected pattern: \u001b[32m/^blob:/\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for locator('iframe')\u001b[22m\n\n\n  175 |             documents: [{ clientDocumentKey: 'budget-report', sourceRefs: SOURCE_REFS }],\n  176 |         });\n> 177 |         await expect(page.locator('iframe')).toHaveAttribute('src', /^blob:/, { timeout: 30_000 });\n      |                                              ^\n  178 |         const request = await submitServerReport(page);\n  179 |         expect(request.postDataJSON()).toEqual({\n  180 |             previewToken: 'preview-one',\n    at C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts:177:46"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-09-15T10:16:27.772Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\budget-report-session-예산-보-b179c--확인하고-같은-token으로-원자적으로-상신한다-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\budget-report-session-예산-보-b179c--확인하고-같은-token으로-원자적으로-상신한다-chromium-retry1\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts",
+                        "column": 46,
+                        "line": 177
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "a87251323c24cc96e2db-82db911258949e337e92",
+              "file": "budget-report-session.spec.ts",
+              "line": 161,
+              "column": 5
+            },
+            {
+              "title": "원장 충돌의 승인 문구와 수정 이력을 표시하고 재조회 후 새 token으로 상신한다",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 30713,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('iframe')\nExpected pattern: \u001b[32m/^blob:/\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for locator('iframe')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('iframe')\nExpected pattern: \u001b[32m/^blob:/\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for locator('iframe')\u001b[22m\n\n    at C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts:229:46",
+                        "location": {
+                          "file": "C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts",
+                          "column": 46,
+                          "line": 229
+                        },
+                        "snippet": "  227 |         });\n  228 |         await openReport(page);\n> 229 |         await expect(page.locator('iframe')).toHaveAttribute('src', /^blob:/, { timeout: 30_000 });\n      |                                              ^\n  230 |         await submitServerReport(page);\n  231 |         const dialog = page.getByRole('dialog').filter({\n  232 |             hasText: '신청서가 중간에 변경되었습니다. 다시 결재를 상신해주시기 바랍니다.',"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts",
+                            "column": 46,
+                            "line": 229
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('iframe')\nExpected pattern: \u001b[32m/^blob:/\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for locator('iframe')\u001b[22m\n\n\n  227 |         });\n  228 |         await openReport(page);\n> 229 |         await expect(page.locator('iframe')).toHaveAttribute('src', /^blob:/, { timeout: 30_000 });\n      |                                              ^\n  230 |         await submitServerReport(page);\n  231 |         const dialog = page.getByRole('dialog').filter({\n  232 |             hasText: '신청서가 중간에 변경되었습니다. 다시 결재를 상신해주시기 바랍니다.',\n    at C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts:229:46"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-15T10:17:13.048Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\budget-report-session-예산-보-fd824-을-표시하고-재조회-후-새-token으로-상신한다-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\budget-report-session-예산-보-fd824-을-표시하고-재조회-후-새-token으로-상신한다-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts",
+                        "column": 46,
+                        "line": 229
+                      }
+                    },
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 30668,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('iframe')\nExpected pattern: \u001b[32m/^blob:/\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for locator('iframe')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('iframe')\nExpected pattern: \u001b[32m/^blob:/\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for locator('iframe')\u001b[22m\n\n    at C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts:229:46",
+                        "location": {
+                          "file": "C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts",
+                          "column": 46,
+                          "line": 229
+                        },
+                        "snippet": "  227 |         });\n  228 |         await openReport(page);\n> 229 |         await expect(page.locator('iframe')).toHaveAttribute('src', /^blob:/, { timeout: 30_000 });\n      |                                              ^\n  230 |         await submitServerReport(page);\n  231 |         const dialog = page.getByRole('dialog').filter({\n  232 |             hasText: '신청서가 중간에 변경되었습니다. 다시 결재를 상신해주시기 바랍니다.',"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts",
+                            "column": 46,
+                            "line": 229
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('iframe')\nExpected pattern: \u001b[32m/^blob:/\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for locator('iframe')\u001b[22m\n\n\n  227 |         });\n  228 |         await openReport(page);\n> 229 |         await expect(page.locator('iframe')).toHaveAttribute('src', /^blob:/, { timeout: 30_000 });\n      |                                              ^\n  230 |         await submitServerReport(page);\n  231 |         const dialog = page.getByRole('dialog').filter({\n  232 |             hasText: '신청서가 중간에 변경되었습니다. 다시 결재를 상신해주시기 바랍니다.',\n    at C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts:229:46"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-09-15T10:17:50.502Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\budget-report-session-예산-보-fd824-을-표시하고-재조회-후-새-token으로-상신한다-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\budget-report-session-예산-보-fd824-을-표시하고-재조회-후-새-token으로-상신한다-chromium-retry1\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\it\\it_frontend\\tests\\e2e\\budget-report-session.spec.ts",
+                        "column": 46,
+                        "line": 229
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "a87251323c24cc96e2db-879290ff7d0734cedc34",
+              "file": "budget-report-session.spec.ts",
+              "line": 198,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "projects.spec.ts",
+      "file": "projects.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "정보화사업 프로젝트 목록",
+          "file": "projects.spec.ts",
+          "line": 114,
+          "column": 6,
+          "specs": [
+            {
+              "title": "프로젝트 목록을 표시한다",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 15891,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:129:53",
+                        "location": {
+                          "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                          "column": 53,
+                          "line": 129
+                        },
+                        "snippet": "  127 |\n  128 |         // 모킹된 데이터가 화면에 표시되는지 확인 (최대 15초 대기)\n> 129 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  130 |         await expect(page.getByText('테스트 정보화사업 B')).toBeVisible();\n  131 |     });\n  132 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                            "column": 53,
+                            "line": 129
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n\n  127 |\n  128 |         // 모킹된 데이터가 화면에 표시되는지 확인 (최대 15초 대기)\n> 129 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  130 |         await expect(page.getByText('테스트 정보화사업 B')).toBeVisible();\n  131 |     });\n  132 |\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:129:53"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-15T10:18:29.235Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-프로젝트-목록을-표시한다-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-프로젝트-목록을-표시한다-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                        "column": 53,
+                        "line": 129
+                      }
+                    },
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 15652,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:129:53",
+                        "location": {
+                          "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                          "column": 53,
+                          "line": 129
+                        },
+                        "snippet": "  127 |\n  128 |         // 모킹된 데이터가 화면에 표시되는지 확인 (최대 15초 대기)\n> 129 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  130 |         await expect(page.getByText('테스트 정보화사업 B')).toBeVisible();\n  131 |     });\n  132 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                            "column": 53,
+                            "line": 129
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n\n  127 |\n  128 |         // 모킹된 데이터가 화면에 표시되는지 확인 (최대 15초 대기)\n> 129 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  130 |         await expect(page.getByText('테스트 정보화사업 B')).toBeVisible();\n  131 |     });\n  132 |\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:129:53"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-09-15T10:18:49.741Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-프로젝트-목록을-표시한다-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-프로젝트-목록을-표시한다-chromium-retry1\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                        "column": 53,
+                        "line": 129
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "3a2958b1096c5d9a8472-cb34d0f5a8d5f1a942fe",
+              "file": "projects.spec.ts",
+              "line": 123,
+              "column": 5
+            },
+            {
+              "title": "목록의 총소요금액은 당해 요청금액이 아니라 prjBgAmt를 표시한다",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 15652,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:135:53",
+                        "location": {
+                          "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                          "column": 53,
+                          "line": 135
+                        },
+                        "snippet": "  133 |     test('목록의 총소요금액은 당해 요청금액이 아니라 prjBgAmt를 표시한다', async ({ page }) => {\n  134 |         await page.goto('/info/projects');\n> 135 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  136 |\n  137 |         await page.getByRole('button', { name: '원', exact: true }).click();\n  138 |         const projectRow = page.getByRole('row').filter({ hasText: '테스트 정보화사업 A' });"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                            "column": 53,
+                            "line": 135
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n\n  133 |     test('목록의 총소요금액은 당해 요청금액이 아니라 prjBgAmt를 표시한다', async ({ page }) => {\n  134 |         await page.goto('/info/projects');\n> 135 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  136 |\n  137 |         await page.getByRole('button', { name: '원', exact: true }).click();\n  138 |         const projectRow = page.getByRole('row').filter({ hasText: '테스트 정보화사업 A' });\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:135:53"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-15T10:19:07.350Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-목록의-4be0d-당해-요청금액이-아니라-prjBgAmt를-표시한다-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-목록의-4be0d-당해-요청금액이-아니라-prjBgAmt를-표시한다-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                        "column": 53,
+                        "line": 135
+                      }
+                    },
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 19411,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:135:53",
+                        "location": {
+                          "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                          "column": 53,
+                          "line": 135
+                        },
+                        "snippet": "  133 |     test('목록의 총소요금액은 당해 요청금액이 아니라 prjBgAmt를 표시한다', async ({ page }) => {\n  134 |         await page.goto('/info/projects');\n> 135 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  136 |\n  137 |         await page.getByRole('button', { name: '원', exact: true }).click();\n  138 |         const projectRow = page.getByRole('row').filter({ hasText: '테스트 정보화사업 A' });"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                            "column": 53,
+                            "line": 135
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n\n  133 |     test('목록의 총소요금액은 당해 요청금액이 아니라 prjBgAmt를 표시한다', async ({ page }) => {\n  134 |         await page.goto('/info/projects');\n> 135 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  136 |\n  137 |         await page.getByRole('button', { name: '원', exact: true }).click();\n  138 |         const projectRow = page.getByRole('row').filter({ hasText: '테스트 정보화사업 A' });\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:135:53"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-09-15T10:19:31.752Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-목록의-4be0d-당해-요청금액이-아니라-prjBgAmt를-표시한다-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-목록의-4be0d-당해-요청금액이-아니라-prjBgAmt를-표시한다-chromium-retry1\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                        "column": 53,
+                        "line": 135
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "3a2958b1096c5d9a8472-77c4e743ce4d928f81ce",
+              "file": "projects.spec.ts",
+              "line": 133,
+              "column": 5
+            },
+            {
+              "title": "프로젝트 상태 태그가 표시된다",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 15732,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('사업 추진')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('사업 추진')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('사업 추진')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('사업 추진')\u001b[22m\n\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:150:47",
+                        "location": {
+                          "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                          "column": 47,
+                          "line": 150
+                        },
+                        "snippet": "  148 |\n  149 |         // 프로젝트 상태 컬럼의 텍스트 확인\n> 150 |         await expect(page.getByText('사업 추진')).toBeVisible({ timeout: 15000 });\n      |                                               ^\n  151 |         await expect(page.getByText('완료')).toBeVisible();\n  152 |     });\n  153 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                            "column": 47,
+                            "line": 150
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('사업 추진')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('사업 추진')\u001b[22m\n\n\n  148 |\n  149 |         // 프로젝트 상태 컬럼의 텍스트 확인\n> 150 |         await expect(page.getByText('사업 추진')).toBeVisible({ timeout: 15000 });\n      |                                               ^\n  151 |         await expect(page.getByText('완료')).toBeVisible();\n  152 |     });\n  153 |\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:150:47"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-15T10:19:53.768Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-프로젝트-상태-태그가-표시된다-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-프로젝트-상태-태그가-표시된다-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                        "column": 47,
+                        "line": 150
+                      }
+                    },
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 15810,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('사업 추진')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('사업 추진')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('사업 추진')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('사업 추진')\u001b[22m\n\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:150:47",
+                        "location": {
+                          "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                          "column": 47,
+                          "line": 150
+                        },
+                        "snippet": "  148 |\n  149 |         // 프로젝트 상태 컬럼의 텍스트 확인\n> 150 |         await expect(page.getByText('사업 추진')).toBeVisible({ timeout: 15000 });\n      |                                               ^\n  151 |         await expect(page.getByText('완료')).toBeVisible();\n  152 |     });\n  153 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                            "column": 47,
+                            "line": 150
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('사업 추진')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('사업 추진')\u001b[22m\n\n\n  148 |\n  149 |         // 프로젝트 상태 컬럼의 텍스트 확인\n> 150 |         await expect(page.getByText('사업 추진')).toBeVisible({ timeout: 15000 });\n      |                                               ^\n  151 |         await expect(page.getByText('완료')).toBeVisible();\n  152 |     });\n  153 |\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:150:47"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-09-15T10:20:24.030Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-프로젝트-상태-태그가-표시된다-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-프로젝트-상태-태그가-표시된다-chromium-retry1\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                        "column": 47,
+                        "line": 150
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "3a2958b1096c5d9a8472-d1ca1496400584e66ae9",
+              "file": "projects.spec.ts",
+              "line": 145,
+              "column": 5
+            },
+            {
+              "title": "검색어 입력 시 필터링된 목록이 표시된다",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 19134,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:160:53",
+                        "location": {
+                          "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                          "column": 53,
+                          "line": 160
+                        },
+                        "snippet": "  158 |\n  159 |         // 목록이 렌더링될 때까지 대기\n> 160 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  161 |\n  162 |         // TableSearchInput의 placeholder 기준으로 검색 입력창 탐색\n  163 |         const searchInput = page.getByPlaceholder(/검색/).first();"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                            "column": 53,
+                            "line": 160
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n\n  158 |\n  159 |         // 목록이 렌더링될 때까지 대기\n> 160 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  161 |\n  162 |         // TableSearchInput의 placeholder 기준으로 검색 입력창 탐색\n  163 |         const searchInput = page.getByPlaceholder(/검색/).first();\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:160:53"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-15T10:20:41.449Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-검색어-입력-시-필터링된-목록이-표시된다-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-검색어-입력-시-필터링된-목록이-표시된다-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                        "column": 53,
+                        "line": 160
+                      }
+                    },
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 15710,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:160:53",
+                        "location": {
+                          "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                          "column": 53,
+                          "line": 160
+                        },
+                        "snippet": "  158 |\n  159 |         // 목록이 렌더링될 때까지 대기\n> 160 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  161 |\n  162 |         // TableSearchInput의 placeholder 기준으로 검색 입력창 탐색\n  163 |         const searchInput = page.getByPlaceholder(/검색/).first();"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                            "column": 53,
+                            "line": 160
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n\n  158 |\n  159 |         // 목록이 렌더링될 때까지 대기\n> 160 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  161 |\n  162 |         // TableSearchInput의 placeholder 기준으로 검색 입력창 탐색\n  163 |         const searchInput = page.getByPlaceholder(/검색/).first();\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:160:53"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-09-15T10:21:08.456Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-검색어-입력-시-필터링된-목록이-표시된다-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-검색어-입력-시-필터링된-목록이-표시된다-chromium-retry1\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                        "column": 53,
+                        "line": 160
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "3a2958b1096c5d9a8472-d149474878fd8bfb66c9",
+              "file": "projects.spec.ts",
+              "line": 155,
+              "column": 5
+            },
+            {
+              "title": "신규 등록 버튼 클릭 시 폼 페이지로 이동한다",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 16082,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:205:53",
+                        "location": {
+                          "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                          "column": 53,
+                          "line": 205
+                        },
+                        "snippet": "  203 |\n  204 |         await page.goto('/info/projects');\n> 205 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  206 |\n  207 |         // 신규 등록 버튼 탐색\n  208 |         const newBtn = page.getByRole('button', { name: /신규|등록|추가/ }).first();"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                            "column": 53,
+                            "line": 205
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n\n  203 |\n  204 |         await page.goto('/info/projects');\n> 205 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  206 |\n  207 |         // 신규 등록 버튼 탐색\n  208 |         const newBtn = page.getByRole('button', { name: /신규|등록|추가/ }).first();\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:205:53"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-15T10:21:31.812Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-신규-등록-버튼-클릭-시-폼-페이지로-이동한다-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-신규-등록-버튼-클릭-시-폼-페이지로-이동한다-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                        "column": 53,
+                        "line": 205
+                      }
+                    },
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 15762,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:205:53",
+                        "location": {
+                          "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                          "column": 53,
+                          "line": 205
+                        },
+                        "snippet": "  203 |\n  204 |         await page.goto('/info/projects');\n> 205 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  206 |\n  207 |         // 신규 등록 버튼 탐색\n  208 |         const newBtn = page.getByRole('button', { name: /신규|등록|추가/ }).first();"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                            "column": 53,
+                            "line": 205
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n\n  203 |\n  204 |         await page.goto('/info/projects');\n> 205 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  206 |\n  207 |         // 신규 등록 버튼 탐색\n  208 |         const newBtn = page.getByRole('button', { name: /신규|등록|추가/ }).first();\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:205:53"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-09-15T10:21:52.448Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-신규-등록-버튼-클릭-시-폼-페이지로-이동한다-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-신규-등록-버튼-클릭-시-폼-페이지로-이동한다-chromium-retry1\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                        "column": 53,
+                        "line": 205
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "3a2958b1096c5d9a8472-2bdefbbc53a5f35eb151",
+              "file": "projects.spec.ts",
+              "line": 173,
+              "column": 5
+            },
+            {
+              "title": "사업명 클릭 시 상세 페이지로 이동한다",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 15785,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:235:53",
+                        "location": {
+                          "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                          "column": 53,
+                          "line": 235
+                        },
+                        "snippet": "  233 |         await page.goto('/info/projects');\n  234 |         await expect(page).not.toHaveURL(/\\/login/);\n> 235 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  236 |\n  237 |         // 사업명 텍스트 클릭 → 상세 이동 또는 Drawer 열림\n  238 |         await page.getByText('테스트 정보화사업 A').first().click();"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                            "column": 53,
+                            "line": 235
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n\n  233 |         await page.goto('/info/projects');\n  234 |         await expect(page).not.toHaveURL(/\\/login/);\n> 235 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  236 |\n  237 |         // 사업명 텍스트 클릭 → 상세 이동 또는 Drawer 열림\n  238 |         await page.getByText('테스트 정보화사업 A').first().click();\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:235:53"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-15T10:22:09.274Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-사업명-클릭-시-상세-페이지로-이동한다-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-사업명-클릭-시-상세-페이지로-이동한다-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                        "column": 53,
+                        "line": 235
+                      }
+                    },
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 15700,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:235:53",
+                        "location": {
+                          "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                          "column": 53,
+                          "line": 235
+                        },
+                        "snippet": "  233 |         await page.goto('/info/projects');\n  234 |         await expect(page).not.toHaveURL(/\\/login/);\n> 235 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  236 |\n  237 |         // 사업명 텍스트 클릭 → 상세 이동 또는 Drawer 열림\n  238 |         await page.getByText('테스트 정보화사업 A').first().click();"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                            "column": 53,
+                            "line": 235
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('테스트 정보화사업 A')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('테스트 정보화사업 A')\u001b[22m\n\n\n  233 |         await page.goto('/info/projects');\n  234 |         await expect(page).not.toHaveURL(/\\/login/);\n> 235 |         await expect(page.getByText('테스트 정보화사업 A')).toBeVisible({ timeout: 15000 });\n      |                                                     ^\n  236 |\n  237 |         // 사업명 텍스트 클릭 → 상세 이동 또는 Drawer 열림\n  238 |         await page.getByText('테스트 정보화사업 A').first().click();\n    at C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts:235:53"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-09-15T10:22:34.091Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-사업명-클릭-시-상세-페이지로-이동한다-chromium-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\it\\docs\\test-docs\\evidence\\2026-09-15\\e2e\\artifacts\\projects-정보화사업-프로젝트-목록-사업명-클릭-시-상세-페이지로-이동한다-chromium-retry1\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\it\\it_frontend\\tests\\e2e\\projects.spec.ts",
+                        "column": 53,
+                        "line": 235
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "3a2958b1096c5d9a8472-588a40deee551aff73c4",
+              "file": "projects.spec.ts",
+              "line": 221,
+              "column": 5
+            },
+            {
+              "title": "상세 조회 지연 시 로딩 인디케이터를 표시한다",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: Cannot find module './tests/e2e/global-setup.ts'\nRequire stack:\n- C:\\it\\it_frontend\\node_modules\\playwright\\lib\\common\\index.js\n- C:\\it\\it_frontend\\node_modules\\playwright\\lib\\worker\\workerProcessEntry.js",
+                        "stack": "Error: Cannot find module './tests/e2e/global-setup.ts'\nRequire stack:\n- C:\\it\\it_frontend\\node_modules\\playwright\\lib\\common\\index.js\n- C:\\it\\it_frontend\\node_modules\\playwright\\lib\\worker\\workerProcessEntry.js"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: Cannot find module './tests/e2e/global-setup.ts'\nRequire stack:\n- C:\\it\\it_frontend\\node_modules\\playwright\\lib\\common\\index.js\n- C:\\it\\it_frontend\\node_modules\\playwright\\lib\\worker\\workerProcessEntry.js"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-15T10:24:11.411Z",
+                      "annotations": [],
+                      "attachments": []
+                    },
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "failed",
+                      "duration": 0,
+                      "error": {
+                        "message": "Error: Cannot find module './tests/e2e/global-setup.ts'\nRequire stack:\n- C:\\it\\it_frontend\\node_modules\\playwright\\lib\\common\\index.js\n- C:\\it\\it_frontend\\node_modules\\playwright\\lib\\worker\\workerProcessEntry.js",
+                        "stack": "Error: Cannot find module './tests/e2e/global-setup.ts'\nRequire stack:\n- C:\\it\\it_frontend\\node_modules\\playwright\\lib\\common\\index.js\n- C:\\it\\it_frontend\\node_modules\\playwright\\lib\\worker\\workerProcessEntry.js"
+                      },
+                      "errors": [
+                        {
+                          "message": "Error: Cannot find module './tests/e2e/global-setup.ts'\nRequire stack:\n- C:\\it\\it_frontend\\node_modules\\playwright\\lib\\common\\index.js\n- C:\\it\\it_frontend\\node_modules\\playwright\\lib\\worker\\workerProcessEntry.js"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-09-15T10:24:12.118Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "3a2958b1096c5d9a8472-da0a4300f1ce4503d4a4",
+              "file": "projects.spec.ts",
+              "line": 255,
+              "column": 5
+            },
+            {
+              "title": "사업 상세의 개행과 부문장 문구를 보존하고 전결권 안내를 연다",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-15T10:24:11.411Z",
+                      "annotations": [],
+                      "attachments": []
+                    },
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-09-15T10:24:12.118Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3a2958b1096c5d9a8472-1e1f61bf2ec2587445e4",
+              "file": "projects.spec.ts",
+              "line": 282,
+              "column": 5
+            },
+            {
+              "title": "헤더 검색에서 신청서 상태와 사업 그룹을 표시하고 상세 접근 제한 담당자를 안내한다",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-15T10:24:11.411Z",
+                      "annotations": [],
+                      "attachments": []
+                    },
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-09-15T10:24:12.118Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3a2958b1096c5d9a8472-b2462f482ce1eba07cac",
+              "file": "projects.spec.ts",
+              "line": 338,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "정보화사업 프로젝트 상세",
+          "file": "projects.spec.ts",
+          "line": 429,
+          "column": 6,
+          "specs": [
+            {
+              "title": "수기등록 상태 9은 원본을 목록 대신 다이얼로그에서 보여준다",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-15T10:24:11.411Z",
+                      "annotations": [],
+                      "attachments": []
+                    },
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-09-15T10:24:12.118Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3a2958b1096c5d9a8472-06ef8efaabeddc357782",
+              "file": "projects.spec.ts",
+              "line": 436,
+              "column": 9
+            },
+            {
+              "title": "수기등록 상태 09은 원본을 목록 대신 다이얼로그에서 보여준다",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-15T10:24:11.411Z",
+                      "annotations": [],
+                      "attachments": []
+                    },
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-09-15T10:24:12.118Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3a2958b1096c5d9a8472-85982d3fe92edda26a21",
+              "file": "projects.spec.ts",
+              "line": 436,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-15T10:15:30.597Z",
+    "duration": 521545.847,
+    "expected": 2,
+    "skipped": 4,
+    "unexpected": 9,
+    "flaky": 0
+  }
+}

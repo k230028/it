@@ -24,6 +24,7 @@ const FONTS = [
 const ORGANIZATION = "IT정보화포탈";
 const REQUESTER_SECTION = "[요청자 정보]";
 const AUTHOR_SECTION = "[작성자 정보]";
+const RESULT_STATES = new Set(["PASS", "FAIL", "미실시", "미확인"]);
 
 function moduleSearchRoots() {
   const fromEnvironment = (process.env.NODE_PATH ?? "").split(path.delimiter).filter(Boolean);
@@ -167,7 +168,8 @@ export function validateDocument(markdown, parts) {
   if (/\{(YY[^}\n]*|…|N|n|[^}\n]*[가-힣][^}\n]*)\}/.test(markdown)) {
     problems.push("템플릿 자리표시자 `{…}`가 남아 있습니다.");
   }
-  const scenarioHeading = markdown.match(/^#{3,5}\s+.*테스트 시나리오\s*\(총\s*(\d+)\s*건\)/m);
+  // 분석/설계서는 "테스트 시나리오", 테스트 결과서는 "테스트 세부내용" 제목을 쓴다
+  const scenarioHeading = markdown.match(/^#{3,5}\s+.*테스트 (?:시나리오|세부내용)\s*\(총\s*(\d+)\s*건\)/m);
   if (scenarioHeading) {
     const declared = Number(scenarioHeading[1]);
     const rows = (markdown.match(/^\|\s*\**TC-\d+/gm) ?? []).length;
@@ -175,7 +177,18 @@ export function validateDocument(markdown, parts) {
       problems.push(`테스트 시나리오 제목은 총 ${declared}건이나 표 행은 ${rows}건입니다.`);
     }
   } else {
-    problems.push("`테스트 시나리오 (총 N건)` 제목을 찾지 못했습니다.");
+    problems.push("`테스트 시나리오 (총 N건)` 또는 `테스트 세부내용 (총 N건)` 제목을 찾지 못했습니다.");
+  }
+  // 테스트 결과서: 7열 표의 실제결과(6번째 열)는 네 상태값 중 하나여야 한다
+  if (parts.title.includes("테스트 결과서")) {
+    const bad = [];
+    for (const line of markdown.split("\n")) {
+      if (!/^\|\s*\**TC-\d+/.test(line)) continue;
+      const cells = line.trim().slice(1, -1).split("|").map((c) => c.trim());
+      if (cells.length < 7) { bad.push(`${cells[0]}: 열 ${cells.length}개(7개 필요)`); continue; }
+      if (!RESULT_STATES.has(cells[5].replaceAll("*", ""))) bad.push(`${cells[0]}: 실제결과 "${cells[5]}"`);
+    }
+    if (bad.length) problems.push(`실제결과 값이 PASS·FAIL·미실시·미확인이 아니거나 열 수가 다릅니다: ${bad.slice(0, 5).join(", ")}${bad.length > 5 ? ` 외 ${bad.length - 5}건` : ""}`);
   }
   if (parts.requester.length === 0) problems.push(`${REQUESTER_SECTION} 표가 비어 있습니다.`);
   if (parts.author.length === 0) problems.push(`${AUTHOR_SECTION} 표가 비어 있습니다.`);
@@ -225,7 +238,9 @@ function findValue(entries, key) {
 function deriveSubtitle(markdown) {
   // `**(수집 구간)** 2026-09-14 00:00 ~ 2026-09-15 18:16 · 커밋 …`에서 시각 범위만 뽑는다
   const range = markdown.match(/\(수집 구간\)\**\s*([^·,\n]+)/);
-  return range ? `수정분 기준 ${range[1].trim()}` : "";
+  if (range) return `수정분 기준 ${range[1].trim()}`;
+  const executed = markdown.match(/\(실행 일시\)\**\s*([^·,\n]+)/);
+  return executed ? `실행 일시 ${executed[1].trim()}` : "";
 }
 
 function styles(fontFaces) {
@@ -271,6 +286,16 @@ pre code { background: none; padding: 0; font-size: inherit; }
 .flow-box { font-weight: 700; color: #0b2f6b; }
 .flow-branch { font-weight: 500; }
 .flow-items { white-space: normal !important; }
+/* 증적 이미지: 화면 스크린샷을 폭에 맞춰 넣고 캡션은 이미지 아래 작은 글씨 */
+main img { border: 1px solid #c9d3e2; border-radius: 2px; margin: 1.5mm 0 2.5mm; max-height: 92mm; width: auto; display: block; }
+/* 캡션(목록 항목 글)과 스크린샷이 다른 쪽으로 갈라지지 않게 한다 */
+main li:has(> img) { page-break-inside: avoid; break-inside: avoid; }
+main p:has(> img) { text-align: center; page-break-inside: avoid; break-inside: avoid; }
+.figure-caption { font-size: 8pt; color: #5b6880; text-align: center; margin: 0 0 4mm; }
+/* 붙임: 로그 원문을 새 쪽부터 작은 고정폭으로 붙인다 */
+.appendix { page-break-before: always; break-before: page; }
+.appendix-meta { font-size: 8pt; color: #5b6880; margin: -2mm 0 3mm; }
+pre.log { font-family: Consolas, "D2Coding", "Courier New", monospace; font-size: 6.6pt; line-height: 1.35; white-space: pre-wrap; overflow-wrap: anywhere; background: #fafbfd; border-color: #c9d3e2; page-break-inside: auto; break-inside: auto; }
 
 ul, ol { margin: 0 0 3mm; padding-left: 5mm; }
 ul { list-style: none; }
@@ -290,6 +315,12 @@ th, td { border: 1px solid #b9c5d8; padding: 1.4mm 2mm; vertical-align: top; tex
 th { background: #eaf0f8; color: #23324d; font-weight: 700; text-align: center; white-space: nowrap; }
 td:first-child { white-space: nowrap; }
 td:nth-child(2) { min-width: 28mm; }
+td.state { text-align: center; white-space: nowrap; }
+.badge { display: inline-block; min-width: 11mm; padding: 0.3mm 1.6mm; border-radius: 2px; font-size: 8pt; font-weight: 700; letter-spacing: .03em; text-align: center; }
+.badge-pass { background: #e3f4e8; color: #1d6b37; border: 1px solid #9fd3b0; }
+.badge-fail { background: #fbe4e4; color: #9d1c1c; border: 1px solid #efa5a5; }
+.badge-skip { background: #f1f3f6; color: #5b6880; border: 1px solid #c9d3e2; }
+.badge-unknown { background: #fff4de; color: #8a5a00; border: 1px solid #f0cf86; }
 td code { font-size: 0.86em; }
 blockquote { border-left: 3px solid #7aa3d8; color: #526078; margin: 3mm 0; padding: 1mm 0 1mm 4mm; }
 hr { border: 0; border-top: 1px solid #c9d3e2; margin: 6mm 0; }
@@ -305,7 +336,71 @@ function footerTemplate(brand, left) {
   return `<div style="box-sizing:border-box;display:flex;justify-content:space-between;align-items:flex-end;font-family:'Malgun Gothic',sans-serif;font-size:8px;color:#718096;margin:0;padding:0 16mm 7mm;width:100%"><span style="flex:0 0 auto">${escapeHtml(left)}</span><span style="flex:1 1 auto;text-align:center"><span class="pageNumber"></span> / <span class="totalPages"></span></span><img src="${brand.footerRight}" style="display:block;flex:0 0 auto;height:13px;width:73px"></div>`;
 }
 
-async function composeHtml({ parts, subtitle, marked, workspaceRoot }) {
+const IMAGE_MIME = new Map([[".png", "image/png"], [".jpg", "image/jpeg"], [".jpeg", "image/jpeg"], [".gif", "image/gif"], [".webp", "image/webp"], [".svg", "image/svg+xml"]]);
+const APPENDIX_EXTENSIONS = new Set([".log", ".txt", ".md", ".xml", ".json"]);
+
+/**
+ * 본문의 상대 경로 이미지를 data URI로 바꾼다. 브라우저 페이지가 외부 요청을 모두 막으므로
+ * 이 변환 없이는 스크린샷 증적이 빈 칸으로 인쇄된다. 못 찾은 이미지는 목록으로 돌려준다.
+ */
+async function inlineImages(html, baseDir) {
+  const missing = [];
+  const tags = [...html.matchAll(/<img\s+[^>]*src="([^"]+)"[^>]*>/g)];
+  let out = html;
+  for (const tag of tags) {
+    const src = tag[1];
+    if (/^(data:|https?:)/.test(src)) continue;
+    const file = path.resolve(baseDir, decodeURI(src));
+    const mime = IMAGE_MIME.get(path.extname(file).toLowerCase());
+    try {
+      if (!mime) throw new Error("unsupported");
+      const uri = `data:${mime};base64,${(await readFile(file)).toString("base64")}`;
+      out = out.replace(tag[0], tag[0].replace(`src="${src}"`, `src="${uri}"`));
+    } catch {
+      missing.push(src);
+    }
+  }
+  return { html: out, missing };
+}
+
+/**
+ * `## 붙임` 절의 목록이 가리키는 로컬 텍스트 파일(.log·.txt·.md·.xml·.json)을 본문 뒤에 첨부한다.
+ * 목록 항목은 `1. [vitest.log](evidence/.../vitest.log) — 설명` 형태이며 링크가 없는 항목은 건너뛴다.
+ */
+export function parseAppendixLinks(markdown) {
+  const section = markdown.match(/^## 붙임\s*\n([\s\S]*?)(?=^## |\s*$(?![\s\S]))/m);
+  if (!section) return [];
+  return [...section[1].matchAll(/^\s*(?:\d+\.|-)\s+\[([^\]]+)\]\(([^)]+)\)(?:\s*[—-]\s*(.*))?$/gm)].map((m) => ({
+    label: m[1].trim(),
+    href: m[2].trim(),
+    note: (m[3] ?? "").trim(),
+  }));
+}
+
+async function renderAppendices(links, baseDir) {
+  const blocks = [];
+  const missing = [];
+  let index = 0;
+  for (const link of links) {
+    const file = path.resolve(baseDir, decodeURI(link.href));
+    if (!APPENDIX_EXTENSIONS.has(path.extname(file).toLowerCase())) continue;
+    index += 1;
+    try {
+      const text = (await readFile(file, "utf8")).replace(/\[[0-9;]*m/g, "");
+      const lines = text.split(/\r?\n/);
+      blocks.push(`<section class="appendix">
+<h2>붙임 ${index}. ${escapeHtml(link.label)}</h2>
+<p class="appendix-meta">${escapeHtml(link.href)} · ${lines.length}줄${link.note ? ` · ${escapeHtml(link.note)}` : ""}</p>
+<pre class="log">${escapeHtml(text)}</pre>
+</section>`);
+    } catch {
+      missing.push(link.href);
+    }
+  }
+  return { html: blocks.join("\n"), missing };
+}
+
+async function composeHtml({ parts, subtitle, marked, workspaceRoot, baseDir }) {
   const fontFaces = (
     await Promise.all(
       FONTS.map(async (font) => {
@@ -322,7 +417,16 @@ async function composeHtml({ parts, subtitle, marked, workspaceRoot }) {
 
   const authorName = findValue(parts.author, "작성자명");
   const authorDate = findValue(parts.author, "작성일자");
-  const bodyHtml = marked.parse(parts.body);
+  // 결과서의 PASS/FAIL/미실시/미확인 셀은 배지로 그린다
+  const rawBody = marked.parse(parts.body).replace(
+    /<td>(PASS|FAIL|미실시|미확인)<\/td>/g,
+    (_, state) => `<td class="state"><span class="badge badge-${{ PASS: "pass", FAIL: "fail", 미실시: "skip", 미확인: "unknown" }[state]}">${state}</span></td>`,
+  );
+  const images = await inlineImages(rawBody, baseDir);
+  for (const src of images.missing) console.warn(`이미지를 찾지 못해 비워 둡니다: ${src}`);
+  const appendices = await renderAppendices(parseAppendixLinks(parts.body), baseDir);
+  for (const href of appendices.missing) console.warn(`붙임 파일을 찾지 못했습니다: ${href}`);
+  const bodyHtml = images.html + appendices.html;
   return `<!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><title>${escapeHtml(parts.title)}</title><style>${styles(fontFaces)}</style></head>
 <body>
@@ -520,7 +624,7 @@ async function main() {
     footerRight: await toDataUri(workspaceRoot, BRAND.footerRight, "image/png"),
   };
   const subtitle = options.subtitle ?? deriveSubtitle(markdown);
-  const html = await composeHtml({ parts, subtitle, marked, workspaceRoot });
+  const html = await composeHtml({ parts, subtitle, marked, workspaceRoot, baseDir: path.dirname(inputPath) });
 
   const outputPath = path.resolve(
     workspaceRoot,

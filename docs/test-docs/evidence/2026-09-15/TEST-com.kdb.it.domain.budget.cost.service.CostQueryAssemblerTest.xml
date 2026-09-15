@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.kdb.it.domain.budget.cost.service.CostQueryAssemblerTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-09-15T10:15:08.398Z" hostname="DESKTOP-UQFLPC0" time="0.836">
+  <properties/>
+  <testcase name="단건 조립: 신청·결재·조직·사용자·코드·단말기·전년도 예산을 함께 채운다" classname="com.kdb.it.domain.budget.cost.service.CostQueryAssemblerTest" time="0.747"/>
+  <testcase name="목록·일괄·이력 조립도 활성 단말로 계산한 동시성 스탬프를 응답에 싣는다" classname="com.kdb.it.domain.budget.cost.service.CostQueryAssemblerTest" time="0.009"/>
+  <testcase name="단말 보유 표시가 N이어도 남아 있는 활성 단말을 스탬프에 포함한다" classname="com.kdb.it.domain.budget.cost.service.CostQueryAssemblerTest" time="0.003"/>
+  <testcase name="단건 조립: 최초 작성자·최근 수정자 감사 필드를 응답에 싣고 사번을 이름으로 채운다" classname="com.kdb.it.domain.budget.cost.service.CostQueryAssemblerTest" time="0.008"/>
+  <testcase name="상세 조립은 활성 단말로 계산한 동시성 스탬프를 응답에 싣는다" classname="com.kdb.it.domain.budget.cost.service.CostQueryAssemblerTest" time="0.003"/>
+  <testcase name="같은 개정본이면 단건·목록·일괄·이력 스탬프가 모두 같다" classname="com.kdb.it.domain.budget.cost.service.CostQueryAssemblerTest" time="0.016"/>
+  <testcase name="대표행 동등성: 같은 대표행은 단건·목록·bulk에서 같은 이력과 편성예산 분류를 만든다" classname="com.kdb.it.domain.budget.cost.service.CostQueryAssemblerTest" time="0.012"/>
+  <testcase name="단건 조립: 행번이 빈 행은 담당자명 스냅샷을 조인 결과로 덮지 않고 유지한다" classname="com.kdb.it.domain.budget.cost.service.CostQueryAssemblerTest" time="0.003"/>
+  <testcase name="목록 조립: 행번이 빈 행은 담당자명 스냅샷을 조인 결과로 덮지 않고 유지한다" classname="com.kdb.it.domain.budget.cost.service.CostQueryAssemblerTest" time="0.003"/>
+  <testcase name="이력 조립: 개정본 세 건의 단말기·신청·사용자·코드를 각각 한 번만 배치 조회한다" classname="com.kdb.it.domain.budget.cost.service.CostQueryAssemblerTest" time="0.013"/>
+  <testcase name="배치 조립은 단말을 IN 조회 한 번만 하고 행마다 조회하지 않는다" classname="com.kdb.it.domain.budget.cost.service.CostQueryAssemblerTest" time="0.002"/>
+  <testcase name="목록 조립: 미해석 행번(퇴직 등)이라도 담당자명 스냅샷을 null로 덮지 않는다" classname="com.kdb.it.domain.budget.cost.service.CostQueryAssemblerTest" time="0.004"/>
+  <testcase name="목록 조립: 배치 경계에서 이전예산과 이전 편성예산을 행 기준연도로 채운다" classname="com.kdb.it.domain.budget.cost.service.CostQueryAssemblerTest" time="0.007"/>
+  <testcase name="담당자 이름이 저장된 전산업무비는 이름 필드에 두고 사번 필드를 비운다" classname="com.kdb.it.domain.budget.cost.service.CostQueryAssemblerTest" time="0.002"/>
+  <testcase name="단건 조립: 감사자 사번이 미해석(DB 기본값·퇴직)이면 이름은 비우고 사번은 그대로 둔다" classname="com.kdb.it.domain.budget.cost.service.CostQueryAssemblerTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

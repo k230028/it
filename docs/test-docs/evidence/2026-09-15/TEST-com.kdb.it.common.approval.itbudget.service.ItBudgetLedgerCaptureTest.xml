@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.kdb.it.common.approval.itbudget.service.ItBudgetLedgerCaptureTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-15T10:14:54.501Z" hostname="DESKTOP-UQFLPC0" time="0.065">
+  <properties/>
+  <testcase name="ledger 모델은 호출자가 전달한 컬렉션을 복사하고 지원하지 않는 형식을 거부한다" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetLedgerCaptureTest" time="0.006"/>
+  <testcase name="ledger 캡처 키는 네 원장과 BaseEntity의 모든 @Column 물리명과 일치한다" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetLedgerCaptureTest" time="0.033"/>
+  <testcase name="PROJECT와 COST 원장의 모든 행을 물리 컬럼명과 정규 금액으로 캡처한다" classname="com.kdb.it.common.approval.itbudget.service.ItBudgetLedgerCaptureTest" time="0.021"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

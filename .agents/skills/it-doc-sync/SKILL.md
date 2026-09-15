@@ -37,6 +37,7 @@ description: Use when auditing, synchronizing, standardizing, or improving this 
 | `docs/clean-code-review-YYYY-MM-DD.md` | Clean Code 진단 리포트. 완료된 `done/` 기록이 이 평면 경로를 참조하므로 하위 폴더로 옮기지 않는다 |
 | `docs/db-schema-gap/`, `docs/test/` | 날짜별 DB Gap 리포트와 테스트 결과 리포트 |
 | `docs/design-docs/` | 기간·PRD 단위 분석/설계서(공공기관 공문서 양식). `it-design-doc` 스킬이 생성하며 Git 이력·PRD·설계 문서가 원천 |
+| `docs/test-docs/` | 분석/설계서 시나리오 기반 테스트 결과서와 `evidence/{날짜}/` 실행 로그·JUnit XML. `it-test-doc` 스킬이 생성 |
 | `docs/artifacts/` | 보고·공유용 생성 산출물과 그 인덱스 |
 | `it_database/docs/verification/` | 특정 DB 변경을 검증하는 실행 가능한 SQL |
 | `AGENTS.md` | `CLAUDE.md`로 향하는 포인터와 절 바로가기. 규칙 본문을 두지 않는다 |
