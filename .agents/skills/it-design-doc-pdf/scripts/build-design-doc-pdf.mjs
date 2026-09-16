@@ -287,7 +287,7 @@ pre code { background: none; padding: 0; font-size: inherit; }
 .flow-branch { font-weight: 500; }
 .flow-items { white-space: normal !important; }
 /* 증적 이미지: 화면 스크린샷을 폭에 맞춰 넣고 캡션은 이미지 아래 작은 글씨 */
-main img { border: 1px solid #c9d3e2; border-radius: 2px; margin: 1.5mm 0 2.5mm; max-height: 92mm; width: auto; display: block; }
+main img { border: 1px solid #c9d3e2; border-radius: 2px; margin: 1.5mm 0 2.5mm; max-height: 100mm; width: auto; display: block; }
 /* 캡션(목록 항목 글)과 스크린샷이 다른 쪽으로 갈라지지 않게 한다 */
 main li:has(> img) { page-break-inside: avoid; break-inside: avoid; }
 main p:has(> img) { text-align: center; page-break-inside: avoid; break-inside: avoid; }
@@ -316,6 +316,14 @@ th { background: #eaf0f8; color: #23324d; font-weight: 700; text-align: center; 
 td:first-child { white-space: nowrap; }
 td:nth-child(2) { min-width: 28mm; }
 td.state { text-align: center; white-space: nowrap; }
+/* 결과서 세부내용(7열): 점검 포인트·증적에 폭을 몰아주고 나머지는 고정 */
+table.cols-7 { table-layout: fixed; }
+table.cols-7 th:nth-child(1) { width: 12mm; }
+table.cols-7 th:nth-child(2) { width: 24mm; }
+table.cols-7 th:nth-child(3) { width: 12mm; }
+table.cols-7 th:nth-child(5), table.cols-7 th:nth-child(6) { width: 13mm; }
+table.cols-7 td:first-child { white-space: normal; }
+table.cols-7 td { overflow-wrap: anywhere; }
 .badge { display: inline-block; min-width: 11mm; padding: 0.3mm 1.6mm; border-radius: 2px; font-size: 8pt; font-weight: 700; letter-spacing: .03em; text-align: center; }
 .badge-pass { background: #e3f4e8; color: #1d6b37; border: 1px solid #9fd3b0; }
 .badge-fail { background: #fbe4e4; color: #9d1c1c; border: 1px solid #efa5a5; }
@@ -422,7 +430,9 @@ async function composeHtml({ parts, subtitle, marked, workspaceRoot, baseDir }) 
     /<td>(PASS|FAIL|미실시|미확인)<\/td>/g,
     (_, state) => `<td class="state"><span class="badge badge-${{ PASS: "pass", FAIL: "fail", 미실시: "skip", 미확인: "unknown" }[state]}">${state}</span></td>`,
   );
-  const images = await inlineImages(rawBody, baseDir);
+  // 열 수를 class로 달아 7열 결과서 표처럼 넓은 표의 열 비율을 CSS로 고정할 수 있게 한다
+  const withColumnClasses = rawBody.replace(/<table>([\s\S]*?<\/thead>)/g, (m, head) => `<table class="cols-${(head.match(/<th[\s>]/g) ?? []).length}">${head}`);
+  const images = await inlineImages(withColumnClasses, baseDir);
   for (const src of images.missing) console.warn(`이미지를 찾지 못해 비워 둡니다: ${src}`);
   const appendices = await renderAppendices(parseAppendixLinks(parts.body), baseDir);
   for (const href of appendices.missing) console.warn(`붙임 파일을 찾지 못했습니다: ${href}`);

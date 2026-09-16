@@ -210,7 +210,13 @@ export function parsePlaywrightJson(json) {
 /**
  * 프론트 playwright.config를 그대로 쓰되 스크린샷을 항상 남기고(`screenshot: 'on'`) 산출물을 증적 디렉터리로 보내는
  * 래퍼 설정을 만든다. testDir·webServer.cwd는 설정 파일 위치 기준으로 해석되므로 절대 경로로 고정한다.
+ *
+ * 증적 스크린샷은 뷰포트만 찍히므로 기본 Desktop Chrome(1280×720)이면 표·다이얼로그가 화면 밖으로 밀려 검증 대상이
+ * 안 보이는 장면이 많다. 결과서용 실행은 FHD(1920×1080) 뷰포트로 넓혀 한 장에 더 많은 내용을 담는다. 원본 프로젝트의
+ * `use`가 `devices['Desktop Chrome']`로 뷰포트를 덮으므로 최상위 `use`가 아니라 프로젝트마다 다시 지정한다.
+ * 명세가 `page.setViewportSize`로 크기를 정한 테스트는 그 값을 그대로 쓴다.
  */
+const EVIDENCE_VIEWPORT = { width: 1920, height: 1080 };
 async function writePlaywrightWrapperConfig(evidenceDir) {
   const e2eDir = path.join(evidenceDir, "e2e");
   await mkdir(e2eDir, { recursive: true });
@@ -222,6 +228,9 @@ async function writePlaywrightWrapperConfig(evidenceDir) {
 import path from 'node:path';
 import base from '${posix(path.join(FRONTEND, "playwright.config"))}';
 
+/** 증적 스크린샷 뷰포트 — 기본 1280×720은 표·다이얼로그가 잘려 FHD로 넓힌다 (명세의 setViewportSize가 우선) */
+const EVIDENCE_VIEWPORT = { width: ${EVIDENCE_VIEWPORT.width}, height: ${EVIDENCE_VIEWPORT.height} };
+
 export default {
     ...base,
     testDir: '${posix(path.join(FRONTEND, "tests", "e2e"))}',
@@ -229,7 +238,11 @@ export default {
     globalSetup: '${posix(path.join(FRONTEND, "tests", "e2e", "global-setup.ts"))}',
     outputDir: '${posix(path.join(e2eDir, "artifacts"))}',
     reporter: [['list'], ['json', { outputFile: '${posix(path.join(e2eDir, "playwright-results.json"))}' }]],
-    use: { ...base.use, screenshot: 'on', trace: 'off', video: 'off' },
+    use: { ...base.use, screenshot: 'on', trace: 'off', video: 'off', viewport: EVIDENCE_VIEWPORT },
+    projects: (base.projects ?? []).map((project) => ({
+        ...project,
+        use: { ...project.use, viewport: EVIDENCE_VIEWPORT },
+    })),
     webServer: { ...base.webServer, cwd: '${posix(FRONTEND)}' },
 };
 `,
