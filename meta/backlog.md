@@ -68,3 +68,9 @@
 - [`it_database/docs/operations/2026-09-03-bgdoc-namespace-index-handover.md`](../it_database/docs/operations/2026-09-03-bgdoc-namespace-index-handover.md) — 접두어 기반 BGDOC 인덱스의 이전 인계 기록(통합 인덱스로 대체됨)
 - [`it_database/docs/operations/2026-09-12-project-content-clob-and-bgdoc-type-handover.md`](../it_database/docs/operations/2026-09-12-project-content-clob-and-bgdoc-type-handover.md) — `V20260907_001`(빈 버전)·`V20260907_002` 단계별 파괴 지점·복구 입력·백업 테이블 정리 시점
 - [`it_database/docs/verification/V20260907_002__ClassifyGuideDocumentsAndExpandProjectContent.verify.sql`](../it_database/docs/verification/V20260907_002__ClassifyGuideDocumentsAndExpandProjectContent.verify.sql) — 적용 후 assert
+
+## 2026-09-17 사용자 지정 전결권 (FE-92)
+
+| 상태 | 대상 | 내용 | 근거 |
+| --- | --- | --- | --- |
+| 적용대기 | TPRMPP_CCODEM·TPRMPP_CLANGM | IT_PTL_EDRT_TC 30~35, EDRT_USER, 순서 21~26·영문 코드명 | [운영 인계](../it_database/docs/operations/2026-09-17-user-defined-approval-authority.md) |

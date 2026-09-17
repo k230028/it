@@ -9,11 +9,10 @@
 | FE-87 | 낮음 | 열림 | PDF 뷰어 연속 스크롤 후속 정리: `usePdfViewer`가 문서 열기 때 전 페이지 `getPage`를 선행해 장문서 첫 화면이 늦음(pdf.js처럼 첫 페이지 크기로 시작해 지연 채움), 행 모델이 본문 `p-4` 상단 패딩 16px을 반영하지 않음, `layout()` 앵커가 rAF 스로틀된 `scrollTop`을 사용, 렌더 실패 페이지가 스크롤마다 재시도(실패 마커 없음), `renderedPages` 매 프레임 재할당, DPR≠1·행 중간 앵커 복원 테스트 부재 | 장문서 실측 후 `getPage` 지연 채움부터 순서대로 처리 | [설계](docs/superpowers/specs/done/2026-09-14-pdf-viewer-continuous-scroll-design.md) |
 | FE-88 | 낮음 | 열림 | 예산 목록 기본 범위 [팀]에서 `SVN_TEM_C`가 NULL·빈 값인 기존 행(전산업무비 `BCOSTM`, 정보화사업 `BPROJM`)이 보이지 않음. 설계가 사용자 팀코드 부재만 다루고 데이터 쪽 팀코드 부재는 다루지 않은 공백 | 운영 데이터에서 `SVN_TEM_C IS NULL` 건수를 먼저 세고, 유의미하면 [팀] 범위에 미지정 행 포함 규칙이나 안내 문구를 추가 | [설계](docs/superpowers/specs/done/2026-09-14-team-scope-budget-list-design.md) |
 
-ID 접두사와 최대 번호(양 파일 합산): SEC-24, ERR-17, FE-88, BE-114, CQ-50, LOG-07, BRD-11, EAI-04, REPO-06, MIG-31. 새 ID를 채번한 뒤 `grep -ohE '^\| (SEC|ERR|FE|BE|CQ|LOG|BRD|EAI|REPO|MIG)-[0-9]+' TASK.md TASK_DONE.md | sort | uniq -d`로 중복을 확인합니다.
+ID 접두사와 최대 번호(양 파일 합산): SEC-24, ERR-17, FE-92, BE-114, CQ-50, LOG-07, BRD-11, EAI-04, REPO-06, MIG-31. 새 ID를 채번한 뒤 `grep -ohE '^\| (SEC|ERR|FE|BE|CQ|LOG|BRD|EAI|REPO|MIG)-[0-9]+' TASK.md TASK_DONE.md | sort | uniq -d`로 중복을 확인합니다.
 
 ## 예정된 정리 작업
 
-- 2026-09-20경(1주일 후): [직원 정보] 다이얼로그의 전화걸기·메신저 아이콘 5종을 일반 사용자에게 개방. 현재 `it_frontend/app/components/common/EmployeeInfoDialog.vue`의 `canUseContactActions`가 시스템관리자에게만 노출하도록 잠가 두었으며, 개방 시 판정을 `!!user.value?.eno`로 되돌리고 `tests/unit/components/EmployeeInfoDialog.test.ts`의 비관리자 숨김 케이스를 노출 케이스로 바꾼다.
 - 2026-10-12 이후: PDF 미리보기 서비스워커 해제 전환 코드 삭제(`it_frontend/app/plugins/retire-pdf-preview-sw.client.ts`, `app/utils/retirePdfPreviewServiceWorker.ts`, 해당 테스트). 만료일 상수 `RETIRE_PDF_PREVIEW_SW_UNTIL` 이후 플러그인은 이미 no-op이다(FE-86).
 - `V20260907_002` 적용 후 검증 통과 배포로부터 30일 뒤: 로컬·dev의 `BAK_TPRMPP_BPROJM`·`BAK_TPRMPP_BPROJL` 삭제([운영 인계](it_database/docs/operations/2026-09-12-project-content-clob-and-bgdoc-type-handover.md)).
 
