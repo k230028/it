@@ -1,6 +1,6 @@
 # ✅ IT Portal 완료·종료 내역 (Archive)
 
-> 🗓️ **기준일:** 2026-09-12
+> 🗓️ **기준일:** 2026-09-18
 > 🎯 **목적:** [`TASK.md`](TASK.md)에서 분리한 완료(✅)·해소(✔️)·감내(☑️)·폐기(⛔) 항목을 보관합니다.
 
 ### 🔑 범례 (Legend)
@@ -13,6 +13,15 @@
 | ⛔ Discarded | 사용자 범위 결정으로 폐기 |
 
 ---
+
+### ✅ 2026-09-18 예산 첨부 삭제 권한 개선·로컬 검증
+
+| ID | 상태 | 조치 | 근거 |
+| --- | --- | --- | --- |
+| BE-115 | ✅ Done | 정보화사업·경상사업·전산업무비·금융단말 첨부를 업로더 본인·주관부서 사용자·시스템관리자가 단건·일괄 삭제하도록 개선. 사업 첨부 삭제 차단 분리 해제, 파일 연결 변경·다른 종류의 보호 유지 | [설계](docs/superpowers/specs/done/2026-09-18-budget-attachment-deletion-design.md) · [분석설계서](docs/design-docs/2026-09-18-analysis-design-since-260918.md) · [결과서](docs/test-docs/2026-09-18-test-result-since-260918.md) |
+
+- 검증: 최종 시나리오 9건 통과(JUnit 144건·Vitest 25건·E2E 4건), 실DB 인계 확인 1건 미실시. 앞선 백엔드 전체 실행 5,573건 통과·2건 건너뜀, check·bootJar 통과. 프론트 check·format:check 통과.
+- 구현 완료 계획: [BE-115](docs/superpowers/plans/done/2026-09-18-budget-attachment-deletion.md). 테스트 결과서·PDF·증적은 기존 정책에 따른 로컬 산출물. 최초 검증 시점에는 로컬 변경만 존재. 이후 사용자 요청으로 백엔드 `362703ec`·프론트 `8661c5cb`를 원격 main에 push했으며 호환 조합은 `versions.lock`에 기록. DB 변경·실서버 배포 없음.
 
 ### ✅ 2026-09-17 사용자 요청 4건 구현·로컬 검증
 
