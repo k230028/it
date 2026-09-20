@@ -8,7 +8,7 @@
 
 **Tech Stack:** Spring Boot 4, Spring Security(`CustomUserDetails`), Spring Data JPA, JUnit 5 + Mockito + AssertJ, Spotless.
 
-**Spec:** `docs/superpowers/specs/2026-09-20-council-write-boundaries-design.md`
+**Spec:** `docs/superpowers/specs/done/2026-09-20-council-write-boundaries-design.md`
 
 ## Global Constraints
 
@@ -912,7 +912,7 @@ Expected: BUILD SUCCESSFUL, failures=0, errors=0. 실패가 있으면 원인을 
 
 ```bash
 cd C:\it
-git mv docs/superpowers/specs/2026-09-20-council-write-boundaries-design.md docs/superpowers/specs/done/
+git mv docs/superpowers/specs/done/2026-09-20-council-write-boundaries-design.md docs/superpowers/specs/done/
 git mv docs/superpowers/plans/2026-09-20-council-write-boundaries.md docs/superpowers/plans/done/
 ```
 

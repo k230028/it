@@ -1,8 +1,8 @@
 # 정보화실무협의회 쓰기 API 4개의 권한·상태 경계
 
-- 과제: [COUNCIL-011](../../../TASK_COUNCIL.md)
-- 선행: [COUNCIL-001·002 설계](done/2026-09-20-council-access-and-draft-protection.md) — `CouncilAccessGuard`와 403/404/409 관례를 그대로 잇는다.
-- 범위: `POST/PUT /api/council/{id}/committee`, `POST /api/council`, `POST /api/council/{id}/approval`, `POST /api/council/{id}/qna`. 요청·응답 DTO, DB 스키마, 프론트 화면은 바꾸지 않는다. 조회 API 11개는 [COUNCIL-013](../../../TASK_COUNCIL.md)에서 다룬다.
+- 과제: [COUNCIL-011](../../../../TASK_COUNCIL.md)
+- 선행: [COUNCIL-001·002 설계](2026-09-20-council-access-and-draft-protection.md) — `CouncilAccessGuard`와 403/404/409 관례를 그대로 잇는다.
+- 범위: `POST/PUT /api/council/{id}/committee`, `POST /api/council`, `POST /api/council/{id}/approval`, `POST /api/council/{id}/qna`. 요청·응답 DTO, DB 스키마, 프론트 화면은 바꾸지 않는다. 조회 API 11개는 [COUNCIL-013](../../../../TASK_COUNCIL.md)에서 다룬다.
 
 ## 문제
 
