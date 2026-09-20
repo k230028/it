@@ -15,7 +15,7 @@
 | --- | :------: | ---- | ---- | --------- | --------- |
 | COUNCIL-003 | 높음 | 열림 | 사업 목록의 계획협의회 신청 요청 불일치 | 기존 계획 상세 신청 경로를 유지하고 사업 신청 선택지에서 계획 유형 분리 | [목록](it_frontend/app/pages/info/council-request/index.vue) |
 | COUNCIL-004 | 높음 | 열림 | 검토표 초기 조회 실패와 미작성 구분 | 조회 상태 보존, 실패 시 저장 차단 및 재시도 UI/테스트 | [페이지 상태](it_frontend/app/composables/useCouncilRequestPage.ts) |
-| COUNCIL-005 | 높음 | 열림 | 협의회 입력 길이와 DB BYTE 한도 불일치 | 실제 DDL 한도 대조 후 공통 프론트 바이트 제한·서버 검증 적용 | [입력 화면](it_frontend/app/components/council/feasibility/FeasibilityOverview.vue) |
+| COUNCIL-005 | 높음 | 진행 | 협의회 입력 길이와 DB BYTE 한도 불일치 | 자유입력 21개 필드를 DB 바이트 한도로 정합: 엔티티 `@PrePersist/@PreUpdate` 검증과 프론트 `createModel`·바이트 인디케이터 적용 | [설계](docs/superpowers/specs/2026-09-20-council-text-byte-limits-design.md) |
 | COUNCIL-006 | 중간 | 열림 | KeepAlive 재방문 시 협의회 최신 상태 갱신 | 편집 중 입력을 보존하며 목록·단계·판정함 재조회, 최초 중복 요청 방지 | [목록](it_frontend/app/pages/info/council-request/index.vue) |
 | COUNCIL-007 | 중간 | 열림 | 목록 전체 조회·클라이언트 검색 개선 | 권한 범위의 DB 필터·서버 페이징·안정 정렬, 연도·부서 검색 검토 | [목록 서비스](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilService.java) |
 | COUNCIL-008 | 중간 | 열림 | 협의회 개발용 사용자 전환 버튼 정리 | 목록의 무조건 노출 제거, 공통 헤더의 관리자 기능 유지 | [목록](it_frontend/app/pages/info/council-request/index.vue) |
