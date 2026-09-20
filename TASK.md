@@ -2,6 +2,8 @@
 
 ## 활성 과제
 
+정보화실무협의회 전용 과제는 [TASK_COUNCIL.md](TASK_COUNCIL.md), 완료 이력은 [TASK_COUNCIL_DONE.md](TASK_COUNCIL_DONE.md)에서 같은 방식으로 별도 관리합니다.
+
 새 과제는 아래 표 형식으로 등록하고, 완료·해소·감내·폐기 항목은 [`TASK_DONE.md`](TASK_DONE.md)로 옮깁니다.
 
 | ID  | 우선순위 | 상태 | 과제 | 다음 조치 | 근거 문서 |

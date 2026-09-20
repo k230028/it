@@ -39,6 +39,7 @@ IT정보화포탈은 정보화 예산·사업·인력과 관리자 실시간 로
 | 엔티티·컬럼 명명 | `meta/meta.txt` |
 | 컴포넌트 사용법 | `it_frontend/docs/guides/components/` |
 | 미구현·기술부채 | `TASK.md` |
+| 정보화실무협의회 전용 과제·완료 이력 | `TASK_COUNCIL.md` · `TASK_COUNCIL_DONE.md` |
 
 문서 역할은 다음처럼 구분합니다.
 

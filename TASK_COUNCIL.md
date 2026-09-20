@@ -1,0 +1,27 @@
+# IT정보화포탈 정보화실무협의회 잔여과제
+
+## 관리 방식
+
+정보화실무협의회(`/info/council-request`, API `/api/council`) 전용 과제의 단일 관리 문서입니다. 공통 과제는 [TASK.md](TASK.md), 협의회 완료·해소·감내·폐기 기록은 [TASK_COUNCIL_DONE.md](TASK_COUNCIL_DONE.md)에서 관리합니다.
+
+- 기존 TASK와 동일하게 활성 과제만 아래 표에 유지하고, 검증을 마친 항목은 완료 파일로 옮깁니다. 일부만 구현하면 완료로 표시하지 않습니다.
+- ID는 `COUNCIL-001`부터 순차 채번하며 두 파일을 합쳐 중복을 확인합니다. 코드 변경, 검증 결과, 미검증 범위를 완료 기록에 남깁니다.
+- 과거 `PRD_c_날짜.md`는 요구사항 원본으로 보존하고, 새 작업 상태는 이 파일에서 관리합니다. 기존 PRD를 찾으면 실제 내용을 대조한 뒤 ID와 원문 링크를 연결합니다.
+- 아래 초기 과제는 2026-09-20 사용자 요청과 현재 코드 비교 결과를 근거로 등록했습니다. 과거 PRD 원본 13건(`PRD_c_20260509`~`PRD_c_20260803`, `council-fk-erd.md`, `DESIGN_c_20260709_plan-council-mapping.md`, `PLAN_c_20260709_impl.md`)은 `prds/`·`prds/done/`에 미추적 파일로 보관하며 저장소에는 포함하지 않습니다. 과거 요구사항의 과제 이관은 아직 완료되지 않았습니다.
+
+## 활성 과제
+
+| ID | 우선순위 | 상태 | 과제 | 다음 조치 | 근거 문서 |
+| --- | :------: | ---- | ---- | --------- | --------- |
+| COUNCIL-003 | 높음 | 열림 | 사업 목록의 계획협의회 신청 요청 불일치 | 기존 계획 상세 신청 경로를 유지하고 사업 신청 선택지에서 계획 유형 분리 | [목록](it_frontend/app/pages/info/council-request/index.vue) |
+| COUNCIL-004 | 높음 | 열림 | 검토표 초기 조회 실패와 미작성 구분 | 조회 상태 보존, 실패 시 저장 차단 및 재시도 UI/테스트 | [페이지 상태](it_frontend/app/composables/useCouncilRequestPage.ts) |
+| COUNCIL-005 | 높음 | 열림 | 협의회 입력 길이와 DB BYTE 한도 불일치 | 실제 DDL 한도 대조 후 공통 프론트 바이트 제한·서버 검증 적용 | [입력 화면](it_frontend/app/components/council/feasibility/FeasibilityOverview.vue) |
+| COUNCIL-006 | 중간 | 열림 | KeepAlive 재방문 시 협의회 최신 상태 갱신 | 편집 중 입력을 보존하며 목록·단계·판정함 재조회, 최초 중복 요청 방지 | [목록](it_frontend/app/pages/info/council-request/index.vue) |
+| COUNCIL-007 | 중간 | 열림 | 목록 전체 조회·클라이언트 검색 개선 | 권한 범위의 DB 필터·서버 페이징·안정 정렬, 연도·부서 검색 검토 | [목록 서비스](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilService.java) |
+| COUNCIL-008 | 중간 | 열림 | 협의회 개발용 사용자 전환 버튼 정리 | 목록의 무조건 노출 제거, 공통 헤더의 관리자 기능 유지 | [목록](it_frontend/app/pages/info/council-request/index.vue) |
+| COUNCIL-009 | 중간 | 열림 | 첨부·오류 안내 공통화 | 공통 첨부 컴포넌트·인증 다운로드·안전한 오류 매핑 적용 | [페이지 상태](it_frontend/app/composables/useCouncilRequestPage.ts) |
+| COUNCIL-010 | 중간 | 검토 | 작성완료 수정 복귀·오신청 취소·반려/회수 재작성 | 기존 결재 상태 전이와 과거 PRD를 대조해 허용 범위를 확정 | [결재 서비스](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilApprovalService.java) |
+| COUNCIL-011 | 높음 | 열림 | 신규 신청 및 나머지 하위 API 권한·상태 경계 점검 | 생성·일정·평가·결과·파일의 권한 행렬과 직접 호출 회귀 테스트 확장 | [컨트롤러](it_backend/src/main/java/com/kdb/it/domain/council/controller/CouncilController.java) |
+| COUNCIL-012 | 중간 | 열림 | 작성중 동시 편집의 오래된 입력 덮어쓰기 방지 | 행 잠금과 별도로 조회 시점 스탬프·충돌 해소 계약 설계 | [예산사업 선례](it_backend/src/main/java/com/kdb/it/domain/budget/project/service/ProjectConcurrencyGuard.java) |
+
+ID 최대 번호(활성·완료 합산): COUNCIL-012.

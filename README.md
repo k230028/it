@@ -17,6 +17,8 @@ C:\it\
 
 각 하위 저장소는 독립 Git 저장소입니다. 코드 변경과 테스트는 해당 저장소에서 수행합니다.
 
+정보화실무협의회 개발 과제는 [TASK_COUNCIL.md](TASK_COUNCIL.md), 완료·검증 이력은 [TASK_COUNCIL_DONE.md](TASK_COUNCIL_DONE.md)에서 관리합니다.
+
 ## 빠른 시작
 
 ### 1. Oracle 확인
