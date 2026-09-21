@@ -15,6 +15,7 @@
 
 | ID | 상태 | 조치 | 근거 |
 | --- | :--: | ---- | ---- |
+| COUNCIL-008 | ✅ Done | 협의회 목록 툴바의 `[개발용] 사용자 전환` 버튼·`SwitchUserDialog` 마운트·`showSwitchUserDialog` ref·import와 i18n `council.list.switchUser`/`switchUserHint`(ko/en) 제거. 역할 검사 없이 모든 사용자에게 보이던 진입점만 없앴고, 사용자 전환은 공통 헤더(`AppHeader`, `v-if="isAdmin()"`)가 계속 제공 | [목록](it_frontend/app/pages/info/council-request/index.vue) · [헤더](it_frontend/app/components/layout/AppHeader.vue) |
 | COUNCIL-007 | ✅ Done | 목록 조회 안정 정렬 + 연도·부서 검색. 백엔드 목록 쿼리 4개(`findByDepartment`·`findByCommitteeMember`·`findProjectsForCouncilAll`·`findProjectsForCouncilByDepartment`)의 `ORDER BY FST_ENR_DTM DESC` 뒤에 키 컬럼(`IT_PTL_ASCT_ID` / `ABUS_MNG_NO, SNO`) tie-breaker를 두고, 정렬이 없던 계획협의회(02) 파생 조회는 서비스에서 같은 기준으로 정렬. 프론트 `council-list-filter`에 사업연도(`prjYy`)·주관부서(`svnDpm`) 필터·옵션 추가(응답 필드 재사용, API 변경 없음), 부서 필터는 IT관리자·정보보호관리자에게만 노출 | [리포지토리](it_backend/src/main/java/com/kdb/it/domain/council/repository/CouncilRepository.java) · [필터](it_frontend/app/features/council/request/council-list-filter.ts) |
 | COUNCIL-007 (서버 페이징·상한) | ☑️ Accepted | 로컬(운영 덤프) 기준 `TPRMPP_BASCTM` 활성 7건·`TPRMPP_BPROJM` 활성 45건으로 수십 건 규모이고, 4개 쿼리 모두 권한 범위(전체/부서/배정위원)의 DB 필터가 이미 걸려 있으며 화면은 `useProgressiveList` 점진 노출을 쓴다. 서버 페이징은 API 계약 변경(codegen)과 정렬 규칙(신청 건 우선→심의유형) 이전을 동반하므로 연 수백 건을 넘거나 목록 응답이 체감 지연될 때 별도 설계로 도입한다. 정보보호관리자 분기의 전건 조회 후 메모리 필터도 같은 근거로 유지 | 동일 |
 | COUNCIL-006 | ✅ Done | KeepAlive(`app.vue` `max: 10`) 재방문 시 협의회 화면 4개가 `onActivated`에서 최신 상태를 조용히 재조회. 목록: 협의회 목록+생략 판정함, 개최준비·결과: 협의회 상태(단계), Step1: 상세는 항상, 타당성검토표는 `formDirty`가 아닐 때만(편집 중 입력 보존). 첫 마운트 직후 발화는 `skipFirstActivation`으로 건너뛰어 초기 lazy 조회를 dedupe-cancel하지 않음. 검토표 조회에 `useRefreshGuard`를 붙여 실패 시 마지막 값을 보존(ERR-13 3keep)하고 COUNCIL-004 배너·잠금으로 안내 | [래퍼](it_frontend/app/features/council/request/activation-refresh.ts) · [페이지 상태](it_frontend/app/composables/useCouncilRequestPage.ts) |
@@ -56,6 +57,12 @@
 - 프론트: `council-list-filter.test.ts` 13건(신규 3건 — 연도 옵션 내림차순·완전일치, 부서 옵션 라벨 해석·완전일치, 초기화·isFiltered 포함) 포함 `tests/unit/features/council` 46건 통과, `npm run typecheck`·eslint·prettier 통과.
 
 미검증 범위(COUNCIL-007): 목록 페이지 템플릿(필터 Select 2개, 관리자 전용 노출)은 타입 검사로만 확인. 부서 옵션 순서는 목록 원본 순서(정렬하지 않음).
+
+코드 변경(COUNCIL-008): `it_frontend` — `pages/info/council-request/index.vue`, `i18n/messages/council.ts`. 다이얼로그 컴포넌트·`useAuth.switchUser`·백엔드 변경 없음. 함께 발견한 후속: COUNCIL-006에서 추가한 검토표 재조회 가드의 `logLabel` 한글 리터럴이 `user-facing-copy-ratchet` 기준선(`useCouncilRequestPage.ts`=2)을 3으로 넘겨 영문 접두어로 정정.
+
+검증 결과(COUNCIL-008): `npm run check:copy`(고정 리터럴 ratchet 3건) 통과, `npm run typecheck`·eslint·prettier 통과, `useCouncilRequestPage.test.ts` 48건 통과. 목록 페이지 컴포넌트 테스트는 없음.
+
+미검증 범위(COUNCIL-008): 실제 브라우저에서 일반 사용자 화면의 버튼 부재 확인.
 
 ## 2026-09-20
 
