@@ -11,6 +11,21 @@
 
 검증 완료 후 날짜별로 `ID / 상태 / 조치 / 근거` 표와 검증 결과를 추가합니다.
 
+## 2026-09-21
+
+| ID | 상태 | 조치 | 근거 |
+| --- | :--: | ---- | ---- |
+| COUNCIL-003 | ✅ Done | 사업 목록 신청 다이얼로그의 심의유형 선택지에서 계획협의회(02) 제거. 02는 계획(BPLANM)에 붙어 `reqDocNo`가 필요해 사업 카드에서 신청하면 `CreateRequest.isTargetPresent` 400이 났음. 선택지 규칙을 `features/council/request/council-apply-options.ts`(`applyDbrTcOptions`·`defaultApplyDbrTc`)로 분리하고 기본 선택값은 03 우선. 계획 상세(`/info/plan/[id]` → `usePlanDetailPage.handleRequestCouncil`) 신청 경로는 유지 | [선택지](it_frontend/app/features/council/request/council-apply-options.ts) · [목록](it_frontend/app/pages/info/council-request/index.vue) |
+
+코드 변경(COUNCIL-003): `it_frontend` — `features/council/request/council-apply-options.ts`(신규), `pages/info/council-request/index.vue`, 테스트 1개. 백엔드·`CouncilApplyDialog`·i18n·계획 상세 경로 변경 없음(백엔드는 계획 상세 경로가 쓰므로 02 신청 API를 그대로 받는다). 01(중장기계획)은 `ADMIN_CREATABLE_TYPES`에 있어 선택지에 유지.
+
+검증 결과(COUNCIL-003):
+
+- `council-apply-options.test.ts` 6건 통과 — 역할 조합·정보보호 소요자원·"어떤 조합에도 02 없음"·기본값 03 우선.
+- `tests/unit/features/council`·`tests/unit/components/council` 12개 파일 58건 통과, `npm run typecheck`·eslint(대상 3파일) 통과.
+
+미검증 범위(COUNCIL-003): 목록 페이지 자체의 컴포넌트 테스트는 없음(다이얼로그 props 배선은 타입 검사로만 확인). 실제 브라우저에서 IT관리자 계정의 선택지 표시.
+
 ## 2026-09-20
 
 | ID | 상태 | 조치 | 근거 |
