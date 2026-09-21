@@ -15,6 +15,7 @@
 
 | ID | 상태 | 조치 | 근거 |
 | --- | :--: | ---- | ---- |
+| COUNCIL-004 | ✅ Done | 타당성검토표 초기 조회 실패와 미작성 구분. GET은 미작성이면 200/null, 실패면 data 비움+`status='error'`라 data만으로는 같았고, 실패를 신규 작성으로 프리필해 임시저장하면 기존 저장본을 BPROJM 기본값으로 덮어쓸 수 있었음. `fetchCouncilRequestPageData`가 `feasibilityFetch` 핸들을 함께 넘기고 `useCouncilRequestPage`가 `initialLoadFailed`·`initialLoadFailureDetail`·`canEdit`·`retryInitialLoad`를 제공. 실패 상태는 빈 폼+편집·첨부·저장 버튼 잠금, `saveTemp`/`saveComplete`는 서버 호출 없이 토스트, 페이지 상단 오류 배너의 [새로고침]이 상세·검토표를 재조회 | [페이지 상태](it_frontend/app/composables/useCouncilRequestPage.ts) · [페이지](it_frontend/app/pages/info/council-request/[id].vue) |
 | COUNCIL-003 | ✅ Done | 사업 목록 신청 다이얼로그의 심의유형 선택지에서 계획협의회(02) 제거. 02는 계획(BPLANM)에 붙어 `reqDocNo`가 필요해 사업 카드에서 신청하면 `CreateRequest.isTargetPresent` 400이 났음. 선택지 규칙을 `features/council/request/council-apply-options.ts`(`applyDbrTcOptions`·`defaultApplyDbrTc`)로 분리하고 기본 선택값은 03 우선. 계획 상세(`/info/plan/[id]` → `usePlanDetailPage.handleRequestCouncil`) 신청 경로는 유지 | [선택지](it_frontend/app/features/council/request/council-apply-options.ts) · [목록](it_frontend/app/pages/info/council-request/index.vue) |
 
 코드 변경(COUNCIL-003): `it_frontend` — `features/council/request/council-apply-options.ts`(신규), `pages/info/council-request/index.vue`, 테스트 1개. 백엔드·`CouncilApplyDialog`·i18n·계획 상세 경로 변경 없음(백엔드는 계획 상세 경로가 쓰므로 02 신청 API를 그대로 받는다). 01(중장기계획)은 `ADMIN_CREATABLE_TYPES`에 있어 선택지에 유지.
@@ -25,6 +26,15 @@
 - `tests/unit/features/council`·`tests/unit/components/council` 12개 파일 58건 통과, `npm run typecheck`·eslint(대상 3파일) 통과.
 
 미검증 범위(COUNCIL-003): 목록 페이지 자체의 컴포넌트 테스트는 없음(다이얼로그 props 배선은 타입 검사로만 확인). 실제 브라우저에서 IT관리자 계정의 선택지 표시.
+
+코드 변경(COUNCIL-004): `it_frontend` — `composables/useCouncilRequestPage.ts`, `pages/info/council-request/[id].vue`, `i18n/messages/council.ts`(council.request 키 3개 ko/en), `tests/unit/composables/useCouncilRequestPage.test.ts`. 백엔드·DTO·다른 화면 변경 없음. 판정은 예외가 아니라 조회 `status` 기준(ERR-13)이며 401·403도 같은 배너로 다룬다.
+
+검증 결과(COUNCIL-004):
+
+- `useCouncilRequestPage.test.ts` 46건 통과(신규 6건 — 검토표 실패 시 빈 폼·잠금, 미작성(200/null)은 기존대로 프리필, 실패 상태 임시저장·작성완료 차단, 상세 실패도 같은 플래그, 재조회 성공 시 해제·저장값 프리필, 재실패 시 유지).
+- 협의회 컴포넌트·기능·페이지 경계 테스트 14개 파일 104건 통과, `npm run typecheck`·eslint(대상 3파일)·prettier 통과.
+
+미검증 범위(COUNCIL-004): 페이지 템플릿(배너·버튼 `v-if`)은 타입 검사로만 확인. 실제 브라우저에서 백엔드를 내린 채 진입하는 시나리오. 보존 데이터가 있는 재조회 실패(쓰기 후)는 기존 ERR-13 가드가 계속 담당.
 
 ## 2026-09-20
 
