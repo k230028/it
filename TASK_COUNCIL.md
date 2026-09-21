@@ -13,7 +13,6 @@
 
 | ID | 우선순위 | 상태 | 과제 | 다음 조치 | 근거 문서 |
 | --- | :------: | ---- | ---- | --------- | --------- |
-| COUNCIL-009 | 중간 | 열림 | 첨부·오류 안내 공통화 | 공통 첨부 컴포넌트·인증 다운로드·안전한 오류 매핑 적용 | [페이지 상태](it_frontend/app/composables/useCouncilRequestPage.ts) |
 | COUNCIL-010 | 중간 | 검토 | 작성완료 수정 복귀·오신청 취소·반려/회수 재작성 | 기존 결재 상태 전이와 과거 PRD를 대조해 허용 범위를 확정 | [결재 서비스](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilApprovalService.java) |
 | COUNCIL-012 | 중간 | 열림 | 작성중 동시 편집의 오래된 입력 덮어쓰기 방지 | 행 잠금과 별도로 조회 시점 스탬프·충돌 해소 계약 설계 | [예산사업 선례](it_backend/src/main/java/com/kdb/it/domain/budget/project/service/ProjectConcurrencyGuard.java) |
 | COUNCIL-013 | 높음 | 열림 | 조회 API 11개의 대상 권한 통일: 위원 목록·평가 전체·계획대상·계획평가 전체·결과요약·일정현황·Q&A·주요Q&A 목록·생략요청(건·전체) | `findReadableCouncil` 정책 적용 전 프론트 호출 영향 분석(목록 페이지의 계획협의회 `plan-targets` 호출 등), 관리자 범위가 맞는 항목 구분 | [가드](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilAccessGuard.java) |

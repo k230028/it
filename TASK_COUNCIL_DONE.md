@@ -15,6 +15,8 @@
 
 | ID | 상태 | 조치 | 근거 |
 | --- | :--: | ---- | ---- |
+| COUNCIL-009 | ✅ Done | 첨부·오류 안내 공통화. ① Step1 타당성검토표 첨부 다운로드를 `<a :href="getDownloadUrl()">` 직접 열기에서 공통 `useAttachmentDownload`(Blob 인증 다운로드, 공통 실패 Toast)로 교체 — `fetchCouncilRequestPageData`가 `fetchFiles('첨부파일', asctId)`를 함께 만들고 `useCouncilRequestPage.downloadFeasibilityFile()`이 `flMngNo`로 레코드를 찾아 내려받음(없으면 한 번 재조회, 그래도 없으면 실패 안내). ② 협의회 9개 파일 17곳의 `err?.data?.message ?? err?.message ?? fallback` 수작업 체인을 `features/council/councilErrorDetail.ts`(`formatApiError(getErrorMessage())`, ORA 추출·200자 절단)로 통일 | [오류 문구](it_frontend/app/features/council/councilErrorDetail.ts) · [페이지 상태](it_frontend/app/composables/useCouncilRequestPage.ts) |
+| COUNCIL-009 (Step1 업로드 UI 공통화) | ☑️ Accepted | Step1 첨부 업로드(숨김 `input[type=file]` + hwp/hwpx/pdf 검증 + `useFiles.uploadFile`)는 단일 필수 파일 계약이라 다중·삭제표시 모델인 공통 `AttachmentUploadField`와 맞지 않아 유지. 업로드 자체는 이미 공통 `useFiles`를 쓴다 | 동일 |
 | COUNCIL-008 | ✅ Done | 협의회 목록 툴바의 `[개발용] 사용자 전환` 버튼·`SwitchUserDialog` 마운트·`showSwitchUserDialog` ref·import와 i18n `council.list.switchUser`/`switchUserHint`(ko/en) 제거. 역할 검사 없이 모든 사용자에게 보이던 진입점만 없앴고, 사용자 전환은 공통 헤더(`AppHeader`, `v-if="isAdmin()"`)가 계속 제공 | [목록](it_frontend/app/pages/info/council-request/index.vue) · [헤더](it_frontend/app/components/layout/AppHeader.vue) |
 | COUNCIL-007 | ✅ Done | 목록 조회 안정 정렬 + 연도·부서 검색. 백엔드 목록 쿼리 4개(`findByDepartment`·`findByCommitteeMember`·`findProjectsForCouncilAll`·`findProjectsForCouncilByDepartment`)의 `ORDER BY FST_ENR_DTM DESC` 뒤에 키 컬럼(`IT_PTL_ASCT_ID` / `ABUS_MNG_NO, SNO`) tie-breaker를 두고, 정렬이 없던 계획협의회(02) 파생 조회는 서비스에서 같은 기준으로 정렬. 프론트 `council-list-filter`에 사업연도(`prjYy`)·주관부서(`svnDpm`) 필터·옵션 추가(응답 필드 재사용, API 변경 없음), 부서 필터는 IT관리자·정보보호관리자에게만 노출 | [리포지토리](it_backend/src/main/java/com/kdb/it/domain/council/repository/CouncilRepository.java) · [필터](it_frontend/app/features/council/request/council-list-filter.ts) |
 | COUNCIL-007 (서버 페이징·상한) | ☑️ Accepted | 로컬(운영 덤프) 기준 `TPRMPP_BASCTM` 활성 7건·`TPRMPP_BPROJM` 활성 45건으로 수십 건 규모이고, 4개 쿼리 모두 권한 범위(전체/부서/배정위원)의 DB 필터가 이미 걸려 있으며 화면은 `useProgressiveList` 점진 노출을 쓴다. 서버 페이징은 API 계약 변경(codegen)과 정렬 규칙(신청 건 우선→심의유형) 이전을 동반하므로 연 수백 건을 넘거나 목록 응답이 체감 지연될 때 별도 설계로 도입한다. 정보보호관리자 분기의 전건 조회 후 메모리 필터도 같은 근거로 유지 | 동일 |
@@ -63,6 +65,15 @@
 검증 결과(COUNCIL-008): `npm run check:copy`(고정 리터럴 ratchet 3건) 통과, `npm run typecheck`·eslint·prettier 통과, `useCouncilRequestPage.test.ts` 48건 통과. 목록 페이지 컴포넌트 테스트는 없음.
 
 미검증 범위(COUNCIL-008): 실제 브라우저에서 일반 사용자 화면의 버튼 부재 확인.
+
+코드 변경(COUNCIL-009): `it_frontend` — `features/council/councilErrorDetail.ts`(신규), `composables/useCouncilRequestPage.ts`, `pages/info/council-request/index.vue`·`[id].vue`·`prepare/[id].vue`·`result/[id].vue`, `components/council/committee/CommitteeSelector.vue`·`evaluation/EvaluationForm.vue`·`plan/PlanPprtForm.vue`·`result/ResultForm.vue`·`schedule/ScheduleStatus.vue`, 테스트 2개. 문구 키·백엔드·공통 유틸 변경 없음. 동작 차이는 원문 200자 절단과 ORA 메시지 추출뿐이며 4xx 업무 메시지는 종전처럼 그대로 보인다.
+
+검증 결과(COUNCIL-009):
+
+- `councilErrorDetail.test.ts` 4건(본문 message 우선·폴백·ORA 추출·200자 절단), `useCouncilRequestPage.test.ts` 신규 4건(레코드 매칭 다운로드·레코드 없음 실패 안내·목록 없을 때 재조회·첨부 없음 무동작) 통과.
+- 협의회 관련 16개 파일 121건 통과, `npm run typecheck`·eslint·prettier·`check:copy` 통과. 협의회 코드의 `data?.message` 수작업 체인 잔존 0건.
+
+미검증 범위(COUNCIL-009): 실제 브라우저에서 Blob 저장 동작(공통 `useAttachmentDownload`가 담당). 페이지 템플릿의 다운로드 버튼 배선은 타입 검사로만 확인.
 
 ## 2026-09-20
 
