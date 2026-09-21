@@ -13,7 +13,6 @@
 
 | ID | 우선순위 | 상태 | 과제 | 다음 조치 | 근거 문서 |
 | --- | :------: | ---- | ---- | --------- | --------- |
-| COUNCIL-007 | 중간 | 열림 | 목록 전체 조회·클라이언트 검색 개선 | 권한 범위의 DB 필터·서버 페이징·안정 정렬, 연도·부서 검색 검토 | [목록 서비스](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilService.java) |
 | COUNCIL-008 | 중간 | 열림 | 협의회 개발용 사용자 전환 버튼 정리 | 목록의 무조건 노출 제거, 공통 헤더의 관리자 기능 유지 | [목록](it_frontend/app/pages/info/council-request/index.vue) |
 | COUNCIL-009 | 중간 | 열림 | 첨부·오류 안내 공통화 | 공통 첨부 컴포넌트·인증 다운로드·안전한 오류 매핑 적용 | [페이지 상태](it_frontend/app/composables/useCouncilRequestPage.ts) |
 | COUNCIL-010 | 중간 | 검토 | 작성완료 수정 복귀·오신청 취소·반려/회수 재작성 | 기존 결재 상태 전이와 과거 PRD를 대조해 허용 범위를 확정 | [결재 서비스](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilApprovalService.java) |
