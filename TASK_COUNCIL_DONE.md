@@ -15,6 +15,7 @@
 
 | ID | 상태 | 조치 | 근거 |
 | --- | :--: | ---- | ---- |
+| COUNCIL-006 | ✅ Done | KeepAlive(`app.vue` `max: 10`) 재방문 시 협의회 화면 4개가 `onActivated`에서 최신 상태를 조용히 재조회. 목록: 협의회 목록+생략 판정함, 개최준비·결과: 협의회 상태(단계), Step1: 상세는 항상, 타당성검토표는 `formDirty`가 아닐 때만(편집 중 입력 보존). 첫 마운트 직후 발화는 `skipFirstActivation`으로 건너뛰어 초기 lazy 조회를 dedupe-cancel하지 않음. 검토표 조회에 `useRefreshGuard`를 붙여 실패 시 마지막 값을 보존(ERR-13 3keep)하고 COUNCIL-004 배너·잠금으로 안내 | [래퍼](it_frontend/app/features/council/request/activation-refresh.ts) · [페이지 상태](it_frontend/app/composables/useCouncilRequestPage.ts) |
 | COUNCIL-004 | ✅ Done | 타당성검토표 초기 조회 실패와 미작성 구분. GET은 미작성이면 200/null, 실패면 data 비움+`status='error'`라 data만으로는 같았고, 실패를 신규 작성으로 프리필해 임시저장하면 기존 저장본을 BPROJM 기본값으로 덮어쓸 수 있었음. `fetchCouncilRequestPageData`가 `feasibilityFetch` 핸들을 함께 넘기고 `useCouncilRequestPage`가 `initialLoadFailed`·`initialLoadFailureDetail`·`canEdit`·`retryInitialLoad`를 제공. 실패 상태는 빈 폼+편집·첨부·저장 버튼 잠금, `saveTemp`/`saveComplete`는 서버 호출 없이 토스트, 페이지 상단 오류 배너의 [새로고침]이 상세·검토표를 재조회 | [페이지 상태](it_frontend/app/composables/useCouncilRequestPage.ts) · [페이지](it_frontend/app/pages/info/council-request/[id].vue) |
 | COUNCIL-003 | ✅ Done | 사업 목록 신청 다이얼로그의 심의유형 선택지에서 계획협의회(02) 제거. 02는 계획(BPLANM)에 붙어 `reqDocNo`가 필요해 사업 카드에서 신청하면 `CreateRequest.isTargetPresent` 400이 났음. 선택지 규칙을 `features/council/request/council-apply-options.ts`(`applyDbrTcOptions`·`defaultApplyDbrTc`)로 분리하고 기본 선택값은 03 우선. 계획 상세(`/info/plan/[id]` → `usePlanDetailPage.handleRequestCouncil`) 신청 경로는 유지 | [선택지](it_frontend/app/features/council/request/council-apply-options.ts) · [목록](it_frontend/app/pages/info/council-request/index.vue) |
 
@@ -35,6 +36,15 @@
 - 협의회 컴포넌트·기능·페이지 경계 테스트 14개 파일 104건 통과, `npm run typecheck`·eslint(대상 3파일)·prettier 통과.
 
 미검증 범위(COUNCIL-004): 페이지 템플릿(배너·버튼 `v-if`)은 타입 검사로만 확인. 실제 브라우저에서 백엔드를 내린 채 진입하는 시나리오. 보존 데이터가 있는 재조회 실패(쓰기 후)는 기존 ERR-13 가드가 계속 담당.
+
+코드 변경(COUNCIL-006): `it_frontend` — `features/council/request/activation-refresh.ts`(신규), `composables/useCouncilRequestPage.ts`(`refreshOnActivated`, 검토표 가드), `pages/info/council-request/index.vue`·`[id].vue`·`prepare/[id].vue`·`result/[id].vue`, 테스트 2개. 실패 문구는 기존 키(`council.list.retryFailure`·`council.request.skipReqRetryFailure`·`detailRetryFailure`) 재사용으로 i18n 추가 없음. 백엔드 변경 없음.
+
+검증 결과(COUNCIL-006):
+
+- `activation-refresh.test.ts` 3건(첫 호출 무시·인스턴스별 계수·반환값 전달), `useCouncilRequestPage.test.ts` 신규 3건(편집 전 두 조회 재조회·편집 중 상세만·검토표 재조회 실패 시 값 보존+잠금+Toast 없음) 통과.
+- 협의회 관련 15개 파일 110건 통과, `npm run typecheck`·eslint(대상 8파일)·prettier 통과.
+
+미검증 범위(COUNCIL-006): 개최준비·결과 페이지의 하위 조회(위원·일정·결과서·Q&A)는 재활성화 때 다시 읽지 않음(각 저장 흐름의 재조회가 담당). `onActivated` 발화 자체는 KeepAlive 통합 테스트가 없어 실제 브라우저 확인 필요. 목록의 계획협의회 카드 통계(`useCouncilPlanStats`)는 목록 데이터 변경에 따라 갱신되는지 별도 확인하지 않음.
 
 ## 2026-09-20
 
