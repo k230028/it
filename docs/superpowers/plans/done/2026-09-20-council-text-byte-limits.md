@@ -8,7 +8,7 @@
 
 **Tech Stack:** Spring Boot 4 + JPA(Hibernate) + JUnit 5/AssertJ/Spring `ReflectionTestUtils`, Nuxt 4 + Vue 3 + PrimeVue + Vitest/@vue/test-utils(happy-dom), Spotless, ESLint/Prettier.
 
-**Spec:** `docs/superpowers/specs/2026-09-20-council-text-byte-limits-design.md`
+**Spec:** `docs/superpowers/specs/done/2026-09-20-council-text-byte-limits-design.md`
 
 ## Global Constraints
 

@@ -1,6 +1,6 @@
 # 정보화실무협의회 입력 길이와 DB BYTE 한도 정합
 
-- 과제: [COUNCIL-005](../../../TASK_COUNCIL.md)
+- 과제: [COUNCIL-005](../../../../TASK_COUNCIL.md)
 - 범위: 협의회 자유입력 21개 필드의 프론트 입력 제한과 서버 저장 검증. `it_backend/src/main/java/com/kdb/it/domain/council/**`, `it_frontend/app/components/council/**`, `it_frontend/app/pages/info/council-request/**`, `it_frontend/app/features/council/**`와 각 테스트만 바꾼다. DB 스키마, DTO, 컨트롤러, 공통 유틸은 바꾸지 않는다.
 
 ## 문제
@@ -36,12 +36,12 @@ ITPOWN의 `VARCHAR2`는 BYTE semantics라 한글 한 글자가 3바이트다. �
 | `Bperfm` | 계산식 `evlDtpClfCone` → `EVL_DTP_CLF_CONE` | 4000 |
 | `Bperfm` | 측정시점 `evlDtpMsmPtmCone` → `EVL_DTP_MSM_PTM_CONE` | 300 |
 | `Bperfm` | 측정주기 `evlDtpMsmCleCone` → `EVL_DTP_MSM_CLE_CONE` | 300 |
-| `Bchklm` `Bevalm` `Bplevm` `Brsltm` | 점검의견 `ckgOpnnCone` → `CKG_OPNN_CONE` | 1000 |
-| `Brsltm` | 종합의견 `synOpnnCone` → `SYN_OPNN_CONE` | 6000 |
+| `Bchklm` `Bevalm` `Bplevm` `Brsltm` | 점검의견 `ckgOpnn`(`Bchklm`·`Bevalm`·`Brsltm`) · `evalOpnn`(`Bplevm`) → `CKG_OPNN_CONE` | 1000 |
+| `Brsltm` | 종합의견 `synOpnn` → `SYN_OPNN_CONE` | 6000 |
 | `Bpqnam` `Bmqnam` | 질문 `qtnCone` → `QTN_CONE` | 4000 |
 | `Bpqnam` `Bmqnam` | 답변 `repCone` → `REP_CONE` | 2000 |
 | `Baskpm` | 생략요청 사유 `cgprOpnnCone` → `CGPR_OPNN_CONE` | 4000 |
-| `Basctm` | 회의장소 `cnrcPlcNm` → `CNRC_PLC_NM` | 100 |
+| `Basctm` | 회의장소 `cnrcPlc` → `CNRC_PLC_NM` | 100 |
 | `Basctm` | 생략판정 사유 `prtyIvgOmtRsn` → `PRTY_IVG_OMT_RSN` | 200 |
 
 프론트의 단일 출처는 `app/features/council/councilFormLimits.ts`이며 `projectFormLimits.ts`와 같은 `{ 필드: { maxBytes } } as const` 형태다. 백엔드의 단일 출처는 각 엔티티의 `private static final int` 상수다. 두 값이 어긋나지 않도록 프론트 테스트가 위 표의 숫자를 고정한다.
