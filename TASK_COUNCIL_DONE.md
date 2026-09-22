@@ -15,6 +15,7 @@
 
 | ID | 상태 | 조치 | 근거 |
 | --- | :--: | ---- | ---- |
+| COUNCIL-010 | ✅ Done | 결재 회수 이벤트 리스너(`ApprovalRecalledEvent` → `03→02`, `12→11`, 그 밖은 무시), `PATCH /api/council/{id}/reopen`(작성완료 `02→01`, `BPOVWM.KPN_TP_TC=10`), `DELETE /api/council/{id}`(작성중·작성완료 소프트 삭제, 사업 협의회는 `BPROJA` `45→09` 복귀, 계획협의회는 원장만; `CouncilCancelService`). 권한은 관리 또는 주관부서(`verifyOwningOrManageable`), 상태 위반 409. Step1에 [수정으로 되돌리기]·[신청 취소] 버튼과 확인 다이얼로그 | [설계](docs/superpowers/specs/done/2026-09-21-council-reopen-cancel-recall-design.md) · [계획](docs/superpowers/plans/done/2026-09-21-council-reopen-cancel-recall.md) |
 | COUNCIL-009 | ✅ Done | 첨부·오류 안내 공통화. ① Step1 타당성검토표 첨부 다운로드를 `<a :href="getDownloadUrl()">` 직접 열기에서 공통 `useAttachmentDownload`(Blob 인증 다운로드, 공통 실패 Toast)로 교체 — `fetchCouncilRequestPageData`가 `fetchFiles('첨부파일', asctId)`를 함께 만들고 `useCouncilRequestPage.downloadFeasibilityFile()`이 `flMngNo`로 레코드를 찾아 내려받음(없으면 한 번 재조회, 그래도 없으면 실패 안내). ② 협의회 9개 파일 17곳의 `err?.data?.message ?? err?.message ?? fallback` 수작업 체인을 `features/council/councilErrorDetail.ts`(`formatApiError(getErrorMessage())`, ORA 추출·200자 절단)로 통일 | [오류 문구](it_frontend/app/features/council/councilErrorDetail.ts) · [페이지 상태](it_frontend/app/composables/useCouncilRequestPage.ts) |
 | COUNCIL-009 (Step1 업로드 UI 공통화) | ☑️ Accepted | Step1 첨부 업로드(숨김 `input[type=file]` + hwp/hwpx/pdf 검증 + `useFiles.uploadFile`)는 단일 필수 파일 계약이라 다중·삭제표시 모델인 공통 `AttachmentUploadField`와 맞지 않아 유지. 업로드 자체는 이미 공통 `useFiles`를 쓴다 | 동일 |
 | COUNCIL-008 | ✅ Done | 협의회 목록 툴바의 `[개발용] 사용자 전환` 버튼·`SwitchUserDialog` 마운트·`showSwitchUserDialog` ref·import와 i18n `council.list.switchUser`/`switchUserHint`(ko/en) 제거. 역할 검사 없이 모든 사용자에게 보이던 진입점만 없앴고, 사용자 전환은 공통 헤더(`AppHeader`, `v-if="isAdmin()"`)가 계속 제공 | [목록](it_frontend/app/pages/info/council-request/index.vue) · [헤더](it_frontend/app/components/layout/AppHeader.vue) |
@@ -74,6 +75,15 @@
 - 협의회 관련 16개 파일 121건 통과, `npm run typecheck`·eslint·prettier·`check:copy` 통과. 협의회 코드의 `data?.message` 수작업 체인 잔존 0건.
 
 미검증 범위(COUNCIL-009): 실제 브라우저에서 Blob 저장 동작(공통 `useAttachmentDownload`가 담당). 페이지 템플릿의 다운로드 버튼 배선은 타입 검사로만 확인.
+
+코드 변경(COUNCIL-010): `it_backend` — `CouncilApprovalEventListener.java`, `CouncilApprovalService.java`, `FeasibilityService.java`, `Bpovwm.java`, `CouncilCancelService.java`(신규), `CouncilService.java`, `CouncilFeasibilityController.java`, `CouncilController.java`, 테스트 6개(`CouncilRouteContractTest`에 라우트 2개 등재 포함). `it_frontend` — `composables/council/useCouncilLifecycleApi.ts`, `composables/useCouncilRequestPage.ts`, `pages/info/council-request/[id].vue`, `i18n/messages/council.ts`(키 14개 ko/en), `types/api.d.ts`(codegen), 테스트 2개. DB 스키마·공통 결재 모듈 변경 없음. 함께 한 정리: `MaxLinesRatchet`(800줄)에 걸린 `CouncilService`(820)는 취소를 `CouncilCancelService`로 떼어 788줄로, `useCouncilRequestPage.ts`(1013)·`index.vue`(804)는 `feasibilityFormDefaults`·`useCouncilSkipRequestDialog`·`useCouncilApprovalDialog`·`useCouncilLifecycleActions`·`council-routing`으로 떼어 782·778줄로 낮춤(반환 형태 불변). 페이지 3곳에 `onActivated` 명시 import(페이지 단위 테스트는 auto-import가 없음), `useCouncil` 계약 테스트 49키.
+
+검증 결과(COUNCIL-010):
+
+- 백엔드: 회수 리스너·서비스 5건, reopen 4건, cancel 8건 신규 통과. `com.kdb.it.domain.council.*` 441건, 전체 `./gradlew test` 5,679건 통과·실패 0·건너뜀 2, `MaxLinesRatchetTest`·`spotlessJavaCheck` 통과.
+- 프론트: `useCouncilRequestPage.test.ts` 신규 6건(판정 2·복귀 2·취소 2)과 `council-routing.test.ts` 4건 통과, 협의회·아키텍처·페이지 테스트 34파일 205건 통과. `npm run check`·`format:check`·`check:copy`·`codegen:check` 통과. `npm test` 6,118건 중 6,116건 통과, 실패 2 — `project-domain-i18n`·`ItBudgetSourceChangedDialog`(협의회 무관, 로컬 Node ICU 한국어 시각 렌더).
+
+미검증 범위(COUNCIL-010): 실제 공통 결재 화면에서 회수 → 협의회 02 복귀의 종단 확인(리스너는 단위 테스트로만), 확인 다이얼로그·버튼 배선(페이지 컴포넌트 테스트 없음), 취소 후 사업이 목록에 미신청 행으로 다시 보이는지의 브라우저 확인.
 
 ## 2026-09-20
 

@@ -1,7 +1,7 @@
 # 정보화실무협의회 작성완료 수정 복귀·오신청 취소·결재 회수 복구
 
-- 과제: [COUNCIL-010](../../../TASK_COUNCIL.md)
-- 선행: [COUNCIL-011 설계](done/2026-09-20-council-write-boundaries-design.md) — `CouncilAccessGuard`와 403/404/409 관례를 그대로 잇는다.
+- 과제: [COUNCIL-010](../../../../TASK_COUNCIL.md)
+- 선행: [COUNCIL-011 설계](2026-09-20-council-write-boundaries-design.md) — `CouncilAccessGuard`와 403/404/409 관례를 그대로 잇는다.
 - 범위: `it_backend` `domain/council`(리스너 1개·서비스 2메서드·컨트롤러 2엔드포인트·테스트), `it_frontend` 협의회 Step1 페이지·`useCouncilRequestPage`·`useCouncilLifecycleApi`·`i18n/messages/council.ts`·생성 타입(`npm run codegen`). 공통 결재 모듈·DB 스키마는 바꾸지 않는다.
 
 ## 문제

@@ -13,7 +13,6 @@
 
 | ID | 우선순위 | 상태 | 과제 | 다음 조치 | 근거 문서 |
 | --- | :------: | ---- | ---- | --------- | --------- |
-| COUNCIL-010 | 중간 | 진행 | 작성완료 수정 복귀·오신청 취소·결재 회수 복구 | 회수 리스너(03→02·12→11), `PATCH reopen`(02→01), `DELETE`(01·02 취소, 사업 45→09) + Step1 버튼 구현 | [설계](docs/superpowers/specs/2026-09-21-council-reopen-cancel-recall-design.md) |
 | COUNCIL-012 | 중간 | 열림 | 작성중 동시 편집의 오래된 입력 덮어쓰기 방지 | 행 잠금과 별도로 조회 시점 스탬프·충돌 해소 계약 설계 | [예산사업 선례](it_backend/src/main/java/com/kdb/it/domain/budget/project/service/ProjectConcurrencyGuard.java) |
 | COUNCIL-013 | 높음 | 열림 | 조회 API 11개의 대상 권한 통일: 위원 목록·평가 전체·계획대상·계획평가 전체·결과요약·일정현황·Q&A·주요Q&A 목록·생략요청(건·전체) | `findReadableCouncil` 정책 적용 전 프론트 호출 영향 분석(목록 페이지의 계획협의회 `plan-targets` 호출 등), 관리자 범위가 맞는 항목 구분 | [가드](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilAccessGuard.java) |
 
