@@ -13,6 +13,5 @@
 
 | ID | 우선순위 | 상태 | 과제 | 다음 조치 | 근거 문서 |
 | --- | :------: | ---- | ---- | --------- | --------- |
-| COUNCIL-013 | 높음 | 열림 | 조회 API 11개의 대상 권한 통일: 위원 목록·평가 전체·계획대상·계획평가 전체·결과요약·일정현황·Q&A·주요Q&A 목록·생략요청(건·전체) | `findReadableCouncil` 정책 적용 전 프론트 호출 영향 분석(목록 페이지의 계획협의회 `plan-targets` 호출 등), 관리자 범위가 맞는 항목 구분 | [가드](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilAccessGuard.java) |
 
 ID 최대 번호(활성·완료 합산): COUNCIL-013.

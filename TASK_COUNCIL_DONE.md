@@ -11,6 +11,19 @@
 
 검증 완료 후 날짜별로 `ID / 상태 / 조치 / 근거` 표와 검증 결과를 추가합니다.
 
+## 2026-09-23
+
+| ID | 상태 | 조치 | 근거 |
+| --- | :--: | ---- | ---- |
+| COUNCIL-013 | ✅ Done | 조회 API 12개의 대상 권한을 상세 조회 범위 한 규칙으로 통일(bounded, 설계 문서 없음 — 사용자 승인: "1번 규칙", 위원 신원은 익명). ① 읽기 범위 10개(위원 목록·평가 전체·계획대상·계획평가 전체·결과요약·일정현황·사전 Q&A·주요 Q&A·생략요청 건·결과서)는 `findReadableCouncil`(관리자·해당 유형 정보보호관리자·주관부서·배정위원, 계획협의회는 관리자·배정위원)로 교체 — 존재 확인(`findActiveCouncil`/`existsById`)만 하던 곳이 403을 낸다. ② 관리자 범위 2개: 기본 위원 후보(`committee/default`)는 `verifyManageable`, 생략 판정함 전체(`skip-requests`)는 IT관리자(`isAdmin`)만. ③ 평가 전체·계획평가 전체는 관리자가 아니면 위원 사번·성명을 `위원1`… 가명(사번 정렬 순, `CouncilEvaluatorMasking`)으로 바꿔 어느 위원이 무엇을 썼는지 알 수 없게 한다(결과요약은 원래 의견만 담아 변경 없음). 프론트는 목록 페이지가 관리자일 때만 판정함을 조회·재조회 | [가드](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilAccessGuard.java) · [가명](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilEvaluatorMasking.java) · [목록](it_frontend/app/pages/info/council-request/index.vue) |
+
+코드 변경(COUNCIL-013): `it_backend` — `CouncilAccessGuard`(`canManage(Basctm)`·`verifyAdmin()` 공개), `CouncilEvaluatorMasking`(신규), `CommitteeService`·`EvaluationService`·`PlanEvaluationService`·`ScheduleService`·`QnaService`·`MainQnaService`·`CouncilSkipService`(`getActiveSkipRequests(CustomUserDetails)`)·`ResultService`, `CouncilLifecycleController`(판정함 조회에 principal 전달, 403 문서화), `CouncilDto`(평가 항목 `eno`·`usrNm` 주석), 테스트: `CouncilEvaluatorMaskingTest`(신규 2건), `CouncilAccessBoundaryTest` +5건, `EvaluationServiceTest`·`PlanEvaluationServiceTest` 가명 1건씩, `CouncilSkipServiceTest` 비관리자 거부 1건, 기존 서비스 테스트 stub 보정(`findReadableCouncil`·활성 원장 조회). `it_frontend` — `composables/council/useCouncilSkipApi.ts`(`fetchSkipRequests({ enabled })`), `pages/info/council-request/index.vue`(관리자만 판정함 조회·재조회), `useCouncil.test.ts` +1건. API 계약(DTO·OpenAPI 타입) 변경 없음이라 codegen 불필요. DB 변경 없음. 배포 순서 프론트 → 백엔드(구 프론트가 새 백엔드를 만나면 일반 사용자 목록 화면에 판정함 403 배너가 뜬다).
+
+`plan-targets` 호출 영향 분석(COUNCIL-013): 목록 페이지의 계획협의회(02) 카드 통계(`council-plan-stats`)는 02 카드가 있을 때만 호출하고, 02 카드는 목록 API의 관리자 분기와 배정위원 분기에만 실린다. 둘 다 `verifyReadable`을 통과하므로 목록 화면은 깨지지 않는다. 그 밖의 호출처(`PlanCouncilTargets`·`PlanPprtForm`·`PlanPprtSummaryPanel`)는 상세·준비·결과 페이지 안이라 상세 조회 범위와 같다.
+
+검증 결과(COUNCIL-013): 백엔드 `./gradlew test` 5,704건 0 실패, `spotlessJavaCheck` 통과, council 도메인+아키텍처+`CouncilJsonlessApprovalWorkflowTest` 584건 통과. 프론트 `format:check`·`check`(0 errors) 통과, `npm test` 6,125건 중 6,123 통과 — 실패 2건은 기존 ICU 환경 실패 파일 2개(`project-domain-i18n`, `ItBudgetSourceChangedDialog`)로 이번 변경과 무관.
+
+미검증 범위(COUNCIL-013): 실제 계정(주관부서·배정위원·정보보호관리자)으로 12개 API를 브라우저에서 호출하는 종단 확인, 결과 페이지 비관리자 화면에서 가명 표시(현재 비관리자 화면은 평가 요약 패널을 렌더하지 않아 UI 변화 없음), 위원 목록(`committee`)은 위원 신원을 그대로 담는다(편성 현황이라 가명 대상에서 제외 — 사용자 지시 범위는 "어떤 위원이 무엇을 작성했는지").
 ## 2026-09-22
 
 | ID | 상태 | 조치 | 근거 |
