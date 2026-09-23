@@ -14,12 +14,6 @@
 | ID | 우선순위 | 상태 | 과제 | 다음 조치 | 근거 문서 |
 | --- | :------: | ---- | ---- | --------- | --------- |
 | COUNCIL-015 | 중간 | 보류 | 협의회 알림 연동 미구현 — ① 사전 Q&A 등록 시 추진부서 담당자 알림, ② 평가위원 선정·일정 응답 요청 시 위원 알림("알림은 추후구현"). 협의회 도메인에서 알림을 발행하는 곳은 생략 판정 결재 결과(`CouncilSkipService`) 1곳뿐 | 사용자가 알림을 보낼 위치·상황·대상을 결정한 뒤 착수(2026-09-23). 결정되면 공통 `common/notification` 아웃박스(`NotificationEvent`)로 발행 지점·수신자·문구 설계 → `QnaService.createQna`, `CommitteeService.saveCommittee`/일정 요청 흐름에 배선. 공통 알림 코드 수정이 필요하면 사용자 확인 | `prds/PRD_c_20260620.md`:5 · `prds/done/PRD_c_20260520.md`:320 |
-| COUNCIL-017 | 중간 | 열림 | 결재 콜백 `PATCH /api/council/{id}/approval` 정리 — 프론트 호출처 없음(라이프사이클 API는 start·complete·skip·start-preparation·reopen만 PATCH), 결재 완료·회수는 `CouncilApprovalEventListener`가 이벤트로 처리. 관리자 가드는 있으나 사용되지 않는 진입점 | 공통 결재 시스템이 이 URL을 호출하지 않는지 확인 후 엔드포인트·`processApprovalCallback`·`ApprovalCallbackRequest` 제거, `CouncilRouteContractTest` 44→43 | `prds/PRD_c_20260701.md` §1-2 |
-| COUNCIL-018 | 낮음 | 열림 | 목록 카드 문구 정리 요구 미반영 — '담당 협의회에 안건으로 상정합니다'(`council.list.hintNew`) 삭제, '상세보기' 보조링크(`council.list.detail`, `@detail`) 삭제. 2026-05-20 디자인 요구 4건 중 2건이 그대로 남아 있음 | 요구가 아직 유효한지 사용자 확인 → `index.vue` 카드 props·i18n 키 제거, `ProjectListCard` `detailLabel` 미전달 | `prds/done/PRD_c_20260520.md`:20-22 |
-| COUNCIL-019 | 낮음 | 열림 | 사전·본회의 Q&A 응답의 질의자·답변자 성명(`usrNm`·`repNm`)이 항상 null — 프론트는 사번 노출을 제거(2026-08-04)해 현재 이름 없이 표시 | `UserRepository.findNameViewsByEnoIn` 배치 조회로 성명 채움(사번은 계속 비노출). 성명 표시가 개인정보 정책상 허용되는지 사용자 확인 | `prds/PRD_c_20260701.md`:132 · `prds/PRD_c_20260803.md`:57 |
-| COUNCIL-020 | 낮음 | 열림 | 계획협의회 테스트 공백 — 조정 예산 최초/조정 비교 단위 테스트(`planBudgetDiff`), 계획→02 협의회→적정/유보→완료 전 구간 e2e 없음(현재 e2e는 스냅샷 손상 배너 Mock 검증뿐) | 예산 비교 util 단위 테스트, e2e 시나리오 1개(공통 API 목 필수) | `prds/PLAN_c_20260709_impl.md`:142-143 |
-| COUNCIL-021 | 낮음 | 열림 | 코드 위생 잔여 4건(2026-07-01 보류) — `EmployeeSearchDialog` 자동/명시 임포트 혼재, `prepare/[id].vue` 탭 value 선언 순서(2→3→5→4), `FeasibilityService.getFeasibility` null 반환 미명시, `ResultService.getMyReviewStatus` 비위원·미검토 미구분 | 한 번에 정리. 동작 변경 없음, 타입·테스트로 확인 | `prds/PRD_c_20260701.md` §4·§5 |
-| COUNCIL-022 | 낮음 | 열림 | 계획협의회(02) 일정확정 필수응답 팀 규칙 미확정 — `INFO_SYS_REQUIRED_TEM_CODES`(12004·18001)가 심의유형 구분 없이 적용됨 | 02 유형의 필수응답 팀을 사용자와 확정 → 유형별 Map으로 분리 | `prds/PLAN_c_20260709_impl.md`:56 |
 
 ID 최대 번호(활성·완료 합산): COUNCIL-022.
 
