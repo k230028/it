@@ -1,7 +1,7 @@
 # 정보화실무협의회 타당성검토표 동시 편집 충돌 감지 (경량)
 
-- 과제: [COUNCIL-012](../../../TASK_COUNCIL.md)
-- 선례: [전산업무비 저장 충돌 감지와 병합](done/2026-09-08-cost-concurrency-conflict-merge-design.md), 정보화사업 확장(BE-102, `docs/operations/2026-09-08-project-concurrency-rollout.md`). 스탬프·409 계약은 그대로 옮기고 화면 해소는 경량으로 줄인다.
+- 과제: [COUNCIL-012](../../../../TASK_COUNCIL.md)
+- 선례: [전산업무비 저장 충돌 감지와 병합](2026-09-08-cost-concurrency-conflict-merge-design.md), 정보화사업 확장(BE-102, `docs/operations/2026-09-08-project-concurrency-rollout.md`). 스탬프·409 계약은 그대로 옮기고 화면 해소는 경량으로 줄인다.
 - 범위: `it_backend` `domain/council`(스탬퍼·가드·예외·DTO 필드·`FeasibilityService`·컨트롤러·테스트)과 `GlobalExceptionHandler`의 핸들러 1개(사용자 확인 필요한 범위 밖 파일 — 선례 두 건과 같은 자리), `it_frontend` Step1(`useCouncilRequestPage`·`[id].vue`·`i18n council`·생성 타입·테스트). DB 마이그레이션 없음.
 
 ## 1. 문제

@@ -8,7 +8,7 @@
 
 **Tech Stack:** Spring Boot 3 (JPA, `ItBudgetCanonicalJson`), JUnit 5 + Mockito, Nuxt 4 + Vue 3, PrimeVue `Dialog`, Vitest, openapi-typescript codegen.
 
-**Spec:** `docs/superpowers/specs/2026-09-22-council-feasibility-concurrency-design.md`
+**Spec:** `docs/superpowers/specs/done/2026-09-22-council-feasibility-concurrency-design.md`
 
 ## Global Constraints
 

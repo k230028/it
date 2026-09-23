@@ -11,6 +11,17 @@
 
 검증 완료 후 날짜별로 `ID / 상태 / 조치 / 근거` 표와 검증 결과를 추가합니다.
 
+## 2026-09-22
+
+| ID | 상태 | 조치 | 근거 |
+| --- | :--: | ---- | ---- |
+| COUNCIL-012 | ✅ Done | Step1 타당성검토표에 동시성 스탬프(`BPOVWM`+`BCHKLM`+`BPERFM` SHA-256, `KPN_TP_TC`·감사 필드 제외) 도입. `GET`이 `concurrencyStamp`를 싣고 `POST/PUT`은 잠금 뒤·수정 전에 대조해 형식 오류 400 `COUNCIL_STAMP_INVALID`, 누락·불일치 409 `COUNCIL_SOURCE_CHANGED`(변경자·현재 스탬프·현재값)로 응답하며 성공 시 `FeasibilitySaveResponse { concurrencyStamp }`를 돌려준다. 프론트는 스탬프를 보관·전송하고 409를 다이얼로그로 받아 [다시 불러오기]/[내 입력으로 덮어쓰기]로 해소(경량, 3-way 병합 없음 — 사용자 결정). `GlobalExceptionHandler`에 협의회 전용 핸들러 1개 추가(사용자 승인) | [설계](docs/superpowers/specs/done/2026-09-22-council-feasibility-concurrency-design.md) · [계획](docs/superpowers/plans/done/2026-09-22-council-feasibility-concurrency.md) |
+
+코드 변경(COUNCIL-012): `it_backend` — `CouncilFeasibilityStamper`·`CouncilFeasibilityConcurrencyGuard`·`CouncilConflictException`·`CouncilConflictResponse`·`CouncilFeasibilityDto`(신규, `CouncilDto` 800줄 상한으로 타당성검토표 레코드 분리), `CouncilDto`(`FeasibilityRequest/Response.concurrencyStamp`, `FeasibilitySaveResponse`), `FeasibilityService`, `CouncilFeasibilityController`, `GlobalExceptionHandler`(핸들러 1개), 테스트 신규 3개(`CouncilFeasibilityStamperTest` 4건·`CouncilFeasibilityConflictHandlerTest` 2건·`CouncilFeasibilityConcurrencyGuardTest`)와 기존 테스트 보정, `ApiResponseOpenApiContractTest`에 `FeasibilityResponse.concurrencyStamp` nullable 등록 1줄(council 밖 파일, 런타임 영향 없음). `it_frontend` — `composables/council/useFeasibilityConflict.ts`·`useFeasibilityAttachment.ts`(신규, 후자는 `useCouncilRequestPage` 800줄 상한 분리), `useCouncilCommitteeApi.ts`, `useCouncilRequestPage.ts`, `features/council/feasibilityFormDefaults.ts`, `pages/info/council-request/[id].vue`, `i18n/messages/council.ts`(키 4개 ko/en), `types/council.ts`·`types/api.d.ts`(codegen), 테스트 2개(`useCouncilRequestPage.test.ts` +6건, `FeasibilityOverview-byte-limit.test.ts` 픽스처). 충돌 해소 함수 이름은 `acceptServerVersion`(ERR-15 refresh-binding census가 `reload*` 템플릿 바인딩을 재조회로 오인해 개명). DB 변경 없음. 배포 순서 프론트 → 백엔드(요청 스탬프는 선택 필드라 구 프론트도 동작하나 누락은 409이므로 실제로는 백엔드 배포 후 프론트가 즉시 따라가야 한다).
+
+검증 결과(COUNCIL-012): 백엔드 `./gradlew test` 5,694건 0 실패(2 skipped, 1차 실행의 `ApiResponseOpenApiContractTest` 1건 실패는 위 nullable 등록으로 해소), `spotlessJavaCheck` 통과, council 도메인 456건. 프론트 `format:check`·`check`(0 errors) 통과, `npm test` 6,124건 중 6,120 통과 — 실패 4건은 기존 ICU 환경 실패 파일 2개(`project-domain-i18n`, `ItBudgetSourceChangedDialog`)로 이번 변경과 무관. 아키텍처 ratchet(800줄·문구·refresh census·라우트 계약 44개·`useCouncil` 계약 49키) 통과.
+
+미검증 범위(COUNCIL-012): 실제 두 브라우저 세션의 동시 저장 종단 확인, 다이얼로그 배선(페이지 컴포넌트 테스트 없음), 결과서(`BRSLTM`)는 범위 밖.
 ## 2026-09-21
 
 | ID | 상태 | 조치 | 근거 |
