@@ -15,6 +15,7 @@
 
 | ID | 상태 | 조치 | 근거 |
 | --- | :--: | ---- | ---- |
+| COUNCIL-027 | ✅ Done | 로컬 프론트·`local-ext` 백엔드·Oracle과 실제 역할 계정 7개를 연결해 일반 사업 협의회 한 건의 전체 수명주기를 검증했다. 신청·타당성검토표 동시성 충돌·회수·반려·승인·위원 편성·일정·평가·결과 검토·2단계 최종 결재가 상태 01→02→03→02→03→01→02→03→04→05→06→07→08→09→10→11→12→13으로 이어졌고 권한 밖 접근과 단계 밖 쓰기도 400·403·409 계약대로 차단됐다. 실행 중 확인한 타당성검토표 신규 저장 필수값 persist 순서, 성과지표 벌크 교체 영속성 충돌, 저장 응답 스탬프 불일치, 비위원 본인 일정 조회 허용, 비위원 결과 검토의 잘못된 400 변환을 수정하고 회귀 테스트를 추가했다 | [실행 증적](docs/superpowers/evidence/2026-09-25-council-027-live-e2e.md) · [완료 계획](docs/superpowers/plans/done/2026-09-25-council-027-live-e2e-verification.md) |
 | COUNCIL-028 | ✅ Done | 협의회 프론트 대표 경로를 `/info/council-request`에서 `/info/council`로 변경하고 기존 경로 리다이렉트는 두지 않았다. 목록·상세·개최준비·결과 페이지와 이동 규칙·테스트·문구 검사 경로를 함께 옮겼고, 생략 판정 알림 링크도 새 경로로 변경했다. 로컬 라우트 카탈로그와 `MINF0017` 메뉴를 `/info/council`로 적용했으며 코드·문서·백엔드를 `K230028` 브랜치에 푸시했다. 개발계 배포와 메뉴 오픈은 사용자 결정으로 연기했다 | [현재 페이지](it_frontend/app/pages/info/council/index.vue) · [라우팅 유틸](it_frontend/app/features/council/request/council-routing.ts) · [알림 링크](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilSkipService.java) |
 | COUNCIL-023 | ✅ Done | 평가·결과서 쓰기에 단계 제한과 원장 잠금 추가. `CouncilAccessGuard.lockAtStatus(협의회ID, 허용상태, 관형구)`가 `findByIdForUpdate`로 원장을 비관적 잠금한 뒤 진행상태를 검사하고, 허용 밖이면 409로 거부한다(`lockWritableDraft` 선례, 사용자 승인). 일반·계획 평가 저장은 협의회 진행 중(07)·평가의견 작성 중(08), 결과서 저장은 08·결과서 작성 중(09), 결과서 확정은 09만 허용한다. 종전 `confirmResult`는 결과서 존재만 확인하고 무조건 10으로 전이해 완료(13)가 검토 중(10)으로 역행할 수 있었다. 잠금 덕에 다른 세션의 상태 전이와 직렬화되어 낡은 상태로 쓰는 경합도 막는다 | [가드](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilAccessGuard.java) · [결과서](it_backend/src/main/java/com/kdb/it/domain/council/service/ResultService.java) |
 | COUNCIL-024 | ✅ Done | 평가위원 가명을 비밀값 기반으로 교체. COUNCIL-013의 가명은 사번 오름차순이라, 위원 명단 API가 사번·성명을 그대로 돌려주는 이상 명단을 정렬하기만 하면 신원이 복원됐다. 이제 협의회ID와 사번의 HMAC-SHA256 순위로 번호를 매겨 사번 크기·입력 순서와 무관하게 만든다. 번호 대상도 제출자에서 위원 명단 전체로 바꿔, 사번이 더 작은 위원이 나중에 제출할 때 기존 가명이 바뀌던 문제를 없앴다. 비밀값은 `council.evaluator-pseudonym-secret`(전용 프로퍼티, 사용자 승인)으로 주입하며 미설정 시 기동마다 무작위 키를 쓰고 경고를 남긴다 | [가명](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilEvaluatorMasking.java) |
@@ -34,6 +35,12 @@
 검증 결과(COUNCIL-028): 프론트 관련 Vitest 103건 통과, 백엔드 `CouncilSkipServiceTest` 1건 통과, 런타임·테스트 범위의 `/info/council-request` 참조 0건. 로컬 DB는 라우트 카탈로그 `/info/council` 사용·활성 상태와 `MINF0017`의 `/info/council` 연결을 확인했다. `K230028` 푸시 커밋은 루트 `505f764`, 프론트 `0a817efe`, 백엔드 `a8f22cb0`이다.
 
 미검증 범위(COUNCIL-028): 개발계 배포, 개발계 라우트 카탈로그 교체와 `MINF0017` 메뉴 오픈, 개발계에서 목록·상세·개최준비·결과 직접 진입. 사용자가 개발계 적용을 나중에 수행하기로 결정했다.
+
+코드 변경(COUNCIL-027): `it_backend` — `FeasibilityService`(신규 개요 필수값 설정 뒤 persist, 성과지표 벌크 삭제 뒤 영속성 컨텍스트 초기화, 저장 응답 스탬프 DB 재조회), `ScheduleService`(비위원의 본인 일정 조회 403), `ResultService`(비위원·간사의 결과 검토를 `AccessDeniedException`으로 통일)와 각 서비스 테스트. 루트 — 실행 계획·사전 점검·증적·전용 TASK 이력. 프론트·DB 스키마 변경 없음.
+
+검증 결과(COUNCIL-027): 브라우저별 실제 SSO·개발 사용자 전환, 백엔드 API, 로컬 Oracle을 연결한 12개 시나리오 통과. 최종 DB 대조는 상태 13, 활성 위원 2명, 일정 응답자 2명, 평가자 2명·평가 12행, 결과 확인자 2명, 결과서 1행, 사업 상태 45였다. 백엔드 council 도메인 47개 테스트 클래스 501건 통과·실패 0, 변경 Java 파일 6개 Spotless 검사 통과. 전체 `spotlessJavaCheck`는 이번 변경 밖 `BizplanListQueryIntegrationTest`·`BizplanServiceTest`의 기존 포맷 위반 때문에 실패했다.
+
+정리·미검증 범위(COUNCIL-027): 완료 상태 13과 결재 이력은 수동 삭제하지 않고 로컬 검증 자료로 보존했다. 정확한 협의회·결재 식별자와 역할표는 Git 비추적 `.tmp/council-local/`에, 사업 원본은 로컬 백업 테이블 `C027_BPROJM_BAK`·`C027_BPROJA_BAK`에 보관했다. 개발계·운영계 실행, 심의유형 02·04 전체 흐름, 추진부서 통보 API는 이번 범위에 포함하지 않았다.
 ## 2026-09-23
 
 | ID | 상태 | 조치 | 근거 |
