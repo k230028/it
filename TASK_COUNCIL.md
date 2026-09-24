@@ -2,7 +2,7 @@
 
 ## 관리 방식
 
-정보화실무협의회(`/info/council-request`, API `/api/council`) 전용 과제의 단일 관리 문서입니다. 공통 과제는 [TASK.md](TASK.md), 협의회 완료·해소·감내·폐기 기록은 [TASK_COUNCIL_DONE.md](TASK_COUNCIL_DONE.md)에서 관리합니다.
+정보화실무협의회(`/info/council`, API `/api/council`) 전용 과제의 단일 관리 문서입니다. 공통 과제는 [TASK.md](TASK.md), 협의회 완료·해소·감내·폐기 기록은 [TASK_COUNCIL_DONE.md](TASK_COUNCIL_DONE.md)에서 관리합니다.
 
 - 기존 TASK와 동일하게 활성 과제만 아래 표에 유지하고, 검증을 마친 항목은 완료 파일로 옮깁니다. 일부만 구현하면 완료로 표시하지 않습니다.
 - ID는 `COUNCIL-001`부터 순차 채번하며 두 파일을 합쳐 중복을 확인합니다. 코드 변경, 검증 결과, 미검증 범위를 완료 기록에 남깁니다.
@@ -14,8 +14,14 @@
 | ID | 우선순위 | 상태 | 과제 | 다음 조치 | 근거 문서 |
 | --- | :------: | ---- | ---- | --------- | --------- |
 | COUNCIL-015 | 중간 | 보류 | 협의회 알림 연동 미구현 — ① 사전 Q&A 등록 시 추진부서 담당자 알림, ② 평가위원 선정·일정 응답 요청 시 위원 알림("알림은 추후구현"). 협의회 도메인에서 알림을 발행하는 곳은 생략 판정 결재 결과(`CouncilSkipService`) 1곳뿐 | 사용자가 알림을 보낼 위치·상황·대상을 결정한 뒤 착수(2026-09-23). 결정되면 공통 `common/notification` 아웃박스(`NotificationEvent`)로 발행 지점·수신자·문구 설계 → `QnaService.createQna`, `CommitteeService.saveCommittee`/일정 요청 흐름에 배선. 공통 알림 코드 수정이 필요하면 사용자 확인 | `prds/PRD_c_20260620.md`:5 · `prds/done/PRD_c_20260520.md`:320 |
+| COUNCIL-027 | 높음 | 열림 | 실제 계정·백엔드·DB를 연결한 협의회 전체 흐름의 종단 검증. 기존 완료 기록에 실제 계정·브라우저 검증이 미실시로 남아 있음 | COUNCIL-023~026 반영 후 주관부서·배정위원·관리자·정보보호관리자 계정으로 신청→반려/회수→재상신→평가→결과결재 검증. 권한 거부·두 세션 충돌·새로고침/재방문·완료 후 변경 차단을 포함하고 환경·결과·미검증 범위를 기록 | [기존 완료·미검증 이력](TASK_COUNCIL_DONE.md) |
+| COUNCIL-028 | 높음 | 개발완료·적용대기 | 개발계 메뉴 오픈 전 협의회 프론트 대표 경로를 `/info/council-request`에서 `/info/council`로 변경. 아직 오픈하지 않은 경로이므로 기존 경로 호환 리다이렉트는 두지 않음 | 코드·테스트 경로 전환 및 로컬 라우트 카탈로그 교체 완료. 개발계 배포 후 라우트 카탈로그의 `/info/council-request`를 `/info/council`로 교체하고, 관리자 메뉴 `MINF0017`의 준비중을 해제해 화면 경로를 `/info/council`로 지정한 다음 목록/상세/준비/결과 직접 진입을 검증. 저장소에 운영 메뉴 데이터용 임의 마이그레이션은 추가하지 않음 | [현재 페이지](it_frontend/app/pages/info/council/index.vue) · [라우팅 유틸](it_frontend/app/features/council/request/council-routing.ts) · [알림 링크](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilSkipService.java) |
 
-ID 최대 번호(활성·완료 합산): COUNCIL-022.
+ID 최대 번호(활성·완료 합산): COUNCIL-028.
+
+COUNCIL-023~027은 2026-09-23 추가 코드 검토 결과와 사용자 기록 요청에 따라 등록했습니다. COUNCIL-023~026은 코드에서 확인한 보완 사항이며 재현 테스트·수정은 아직 수행하지 않았습니다. COUNCIL-027은 기존 미검증 범위를 모은 검증 과제입니다.
+
+COUNCIL-028은 2026-09-23 개발계 메뉴 오픈 계획에 따라 등록했고 2026-09-24 목표 경로를 `/info/council`로 정정했습니다. 미오픈 경로이므로 `/info/council-request` 호환 리다이렉트 없이 전환합니다.
 
 ## 범위 밖 발견 (2026-09-23 PRD 대조)
 

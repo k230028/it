@@ -19,6 +19,22 @@
 
 검증 완료 후 날짜별로 `ID / 상태 / 조치 / 근거` 표와 검증 결과를 추가합니다.
 
+## 2026-09-25
+
+| ID | 상태 | 조치 | 근거 |
+| --- | :--: | ---- | ---- |
+| COUNCIL-023 | ✅ Done | 평가·결과서 쓰기에 단계 제한과 원장 잠금 추가. `CouncilAccessGuard.lockAtStatus(협의회ID, 허용상태, 관형구)`가 `findByIdForUpdate`로 원장을 비관적 잠금한 뒤 진행상태를 검사하고, 허용 밖이면 409로 거부한다(`lockWritableDraft` 선례, 사용자 승인). 일반·계획 평가 저장은 협의회 진행 중(07)·평가의견 작성 중(08), 결과서 저장은 08·결과서 작성 중(09), 결과서 확정은 09만 허용한다. 종전 `confirmResult`는 결과서 존재만 확인하고 무조건 10으로 전이해 완료(13)가 검토 중(10)으로 역행할 수 있었다. 잠금 덕에 다른 세션의 상태 전이와 직렬화되어 낡은 상태로 쓰는 경합도 막는다 | [가드](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilAccessGuard.java) · [결과서](it_backend/src/main/java/com/kdb/it/domain/council/service/ResultService.java) |
+| COUNCIL-024 | ✅ Done | 평가위원 가명을 비밀값 기반으로 교체. COUNCIL-013의 가명은 사번 오름차순이라, 위원 명단 API가 사번·성명을 그대로 돌려주는 이상 명단을 정렬하기만 하면 신원이 복원됐다. 이제 협의회ID와 사번의 HMAC-SHA256 순위로 번호를 매겨 사번 크기·입력 순서와 무관하게 만든다. 번호 대상도 제출자에서 위원 명단 전체로 바꿔, 사번이 더 작은 위원이 나중에 제출할 때 기존 가명이 바뀌던 문제를 없앴다. 비밀값은 `council.evaluator-pseudonym-secret`(전용 프로퍼티, 사용자 승인)으로 주입하며 미설정 시 기동마다 무작위 키를 쓰고 경고를 남긴다 | [가명](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilEvaluatorMasking.java) |
+| COUNCIL-025 | ✅ Done | 계획협의회 완료를 심의 대상 전부 평가 기준으로 판정. 종전에는 위원이 한 건이라도 제출하면 완료로 봐서 대상이 다섯 사업이어도 한 건만 평가하고 닫을 수 있었다. 이제 위원마다 대상 사업을 빠짐없이 평가해야 하며, 대상 밖 데이터가 남아 있어도 대상 집합만 기준으로 세고, 스냅샷 손상 등으로 대상이 0개면 완료를 막는다(사용자 결정). 구조상 계획 스냅샷 해석을 `CouncilPlanSnapshot`으로 분리했다 — 완료 판정을 하는 `CouncilService`가 심의 대상을 알아야 하는데 그 지식을 가진 `PlanEvaluationService`가 `CouncilService`를 의존해 되받아 주입하면 순환이 생기기 때문이다 | [스냅샷 해석](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilPlanSnapshot.java) · [완료 판정](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilService.java) |
+| COUNCIL-026 | ✅ Done | 일반 평가의 항목·점수 검증과 완료 판정 정확화. 요청 계층은 `EvaluationRequest.items`에 중첩 검증(`@Valid`)을 걸어 항목 제약이 실제로 발화하게 하고 항목코드 필수·점수 1~5 필수를 추가했다(종전에는 점수 0·999·null과 빈 코드가 그대로 저장됐다). 서비스 계층은 Bean Validation이 표현하지 못하는 정의 밖 코드·중복·누락을 검사해 정의된 6개 항목을 정확히 한 번씩 담은 요청만 받는다(6개 전부 필수, 사용자 결정). 완료 판정은 행 개수 대신 정의된 항목의 서로 다른 개수를 센다 — 종전 집계는 중복 행까지 합산해 실제 6개를 채우지 않아도 완료로 볼 수 있었다 | [요청 DTO](it_backend/src/main/java/com/kdb/it/domain/council/dto/CouncilDto.java) · [평가 서비스](it_backend/src/main/java/com/kdb/it/domain/council/service/EvaluationService.java) |
+
+코드 변경(COUNCIL-023~026): `it_backend` — `CouncilAccessGuard`(`lockAtStatus`·`lockActive` 추가), `CouncilPlanSnapshot`(신규, `PlanEvaluationService`에서 스냅샷 파서 이관), `CouncilEvaluatorMasking`(정적 유틸 → `@Component`, HMAC 순위), `EvaluationService`·`PlanEvaluationService`·`ResultService`·`CouncilService`, `CouncilDto`(평가 요청 제약), `EvaluationRepository`(집계 쿼리에 `DISTINCT`와 유효 코드 필터), `application.properties`(가명 비밀값 1줄, council 밖 파일 — 사용자 승인). 테스트 — `CouncilPlanSnapshotTest`(신규 7건), `CouncilEvaluationRequestValidationTest`(신규 5건), `CouncilAccessBoundaryTest` +2, `ResultServiceTest` +4, `EvaluationServiceTest` +5, `PlanEvaluationServiceTest` +2, `CouncilEvaluatorMaskingTest` 재작성 6건, 기존 테스트 stub 보정. API 응답 계약은 그대로라 codegen 불필요. DB 변경 없음.
+
+파일 크기 변화(COUNCIL-025): `PlanEvaluationService` 688→521줄, `CouncilService` 793→786줄(800줄 상한 여유 확보), `CouncilPlanSnapshot` 254줄 신설.
+
+검증 결과(COUNCIL-023~026): 백엔드 `./gradlew test` 전체 통과(023 시점 5,725건 0 실패), `spotlessJavaCheck` 통과. council 도메인+아키텍처 519건 0 실패. 프론트는 변경이 없어 실행하지 않았다.
+
+미검증 범위(COUNCIL-023~026): 실제 두 세션이 동시에 상태 전이와 저장을 시도하는 잠금 경합의 종단 확인(Oracle 실 잠금 대기), 운영에서 `COUNCIL_EVALUATOR_PSEUDONYM_SECRET` 주입 여부와 다중 인스턴스 간 가명 일관성, 브라우저에서 완료 단계 뒤 저장 시도의 409 안내 문구 노출. COUNCIL-024의 위원 명단(`committee`) 자체는 종전대로 사번·성명을 돌려준다 — 명단 공개는 정상이고 숨겨야 하는 것은 "누가 무엇을 썼는가"라는 판단.
 ## 2026-09-23
 
 | ID | 상태 | 조치 | 근거 |
