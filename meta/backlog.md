@@ -53,6 +53,7 @@
 | 5 | TPRMPP_CCODEM, TPRMPP_CLANGM | `V20260903_002`(결재자직위코드 `IT_PTL_APF_DCR_PT_C` 8건), `V20260903_003`(산정근거구분코드 `IT_PTL_CNCD_FDTN_TC` 4건) 시드 | 확인 조회: `SELECT CO_C_ID_NM, COUNT(*) FROM ITPOWN.TPRMPP_CCODEM WHERE CO_C_ID_NM IN ('IT_PTL_APF_DCR_PT_C','IT_PTL_CNCD_FDTN_TC') AND DEL_YN='N' GROUP BY CO_C_ID_NM` 기대값 8·4. 미달이면 각 스크립트의 `MERGE` 구간을 적용한다(재실행 안전) | 2026-09-12 |
 | 6 | TPRMPP_CFILEM | `V20260904_003`: `요구사항정의서` 종류 중 Excalidraw 고정 파일명 행을 `다이어그램` 종류로 보정 | 확인 조회: `SELECT COUNT(*) FROM ITPOWN.TPRMPP_CFILEM WHERE DEL_YN='N' AND APG_FL_KD_NM='요구사항정의서' AND (LOWER(FL_NM)='excalidraw-scene.lzstr' OR LOWER(FL_NM) LIKE 'excalidraw-img-%')` 기대값 0. 0이 아니면 스크립트 `UPDATE` 구간을 적용한다 | 2026-09-12 |
 | 7 | TPRMPP_CMENUD, TPRMPP_CMENUM, TPRMPP_CLANGM | `V20260908_001`: 전자결재 헤더 아래 '전체 문서함'(`/approval/list`) 경로 카탈로그·메뉴 행·번역 시드 | 확인 조회는 [`migrations/_verify/approval-all-documents-menu-seed-verify.sql`](../it_database/migrations/_verify/approval-all-documents-menu-seed-verify.sql). 미달이면 스크립트의 `MERGE` 구간을 적용한다(재실행 안전) | 2026-09-12 |
+| 8 | TPRMPP_BBIZPM, TPRMPP_BBIZGM | `V20260924_001`: 사업계획 마스터 `TOT_RQM_AMT`를 삭제되지 않은 사업품목 `AMT` 합계로 보정 (운영 적용대기) | 적용 전후 `TOT_RQM_AMT IS NULL` 또는 활성 품목 합계와 불일치하는 마스터 건수를 확인한다. 적용 후 기대값 0건. | 2026-09-24 |
 
 ## 5. 보류
 
