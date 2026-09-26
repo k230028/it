@@ -11,6 +11,22 @@
 
 검증 완료 후 날짜별로 `ID / 상태 / 조치 / 근거` 표와 검증 결과를 추가합니다.
 
+## 2026-09-26
+
+| ID | 상태 | 조치 | 근거 |
+| --- | :--: | ---- | ---- |
+| COUNCIL-015 | ✅ Done | 사전 Q&A 등록·답변, 위원 선정, 개최준비 시작, 일정 확정, 결과서 검토 시작, 협의회 완료의 7개 시점에 공통 알림 아웃박스 이벤트를 발행한다. 추진부서 담당자·위원·질의자에게 개인별 인앱 알림을 보내고, 일정 확정과 완료는 그룹웨어 메일도 함께 발행한다. 알림 링크는 `/info/council/{협의회ID}`를 사용한다 | [알림 발행기](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilNotifier.java) · [알림 종류](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilNotice.java) |
+| COUNCIL-030 | ✅ Done | 02 유형 생성·재신청·개최준비·평가·완료에서 계획 원본 존재와 스냅샷 완전성, 심의 대상 존재를 공통 검증한다. 일부만 해석되는 손상 스냅샷으로 업무가 계속되는 것을 막고, 활성 02 유형 협의회가 참조하는 계획의 논리삭제도 차단한다 | [스냅샷 검증](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilPlanSnapshot.java) · [삭제 제약](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilPlanDeletionConstraint.java) |
+| COUNCIL-031 | ✅ Done | 02 유형 위원 편성을 서버에서 검증한다. 원장과 요청 심의유형 일치, 필수 7개 팀 대표 전원 포함, IT기획팀 대표의 겸직 간사(04), 나머지 필수 대표의 당연직(01), 추가 위원의 소집위원(02), 중복 사번과 비활성 사용자 제외를 강제한다 | [위원 검증](it_backend/src/main/java/com/kdb/it/domain/council/service/CommitteeService.java) |
+| COUNCIL-032 | ✅ Done | 순수 간사(03)는 위원 명단에 있더라도 02 유형 평가와 가능 일정 제출을 할 수 없도록 서비스 경계에서 거부한다. 겸직 간사(04)는 평가위원 역할을 유지한다 | [계획 평가](it_backend/src/main/java/com/kdb/it/domain/council/service/PlanEvaluationService.java) · [일정](it_backend/src/main/java/com/kdb/it/domain/council/service/ScheduleService.java) |
+| COUNCIL-033 | ✅ Done | 일정 확정 시 단순히 전원이 한 번 이상 응답했는지가 아니라, 선택한 날짜·시간을 모든 평가위원이 `가능(Y)`으로 제출했는지 확인한다. 한 명이라도 불가 또는 미응답이면 확정을 거부한다 | [일정 확정](it_backend/src/main/java/com/kdb/it/domain/council/service/ScheduleService.java) |
+
+코드 변경(COUNCIL-030~033): `it_backend` — `CouncilPlanSnapshot`·`CouncilService`·`PlanEvaluationService`·`ScheduleService`·`CommitteeService`·`PlanService`, 계획 삭제 제약 인터페이스와 협의회 구현체, 관련 저장소 조회. 프론트·DB 스키마·API DTO 변경 없음.
+
+검증 결과(COUNCIL-015, COUNCIL-030~033): 백엔드 `spotlessJavaCheck` 통과. 협의회 도메인 전체, `PlanServiceTest`, `MaxLinesRatchetTest` 합계 547건 통과(실패 0, 오류 0, 건너뜀 0). RED 재현 테스트는 별도 커밋으로 보존했다.
+
+미검증 범위(COUNCIL-015, COUNCIL-030~033): 개발계·운영계 배포와 개발계 메뉴 오픈, 실제 그룹웨어 메일 수신, 실제 Oracle 데이터로 손상 계획·비활성 사용자·전원 불가 슬롯을 만드는 종단 테스트. 로컬 단위·계약 범위에서 검증했다.
+
 ## 2026-09-25
 
 | ID | 상태 | 조치 | 근거 |
