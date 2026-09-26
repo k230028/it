@@ -11,6 +11,20 @@
 
 검증 완료 후 날짜별로 `ID / 상태 / 조치 / 근거` 표와 검증 결과를 추가합니다.
 
+## 2026-09-27
+
+| ID | 상태 | 조치 | 근거 |
+| --- | :--: | ---- | ---- |
+| COUNCIL-046 | ✅ Done | 위원 편성 화면이 심의유형 제약을 몰라 계획협의회 편성이 막혀 있었다. ① 당연위원 자동 설정 버튼이 `당연위원 목록이 완전히 비었을 때`만 떠서, 일부만 저장된 협의회(`ASCT-2026-0403`: 당연위원 1명)는 나머지 6명을 채울 방법이 없었다. ② 02에 간사 추가 버튼이 열려 있어 추가하면 서버가 순수 간사(`03`)를 거부해 저장이 400으로 막혔다(COUNCIL-031 검증과 화면 불일치). 자동 설정 버튼을 당연위원 섹션 헤더에 상시 노출하고, 필수 7팀 미충족 경고를 저장 전에 띄우며, 02는 간사 추가와 겸직 간사 삭제를 감췄다. 자동 배정 결과와 소집위원이 겹치면 소집위원 쪽에서 덜어내 같은 사번을 두 유형으로 보내던 400도 막는다. 심의유형 분기는 `usePlanCommitteeRules`로 분리했다 | [편성 규칙](it_frontend/app/composables/council/usePlanCommitteeRules.ts) · [화면](it_frontend/app/components/council/committee/CommitteeSelector.vue) |
+
+코드 변경(COUNCIL-046): `it_frontend` — `usePlanCommitteeRules`(신규), `components/council/committee/CommitteeSelector.vue`(자동 설정 버튼 상시 노출·필수 7팀 경고·간사 추가 차단·중복 사번 정리), `i18n/messages/council.ts`(문구 2개 ko/en), 테스트 `usePlanCommitteeRules.test.ts`·`CommitteeSelector.test.ts`(신규 8건). 백엔드·API 계약·DB 스키마 변경 없음.
+
+검증 결과(COUNCIL-046): 컴포저블 4건·컴포넌트 마운트 4건·아키텍처 래칫 69건 통과, `format:check`·`eslint`·`typecheck` 통과. 브라우저에서 `ASCT-2026-0403`·`ASCT-2026-0404` 위원 편성 저장과 알림 발행, 알림 링크 이동, 취소 버튼, 02 화면 분기, 목록·결재 표시를 사용자가 확인 완료.
+
+참고(COUNCIL-046): 최초 구현에서 `usePlanCommitteeRules` 명시적 import를 빠뜨려 화면이 런타임에 깨졌다. `app/composables/council/` 하위는 Nuxt 자동 임포트 대상이 아닌데 `vue-tsc`가 잡지 못했다. `CommitteeSelector.test.ts`가 컴포넌트를 실제 마운트하므로 같은 누락은 이제 테스트에서 실패한다.
+
+로컬 환경 정정(2026-09-27, 코드·저장소 변경 없음): 브라우저 확인 중 드러난 로컬 DB 데이터 문제 두 건을 사용자 승인으로 정정했다. ① `TPRMPP_CUSERI` K140027(IT계약팀 18003)의 부서코드가 150 글로벌사업부여서 02 당연위원 목록에 엉뚱한 부서로 표출됐다 — 이 시스템은 `팀코드 앞 3자리 = 부서코드` 규칙이라 180 IT기획부로 정정했다. 팀코드 18501에 AI·디지털전략팀과 AI개발팀이 섞여 있어 AI개발팀 6명을 18507(`ATEAMM` `ADEV`, 팀장 K110025)로 분리하고 부서를 185로 통일했으며, 그들이 작성한 업무분장 81건·일정 4건도 함께 옮겼다. ② 알림 시퀀스 `SQ_TPRMPP_CINFMM_1`이 146으로 `TPRMPP_CINFMM` 기존 번호 구간(71~229) 안에 있어, 협의회 알림 발행이 번호 충돌로 `ORA-01407`(DEL_YN NULL) 실패했다 — 230부터 재시작했다. 두 건 모두 `EXPDAT.DMP` 임포트 데이터와 시퀀스 불일치에서 온 로컬 문제다.
+
 ## 2026-09-26
 
 | ID | 상태 | 조치 | 근거 |
