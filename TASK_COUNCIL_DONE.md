@@ -21,6 +21,7 @@
 | COUNCIL-049 | ✅ Done | 심의유형별 평가 조회 API 경계를 저장 API와 같게 맞췄다. 02는 계획평가 전체·본인·결과요약 조회만 허용하고, 일반 6항목 평가 전체·본인 조회는 02를 거부한다 | [계획평가](it_backend/src/main/java/com/kdb/it/domain/council/service/PlanEvaluationService.java) · [일반평가](it_backend/src/main/java/com/kdb/it/domain/council/service/EvaluationService.java) |
 | COUNCIL-050 | ✅ Done | 사용자 결정에 따라 IT관리자와 평가위원을 겸한 사용자에게 두 역할을 함께 허용한다. 결과 단계에서 평가 참여 권한을 유지하면서 결과서 작성·확정·결재 요청 등 관리자 작업도 수행할 수 있도록 관리자 전용 판정을 역할 보유 여부로 바꿨다 | [결과 접근 규칙](it_frontend/app/composables/council/useCouncilResultAccess.ts) |
 | COUNCIL-051 | ✅ Done | 위원 대상 알림 링크가 개최준비 화면으로 향했다. 그 화면의 탭은 모두 IT관리자·추진부서 담당자 몫이라 위원이 열면 쓸 수 있는 탭이 없고, 계획협의회(02)는 질의응답 탭까지 숨겨 탭이 하나도 남지 않는 빈 화면이 됐다. 위원의 일정 입력·평가·결과서 검토는 모두 결과 화면에 있다. 알림 종류에 수신자 구분(`Audience`)을 붙여 위원 대상 4종은 결과 화면으로 보낸다. 사업 협의회의 01~04는 안건이 타당성검토표라 그대로 두고, 추진부서 대상 2종도 종전 경로를 유지한다. 함께 프론트 라우팅이 심의유형을 보지 않아 계획협의회의 신청(01)을 타당성검토표로 보내던 것과, 카드 라벨이 실제 이동 경로와 어긋나던 것을 `resolveCouncilStep` 공유로 정리했다. 계획 재신청이 중복 활성 협의회 중 정렬 없이 하나를 고르던 것도 협의회ID 최소값으로 고정했다 | [알림 종류](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilNotice.java) · [알림 발행기](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilNotifier.java) · [라우팅](it_frontend/app/features/council/request/council-routing.ts) |
+| COUNCIL-052 | ✅ Done | 계획협의회(02)는 사전·주요 Q&A를 사용하지 않지만 신규 등록만 서버에서 막고 목록 조회와 기존 항목의 수정·답변·삭제 API는 열려 있었다. 과거·오입력 행이 남으면 화면을 우회해 계속 변경할 수 있고, 사전 Q&A 답변은 계획관리번호를 사업번호로 조회한 뒤 주관부서를 찾지 못해 비관리자 권한 검사까지 느슨해졌다. 두 Q&A 서비스의 모든 읽기·쓰기 진입점에서 02 유형을 거부하고, 사전 Q&A 답변은 검증한 협의회 원장을 권한 검사와 알림에 재사용한다 | [사전 Q&A](it_backend/src/main/java/com/kdb/it/domain/council/service/QnaService.java) · [주요 Q&A](it_backend/src/main/java/com/kdb/it/domain/council/service/MainQnaService.java) |
 
 코드 변경(COUNCIL-047~050): `it_frontend` — `usePlanDetailPage.ts`, `council/useCouncilResultAccess.ts`, 단위 테스트 2개. `it_backend` — `CommitteeService.java`, `PlanEvaluationService.java`, `EvaluationService.java`, `CouncilAccessBoundaryTest.java`, 서비스 테스트 3개. API 계약과 DB 스키마 변경 없음.
 
@@ -35,6 +36,12 @@
 검증 결과(COUNCIL-051): 백엔드 협의회 도메인 테스트와 `spotlessJavaCheck` 통과. 프론트 `features/council`·`architecture`·`composables/council` 156건, `typecheck`(6GB 힙), `lint`(오류 0, 기존 경고 32건), 변경 파일 `prettier --check` 통과.
 
 미검증 범위(COUNCIL-051): 실제 계정으로 위원이 알림을 눌러 결과 화면에서 가능 일정을 입력하는 종단 확인, 추진부서 담당자의 사전 질의 알림이 개최준비 화면으로 가는 확인, 목록 카드 라벨 변화. 개발계 배포는 수행하지 않았다.
+
+코드 변경(COUNCIL-052): `it_backend` — `QnaService.java`, `MainQnaService.java`, 단위 테스트 2개. 프론트·API 계약·DB 스키마 변경 없음.
+
+검증 결과(COUNCIL-052): 수정 전 신규 회귀 테스트 2건이 의도대로 실패했고 수정 후 Q&A 서비스 테스트 30건, 협의회 도메인 전체 테스트, `spotlessJavaCheck`가 통과했다. Claude의 COUNCIL-051 프론트 라우팅·카드·겸직 접근 테스트도 별도로 3개 파일 33건 통과했다.
+
+미검증 범위(COUNCIL-052): 실제 HTTP 호출과 과거 02 Q&A 데이터 존재 여부는 확인하지 않았다. 기존 데이터를 자동 삭제하지 않고 접근과 변경만 차단한다. 개발계 배포는 수행하지 않았다.
 
 로컬 환경 정정(COUNCIL-051, 코드·저장소 변경 없음): 같은 계획(`PLN-2026-0424`)에 활성 계획협의회가 `ASCT-2026-0403`·`ASCT-2026-0404` 두 건 남아 있었다. COUNCIL-043의 계획 원장 잠금은 새 중복만 막고 기존 건은 정리하지 않는다. 먼저 신청된 0403만 남기고 0404의 원장을 논리삭제했다(화면 취소와 같은 방식). 0404로 발행된 알림 14건(`INF-2026-00000241`~`254`)은 그대로 두었다.
 
