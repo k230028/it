@@ -16,6 +16,16 @@
 | ID | 상태 | 조치 | 근거 |
 | --- | :--: | ---- | ---- |
 | COUNCIL-046 | ✅ Done | 위원 편성 화면이 심의유형 제약을 몰라 계획협의회 편성이 막혀 있었다. ① 당연위원 자동 설정 버튼이 `당연위원 목록이 완전히 비었을 때`만 떠서, 일부만 저장된 협의회(`ASCT-2026-0403`: 당연위원 1명)는 나머지 6명을 채울 방법이 없었다. ② 02에 간사 추가 버튼이 열려 있어 추가하면 서버가 순수 간사(`03`)를 거부해 저장이 400으로 막혔다(COUNCIL-031 검증과 화면 불일치). 자동 설정 버튼을 당연위원 섹션 헤더에 상시 노출하고, 필수 7팀 미충족 경고를 저장 전에 띄우며, 02는 간사 추가와 겸직 간사 삭제를 감췄다. 자동 배정 결과와 소집위원이 겹치면 소집위원 쪽에서 덜어내 같은 사번을 두 유형으로 보내던 400도 막는다. 심의유형 분기는 `usePlanCommitteeRules`로 분리했다 | [편성 규칙](it_frontend/app/composables/council/usePlanCommitteeRules.ts) · [화면](it_frontend/app/components/council/committee/CommitteeSelector.vue) |
+| COUNCIL-047 | ✅ Done | 계획 상세에서 이미 존재하는 02 협의회를 다시 열 때 무조건 개최준비로 보내던 경로를 현재 진행상태에 맞게 수정했다. 신청·개최준비 호출 뒤 협의회 상세를 조회하고 05~07은 개최준비, 08~13은 결과 화면으로 이동한다 | [계획 상세 흐름](it_frontend/app/composables/usePlanDetailPage.ts) |
+| COUNCIL-048 | ✅ Done | 개최준비 중 평가위원을 제외했다가 같은 사번을 다시 편성하면 과거 일정응답과 대면희망값이 살아나던 문제를 수정했다. 새로 평가 의무가 생긴 위원의 활성 일정응답을 논리삭제하고 대면희망값을 초기화하며, 계속 유지된 위원의 응답은 보존한다 | [위원 저장](it_backend/src/main/java/com/kdb/it/domain/council/service/CommitteeService.java) |
+| COUNCIL-049 | ✅ Done | 심의유형별 평가 조회 API 경계를 저장 API와 같게 맞췄다. 02는 계획평가 전체·본인·결과요약 조회만 허용하고, 일반 6항목 평가 전체·본인 조회는 02를 거부한다 | [계획평가](it_backend/src/main/java/com/kdb/it/domain/council/service/PlanEvaluationService.java) · [일반평가](it_backend/src/main/java/com/kdb/it/domain/council/service/EvaluationService.java) |
+| COUNCIL-050 | ✅ Done | 사용자 결정에 따라 IT관리자와 평가위원을 겸한 사용자에게 두 역할을 함께 허용한다. 결과 단계에서 평가 참여 권한을 유지하면서 결과서 작성·확정·결재 요청 등 관리자 작업도 수행할 수 있도록 관리자 전용 판정을 역할 보유 여부로 바꿨다 | [결과 접근 규칙](it_frontend/app/composables/council/useCouncilResultAccess.ts) |
+
+코드 변경(COUNCIL-047~050): `it_frontend` — `usePlanDetailPage.ts`, `council/useCouncilResultAccess.ts`, 단위 테스트 2개. `it_backend` — `CommitteeService.java`, `PlanEvaluationService.java`, `EvaluationService.java`, `CouncilAccessBoundaryTest.java`, 서비스 테스트 3개. API 계약과 DB 스키마 변경 없음.
+
+검증 결과(COUNCIL-047~050): 프론트 대상 테스트 2개 파일 29건, `format:check`, `check:copy`, 6GB 힙으로 실행한 `typecheck` 통과. `lint`는 오류 0건이며 기존 경고 32건이 남았다. 백엔드 대상 테스트 4개 클래스(`CommitteeServiceTest`, `PlanEvaluationServiceTest`, `EvaluationServiceTest`, `CouncilAccessBoundaryTest`)와 `spotlessJavaCheck` 통과.
+
+미검증 범위(COUNCIL-047~050): 실제 브라우저에서 상태별 재진입과 겸직 계정의 결과서 작성·확정·결재 요청은 확인하지 않았다. 프론트 전체 테스트는 협의회 밖 기존 테스트 6건(`project-payment-list-refresh-failure` 5건, `ItBudgetSourceChangedDialog` 1건)이 실패해 전체 통과하지 않았고, 백엔드 전체 테스트는 완료 결과를 확보하지 못했다. 개발계 배포는 수행하지 않았다.
 
 코드 변경(COUNCIL-046): `it_frontend` — `usePlanCommitteeRules`(신규), `components/council/committee/CommitteeSelector.vue`(자동 설정 버튼 상시 노출·필수 7팀 경고·간사 추가 차단·중복 사번 정리), `i18n/messages/council.ts`(문구 2개 ko/en), 테스트 `usePlanCommitteeRules.test.ts`·`CommitteeSelector.test.ts`(신규 8건). 백엔드·API 계약·DB 스키마 변경 없음.
 
