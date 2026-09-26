@@ -15,6 +15,16 @@
 
 | ID | 상태 | 조치 | 근거 |
 | --- | :--: | ---- | ---- |
+| COUNCIL-053 | ✅ Done | 02 유형은 결과서 작성(09) 단계에서만 결과서를 저장하도록 제한했다. 평가 중(08) 저장으로 전원 평가 확인을 우회해 09로 전이하던 경로를 차단했다. 일반 유형의 기존 호환 흐름은 유지한다 | `ResultService.java`, `ResultServiceTest.java` |
+| COUNCIL-054 | ✅ Done | 계획평가 최초 제출·재저장 성공값을 별도 보관하고 수정 취소 시 해당 값을 복원한다. 제출 상태를 최초 조회값으로 되돌리지 않으며 저장 요청 중 입력이 바뀌어도 실제 전송한 값이 복원 기준이 된다 | `PlanPprtForm.vue`, `PlanPprtForm.test.ts` |
+| COUNCIL-055 | ✅ Done | 일정 선택 건수·제출 버튼·제출 검증을 현재 표시하는 후보 날짜와 시간대 안의 선택으로 통일했다. 후보 밖의 과거 선택만으로 제출 버튼이 활성화되는 문제를 막았다 | `ScheduleInput.vue`, `ScheduleInput.test.ts` |
+
+검증 결과(COUNCIL-053~055): 백엔드 `ResultServiceTest` 26건·`CouncilServiceTest` 45건과 `spotlessJavaCheck` 통과. 프론트 컴포넌트 2개 파일 6건 통과(최초 제출·재저장 후 수정 취소, 과거 일정만 존재하는 재방문 포함). 변경 프론트 파일 ESLint·Prettier와 전체 `typecheck`(6GB 힙) 통과.
+
+미검증 범위(COUNCIL-053~055): 실제 계정의 브라우저 종단 흐름과 개발계 배포는 수행하지 않았다. 일정 후보 생성 정책(내일부터 2주)은 변경하지 않았다.
+
+| ID | 상태 | 조치 | 근거 |
+| --- | :--: | ---- | ---- |
 | COUNCIL-046 | ✅ Done | 위원 편성 화면이 심의유형 제약을 몰라 계획협의회 편성이 막혀 있었다. ① 당연위원 자동 설정 버튼이 `당연위원 목록이 완전히 비었을 때`만 떠서, 일부만 저장된 협의회(`ASCT-2026-0403`: 당연위원 1명)는 나머지 6명을 채울 방법이 없었다. ② 02에 간사 추가 버튼이 열려 있어 추가하면 서버가 순수 간사(`03`)를 거부해 저장이 400으로 막혔다(COUNCIL-031 검증과 화면 불일치). 자동 설정 버튼을 당연위원 섹션 헤더에 상시 노출하고, 필수 7팀 미충족 경고를 저장 전에 띄우며, 02는 간사 추가와 겸직 간사 삭제를 감췄다. 자동 배정 결과와 소집위원이 겹치면 소집위원 쪽에서 덜어내 같은 사번을 두 유형으로 보내던 400도 막는다. 심의유형 분기는 `usePlanCommitteeRules`로 분리했다 | [편성 규칙](it_frontend/app/composables/council/usePlanCommitteeRules.ts) · [화면](it_frontend/app/components/council/committee/CommitteeSelector.vue) |
 | COUNCIL-047 | ✅ Done | 계획 상세에서 이미 존재하는 02 협의회를 다시 열 때 무조건 개최준비로 보내던 경로를 현재 진행상태에 맞게 수정했다. 신청·개최준비 호출 뒤 협의회 상세를 조회하고 05~07은 개최준비, 08~13은 결과 화면으로 이동한다 | [계획 상세 흐름](it_frontend/app/composables/usePlanDetailPage.ts) |
 | COUNCIL-048 | ✅ Done | 개최준비 중 평가위원을 제외했다가 같은 사번을 다시 편성하면 과거 일정응답과 대면희망값이 살아나던 문제를 수정했다. 새로 평가 의무가 생긴 위원의 활성 일정응답을 논리삭제하고 대면희망값을 초기화하며, 계속 유지된 위원의 응답은 보존한다 | [위원 저장](it_backend/src/main/java/com/kdb/it/domain/council/service/CommitteeService.java) |
