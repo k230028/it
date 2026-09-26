@@ -18,10 +18,29 @@
 | COUNCIL-053 | ✅ Done | 02 유형은 결과서 작성(09) 단계에서만 결과서를 저장하도록 제한했다. 평가 중(08) 저장으로 전원 평가 확인을 우회해 09로 전이하던 경로를 차단했다. 일반 유형의 기존 호환 흐름은 유지한다 | `ResultService.java`, `ResultServiceTest.java` |
 | COUNCIL-054 | ✅ Done | 계획평가 최초 제출·재저장 성공값을 별도 보관하고 수정 취소 시 해당 값을 복원한다. 제출 상태를 최초 조회값으로 되돌리지 않으며 저장 요청 중 입력이 바뀌어도 실제 전송한 값이 복원 기준이 된다 | `PlanPprtForm.vue`, `PlanPprtForm.test.ts` |
 | COUNCIL-055 | ✅ Done | 일정 선택 건수·제출 버튼·제출 검증을 현재 표시하는 후보 날짜와 시간대 안의 선택으로 통일했다. 후보 밖의 과거 선택만으로 제출 버튼이 활성화되는 문제를 막았다 | `ScheduleInput.vue`, `ScheduleInput.test.ts` |
+| COUNCIL-056 | ✅ Done | 사업 협의회의 6항목 평가는 전원 제출 시 결과서 작성(09)으로 자동 전이하는데, 계획협의회의 적정/유보 평가는 07→08만 넘기고 멈춰 관리자가 '협의회 완료'를 직접 눌러야 했다. 안내문에도 07이 비어 있어 평가가 끝났는데 결과서를 못 쓰는 상태로 남기 쉬웠다. 계획평가 저장 뒤 평가위원 전원이 심의 대상을 모두 평가했으면(수동 완료와 같은 `countIncompleteEvaluators` 기준) 09로 자동 전이한다. 평가위원이 없으면 전이하지 않는다. 관리자 07·08 안내에 자동 전이 조건을, 위원 07 안내에 평가 요청을 적었다 | [계획평가](it_backend/src/main/java/com/kdb/it/domain/council/service/PlanEvaluationService.java) · [결과 접근 규칙](it_frontend/app/composables/council/useCouncilResultAccess.ts) |
+| COUNCIL-057 | ✅ Done | 계획협의회 결과서는 종합의견·타당성검토의견 대신 판정표와 관련자료 첨부가 실체라 화면이 종합의견 필수 검사를 건너뛰는데, 서버 `confirmResult`는 결과서 행 존재만 봐서 내용이 전혀 없는 결과서가 검토(10)·결재까지 갈 수 있었다. 02는 `협의회관련자료` 첨부가 1건 이상 있어야 확정한다. 사업 협의회는 첨부를 보지 않는다 | [결과서 서비스](it_backend/src/main/java/com/kdb/it/domain/council/service/ResultService.java) |
+| COUNCIL-058 | ✅ Done | 계획 상세의 "협의회 신청" 버튼이 역할·기존 협의회 여부를 보지 않았다. 02 생성은 서버가 IT관리자만 허용하는데 버튼은 누구에게나 보여 일반 사용자는 눌러야 403을 봤고, 이미 협의회가 있어도 라벨이 "협의회 신청"이었다. 버튼을 IT관리자에게만 보이고, 관리자 협의회 목록에서 이 계획의 활성 02를 찾아 있으면 라벨을 "협의회 열기"로 바꾸고 신청·개최준비 전이 호출 없이 단계 화면으로 바로 간다(사용자 결정). 목록 조회 실패는 신청 버튼으로 남기고 서버의 기존 협의회 재사용에 맡긴다 | [계획 상세 흐름](it_frontend/app/composables/usePlanDetailPage.ts) · [화면](it_frontend/app/pages/info/plan/[id].vue) |
 
 검증 결과(COUNCIL-053~055): 백엔드 `ResultServiceTest` 26건·`CouncilServiceTest` 45건과 `spotlessJavaCheck` 통과. 프론트 컴포넌트 2개 파일 6건 통과(최초 제출·재저장 후 수정 취소, 과거 일정만 존재하는 재방문 포함). 변경 프론트 파일 ESLint·Prettier와 전체 `typecheck`(6GB 힙) 통과.
 
 미검증 범위(COUNCIL-053~055): 실제 계정의 브라우저 종단 흐름과 개발계 배포는 수행하지 않았다. 일정 후보 생성 정책(내일부터 2주)은 변경하지 않았다.
+
+코드 변경(COUNCIL-056~057): `it_backend` — `PlanEvaluationService`(전원 완료 시 09 자동 전이), `ResultService`(02 확정 시 관련자료 첨부 확인, `FileRepository` 주입), `PlanEvaluationServiceTest`(전이 3건), `ResultServiceTest`(첨부 3건). `it_frontend` — `useCouncilResultAccess.ts`(관리자 07·08, 위원 07 안내문), 단위 테스트 시나리오 2건. API 계약·DB 스키마 변경 없음.
+
+검증 결과(COUNCIL-056~057): 백엔드 협의회 도메인 테스트와 `spotlessJavaCheck` 통과. 프론트 `useCouncilResultAccess` 8건, `typecheck`(6GB 힙), 변경 파일 ESLint·Prettier 통과.
+
+미검증 범위(COUNCIL-056~057): 실제 계정으로 위원 전원이 적정/유보를 제출해 09로 넘어가는 종단 확인, 02 결과서에서 첨부 없이 확정을 눌러 거부 문구를 보는 확인. 개발계 배포는 수행하지 않았다.
+
+같은 조사에서 보류한 항목(2026-09-27, 사용자 결정): 심의유형 01(중장기계획)이 관리자 신청 후보에 있으나 당연위원 매핑이 없는 점, 계획 작성 부서 일반 사용자가 02를 목록에서 보지 못하는 점은 현 상태 유지.
+
+코드 변경(COUNCIL-058): `it_frontend` — `composables/usePlanDetailPage.ts`(관리자 판정, 활성 02 조회, 열기 분기, 라벨), `pages/info/plan/[id].vue`(버튼 노출·라벨), `i18n/messages/plan.ts`(문구 1개 ko/en), `usePlanDetailPage.test.ts`(3건). 백엔드·API 계약·DB 변경 없음. 세 파일 모두 `/council` 밖의 계획 화면이며 사용자 결정으로 변경했다.
+
+검증 결과(COUNCIL-058): `usePlanDetailPage` 24건·`planDetailPageBoundary` 1건, `typecheck`(6GB 힙), 변경 파일 ESLint·Prettier 통과.
+
+미검증 범위(COUNCIL-058): 실제 관리자·일반 계정으로 버튼 노출 차이와 "협의회 열기" 이동을 브라우저에서 확인하지 않았다.
+
+미구현(COUNCIL-058, 사용자 결정 중 1건): "결재완료 계획만 협의회 신청 허용"은 넣지 못했다. 계획(`TPRMPP_BPLANM`)에는 진행상태 컬럼이 없고 결재 신청·콜백 연동도, 상신 API도, 화면 상태 표시도 없다. 계획 자체의 결재 흐름이 존재하지 않아 "결재완료"를 판정할 원천이 없다. 사업(`BPROJA`)에 "11 계획 진행중"이 찍힐 뿐이다. 계획 결재 흐름을 먼저 만들어야 하며 이는 협의회 범위 밖의 새 기능이라 `TASK_COUNCIL.md` 범위 밖 발견에 올렸다.
 
 | ID | 상태 | 조치 | 근거 |
 | --- | :--: | ---- | ---- |
