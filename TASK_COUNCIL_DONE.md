@@ -15,13 +15,17 @@
 
 | ID | 상태 | 조치 | 근거 |
 | --- | :--: | ---- | ---- |
-| COUNCIL-015 | ✅ Done | 사전 Q&A 등록·답변, 위원 선정, 개최준비 시작, 일정 확정, 결과서 검토 시작, 협의회 완료의 7개 시점에 공통 알림 아웃박스 이벤트를 발행한다. 추진부서 담당자·위원·질의자에게 개인별 인앱 알림을 보내고, 일정 확정과 완료는 그룹웨어 메일도 함께 발행한다. 알림 링크는 `/info/council/{협의회ID}`를 사용한다 | [알림 발행기](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilNotifier.java) · [알림 종류](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilNotice.java) |
+| COUNCIL-015 | ✅ Done | 사전 Q&A 등록·답변, 위원 선정, 개최준비 시작, 일정 확정, 결과서 검토 시작, 협의회 완료의 7개 시점에 공통 알림 아웃박스 이벤트를 발행한다. 추진부서 담당자·위원·질의자에게 개인별 인앱 알림을 보내고, 일정 확정과 완료는 그룹웨어 메일도 함께 발행한다. 알림 링크는 `/info/council/{협의회ID}`를 사용한다. 이어서 결과 화면의 추진부서 통보 버튼(`POST /api/council/{id}/notify`)과 수신자 표시를 없애고, 완료(13) 전이 시 사업 상태를 협의회 완료(49)로 올리는 일을 자동 처리로 옮겼다(사용자 결정). 종전에는 관리자가 버튼을 눌러야 반영돼 누락될 수 있었고(로컬 완료 2건 중 1건이 미갱신), 계획협의회(02)는 `ABUS_MNG_NO`가 계획관리번호인데도 유형을 보지 않고 사업번호로 넘겨 계획번호를 키로 한 사업관계 행이 새로 생길 수 있었다. 오신청 취소와 같은 규칙으로 02를 건너뛴다 || [알림 발행기](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilNotifier.java) · [알림 종류](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilNotice.java) |
 | COUNCIL-030 | ✅ Done | 02 유형 생성·재신청·개최준비·평가·완료에서 계획 원본 존재와 스냅샷 완전성, 심의 대상 존재를 공통 검증한다. 일부만 해석되는 손상 스냅샷으로 업무가 계속되는 것을 막고, 활성 02 유형 협의회가 참조하는 계획의 논리삭제도 차단한다 | [스냅샷 검증](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilPlanSnapshot.java) · [삭제 제약](it_backend/src/main/java/com/kdb/it/domain/council/service/CouncilPlanDeletionConstraint.java) |
 | COUNCIL-031 | ✅ Done | 02 유형 위원 편성을 서버에서 검증한다. 원장과 요청 심의유형 일치, 필수 7개 팀 대표 전원 포함, IT기획팀 대표의 겸직 간사(04), 나머지 필수 대표의 당연직(01), 추가 위원의 소집위원(02), 중복 사번과 비활성 사용자 제외를 강제한다 | [위원 검증](it_backend/src/main/java/com/kdb/it/domain/council/service/CommitteeService.java) |
 | COUNCIL-032 | ✅ Done | 순수 간사(03)는 위원 명단에 있더라도 02 유형 평가와 가능 일정 제출을 할 수 없도록 서비스 경계에서 거부한다. 겸직 간사(04)는 평가위원 역할을 유지한다 | [계획 평가](it_backend/src/main/java/com/kdb/it/domain/council/service/PlanEvaluationService.java) · [일정](it_backend/src/main/java/com/kdb/it/domain/council/service/ScheduleService.java) |
 | COUNCIL-033 | ✅ Done | 일정 확정 시 단순히 전원이 한 번 이상 응답했는지가 아니라, 선택한 날짜·시간을 모든 평가위원이 `가능(Y)`으로 제출했는지 확인한다. 한 명이라도 불가 또는 미응답이면 확정을 거부한다 | [일정 확정](it_backend/src/main/java/com/kdb/it/domain/council/service/ScheduleService.java) |
 
+코드 변경(COUNCIL-015): `it_backend` — `CouncilNotifier`·`CouncilNotice`·`CouncilSubjectName`(신규), `QnaService`·`CommitteeService`·`CouncilService`·`ScheduleService`·`ResultService`·`CouncilApprovalService`(발행 배선), `CouncilResultController`·`CouncilWorkflowDto`(통보 엔드포인트·`NotifyResponse` 제거), 테스트 `CouncilNotifierTest`(신규 9건)와 기존 테스트 보정. `it_frontend` — `CouncilResultApprovalPanel`·결과 페이지·`useCouncilResultApi`·`useCouncilResultAccess`·`types.ts`·`useCouncil.ts`(통보 제거), `i18n/messages/council.ts`(문구 6개 ko/en 삭제), `types/api.d.ts`(codegen). 사업명 해석은 목록 제목과 같아야 해 `CouncilSubjectName`으로 분리했다 — 알림에서 `CouncilService`를 주입하면 순환이 생긴다. DB 변경 없음. 배포 순서 백엔드 → 프론트(통보 엔드포인트가 사라지므로 구 프론트가 새 백엔드를 만나면 통보 버튼이 404가 된다).
+
 코드 변경(COUNCIL-030~033): `it_backend` — `CouncilPlanSnapshot`·`CouncilService`·`PlanEvaluationService`·`ScheduleService`·`CommitteeService`·`PlanService`, 계획 삭제 제약 인터페이스와 협의회 구현체, 관련 저장소 조회. 프론트·DB 스키마·API DTO 변경 없음.
+
+검증 결과(COUNCIL-015 추가분): 백엔드 `./gradlew test` 5,789건 중 1건 실패 — 실패는 사업계획 응답에 필드 4개(`bizplanExists`·`scheduleCount`·`scheduleStartDate`·`scheduleEndDate`)가 늘었는데 `ApiResponseOpenApiContractTest`가 갱신되지 않은 것으로 협의회 범위 밖이다. `spotlessJavaCheck` 통과. 프론트 `lint`·`typecheck` 통과(타입체크는 힙 6GB 필요), 영향 테스트 131건 통과. `format:check`는 실패하나 위반 6개 파일 모두 이미 커밋된 협의회 밖 파일이다.
 
 검증 결과(COUNCIL-015, COUNCIL-030~033): 백엔드 `spotlessJavaCheck` 통과. 협의회 도메인 전체, `PlanServiceTest`, `MaxLinesRatchetTest` 합계 547건 통과(실패 0, 오류 0, 건너뜀 0). RED 재현 테스트는 별도 커밋으로 보존했다.
 
